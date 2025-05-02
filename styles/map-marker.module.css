@@ -1,0 +1,238 @@
+.marker-container {
+  position: relative;
+  width: 400px;
+  height: 70px;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+}
+
+.marker-circle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+  transform: translate(-50%, -50%);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  z-index: 2;
+}
+
+.marker-content-wrapper {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.marker-dotted-line {
+  position: absolute;
+  z-index: 1;
+}
+
+.marker-text-container {
+  position: absolute;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+/* Left-aligned marker */
+.marker-container.left-aligned .marker-dotted-line {
+  right: 50%;
+  top: 50%;
+  width: 100px;
+  height: 2px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, #ffffff 50%, transparent 50%);
+  background-size: 8px 2px;
+  background-repeat: repeat-x;
+}
+
+.marker-container.left-aligned .marker-text-container {
+  right: calc(50% + 100px);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Right-aligned marker (default) */
+.marker-container:not(.left-aligned):not(.top-aligned):not(.bottom-aligned):not(.top-right-aligned):not(
+    .bottom-left-aligned
+  ):not(.bottom-right-aligned)
+  .marker-dotted-line {
+  left: 50%;
+  top: 50%;
+  width: 100px;
+  height: 2px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, #ffffff 50%, transparent 50%);
+  background-size: 8px 2px;
+  background-repeat: repeat-x;
+}
+
+.marker-container:not(.left-aligned):not(.top-aligned):not(.bottom-aligned):not(.top-right-aligned):not(
+    .bottom-left-aligned
+  ):not(.bottom-right-aligned)
+  .marker-text-container {
+  left: calc(50% + 100px);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Top-aligned marker */
+.marker-container.top-aligned .marker-dotted-line {
+  left: 50%;
+  bottom: 50%;
+  width: 2px;
+  height: 100px;
+  transform: translateX(-50%);
+  background: linear-gradient(0deg, #ffffff 50%, transparent 50%);
+  background-size: 2px 8px;
+  background-repeat: repeat-y;
+}
+
+.marker-container.top-aligned .marker-text-container {
+  left: 50%;
+  bottom: calc(50% + 100px);
+  transform: translateX(-50%);
+}
+
+/* Bottom-aligned marker */
+.marker-container.bottom-aligned .marker-dotted-line {
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 100px;
+  transform: translateX(-50%);
+  background: linear-gradient(0deg, #ffffff 50%, transparent 50%);
+  background-size: 2px 8px;
+  background-repeat: repeat-y;
+}
+
+.marker-container.bottom-aligned .marker-text-container {
+  left: 50%;
+  top: calc(50% + 100px);
+  transform: translateX(-50%);
+}
+
+/* Bottom-left aligned marker */
+.marker-container.bottom-left-aligned .marker-dotted-line {
+  right: 50%;
+  top: 50%;
+  width: 100px;
+  height: 100px;
+  border-left: 2px dotted #ffffff;
+  border-bottom: 2px dotted #ffffff;
+}
+
+.marker-container.bottom-left-aligned .marker-text-container {
+  right: calc(50% + 100px);
+  top: calc(50% + 100px);
+  transform: translate(0, -50%);
+}
+
+/* Top-right aligned marker */
+.marker-container.top-right-aligned .marker-dotted-line {
+  left: 50%;
+  bottom: 50%;
+  width: 100px;
+  height: 100px;
+  border-right: 2px dotted #ffffff;
+  border-top: 2px dotted #ffffff;
+}
+
+.marker-container.top-right-aligned .marker-text-container {
+  left: calc(50% + 100px);
+  bottom: calc(50% + 100px);
+  transform: translate(0, 50%);
+}
+
+/* Bottom-right aligned marker */
+.marker-container.bottom-right-aligned .marker-dotted-line {
+  left: 50%;
+  top: 50%;
+  width: 100px;
+  height: 100px;
+  border-right: 2px dotted #ffffff;
+  border-bottom: 2px dotted #ffffff;
+}
+
+.marker-container.bottom-right-aligned .marker-text-container {
+  left: calc(50% + 100px);
+  top: calc(50% + 100px);
+  transform: translate(0, -50%);
+}
+
+.marker-button {
+  all: unset;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  padding: 10px 20px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font-size: 1.2em;
+  color: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.marker-button:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.marker-button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Adjust hover effects for all alignments */
+.marker-container:hover .marker-circle {
+  transform: translate(-50%, -50%) scale(1.5);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 1);
+}
+
+/* Responsive adjustments for all alignments */
+@media (max-width: 640px) {
+  .marker-container {
+    width: 300px;
+    height: 60px;
+  }
+
+  .marker-button {
+    font-size: 1em;
+    padding: 8px 16px;
+  }
+
+  .marker-container.bottom-right-aligned .marker-dotted-line,
+  .marker-container.top-right-aligned .marker-dotted-line,
+  .marker-container.bottom-left-aligned .marker-dotted-line {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .marker-container {
+    width: 240px;
+    height: 50px;
+  }
+
+  .marker-button {
+    font-size: 0.9em;
+    padding: 6px 12px;
+  }
+
+  .marker-container.bottom-right-aligned .marker-dotted-line,
+  .marker-container.top-right-aligned .marker-dotted-line,
+  .marker-container.bottom-left-aligned .marker-dotted-line {
+    width: 60px;
+    height: 60px;
+  }
+}

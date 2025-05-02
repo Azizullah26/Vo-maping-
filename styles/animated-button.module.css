@@ -1,0 +1,205 @@
+@property --k {
+  syntax: "<number>";
+  initial-value: -1;
+  inherits: true;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 5px;
+  align-items: center;
+}
+
+.checkbox {
+  grid-area: 1 / 1 / 2 / 2;
+  justify-self: end;
+  margin: 5px;
+  width: 1em;
+  aspect-ratio: 1;
+}
+
+.label {
+  grid-area: 1 / 2 / 2 / 3;
+  font: 1.25em orbitron, monospace;
+  cursor: pointer;
+}
+
+.button {
+  --m: 1;
+  --t: 1s;
+  grid-area: 2 / 1 / span 1 / span 2;
+  position: relative;
+  margin: 1em;
+  border: solid 2em transparent;
+  padding: 1.5em 3.25em;
+  border-radius: 5em;
+  box-shadow: inset 0 0 1px #23429e;
+  background: radial-gradient(#111a39, 67.5%, #3476da) padding-box, radial-gradient(#a0c2ed, 35%, #a0c2ed00 70%) 50% 0 /
+    80% 50% repeat-y;
+  color: #f2fdfe;
+  font: 700 1.5em / 1 montserrat, sans-serif;
+  cursor: pointer;
+}
+
+.button:active {
+  translate: 0 2px;
+}
+
+.slowMotion {
+  --m: 5;
+}
+
+.wrap {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.particle {
+  --f: 1;
+  --pos-k: max(0, var(--k));
+  --neg-k: max(0, -1 * var(--k));
+  --low-c: min(1, 4 * (1 - var(--pos-k)));
+  --abs-d: max(var(--neg-k) - 0.5, 0.5 - var(--neg-k));
+  --mov-f: var(--pos-k);
+  display: grid;
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  rotate: var(--a);
+  animation: k calc(var(--m) * var(--t)) linear calc(var(--m) * var(--t, 0) * var(--t)) infinite;
+}
+
+@supports (scale: sqrt(4)) {
+  .particle {
+    --mov-f: sqrt(var(--pos-k));
+  }
+}
+
+.particle::before,
+.particle::after {
+  grid-area: 1 / 1;
+  width: .75em;
+  aspect-ratio: 1;
+  content: "";
+}
+
+.particle::before {
+  --sa: calc(min(1, 1 - 2 * min(0.5, var(--mov-f))) * 45deg);
+  border-radius: calc(1.25 * min(0.8, var(--mov-f)) * 50%) 50% 50%;
+  transform-origin: 0 0;
+  translate: calc(var(--mov-f) * var(--d));
+  rotate: -45deg;
+  scale: var(--f);
+  transform: skew(var(--sa), var(--sa));
+  opacity: var(--low-c);
+  filter: saturate(var(--low-c));
+  background: radial-gradient(at 85% 85%, #bad9fa, #3e66a4 75%);
+}
+
+.particle::after {
+  translate: -50% -50%;
+  scale: calc(var(--f) * (1 - 2 * var(--abs-d)));
+  text-align: center;
+  filter: blur(.5px);
+  content: "✦";
+}
+
+@keyframes k {
+  0%,
+  33.3% {
+    --k: 1;
+  }
+}
+
+.animatedButton {
+  position: relative;
+  list-style: none;
+  width: 120px;
+  height: 60px;
+  margin: 0 15px;
+  transform: rotate(-30deg) skew(25deg);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
+}
+
+.animatedButton span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #1b1464;
+  transition: 0.5s;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 16px !important;
+}
+
+.animatedButton:hover span:nth-child(5) {
+  transform: translate(40px, -40px);
+  opacity: 1;
+}
+
+.animatedButton:hover span:nth-child(4) {
+  transform: translate(30px, -30px);
+  opacity: 0.8;
+}
+
+.animatedButton:hover span:nth-child(3) {
+  transform: translate(20px, -20px);
+  opacity: 0.6;
+}
+
+.animatedButton:hover span:nth-child(2) {
+  transform: translate(10px, -10px);
+  opacity: 0.4;
+}
+
+.animatedButton:hover span:nth-child(1) {
+  transform: translate(0, 0);
+  opacity: 0.2;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transform: rotate(30deg) skew(-25deg);
+  font-size: 16px;
+  z-index: 5;
+}
+
+.styles {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.styles:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.styles::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: all 0.6s ease;
+}
+
+.styles:hover::before {
+  left: 100%;
+}

@@ -1,0 +1,39 @@
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+.ease-out-expo {
+  transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.leftSlider {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 320px;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+  z-index: 50;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.leftSlider.open {
+  transform: translateX(0);
+}
+
+@media (max-width: 768px) {
+  .leftSlider {
+    width: 280px;
+  }
+}

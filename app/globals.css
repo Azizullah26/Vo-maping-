@@ -1,0 +1,876 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  #__next {
+    height: 100%;
+  }
+}
+
+@layer components {
+  .sidebar-hover-effect {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .sidebar-hover-effect:hover {
+    @apply backdrop-blur-lg bg-black/40;
+  }
+
+  .sidebar-item {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  .sidebar-item:hover {
+    @apply translate-x-1;
+  }
+
+  .custom-marker {
+    @apply absolute top-0 left-0 transform-gpu will-change-transform pointer-events-auto;
+  }
+
+  .mapboxgl-marker {
+    @apply z-10;
+  }
+
+  .mapboxgl-marker:hover {
+    @apply z-20;
+  }
+
+  .weather-widget {
+    @apply transition-opacity duration-300 ease-in-out;
+  }
+
+  .cesium-viewer-toolbar,
+  .cesium-viewer-bottom {
+    display: none !important;
+  }
+
+  .cesium-viewer {
+    @apply absolute w-full h-full overflow-hidden p-0 m-0 touch-none;
+  }
+
+  /* Map controls styling */
+  .mapboxgl-ctrl-bottom-right {
+    bottom: 20px !important;
+    right: 20px !important;
+  }
+
+  .mapboxgl-ctrl-group {
+    @apply bg-white/80 rounded-lg shadow-sm;
+  }
+
+  .mapboxgl-ctrl-group button {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .mapboxgl-ctrl-group button:hover {
+    @apply bg-black/5;
+  }
+
+  .marker-container {
+    transition: all 0.3s ease;
+  }
+
+  .marker-dimmed {
+    opacity: 0.3;
+    filter: grayscale(50%);
+    transform: scale(0.95);
+  }
+
+  .marker-highlighted {
+    opacity: 1;
+    filter: grayscale(0%);
+    transform: scale(1.1);
+    z-index: 10 !important;
+  }
+
+  .marker-highlighted .marker-circle {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+  }
+
+  /* Define the animated-border class within the components layer */
+  .animated-border {
+    position: relative;
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  .animated-border::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 0.5rem;
+    pointer-events: none;
+  }
+
+  .animated-border {
+    position: relative;
+    z-index: 0;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-fly {
+    animation: flyAcross 20s linear infinite;
+    will-change: transform;
+    backface-visibility: hidden;
+    perspective: 1000px;
+    transform: translateZ(0);
+  }
+
+  .animate-cloud {
+    animation: cloudFloat 35s linear infinite;
+  }
+
+  .animate-cloud-slow {
+    animation: cloudFloat 60s linear infinite;
+    animation-delay: var(--cloud-delay, 0s);
+    will-change: transform;
+  }
+
+  .animate-cloud-medium {
+    animation: cloudFloat 45s linear infinite;
+    animation-delay: var(--cloud-delay, 0s);
+    will-change: transform;
+  }
+
+  .animate-cloud-fast {
+    animation: cloudFloat 30s linear infinite;
+    animation-delay: var(--cloud-delay, 0s);
+    will-change: transform;
+  }
+
+  .animate-wave {
+    animation: wave 8s ease-in-out infinite;
+  }
+
+  .animate-birds {
+    animation: flyHorizontal 15s linear infinite;
+    will-change: transform;
+  }
+
+  .video-marker {
+    transform-origin: center;
+    will-change: transform;
+    backface-visibility: hidden;
+    perspective: 1000px;
+    transform: translate3d(0, 0, 0);
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  .video-marker video {
+    backface-visibility: hidden;
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    filter: brightness(1.1) contrast(1.1);
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+
+  .video-marker:hover {
+    @apply z-20;
+  }
+
+  .video-marker video,
+  .video-marker img {
+    pointer-events: none;
+    user-select: none;
+  }
+}
+
+/* Move the animated-border::before outside of any layer */
+.animated-border::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  z-index: -10;
+  border-radius: 0.5rem;
+  background: linear-gradient(var(--map-angle, 0deg), #070707, #687aff);
+  animation: rotateBorder 8s linear infinite;
+}
+
+/* Move the animated-border::after outside of any layer */
+.animated-border::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  z-index: -10;
+  border-radius: 0.5rem;
+  background: linear-gradient(45deg, #12c2e9, #c471ed, #f64f59);
+  background-size: 200% 200%;
+  animation: rotateBorder 6s linear infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes flyAcross {
+  0% {
+    transform: translateX(100vw) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100%) scale(0.7);
+    opacity: 0.8;
+  }
+}
+
+@keyframes cloudFloat {
+  0% {
+    transform: translateX(-100%) scale(var(--cloud-scale, 1));
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--cloud-opacity, 0.8); /* Increased base opacity */
+  }
+  90% {
+    opacity: var(--cloud-opacity, 0.8); /* Increased base opacity */
+  }
+  100% {
+    transform: translateX(100vw) scale(var(--cloud-scale, 1));
+    opacity: 0;
+  }
+}
+
+@keyframes cloudFloatSlow {
+  0% {
+    transform: translateX(-100%) scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateX(100vw) scale(1);
+    opacity: 0.5;
+  }
+}
+
+@keyframes cloudFloatFast {
+  0% {
+    transform: translateX(-120%) scale(0.8);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(100vw) scale(1.1);
+    opacity: 0.7;
+  }
+}
+
+@keyframes flyHorizontal {
+  0% {
+    transform: translateX(-50%);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0.9;
+  }
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-5px) rotate(1deg);
+  }
+  75% {
+    transform: translateY(5px) rotate(-1deg);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes rotateBorder {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@property --map-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* Media queries */
+@media (max-width: 640px) {
+  .mapboxgl-ctrl-bottom-right {
+    bottom: 60px !important;
+  }
+
+  .custom-marker {
+    @apply scale-75;
+  }
+
+  .animate-cloud {
+    animation-duration: 25s;
+  }
+  .animate-cloud-slow {
+    animation-duration: 35s;
+  }
+  .animate-cloud-medium {
+    animation-duration: 30s;
+  }
+  .animate-cloud-fast {
+    animation-duration: 20s;
+  }
+
+  .video-marker {
+    width: 35px !important;
+    height: 35px !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .custom-marker {
+    @apply scale-90;
+  }
+
+  .video-marker {
+    width: 40px !important;
+    height: 40px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .video-marker video {
+    filter: brightness(1.2) contrast(1.2);
+    image-rendering: auto;
+  }
+}
+
+@media (min-width: 769px) {
+  .custom-marker {
+    @apply scale-100;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) {
+  .custom-marker {
+    touch-action: manipulation;
+  }
+
+  .btn:active {
+    @apply scale-95;
+  }
+}
+
+/* Support for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .video-marker {
+    transition: none !important;
+  }
+
+  .video-marker:hover {
+    transform: none !important;
+  }
+}
+
+@supports (backdrop-filter: blur(4px)) {
+  .video-marker {
+    backdrop-filter: blur(4px);
+  }
+}
+
+@supports not (backdrop-filter: blur(4px)) {
+  .video-marker {
+    @apply bg-white/20;
+  }
+}
+
+/* Add these styles to your globals.css */
+.mapboxgl-popup-content {
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: rgba(0, 0, 0, 0.8) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+.mapboxgl-ctrl-group {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(8px);
+}
+
+.mapboxgl-ctrl-group button {
+  background-color: transparent !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.mapboxgl-ctrl-group button .mapboxgl-ctrl-icon {
+  filter: invert(1);
+}
+
+.mapboxgl-ctrl-group button:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Update the logo container styles */
+.logo-container {
+  position: relative;
+  width: 70px; /* Increased from 56px */
+  height: 70px; /* Increased from 56px */
+  border-radius: 50%;
+  overflow: hidden;
+  background: #ffffff !important;
+  border: 3px solid #e31e24 !important; /* Increased border width */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); /* Increased shadow */
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  /* Remove cursor: pointer; */
+  margin: 5px; /* Added margin for better spacing */
+}
+
+.logo-container img,
+.logo-container video {
+  width: 95% !important; /* Increased from 90% */
+  height: 95% !important; /* Increased from 90% */
+  object-fit: contain;
+  position: relative;
+  z-index: 2;
+  background: #ffffff;
+  transition: transform 0.5s ease;
+  padding: 2px; /* Added small padding */
+}
+
+/* Increase zoom effect on hover */
+.logo-container:hover img,
+.logo-container:hover video {
+  transform: scale(1.2); /* Increased from 1.15 */
+}
+
+/* Update text positioning for larger logo */
+.logo-container .logo-text {
+  position: absolute;
+  bottom: -45px; /* Adjusted for larger logo */
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  width: max-content;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.logo-container .logo-text-arabic {
+  font-size: 14px; /* Increased from 12px */
+  color: #e31e24;
+  margin-bottom: 3px; /* Increased spacing */
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(227, 30, 36, 0.3);
+}
+
+.logo-container .logo-text-english {
+  font-size: 12px; /* Increased from 10px */
+  color: #1b1464;
+  font-weight: 500;
+  text-shadow: 0 0 10px rgba(27, 20, 100, 0.3);
+}
+
+/* Add a pulse animation to the container */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(227, 30, 36, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(227, 30, 36, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(227, 30, 36, 0);
+  }
+}
+
+.logo-container {
+  animation: pulse 2s infinite;
+}
+
+/* Add smooth transition for all animations */
+.logo-container,
+.logo-container::before,
+.logo-container::after,
+.logo-container img,
+.logo-container video,
+.logo-container .logo-text {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  perspective: 1000px;
+  transform: translateZ(0);
+}
+
+/* Add styles for the status indicators */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.5rem 0;
+}
+
+/* Update the status indicators styles */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+
+.status-dot.active {
+  background-color: #34d399; /* Emerald 400 */
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+}
+
+.status-dot.construction {
+  background-color: #facc15; /* Yellow 400 */
+  box-shadow: 0 0 8px rgba(250, 204, 21, 0.5);
+}
+
+/* Add a subtle pulse animation for the dots */
+@keyframes statusPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.status-dot {
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+/* Update projects panel styling */
+.projects-panel {
+  background: linear-gradient(to bottom, #1b1f3a, #000000) !important;
+  border-left: 1px solid #333 !important;
+  border-top-left-radius: 1rem !important;
+  border-bottom-left-radius: 1rem !important;
+  overflow: hidden;
+}
+
+/* Update scrollbar styling */
+.projects-panel ::-webkit-scrollbar {
+  width: 8px;
+}
+
+.projects-panel ::-webkit-scrollbar-track {
+  background: #1b1f3a;
+}
+
+.projects-panel ::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+.projects-panel ::-webkit-scrollbar-thumb:hover {
+  background: #444;
+}
+
+/* Update project card styling */
+.project-card {
+  background: rgba(27, 31, 58, 0.8) !important;
+  border: 1px solid #333 !important;
+}
+
+.project-card:hover {
+  background: rgba(27, 31, 58, 0.9) !important;
+  border-color: #444 !important;
+}
+
+/* Update input and select styling */
+.projects-panel input,
+.projects-panel select {
+  background: rgba(27, 31, 58, 0.8) !important;
+  border-color: #333 !important;
+}
+
+.projects-panel input:focus,
+.projects-panel select:focus {
+  border-color: #444 !important;
+  box-shadow: 0 0 0 1px #444;
+}
+
+/*
+Add these styles to ensure dropdowns appear above other elements
+*/
+.projects-panel * {
+  z-index: 99999;
+}
+
+.projects-panel .select-content {
+  z-index: 999999 !important;
+}
+
+/* Update the mapboxgl controls to have a lower z-index */
+.mapboxgl-control-container {
+  z-index: 1 !important;
+}
+
+.mapboxgl-marker {
+  z-index: 1 !important;
+}
+
+/* Ensure the project panel and its children are always on top */
+.projects-panel {
+  isolation: isolate;
+}
+
+.projects-panel > * {
+  isolation: isolate;
+}
+
+/* Add these new styles for the Al Ain page logo */
+.logo-container-alain {
+  position: relative;
+  width: 70px; /* Increased from 64px */
+  height: 70px; /* Increased from 64px */
+  border-radius: 50%;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin: 4px;
+}
+
+.logo-container-alain .logo-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #e31e24;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 0 15px rgba(227, 30, 36, 0.3);
+  transition: all 0.3s ease;
+  padding: 0; /* Remove padding */
+}
+
+.logo-container-alain .logo-image {
+  width: 95% !important; /* Increased from 85% */
+  height: 95% !important; /* Increased from 85% */
+  object-fit: contain;
+  transition: transform 0.3s ease;
+  transform: scale(1.2); /* Add initial scale */
+}
+
+/* Add glowing ring effect */
+.logo-container-alain::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  padding: 2px;
+  background: linear-gradient(45deg, #e31e24, #1b1464);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: rotate 4s linear infinite;
+}
+
+/* Add outer glow */
+.logo-container-alain::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(227, 30, 36, 0.3), transparent 70%);
+  z-index: 1;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .logo-container-alain {
+    width: 52px; /* Increased from 48px */
+    height: 52px; /* Increased from 48px */
+  }
+
+  .logo-container-alain .logo-inner {
+    border-width: 2px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .logo-container-alain {
+    width: 60px; /* Increased from 56px */
+    height: 60px; /* Increased from 56px */
+  }
+}
+
+/* Ensure smooth animations */
+.logo-container-alain,
+.logo-container-alain::before,
+.logo-container-alain::after,
+.logo-container-alain .logo-inner,
+.logo-container-alain .logo-image {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  perspective: 1000px;
+  transform: translateZ(0);
+}
+
+/* Add hover effect */
+.logo-container-alain:hover .logo-image {
+  transform: scale(1.3); /* Increased from 1.1 */
+}
+
+.logo-container-alain:hover .logo-inner {
+  box-shadow: 0 0 20px rgba(227, 30, 36, 0.5);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}

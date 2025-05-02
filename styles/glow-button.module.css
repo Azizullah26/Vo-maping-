@@ -1,0 +1,40 @@
+.glowOnHover {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.glowOnHover:hover {
+  color: #fff;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+}
+
+.glowOnHover:hover::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  box-shadow: 0 0 15px 5px rgba(0, 120, 255, 0.6);
+  opacity: 0.7;
+  z-index: -1;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 15px 5px rgba(0, 120, 255, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 20px 8px rgba(0, 120, 255, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 15px 5px rgba(0, 120, 255, 0.6);
+  }
+}
+
+/* Export for compatibility */
+.glowStyles {
+  composes: glowOnHover;
+}
