@@ -75,7 +75,6 @@
     "fs": "latest",
     "cesium": "latest",
     "mapillary-js": "latest",
-    "@niledatabase/server": "latest",
     "@niledatabase/react": "latest",
     "@vercel/blob": "latest",
     "pg": "latest",
@@ -87,7 +86,8 @@
     "uuid": "latest",
     "jspdf-autotable": "latest",
     "@supabase/auth-helpers-nextjs": "latest",
-    "glob": "latest"
+    "glob": "latest",
+    "@niledatabase/server": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",
