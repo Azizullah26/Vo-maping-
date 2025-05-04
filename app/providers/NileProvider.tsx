@@ -1,6 +1,5 @@
 "use client"
 
-import { NileContext } from "@niledatabase/react"
 import type { ReactNode } from "react"
 
 interface NileProviderProps {
@@ -8,6 +7,7 @@ interface NileProviderProps {
   basePath?: string
 }
 
-export function NileProvider({ children, basePath = "/api/nile" }: NileProviderProps) {
-  return <NileContext.Provider value={{ basePath }}>{children}</NileContext.Provider>
+// This is now just a pass-through component that doesn't use Nile
+export function NileProvider({ children }: NileProviderProps) {
+  return <>{children}</>
 }

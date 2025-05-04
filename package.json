@@ -65,7 +65,6 @@
     "expo-file-system": "latest",
     "expo-gl": "latest",
     "react-native": "latest",
-    "@tanstack/react-query": "latest",
     "pg-native": "latest",
     "jspdf": "latest",
     "@supabase/supabase-js": "latest",
@@ -75,7 +74,6 @@
     "fs": "latest",
     "cesium": "latest",
     "mapillary-js": "latest",
-    "@niledatabase/react": "latest",
     "@vercel/blob": "latest",
     "pg": "latest",
     "@upstash/redis": "latest",
@@ -86,8 +84,7 @@
     "uuid": "latest",
     "jspdf-autotable": "latest",
     "@supabase/auth-helpers-nextjs": "latest",
-    "glob": "latest",
-    "@niledatabase/server": "latest"
+    "glob": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

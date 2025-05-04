@@ -1,58 +1,34 @@
 "use client"
 
-import { useNileAuth as useNileAuthBase, useNileUser } from "@niledatabase/react"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 
+// This hook now returns stub functions since we're only using Supabase
 export function useNileAuth() {
-  const { login, logout, signUp } = useNileAuthBase()
-  const { user, isLoading } = useNileUser()
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  // Clear error when user changes
-  useEffect(() => {
-    setError(null)
-  }, [user])
-
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      setError(null)
-      await login(email, password)
-      router.push("/dashboard")
-    } catch (err) {
-      console.error("Login error:", err)
-      setError(err instanceof Error ? err.message : "Failed to login")
-    }
+  const handleLogin = async () => {
+    setError("Nile authentication has been removed. Please use Supabase instead.")
+    console.warn("Nile authentication has been removed. Please use Supabase instead.")
   }
 
-  const handleSignUp = async (email: string, password: string, name: string) => {
-    try {
-      setError(null)
-      await signUp(email, password, { name })
-      router.push("/dashboard")
-    } catch (err) {
-      console.error("Signup error:", err)
-      setError(err instanceof Error ? err.message : "Failed to sign up")
-    }
+  const handleSignUp = async () => {
+    setError("Nile authentication has been removed. Please use Supabase instead.")
+    console.warn("Nile authentication has been removed. Please use Supabase instead.")
   }
 
   const handleLogout = async () => {
-    try {
-      await logout()
-      router.push("/login")
-    } catch (err) {
-      console.error("Logout error:", err)
-    }
+    console.warn("Nile authentication has been removed. Please use Supabase instead.")
   }
 
   return {
-    user,
-    isLoading,
+    user: null,
+    isLoading: false,
     error,
     login: handleLogin,
     signUp: handleSignUp,
     logout: handleLogout,
-    isAuthenticated: !!user,
+    isAuthenticated: false,
   }
 }
