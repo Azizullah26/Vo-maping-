@@ -1,6 +1,7 @@
 "use server"
 import { deleteCache } from "@/lib/redis-client"
 import { revalidatePath } from "next/cache"
+import { createClient } from "@supabase/supabase-js"
 
 // Cache keys
 const PROJECT_LIST_CACHE_KEY = "project:list"
@@ -25,7 +26,26 @@ import { getSupabaseAdminClient } from "@/lib/supabase-client"
 
 // Function to get Supabase client
 function getSupabaseClient() {
-  return getSupabaseAdminClient()
+  // Check if we're on the server side
+  if (typeof window === "undefined") {
+    // Server-side: use admin client
+    return getSupabaseAdminClient()
+  } else {
+    // Client-side: use regular client
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error("Missing Supabase environment variables")
+      throw new Error("Missing Supabase environment variables")
+    }
+
+    return createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+      },
+    })
+  }
 }
 
 // Create project table if it doesn't exist
