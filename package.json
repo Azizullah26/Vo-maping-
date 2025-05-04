@@ -79,14 +79,15 @@
     "@niledatabase/react": "latest",
     "@vercel/blob": "latest",
     "pg": "latest",
-    "animejs": "latest",
     "@upstash/redis": "latest",
+    "animejs": "latest",
     "@neondatabase/serverless": "latest",
     "path": "latest",
     "child_process": "latest",
     "uuid": "latest",
     "jspdf-autotable": "latest",
-    "@supabase/auth-helpers-nextjs": "latest"
+    "@supabase/auth-helpers-nextjs": "latest",
+    "glob": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

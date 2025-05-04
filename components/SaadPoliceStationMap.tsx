@@ -3,9 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import mapboxgl from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
-
-// Use the correct token from environment variables
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || ""
+import { useMapboxToken } from "@/hooks/useMapboxToken"
 
 interface SaadPoliceStationMapProps {
   coordinates?: [number, number]
@@ -15,13 +13,18 @@ export function SaadPoliceStationMap({ coordinates = [55.5789, 24.1942] }: SaadP
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
+  const { token, loading, error } = useMapboxToken()
 
   useEffect(() => {
     if (map.current) return // initialize map only once
-    if (!mapboxgl.accessToken) {
-      console.error("Mapbox access token is missing")
+    if (loading) return
+    if (error || !token) {
+      console.error("Mapbox access token error:", error)
       return
     }
+
+    // Set the token from our secure API
+    mapboxgl.accessToken = token
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current!,
@@ -49,7 +52,7 @@ export function SaadPoliceStationMap({ coordinates = [55.5789, 24.1942] }: SaadP
     return () => {
       map.current?.remove()
     }
-  }, [coordinates])
+  }, [coordinates, token, loading, error])
 
   useEffect(() => {
     if (!mapLoaded || !map.current) return
@@ -131,10 +134,35 @@ export function SaadPoliceStationMap({ coordinates = [55.5789, 24.1942] }: SaadP
     })
   }, [mapLoaded, coordinates])
 
+  // Show loading state while fetching the token
+  if (loading) {
+    return (
+      <div className="relative w-full h-full rounded-lg overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state if token fetch failed
+  if (error) {
+    return (
+      <div className="relative w-full h-full rounded-lg overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+          <div className="text-red-500 text-center p-4">
+            <p className="font-bold">Error loading map</p>
+            <p className="text-sm">{error}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="relative w-full h-full rounded-lg overflow-hidden">
       <div ref={mapContainer} className="w-full h-full" style={{ minHeight: "300px" }} />
-      {!mapLoaded && (
+      {!mapLoaded && token && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
         </div>

@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, Thermometer, Wind, Droplets, MapPin, Search,
 import "@/styles/vue-futuristic-alain.css"
 import { useRouter } from "next/navigation"
 import { createClient } from "@supabase/supabase-js"
+import { cn } from "@/lib/utils"
 
 // Add a new interface for documents
 interface ProjectDocument {
@@ -68,6 +69,55 @@ const styleBlock = `
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
+}
+
+@media (max-width: 640px) {
+  .vue-card {
+    padding: 0.75rem;
+  }
+  
+  .vue-env-card {
+    padding: 0.5rem;
+  }
+  
+  .vue-video-container {
+    height: 8rem;
+  }
+}
+
+.content-container {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ensure proper scrolling */
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Force scrollbar to be visible on some browsers */
+.force-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(8, 145, 178, 0.5) transparent;
+}
+
+.force-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.force-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.force-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(8, 145, 178, 0.5);
+  border-radius: 6px;
 }
 `
 
@@ -461,32 +511,37 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
       </button>
 
       <div
-        className={`fixed top-0 left-0 h-full w-[320px] transform transition-transform ease-out-expo duration-500 z-40 bg-[#0a192f]/90 backdrop-blur-sm overflow-hidden border-r border-cyan-500/30 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={cn(
+          "fixed top-[5rem] sm:top-16 md:top-[4.5rem] left-0 max-h-[calc(100vh-5rem)] sm:max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-4.5rem)] w-[90%] sm:w-[320px] transform transition-transform ease-out-expo duration-500 z-40 bg-[#0a192f]/90 backdrop-blur-sm overflow-hidden border-r border-cyan-500/30",
+          isOpen ? "translate-x-0" : "-translate-x-full",
+        )}
       >
-        {/* Background grid pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-10"></div>
+        {/* Background grid pattern - z-index adjusted to ensure it doesn't block scrolling */}
+        <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-10 pointer-events-none z-0"></div>
 
         {/* Top decorative element */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500"></div>
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 z-10"></div>
 
         {/* Left decorative element */}
-        <div className="absolute top-0 left-0 bottom-0 w-1 bg-gradient-to-b from-cyan-500 via-blue-500 to-cyan-500"></div>
+        <div className="absolute top-0 left-0 bottom-0 w-1 bg-gradient-to-b from-cyan-500 via-blue-500 to-cyan-500 z-10"></div>
 
         {/* Animated corner elements */}
-        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-500 animate-pulse"></div>
-        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-500 animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-500 animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-500 animate-pulse"></div>
+        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-500 animate-pulse z-10"></div>
+        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-500 animate-pulse z-10"></div>
+        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-500 animate-pulse z-10"></div>
+        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-500 animate-pulse z-10"></div>
 
-        {/* Main content area - scrollable */}
-        <div className="h-full overflow-y-auto pr-2 no-scrollbar">
-          <div className="flex flex-col p-4 space-y-6">
+        {/* Main content area - scrollable with enhanced vertical scrolling */}
+        <div
+          className="h-full overflow-y-auto overflow-x-hidden pr-2 no-scrollbar relative z-20"
+          style={{ maxHeight: "calc(100vh - 5rem)", overflowY: "auto" }}
+        >
+          <div className="flex flex-col p-4 space-y-6 w-full">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-cyan-400">Al Ain Dashboard</h2>
+              <h2 className="text-xl font-bold text-cyan-400">Al Ain 
+</h2>
               <div className="text-xs text-cyan-300 bg-cyan-900/30 px-2 py-1 rounded border border-cyan-500/30">
-                LIVE
+                REAL-TIME
               </div>
             </div>
 
@@ -571,6 +626,13 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
                   </button>
                   <button className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden">
                     <div className="absolute inset-0 bg-cyan-500/10 rounded-full scale-0 group-hover:scale-150 transition-transform duration-700"></div>
+
+                    {/* Add corner elements similar to the slider panel */}
+                    <div className="absolute top-0 left-0 w-2 h-2 border-t-1 border-l-1 border-cyan-500 animate-pulse"></div>
+                    <div className="absolute top-0 right-0 w-2 h-2 border-t-1 border-r-1 border-cyan-500 animate-pulse"></div>
+                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b-1 border-l-1 border-cyan-500 animate-pulse"></div>
+                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b-1 border-r-1 border-cyan-500 animate-pulse"></div>
+
                     <div className="text-cyan-400 mb-1 relative z-10">Media</div>
                     <div className="relative z-10">
                       <div className="h-3 w-3 bg-cyan-400 rounded-sm animate-pulse"></div>

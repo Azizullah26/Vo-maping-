@@ -168,7 +168,7 @@ export const LeftProjectSlider = ({ isOpen, onClose, projectId }: LeftProjectSli
   return (
     <div
       className={cn(
-        "fixed top-[5rem] sm:top-16 md:top-[4.5rem] left-0 max-h-[calc(100vh-5rem)] sm:max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-4.5rem)] w-[350px] transform transition-transform ease-out-expo duration-500 z-[99999] shadow-md bg-[#0a192f]/90 backdrop-blur-sm overflow-y-auto",
+        "fixed top-[5rem] sm:top-16 md:top-[4.5rem] left-0 max-h-[calc(100vh-5rem)] sm:max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-4.5rem)] w-[90%] sm:w-[350px] transform transition-transform ease-out-expo duration-500 z-[99999] shadow-md bg-[#0a192f]/90 backdrop-blur-sm overflow-y-auto",
         isOpen ? "translate-x-0" : "-translate-x-full",
       )}
     >

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import mapboxgl from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { supabase } from "@/lib/supabaseClient"
+import { useMapboxToken } from "@/hooks/useMapboxToken"
 
 const uaeCoordinates = [
   [54.61615565741627, 24.449497308399685],
@@ -37,19 +38,19 @@ export default function MapComponent({ onSelectLocation }) {
   const map = useRef(null)
   const [mapError, setMapError] = useState<string | null>(null)
   const [mapInitialized, setMapInitialized] = useState(false)
+  const { token, loading, error } = useMapboxToken()
 
   useEffect(() => {
     if (mapInitialized) return // initialize map only once
     if (map.current) return
-
-    const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN
-    if (!accessToken) {
-      setMapError("Mapbox access token is missing")
+    if (loading) return
+    if (error || !token) {
+      setMapError("Mapbox access token error: " + (error || "Token not available"))
       return
     }
 
     // Set the access token
-    mapboxgl.accessToken = accessToken
+    mapboxgl.accessToken = token
 
     // Create the map with error handling
     try {
@@ -156,7 +157,7 @@ export default function MapComponent({ onSelectLocation }) {
         map.current.remove()
       }
     }
-  }, [onSelectLocation, mapInitialized])
+  }, [onSelectLocation, mapInitialized, token, loading, error])
 
   const addVideoMarker = (marker: Marker) => {
     if (!map.current) return

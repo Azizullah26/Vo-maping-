@@ -8,6 +8,7 @@ import "mapbox-gl/dist/mapbox-gl.css"
 import { useRouter } from "next/navigation"
 import { AnimatedControls } from "@/components/AnimatedControls"
 import { alamerahCoordinates } from "../data/alamerahCoordinates"
+import { useMapboxToken } from "@/hooks/useMapboxToken"
 
 // Update the marker styles CSS
 const markerStyles = `
@@ -566,17 +567,17 @@ export default function AlAinMap({
   const [lng] = useState(55.74)
   const [lat] = useState(24.13)
   const [zoom] = useState(11)
+  const { token, loading, error } = useMapboxToken()
 
   useEffect(() => {
     if (map.current) return
-
-    const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
-    if (!accessToken) {
-      console.error("Mapbox access token is missing")
+    if (loading) return
+    if (error || !token) {
+      console.error("Mapbox access token error:", error)
       return
     }
 
-    mapboxgl.accessToken = accessToken
+    mapboxgl.accessToken = token
 
     // Calculate the center coordinates with offset
     const baseCenterLng = 55.61916084965952
@@ -591,12 +592,19 @@ export default function AlAinMap({
     const centerLng = baseCenterLng + lngOffset
     const centerLat = baseCenterLat - latOffset // Subtract for Y because coordinates increase northward
 
+    const getInitialZoom = () => {
+      if (typeof window === "undefined") return 6.5
+      if (window.innerWidth < 640) return 5.5 // Mobile
+      if (window.innerWidth < 768) return 6 // Tablet
+      return 6.5 // Desktop
+    }
+
     // Update the map initialization in the useEffect hook
     map.current = new mapboxgl.Map({
       container: mapContainer.current!,
       style: "mapbox://styles/azizullah2611/cm7009fqu01j101pbe23262j4",
       center: [baseCenterLng + lngOffset, baseCenterLat - latOffset], // Set initial coordinates with offset
-      zoom: 9.5,
+      zoom: getInitialZoom(),
       pitch: 0, // Set pitch to 0 for flat view
       bearing: 0, // Set bearing to 0 for north-up orientation
       maxBounds: [
@@ -606,6 +614,7 @@ export default function AlAinMap({
       ],
       minZoom: 8.5,
       maxZoom: 16,
+      dragPan: false, // Disable panning to fix the map in position
     })
 
     // Set the mapRef if provided
@@ -622,6 +631,20 @@ export default function AlAinMap({
     map.current.on("load", () => {
       setMapLoaded(true)
       if (!map.current) return
+
+      // Disable map panning to fix it in position
+      map.current.dragPan.disable()
+
+      // Add the dark overlay layer FIRST
+      // This ensures all other layers will be added on top of it
+      map.current.addLayer({
+        id: "dark-overlay",
+        type: "background",
+        paint: {
+          "background-color": "#000000",
+          "background-opacity": 0.4,
+        },
+      })
 
       // Add Alamerah Polygon
       map.current.addSource("alamerah", {
@@ -647,6 +670,8 @@ export default function AlAinMap({
           "fill-color": "#b0b0b0", // Changed to a light gray similar to other polygons
           "fill-opacity": 0.4,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
       map.current.addLayer({
@@ -661,14 +686,13 @@ export default function AlAinMap({
           "line-width": 3,
           "line-opacity": 0.7,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
-      // Add initial zoom animation with the offset
-      map.current.easeTo({
-        center: [baseCenterLng, baseCenterLat],
-        zoom: 9.5,
-        duration: 2000,
-      })
+      // Set a fixed center and zoom level without animation
+      map.current.setCenter([baseCenterLng, baseCenterLat])
+      map.current.setZoom(9.5)
 
       // Update the mask opacity for better visibility in 2D
       map.current.addLayer({
@@ -678,6 +702,8 @@ export default function AlAinMap({
           "background-color": "#1b1f3a", // Changed from #000000 to a navy blue color
           "background-opacity": 0.25, // Reduced from 0.35 to 0.25 for better visibility
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
       // Update the fill opacity for better visibility in 2D
@@ -697,6 +723,8 @@ export default function AlAinMap({
           "fill-color": "#9c9c9c",
           "fill-opacity": 0.5,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
       map.current.addLayer({
@@ -711,6 +739,8 @@ export default function AlAinMap({
           "line-width": 3,
           "line-opacity": 1,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
       map.current.addSource("sixteen-projects-area", {
@@ -729,6 +759,8 @@ export default function AlAinMap({
           "fill-color": "#D3D3D3", // Changed from "#ffffff" to light gray
           "fill-opacity": 0.4,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
       // Update the sixteen projects area outline layer
@@ -744,6 +776,8 @@ export default function AlAinMap({
           "line-width": 3, // Set to 3
           "line-opacity": 0.7,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
       // Add seven projects area
@@ -763,6 +797,8 @@ export default function AlAinMap({
           "fill-color": "#FFFFFF",
           "fill-opacity": 0.3,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
       map.current.addLayer({
@@ -777,6 +813,8 @@ export default function AlAinMap({
           "line-width": 3,
           "line-opacity": 0.7,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
       // Add two projects area
@@ -796,6 +834,8 @@ export default function AlAinMap({
           "fill-color": "#959393",
           "fill-opacity": 0.4,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
       map.current.addLayer({
@@ -810,6 +850,8 @@ export default function AlAinMap({
           "line-width": 3,
           "line-opacity": 0.7,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
       // Add zero projects area
@@ -829,6 +871,8 @@ export default function AlAinMap({
           "fill-color": "#a5a1a1",
           "fill-opacity": 0.4,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
       map.current.addLayer({
@@ -843,6 +887,8 @@ export default function AlAinMap({
           "line-width": 3,
           "line-opacity": 0.7,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
       // Add Police Administration Villas area
@@ -862,6 +908,8 @@ export default function AlAinMap({
           "fill-color": "#c6c3c3",
           "fill-opacity": 0.4,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
       map.current.addLayer({
@@ -876,6 +924,8 @@ export default function AlAinMap({
           "line-width": 3,
           "line-opacity": 0.7,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
       // Add Zakhir Police Station area
@@ -895,6 +945,8 @@ export default function AlAinMap({
           "fill-color": "#b5b0b0",
           "fill-opacity": 0.4,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
 
       map.current.addLayer({
@@ -909,21 +961,9 @@ export default function AlAinMap({
           "line-width": 3,
           "line-opacity": 0.7,
         },
+        // Add this line to ensure it renders below the dark overlay
+        beforeId: "dark-overlay",
       })
-
-      // Add the dark overlay layer AFTER all other layers are added
-      // This ensures we don't try to reference layers that don't exist yet
-      map.current.addLayer(
-        {
-          id: "dark-overlay",
-          type: "background",
-          paint: {
-            "background-color": "#000000",
-            "background-opacity": 0.4,
-          },
-        },
-        "map-mask",
-      ) // Insert before map-mask to ensure it's below all features but above the base map
 
       map.current.on("mouseenter", "sixteen-projects-area-fill", () => {
         if (map.current) {
@@ -1117,13 +1157,6 @@ export default function AlAinMap({
         })
       })
 
-      // Set a fixed center and zoom level with animation
-      map.current.flyTo({
-        center: [baseCenterLng, baseCenterLat],
-        zoom: 9.5,
-        duration: 2000,
-      })
-
       // Add hover effects for the six projects area
       map.current.on("mouseenter", "muraba-area-fill", () => {
         if (map.current) {
@@ -1245,10 +1278,11 @@ export default function AlAinMap({
             return bounds.extend(coord as mapboxgl.LngLatLike)
           }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]))
 
-          map.current?.fitBounds(bounds, {
-            padding: 50,
-            duration: 1000,
-          })
+          // Don't move the map on polygon click since we want it fixed
+          // map.current?.fitBounds(bounds, {
+          //   padding: 50,
+          //   duration: 1000,
+          // })
         }
       }
 
@@ -1275,13 +1309,17 @@ export default function AlAinMap({
       })
     })
 
-    // Add navigation controls with custom styles
+    // Add navigation controls with custom styles but disable the compass to prevent rotation
     const nav = new mapboxgl.NavigationControl({
-      visualizePitch: true,
+      visualizePitch: false,
       showZoom: true,
-      showCompass: true,
+      showCompass: false,
     })
     map.current.addControl(nav, "bottom-right")
+
+    // Disable map rotation to keep it fixed
+    map.current.touchZoomRotate.disableRotation()
+    map.current.keyboard.disable()
 
     return () => {
       map.current?.remove()
@@ -1289,7 +1327,7 @@ export default function AlAinMap({
       // Remove any dynamically added styles
       document.querySelectorAll("style[data-marker-style]").forEach((el) => el.remove())
     }
-  }, [policeLocations, offsetX, offsetY, mapRef])
+  }, [policeLocations, offsetX, offsetY, mapRef, token, loading, error])
 
   // Helper function to create markers
   function createMarker({

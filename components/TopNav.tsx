@@ -71,8 +71,8 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-white/10">
-        <div className="w-full max-w-[2000px] mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-white/10 rounded-b-[30px]">
+        <div className="w-full max-w-[2000px] mx-auto px-2 sm:px-4 md:px-6 lg:px-8 rounded-b-[30px]">
           <div className="flex items-center justify-between min-h-[3.5rem] sm:min-h-[4rem] md:min-h-[4.5rem]">
             {/* Left section */}
             <div className="flex items-center gap-x-2 sm:gap-x-3 md:gap-x-4">
@@ -137,7 +137,7 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
             </div>
 
             {/* Center section - New Project Links */}
-            <div className="flex items-center gap-x-6 absolute left-1/2 transform -translate-x-1/2">
+            <div className="flex items-center gap-x-6 absolute left-1/2 transform -translate-x-1/2 hidden sm:flex">
               <Link
                 href="#"
                 className={cn(

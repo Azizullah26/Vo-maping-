@@ -18,7 +18,6 @@ const uaeData = {
           [
             [51.59112113593443, 24.267541247022507],
             [51.5906446311775, 24.253465939734525],
-            // ... (rest of the coordinates)
             [51.591120897437435, 24.26753907893641],
           ],
         ],
@@ -32,21 +31,35 @@ const UAEMap: React.FC = () => {
   const map = useRef<mapboxgl.Map | null>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
   const [mapInitialized, setMapInitialized] = useState(false)
+  const [mapboxToken, setMapboxToken] = useState<string | null>(null)
 
   const initialZoom = 6.5
   const maxZoom = 12
 
+  // Fetch the Mapbox token from the API
   useEffect(() => {
-    if (mapInitialized) return
-    if (map.current) return // initialize map only once
-
-    const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
-    if (!accessToken) {
-      console.error("Mapbox access token is missing")
-      return
+    const fetchMapboxToken = async () => {
+      try {
+        const response = await fetch("/api/mapbox-token")
+        const data = await response.json()
+        if (data.token) {
+          setMapboxToken(data.token)
+        } else {
+          console.error("Failed to fetch Mapbox token")
+        }
+      } catch (error) {
+        console.error("Error fetching Mapbox token:", error)
+      }
     }
 
-    mapboxgl.accessToken = accessToken
+    fetchMapboxToken()
+  }, [])
+
+  useEffect(() => {
+    if (mapInitialized || !mapboxToken) return
+    if (map.current) return // initialize map only once
+
+    mapboxgl.accessToken = mapboxToken
 
     const mapInstance = new mapboxgl.Map({
       container: mapContainer.current!,
@@ -74,7 +87,7 @@ const UAEMap: React.FC = () => {
     return () => {
       mapInstance?.remove()
     }
-  }, [mapInitialized])
+  }, [mapInitialized, mapboxToken])
 
   useEffect(() => {
     if (!mapLoaded || !map.current) return

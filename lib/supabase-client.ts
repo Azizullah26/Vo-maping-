@@ -23,8 +23,14 @@ export function getSupabaseClient() {
   return supabaseInstance
 }
 
-// Create a server-side client using service role
+// Create a server-side client using service role - ONLY USE IN SERVER COMPONENTS OR API ROUTES
 export function getSupabaseAdminClient() {
+  // This should only be called in server components or API routes
+  if (typeof window !== "undefined") {
+    console.error("Attempted to use admin client on the client side")
+    throw new Error("Admin client cannot be used on the client side")
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -65,8 +71,14 @@ export async function checkSupabaseConnection() {
 const supabase = getSupabaseClient()
 export default supabase
 
-// Add this export if it doesn't exist already
-export const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || "",
-)
+// Remove this export that exposes the admin client directly
+// export const supabaseAdmin = createClient(
+//   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+//   process.env.SUPABASE_SERVICE_ROLE_KEY || "",
+// )
+
+// Instead, create a safer version that checks for server-side execution
+export const supabaseAdmin =
+  typeof window === "undefined"
+    ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || "", process.env.SUPABASE_SERVICE_ROLE_KEY || "")
+    : null

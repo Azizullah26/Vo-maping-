@@ -8,11 +8,12 @@ import { abuDhabiCityBoundary } from "@/data/abuDhabiCityCoordinates"
 import { alainBoundaryData } from "@/data/alainCoordinates"
 import { westRegionBoundary, WEST_REGION_IDENTIFIER } from "@/data/westRegionCoordinates"
 import { dubaiCityBoundary, DUBAI_CITY_IDENTIFIER } from "@/data/dubaiCityCoordinates"
-import MapMarker from "@/components/MapMarker"
+import MapMarker from "@/components/MapMarker" // Changed from named import to default import
 import * as ReactDOM from "react-dom/client"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
 import { otherCitiesBoundary, OTHER_CITIES_IDENTIFIER } from "@/data/otherCitiesCoordinates"
+import { useMapboxToken } from "@/hooks/useMapboxToken"
 
 // Lazy load the WeatherWidget
 const WeatherWidget = dynamic(() => import("@/components/WeatherWidget").then((mod) => mod.WeatherWidget), {
@@ -63,9 +64,11 @@ export default function Home() {
   const [mapLoaded, setMapLoaded] = useState(false)
   const router = useRouter()
   const markersRef = useRef(new Map())
+  const { token, loading, error } = useMapboxToken()
 
   const handleMarkerClick = useCallback(
     (marker: (typeof uaeMarkers)[0]) => {
+      console.log(`Marker clicked: ${marker.name}`) // Add logging
       if (marker.name === "Abu Dhabi") {
         router.push("/abu-dhabi")
       } else if (marker.name === "Al Ain") {
@@ -178,13 +181,12 @@ export default function Home() {
   const initializeMap = useCallback(() => {
     try {
       if (map.current || !mapContainer.current) return
-
-      const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
-      if (!accessToken) {
-        throw new Error("Mapbox access token is missing")
+      if (loading) return
+      if (error || !token) {
+        throw new Error("Mapbox access token error: " + (error || "Token not available"))
       }
 
-      mapboxgl.accessToken = accessToken
+      mapboxgl.accessToken = token
 
       const getInitialZoom = () => {
         if (typeof window === "undefined") return 6.5
@@ -210,12 +212,6 @@ export default function Home() {
         keyboard: false,
         interactive: false,
       })
-
-      // Remove the navigation control since we're disabling interactions
-      // Delete or comment out this section:
-      // if (typeof window !== "undefined" && window.innerWidth >= 640) {
-      //   map.current.addControl(new mapboxgl.NavigationControl(), "bottom-right")
-      // }
 
       map.current.on("load", () => {
         setMapLoaded(true)
@@ -246,7 +242,7 @@ export default function Home() {
       console.error("Error initializing map:", error)
       setMapLoaded(false)
     }
-  }, [addRegion, addClickZoom, addHoverEffect])
+  }, [addRegion, addClickZoom, addHoverEffect, error, loading, token])
 
   useEffect(() => {
     initializeMap()
@@ -284,7 +280,14 @@ export default function Home() {
       uaeMarkers.forEach((marker) => {
         const el = document.createElement("div")
         el.className = "custom-marker"
-        el.addEventListener("click", () => handleMarkerClick(marker))
+
+        // Make the element clickable
+        el.style.cursor = "pointer"
+        el.addEventListener("click", (e) => {
+          e.stopPropagation()
+          console.log(`Marker element clicked: ${marker.name}`)
+          handleMarkerClick(marker)
+        })
 
         const markerComponent = (
           <MapMarker
@@ -295,6 +298,10 @@ export default function Home() {
             size={marker.size}
             colorIndex={marker.colorIndex}
             coordinates={marker.coordinates}
+            onClick={() => {
+              console.log(`MapMarker component clicked: ${marker.name}`)
+              handleMarkerClick(marker)
+            }}
           />
         )
 
@@ -307,6 +314,12 @@ export default function Home() {
         })
           .setLngLat(marker.coordinates)
           .addTo(map.current!)
+
+        // Add click handler directly to the mapboxgl.Marker
+        mapboxMarker.getElement().addEventListener("click", () => {
+          console.log(`Mapbox marker clicked: ${marker.name}`)
+          handleMarkerClick(marker)
+        })
 
         markersRef.current.set(marker.name, mapboxMarker)
       })
@@ -385,14 +398,14 @@ export default function Home() {
             alt="Cloud 1"
             width={400}
             height={200}
-            className="absolute left-0 animate-cloud-fast opacity-70"
+            className="absolute left-0 animate-cloud-fast opacity-70 w-[200px] sm:w-[300px] md:w-[400px]"
           />
           <Image
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/clouds-6rqsL8YqlRI1TMaunqYleo5dJEVV1B.png"
             alt="Cloud 2"
             width={300}
             height={150}
-            className="absolute left-1/4 top-20 animate-cloud-fast opacity-75 scale-x-[-1]"
+            className="absolute left-1/4 top-20 animate-cloud-fast opacity-75 scale-x-[-1] w-[150px] sm:w-[200px] md:w-[300px]"
           />
         </div>
 
@@ -403,14 +416,14 @@ export default function Home() {
             alt="Cloud 3"
             width={500}
             height={250}
-            className="absolute left-1/3 animate-cloud-medium opacity-80 scale-x-[-1]"
+            className="absolute left-1/3 animate-cloud-medium opacity-80 scale-x-[-1] w-[250px] sm:w-[350px] md:w-[500px]"
           />
           <Image
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/clouds-6rqsL8YqlRI1TMaunqYleo5dJEVV1B.png"
             alt="Cloud 4"
             width={350}
             height={175}
-            className="absolute left-2/3 top-40 animate-cloud-medium opacity-75"
+            className="absolute left-2/3 top-40 animate-cloud-medium opacity-75 w-[175px] sm:w-[250px] md:w-[350px]"
           />
         </div>
 
@@ -421,14 +434,14 @@ export default function Home() {
             alt="Cloud 5"
             width={600}
             height={300}
-            className="absolute left-1/2 animate-cloud-slow opacity-85"
+            className="absolute left-1/2 animate-cloud-slow opacity-85 w-[300px] sm:w-[450px] md:w-[600px]"
           />
           <Image
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/clouds-6rqsL8YqlRI1TMaunqYleo5dJEVV1B.png"
             alt="Cloud 6"
             width={450}
             height={225}
-            className="absolute left-3/4 top-20 animate-cloud-slow opacity-80 scale-x-[-1]"
+            className="absolute left-3/4 top-20 animate-cloud-slow opacity-80 scale-x-[-1] w-[225px] sm:w-[350px] md:w-[450px]"
           />
         </div>
       </div>

@@ -6,6 +6,7 @@ import "mapbox-gl/dist/mapbox-gl.css"
 import { useRouter } from "next/navigation"
 import { createMapMarker, getMarkerAlignment } from "@/components/MapMarker"
 import { mapStyles } from "@/lib/map-styles"
+import { useMapboxToken } from "@/hooks/useMapboxToken"
 
 interface Location {
   name: string
@@ -22,17 +23,17 @@ export default function MapComponent({ locations }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const router = useRouter()
+  const { token, loading, error } = useMapboxToken()
 
   useEffect(() => {
     if (map.current) return
-
-    const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
-    if (!accessToken) {
-      console.error("Mapbox access token is missing")
+    if (loading) return
+    if (error || !token) {
+      console.error("Mapbox access token error:", error)
       return
     }
 
-    mapboxgl.accessToken = accessToken
+    mapboxgl.accessToken = token
 
     // Initialize map
     map.current = new mapboxgl.Map({
@@ -69,7 +70,7 @@ export default function MapComponent({ locations }: MapProps) {
       }
       document.head.removeChild(styleSheet)
     }
-  }, [locations])
+  }, [locations, token, loading, error])
 
   return <div ref={mapContainer} className="w-full h-full" />
 }

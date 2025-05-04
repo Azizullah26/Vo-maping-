@@ -26,7 +26,7 @@ interface ProjectsDetailsSliderProps {
 
 const ProjectsDetailsSlider = ({ projects, onProjectClick }: ProjectsDetailsSliderProps): JSX.Element => {
   return (
-    <div className="relative w-[280px] h-[600px] bg-[#030011]/80 rounded-[52px_52px_0px_52px] shadow-[-12px_4px_4px_-3px_#00000059,0px_4px_4px_#00000040]">
+    <div className="relative w-[280px] h-[600px] bg-[#0a192f]/90 rounded-[52px_52px_0px_52px] shadow-[-12px_4px_4px_-3px_#00000059,0px_4px_4px_#00000040]">
       <div className="flex flex-col w-[240px] items-center justify-center gap-[18px] absolute top-[20px] left-[20px]">
         <h1 className="relative w-[200px] h-[36px] mt-[-1px] [font-family:'Inter',Helvetica] font-bold text-white text-[26px] tracking-[0] leading-normal">
           Projects Details
@@ -59,7 +59,7 @@ const ProjectsDetailsSlider = ({ projects, onProjectClick }: ProjectsDetailsSlid
                 <div key={project.id} onClick={() => onProjectClick(project)} className="cursor-pointer">
                   <Card
                     key={project.id}
-                    className="relative w-[240px] h-[85px] bg-transparent border-0 overflow-hidden group flex flex-col"
+                    className="relative w-[240px] h-[85px] bg-transparent border border-cyan-500/30 hover:border-cyan-400/70 rounded-lg overflow-hidden group flex flex-col shadow-[0_0_8px_rgba(0,200,255,0.15)] transition-all duration-300"
                   >
                     <CardContent className="p-0 relative flex items-center flex-row-reverse bg-black/20 backdrop-blur-sm text-gray-300">
                       <div className="flex flex-col w-[160px] h-[36px] items-center justify-center absolute top-6 left-0 group-hover:left-1/2 group-hover:-translate-x-1/2 transition-all duration-300 z-10">
@@ -287,7 +287,7 @@ export const RightSliderButton = ({
       </Button>
       <div
         className={cn(
-          "fixed top-[5rem] sm:top-16 md:top-[4.5rem] right-0 max-h-[calc(100vh-5rem)] sm:max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-4.5rem)] w-[280px] transform transition-transform ease-out-expo duration-500 z-[99999] shadow-md bg-[#030011]/80 overflow-y-auto",
+          "fixed top-[5rem] sm:top-16 md:top-[4.5rem] right-0 max-h-[calc(100vh-5rem)] sm:max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-4.5rem)] w-[280px] transform transition-transform ease-out-expo duration-500 z-[99999] shadow-md bg-[#0a192f]/90 overflow-y-auto",
           isOpen ? "translate-x-0" : "translate-x-full",
         )}
       >

@@ -1,8 +1,6 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import * as Cesium from "cesium"
-import "cesium/Build/Cesium/Widgets/widgets.css"
 import { Button } from "@/components/ui/button"
 import { ZoomIn, ZoomOut, Maximize2, RotateCw, Home, X } from "lucide-react"
 
@@ -13,144 +11,188 @@ interface AlAinTerrainViewerProps {
 
 export default function AlAinTerrainViewer({ onError, onClose }: AlAinTerrainViewerProps) {
   const viewerContainer = useRef<HTMLDivElement>(null)
-  const viewer = useRef<Cesium.Viewer | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [error, setError] = useState<Error | null>(null)
+  const [cesiumLoaded, setCesiumLoaded] = useState(false)
+  const viewerRef = useRef<any>(null)
 
   useEffect(() => {
     if (!viewerContainer.current) return
 
-    try {
-      // Initialize Cesium ion access token
-      Cesium.Ion.defaultAccessToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NzE2MDk0Ny0xZDEwLTRkNGItODRhYi03ZWFkZjVkZTY3NjIiLCJpZCI6MTg3NDY0LCJpYXQiOjE3MDc0ODQ4Nzl9.RrPd0yOBqEPOlLu-TGjGj-DvBAlp3WfUzhnJ0n7OYb0"
+    let Cesium: any = null
+    let cleanup: (() => void) | null = null
 
-      // Initialize the Cesium Viewer with high-resolution terrain
-      viewer.current = new Cesium.Viewer(viewerContainer.current, {
-        terrainProvider: Cesium.createWorldTerrain({
-          requestVertexNormals: true,
-          requestWaterMask: true,
-        }),
-        imageryProvider: new Cesium.IonImageryProvider({ assetId: 3 }),
-        baseLayerPicker: false,
-        timeline: false,
-        animation: false,
-        homeButton: false,
-        navigationHelpButton: false,
-        sceneModePicker: false,
-        geocoder: false,
-        fullscreenButton: false,
-        scene3DOnly: true,
-        infoBox: false,
-        selectionIndicator: false,
-        contextOptions: {
-          webgl: {
-            alpha: true,
-            depth: true,
-            stencil: true,
-            antialias: true,
-            powerPreference: "high-performance",
-          },
-        },
-      })
-
-      // Set initial camera position to Al Ain
-      viewer.current.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(55.74523, 24.21089, 5000.0),
-        orientation: {
-          heading: Cesium.Math.toRadians(0.0),
-          pitch: Cesium.Math.toRadians(-45.0),
-          roll: 0.0,
-        },
-        duration: 3,
-      })
-
-      // Enable terrain features
-      viewer.current.scene.globe.enableLighting = true
-      viewer.current.scene.globe.depthTestAgainstTerrain = true
-      viewer.current.scene.globe.terrainExaggeration = 1.5
-
-      // Add atmosphere and fog effects
-      viewer.current.scene.skyAtmosphere.show = true
-      viewer.current.scene.fog.enabled = true
-      viewer.current.scene.fog.density = 0.0001
-      viewer.current.scene.fog.minimumBrightness = 0.1
-
-      setIsLoading(false)
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error("Failed to initialize terrain viewer")
-      console.error("Terrain viewer initialization error:", error)
-      setError(error)
-      onError?.(error)
-    }
-
-    return () => {
-      if (viewer.current) {
-        try {
-          viewer.current.destroy()
-          viewer.current = null
-        } catch (err) {
-          console.error("Error cleaning up viewer:", err)
-        }
-      }
-    }
-  }, [onError])
-
-  const handleZoomIn = () => {
-    if (viewer.current) {
+    const loadCesium = async () => {
       try {
-        const cameraHeight = viewer.current.camera.positionCartographic.height
-        viewer.current.camera.zoomIn(cameraHeight * 0.5)
-      } catch (err) {
-        console.error("Error handling zoom in:", err)
-      }
-    }
-  }
+        // Dynamically import Cesium
+        const cesiumModule = await import("cesium")
+        Cesium = cesiumModule
 
-  const handleZoomOut = () => {
-    if (viewer.current) {
-      try {
-        const cameraHeight = viewer.current.camera.positionCartographic.height
-        viewer.current.camera.zoomOut(cameraHeight * 0.5)
-      } catch (err) {
-        console.error("Error handling zoom out:", err)
-      }
-    }
-  }
+        // Import Cesium CSS
+        await import("cesium/Build/Cesium/Widgets/widgets.css")
 
-  const handleRotate = () => {
-    if (viewer.current) {
-      try {
-        const currentHeading = viewer.current.camera.heading
-        viewer.current.camera.setView({
-          orientation: {
-            heading: currentHeading + Cesium.Math.toRadians(45.0),
-            pitch: viewer.current.camera.pitch,
-            roll: viewer.current.camera.roll,
+        // Initialize Cesium ion access token with the new token
+        Cesium.Ion.defaultAccessToken =
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3OTczZjU2OC1iMGYzLTQyZDItOTA2YS04NWE1MzhlM2NmZjEiLCJpZCI6Mjc3MzUwLCJpYXQiOjE3NDA3NDI1MDR9.AK1fWEGfj9fl0nMFrwy8DagqDiqk1HahP-26nzxutpM"
+
+        // Initialize the Cesium Viewer with a basic terrain provider
+        viewerRef.current = new Cesium.Viewer(viewerContainer.current, {
+          terrainProvider: new Cesium.EllipsoidTerrainProvider(),
+          imageryProvider: new Cesium.IonImageryProvider({ assetId: 3 }),
+          baseLayerPicker: false,
+          timeline: false,
+          animation: false,
+          homeButton: false,
+          navigationHelpButton: false,
+          sceneModePicker: false,
+          geocoder: false,
+          fullscreenButton: false,
+          scene3DOnly: true,
+          infoBox: false,
+          selectionIndicator: false,
+          contextOptions: {
+            webgl: {
+              alpha: true,
+              depth: true,
+              stencil: true,
+              antialias: true,
+              powerPreference: "high-performance",
+            },
           },
         })
-      } catch (err) {
-        console.error("Error handling rotation:", err)
-      }
-    }
-  }
 
-  const handleHome = () => {
-    if (viewer.current) {
-      try {
-        viewer.current.camera.flyTo({
+        // Set initial camera position to Al Ain
+        viewerRef.current.camera.flyTo({
           destination: Cesium.Cartesian3.fromDegrees(55.74523, 24.21089, 5000.0),
           orientation: {
             heading: Cesium.Math.toRadians(0.0),
             pitch: Cesium.Math.toRadians(-45.0),
             roll: 0.0,
           },
-          duration: 2,
+          duration: 3,
         })
+
+        // Load 3D Tileset - Check if Cesium.Cesium3DTileset is available
+        if (typeof Cesium.Cesium3DTileset === "function") {
+          try {
+            const tileset = viewerRef.current.scene.primitives.add(
+              new Cesium.Cesium3DTileset({
+                url: Cesium.IonResource.fromAssetId(2275207),
+              }),
+            )
+
+            // Check if tileset.readyPromise exists before using it
+            if (tileset.readyPromise && typeof tileset.readyPromise.then === "function") {
+              tileset.readyPromise
+                .then(() => {
+                  console.log("3D Tileset loaded successfully")
+                  setCesiumLoaded(true)
+                  setIsLoading(false)
+                })
+                .catch((error: any) => {
+                  console.error("Error loading 3D Tileset:", error)
+                  onError?.(new Error("Failed to load 3D Tileset"))
+                })
+            } else {
+              console.warn("tileset.readyPromise is not available in this Cesium version")
+              setCesiumLoaded(true)
+              setIsLoading(false)
+            }
+          } catch (tilesetError) {
+            console.error("Error creating tileset:", tilesetError)
+            // Continue without the tileset
+            setCesiumLoaded(true)
+            setIsLoading(false)
+          }
+        } else {
+          console.warn("Cesium.Cesium3DTileset is not available in this Cesium version")
+          setCesiumLoaded(true)
+          setIsLoading(false)
+        }
+
+        // Setup cleanup function
+        cleanup = () => {
+          if (viewerRef.current) {
+            try {
+              viewerRef.current.destroy()
+              viewerRef.current = null
+            } catch (err) {
+              console.error("Error cleaning up viewer:", err)
+            }
+          }
+        }
       } catch (err) {
-        console.error("Error handling home view:", err)
+        console.error("Failed to load Cesium:", err)
+        const error = err instanceof Error ? err : new Error("Failed to initialize terrain viewer")
+        setError(error)
+        onError?.(error)
       }
+    }
+
+    loadCesium()
+
+    return () => {
+      if (cleanup) cleanup()
+    }
+  }, [onError])
+
+  const handleZoomIn = () => {
+    if (!viewerRef.current || !cesiumLoaded) return
+
+    try {
+      const cameraHeight = viewerRef.current.camera.positionCartographic.height
+      viewerRef.current.camera.zoomIn(cameraHeight * 0.5)
+    } catch (err) {
+      console.error("Error handling zoom in:", err)
+    }
+  }
+
+  const handleZoomOut = () => {
+    if (!viewerRef.current || !cesiumLoaded) return
+
+    try {
+      const cameraHeight = viewerRef.current.camera.positionCartographic.height
+      viewerRef.current.camera.zoomOut(cameraHeight * 0.5)
+    } catch (err) {
+      console.error("Error handling zoom out:", err)
+    }
+  }
+
+  const handleRotate = () => {
+    if (!viewerRef.current || !cesiumLoaded) return
+
+    try {
+      const Cesium = require("cesium")
+      const currentHeading = viewerRef.current.camera.heading
+      viewerRef.current.camera.setView({
+        orientation: {
+          heading: currentHeading + Cesium.Math.toRadians(45.0),
+          pitch: viewerRef.current.camera.pitch,
+          roll: viewerRef.current.camera.roll,
+        },
+      })
+    } catch (err) {
+      console.error("Error handling rotation:", err)
+    }
+  }
+
+  const handleHome = () => {
+    if (!viewerRef.current || !cesiumLoaded) return
+
+    try {
+      const Cesium = require("cesium")
+      viewerRef.current.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(55.74523, 24.21089, 5000.0),
+        orientation: {
+          heading: Cesium.Math.toRadians(0.0),
+          pitch: Cesium.Math.toRadians(-45.0),
+          roll: 0.0,
+        },
+        duration: 2,
+      })
+    } catch (err) {
+      console.error("Error handling home view:", err)
     }
   }
 

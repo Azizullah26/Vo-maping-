@@ -4,27 +4,26 @@ import { useEffect, useRef, useState } from "react"
 import mapboxgl from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { AnimatedControls } from "@/components/AnimatedControls"
+import { useMapboxToken } from "@/hooks/useMapboxToken"
 
 export default function AbuDhabiMap() {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
   const [mapError, setMapError] = useState<string | null>(null)
+  const { token, loading, error } = useMapboxToken()
 
   useEffect(() => {
     if (map.current) return // already initialized
+    if (loading) return
+    if (error || !token) {
+      setMapError("Mapbox access token error: " + (error || "Token not available"))
+      return
+    }
 
     try {
-      // Check for Mapbox token
-      const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN
-      if (!accessToken) {
-        console.error("Mapbox access token is missing")
-        setMapError("Mapbox access token is missing")
-        return
-      }
-
-      console.log("Initializing Abu Dhabi map with token:", accessToken.substring(0, 5) + "...")
-      mapboxgl.accessToken = accessToken
+      console.log("Initializing Abu Dhabi map with token:", token.substring(0, 5) + "...")
+      mapboxgl.accessToken = token
 
       // Initialize map
       map.current = new mapboxgl.Map({
@@ -76,7 +75,7 @@ export default function AbuDhabiMap() {
         console.error("Error during map cleanup:", err)
       }
     }
-  }, [])
+  }, [token, loading, error])
 
   // Handle toggle terrain (placeholder function)
   const handleToggleTerrain = () => {

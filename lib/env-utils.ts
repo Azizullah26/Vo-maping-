@@ -4,6 +4,12 @@
  * @returns The value of the environment variable
  */
 export function getEnvVariable(key: string): string | undefined {
+  // Only allow access to NEXT_PUBLIC_ variables in the browser
+  if (typeof window !== "undefined" && !key.startsWith("NEXT_PUBLIC_")) {
+    console.warn(`Attempted to access non-public env variable "${key}" on the client side`)
+    return undefined
+  }
+
   // Try Next.js naming convention first
   const nextValue = process.env[`NEXT_PUBLIC_${key}`]
   if (nextValue) return nextValue
@@ -25,13 +31,19 @@ export function checkRequiredEnvVars(): {
   missing: string[]
   values: Record<string, string | undefined>
 } {
-  const requiredVars = ["SUPABASE_URL", "SUPABASE_ANON_KEY"]
+  // Only check public variables on the client side
+  const requiredVars =
+    typeof window !== "undefined"
+      ? ["SUPABASE_URL", "SUPABASE_ANON_KEY"]
+      : ["SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY"]
+
   const missing: string[] = []
   const values: Record<string, string | undefined> = {}
 
   for (const key of requiredVars) {
     const value = getEnvVariable(key)
-    values[key] = value
+    // Don't include sensitive values in client-side code
+    values[key] = typeof window !== "undefined" && !key.startsWith("NEXT_PUBLIC_") ? "REDACTED" : value
     if (!value) missing.push(key)
   }
 

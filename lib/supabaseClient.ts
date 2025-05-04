@@ -1,4 +1,4 @@
-"\"use client"
+"use client"
 
 import { createClient as supabaseCreateClient } from "@supabase/supabase-js"
 
@@ -8,16 +8,17 @@ let supabaseInstance: any = null
 export function getSupabaseClient() {
   if (supabaseInstance) return supabaseInstance
 
+  // For client-side usage, only use NEXT_PUBLIC_ prefixed variables
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_ANON_KEY
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  if (!supabaseUrl || !supabaseKey) {
+  if (!supabaseUrl || !supabaseAnonKey) {
     console.warn("Missing Supabase environment variables, using mock client for demo mode")
     return createMockClient()
   }
 
   try {
-    supabaseInstance = supabaseCreateClient(supabaseUrl, supabaseKey, {
+    supabaseInstance = supabaseCreateClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: false,
       },

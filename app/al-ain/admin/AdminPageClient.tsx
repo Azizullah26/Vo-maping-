@@ -36,7 +36,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@supabase/supabase-js"
 import { useEffect, useRef, useState, type ChangeEvent } from "react"
-import { TopNav } from "@/components/TopNav" // Fixed import with correct capitalization
+import { TopNav } from "@/components/TopNav"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -90,17 +90,6 @@ export default function AdminPageClient() {
   const [dbConfigured, setDbConfigured] = useState(false)
   const [dbError, setDbError] = useState<string | null>(null)
 
-  // Remove this problematic code:
-  // const [auth, setAuth] = useState(() => {
-  //   try {
-  //     return useAuth()
-  //   } catch (error) {
-  //     console.warn("Auth context not available, using demo mode")
-  //     return { isAuthenticated: false } // Provide a default value
-  //   }
-  // })
-  // const isAuthenticated = auth.isAuthenticated
-
   // Replace with this proper hook usage:
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [demoMode, setDemoMode] = useState(true)
@@ -120,9 +109,6 @@ export default function AdminPageClient() {
       setDemoMode(true)
     }
   }, [])
-
-  // Remove this line:
-  // const [demoMode, setDemoMode] = useState(!isAuthenticated)
 
   // Sample project data
   const [projectsData, setProjectsData] = useState<Project[]>([])
@@ -170,7 +156,6 @@ export default function AdminPageClient() {
   }
 
   // Check database status and fetch documents on component mount
-  // Replace the existing useEffect that sets demo documents with this:
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -405,7 +390,6 @@ export default function AdminPageClient() {
   }
 
   // Handle document deletion
-  // Replace the existing handleDeleteDocument function with this:
   const handleDeleteDocument = async (id: string) => {
     if (!confirm("Are you sure you want to delete this document?")) {
       return
@@ -564,30 +548,31 @@ export default function AdminPageClient() {
   }
 
   // Handle document upload
-  // Replace the existing handleUpload function with this:
-  const [isUploading, setIsUploading] = useState(false)
-  const [uploadError, setUploadError] = useState<string | null>(null)
-  const [uploadSuccess, setUploadSuccess] = useState(false)
-  const [documentTitle, setDocumentTitle] = useState("")
-  const [documentDescription, setDocumentDescription] = useState("")
-  const [refreshDocuments, setRefreshDocuments] = useState<(() => void) | null>(null)
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      showNotification("error", "Please select a file to upload")
+      return
+    }
 
-  const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsUploading(true)
-    setUploadError(null)
+    if (!selectedProject) {
+      showNotification("error", "Please select a project")
+      return
+    }
 
     try {
-      if (!selectedFile || !selectedProject) {
-        throw new Error("Please select a file and project")
-      }
+      setLoading(true)
 
+      // Get the project ID from the selected project
+      const project = projectsData.find((p) => p.name === selectedProject)
+      const projectId = project?.id || "unknown"
+
+      // Create form data for the API request
       const formData = new FormData()
       formData.append("file", selectedFile)
-      formData.append("projectId", selectedProject)
-      formData.append("title", documentTitle)
-      formData.append("description", documentDescription)
+      formData.append("projectId", projectId)
+      formData.append("projectName", selectedProject)
 
+      // Send the file to our API endpoint
       const response = await fetch("/api/documents/upload", {
         method: "POST",
         body: formData,
@@ -599,21 +584,31 @@ export default function AdminPageClient() {
         throw new Error(result.error || "Failed to upload document")
       }
 
-      setUploadSuccess(true)
-      setDocumentTitle("")
-      setDocumentDescription("")
-      setSelectedFile(null)
-      setSelectedProject("")
+      // Create a new document object from the response
+      const newDocument = {
+        id: result.document.id,
+        name: selectedFile.name,
+        type: selectedFile.name.split(".").pop()?.toUpperCase() || "FILE",
+        size: formatFileSize(selectedFile.size),
+        date: new Date().toLocaleDateString(),
+        url: result.document.file_url,
+        project: selectedProject,
+      }
 
-      // Refresh documents list if needed
-      if (refreshDocuments) {
-        refreshDocuments()
+      // Add the new document to the documents array
+      setDocuments([newDocument, ...documents])
+      showNotification("success", "Document uploaded successfully")
+
+      // Reset form after successful upload
+      setSelectedFile(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
       }
     } catch (error) {
-      console.error("Upload error:", error)
-      setUploadError((error as Error).message)
+      console.error("Error uploading document:", error)
+      showNotification("error", error instanceof Error ? error.message : "Failed to upload document")
     } finally {
-      setIsUploading(false)
+      setLoading(false)
     }
   }
 
