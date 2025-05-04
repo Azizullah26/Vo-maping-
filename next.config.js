@@ -57,8 +57,7 @@ const nextConfig = {
 
     return config
   },
-  // Explicitly set the target to serverless
-  target: "serverless",
+  // Removed the deprecated "target" property
 }
 
 module.exports = nextConfig
