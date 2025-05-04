@@ -19,7 +19,7 @@ const nextConfig = {
       ...config.resolve.alias,
       html2canvas: require.resolve("./lib/mock-dependencies.js"),
       canvg: require.resolve("./lib/mock-dependencies.js"),
-      "@neondatabase/serverless": require.resolve("./lib/mock-dependencies.js"),
+      // Remove the alias for @neondatabase/serverless since we now have the integration
     }
 
     // Add basic polyfills for Node.js built-in modules

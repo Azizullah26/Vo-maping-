@@ -1,45 +1,68 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
+import { getAllDocuments, addDocument } from "@/lib/document-service"
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    // Initialize Supabase client
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+    const documents = await getAllDocuments()
 
-    if (!supabaseUrl || !supabaseKey) {
-      return NextResponse.json({ success: false, error: "Missing Supabase environment variables" }, { status: 500 })
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey)
-
-    // Get query parameters
-    const { searchParams } = new URL(request.url)
-    const projectId = searchParams.get("projectId")
-    const limit = Number.parseInt(searchParams.get("limit") || "50")
-
-    // Build query
-    let query = supabase.from("documents").select("*").order("created_at", { ascending: false }).limit(limit)
-
-    // Add project filter if provided
-    if (projectId) {
-      query = query.eq("project_id", projectId)
-    }
-
-    // Execute query
-    const { data, error } = await query
-
-    if (error) {
-      throw error
-    }
-
-    return NextResponse.json({ success: true, data })
+    return NextResponse.json({
+      success: true,
+      data: documents,
+    })
   } catch (error) {
-    console.error("Error fetching documents:", error)
+    console.error("Error getting documents:", error)
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to fetch documents",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    const { title, description, url, projectId } = body
+
+    if (!title || !url) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Title and URL are required",
+        },
+        { status: 400 },
+      )
+    }
+
+    const result = await addDocument({
+      title,
+      description: description || "",
+      url,
+      projectId,
+    })
+
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: result.error,
+        },
+        { status: 500 },
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: result.data,
+    })
+  } catch (error) {
+    console.error("Error adding document:", error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     )
