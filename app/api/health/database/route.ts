@@ -1,39 +1,40 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
+import { getSupabaseClient } from "@/lib/supabase-client"
 
 export async function GET() {
-  const healthStatus = {
-    database: {
-      status: "unknown",
-      message: "",
-      timestamp: new Date().toISOString(),
-    },
-  }
+  try {
+    const startTime = Date.now()
+    const supabase = getSupabaseClient()
 
-  // Only run this check if we have the required environment variables
-  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    try {
-      // Create a temporary client just for this health check
-      const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    // Test database connection with a simple query
+    const { data, error } = await supabase.from("documents").select("count", { count: "exact", head: true })
 
-      // Simple query to test connection
-      const { error } = await supabase.from("_test_connection").select("*").limit(1)
-
-      // PGRST116 is "relation does not exist" which is fine for this test
-      if (!error || error.code === "PGRST116") {
-        healthStatus.database.status = "healthy"
-        healthStatus.database.message = "Connection successful"
-      } else {
-        throw new Error(error.message)
-      }
-    } catch (error) {
-      healthStatus.database.status = "error"
-      healthStatus.database.message = error instanceof Error ? error.message : "Unknown error"
+    if (error) {
+      throw error
     }
-  } else {
-    healthStatus.database.status = "warning"
-    healthStatus.database.message = "Database credentials not configured"
-  }
 
-  return NextResponse.json(healthStatus)
+    const responseTime = Date.now() - startTime
+
+    return NextResponse.json(
+      {
+        status: "ok",
+        database: "supabase",
+        responseTime: `${responseTime}ms`,
+        timestamp: new Date().toISOString(),
+      },
+      { status: 200 },
+    )
+  } catch (error) {
+    console.error("Database health check failed:", error)
+
+    return NextResponse.json(
+      {
+        status: "error",
+        message: "Database health check failed",
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 },
+    )
+  }
 }

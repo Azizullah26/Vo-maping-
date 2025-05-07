@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server"
 
 export async function GET() {
-  const healthStatus = {
-    api: {
-      status: "healthy",
+  try {
+    // Basic health check that doesn't depend on any external services
+    const health = {
+      status: "ok",
       timestamp: new Date().toISOString(),
-    },
-    environment: {
-      VERCEL_ENV: process.env.VERCEL_ENV || "not set",
-      NODE_ENV: process.env.NODE_ENV || "not set",
-      hasNileDbUrl: !!process.env.NILEDB_POSTGRES_URL,
-      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-      hasSupabaseAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    },
-  }
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV,
+      version: process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0",
+    }
 
-  return NextResponse.json(healthStatus)
+    return NextResponse.json(health, { status: 200 })
+  } catch (error) {
+    console.error("Health check failed:", error)
+    return NextResponse.json({ status: "error", message: "Health check failed", error: String(error) }, { status: 500 })
+  }
 }

@@ -1,48 +1,49 @@
 import { createClient } from "@supabase/supabase-js"
 
-// Singleton pattern for Supabase client
-let supabaseInstance: ReturnType<typeof createClient> | null = null
+// Create a singleton instance to avoid multiple connections
+let supabaseClient: ReturnType<typeof createClient> | null = null
 
 export function getSupabaseClient() {
-  if (supabaseInstance) return supabaseInstance
+  if (supabaseClient) return supabaseClient
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
     console.error("Missing Supabase environment variables")
-    throw new Error("Missing Supabase environment variables")
+    throw new Error("Missing required environment variables for Supabase")
   }
 
-  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+  supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-      persistSession: false,
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+    global: {
+      fetch: fetch.bind(globalThis),
     },
   })
 
-  return supabaseInstance
+  return supabaseClient
 }
 
-// Create a server-side client using service role - ONLY USE IN SERVER COMPONENTS OR API ROUTES
-export function getSupabaseAdminClient() {
-  // This should only be called in server components or API routes
-  if (typeof window !== "undefined") {
-    console.error("Attempted to use admin client on the client side")
-    throw new Error("Admin client cannot be used on the client side")
-  }
-
+// For server-side operations that need admin privileges
+export function getSupabaseAdmin() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!supabaseUrl || !supabaseServiceKey) {
     console.error("Missing Supabase admin environment variables")
-    throw new Error("Missing Supabase admin environment variables")
+    throw new Error("Missing required environment variables for Supabase admin")
   }
 
-  // Don't cache this client for security reasons
   return createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
+      autoRefreshToken: false,
       persistSession: false,
+    },
+    global: {
+      fetch: fetch.bind(globalThis),
     },
   })
 }
@@ -67,18 +68,30 @@ export async function checkSupabaseConnection() {
   }
 }
 
-// Export a default client for convenience
-const supabase = getSupabaseClient()
-export default supabase
+// Client-side singleton to avoid hydration issues
+let browserSupabase: ReturnType<typeof createClient> | null = null
 
-// Remove this export that exposes the admin client directly
-// export const supabaseAdmin = createClient(
-//   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-//   process.env.SUPABASE_SERVICE_ROLE_KEY || "",
-// )
+export function getClientSupabase() {
+  if (typeof window === "undefined") {
+    return getSupabaseClient()
+  }
 
-// Instead, create a safer version that checks for server-side execution
-export const supabaseAdmin =
-  typeof window === "undefined"
-    ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || "", process.env.SUPABASE_SERVICE_ROLE_KEY || "")
-    : null
+  if (browserSupabase) return browserSupabase
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error("Missing Supabase environment variables")
+    throw new Error("Missing required environment variables for Supabase")
+  }
+
+  browserSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  })
+
+  return browserSupabase
+}
