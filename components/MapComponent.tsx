@@ -1,15 +1,18 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react"
+import type React from "react"
+import { useEffect, useRef, useState } from "react"
 import mapboxgl from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
-import { useMapboxToken } from "@/hooks/useMapboxToken"
+import { useMapboxToken } from "../hooks/useMapboxToken"
 
 interface MapComponentProps {
   center: [number, number]
   zoom: number
   style?: string
   children?: React.ReactNode
+  onMapLoad?: (map: mapboxgl.Map) => void
+  className?: string
 }
 
 export default function MapComponent({
@@ -17,19 +20,21 @@ export default function MapComponent({
   zoom,
   style = "mapbox://styles/mapbox/streets-v11",
   children,
+  onMapLoad,
+  className = "",
 }: MapComponentProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
-  const { token, loading, error } = useMapboxToken()
   const [mapLoaded, setMapLoaded] = useState(false)
+  const { token, loading, error } = useMapboxToken()
 
   useEffect(() => {
-    if (!token || loading || error) return
+    if (loading || error || !token || !mapContainer.current) return
 
-    if (map.current) return // initialize map only once
+    if (map.current) return // already initialized
 
     map.current = new mapboxgl.Map({
-      container: mapContainer.current!,
+      container: mapContainer.current,
       style: style,
       center: center,
       zoom: zoom,
@@ -38,6 +43,9 @@ export default function MapComponent({
 
     map.current.on("load", () => {
       setMapLoaded(true)
+      if (onMapLoad && map.current) {
+        onMapLoad(map.current)
+      }
     })
 
     return () => {
@@ -46,24 +54,20 @@ export default function MapComponent({
         map.current = null
       }
     }
-  }, [center, zoom, style, token, loading, error])
+  }, [center, zoom, style, onMapLoad, token, loading, error])
 
-  if (loading) return <div className="h-full w-full flex items-center justify-center">Loading map...</div>
-  if (error)
-    return <div className="h-full w-full flex items-center justify-center text-red-500">Error loading map: {error}</div>
+  if (error) {
+    return <div className="text-red-500">Error loading map: {error.message}</div>
+  }
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-full">Loading map...</div>
+  }
 
   return (
-    <div className="h-full w-full">
+    <div className={`relative h-full w-full ${className}`}>
       <div ref={mapContainer} className="h-full w-full" />
-      {mapLoaded &&
-        map.current &&
-        children &&
-        React.Children.map(children, (child) => {
-          if (React.isValidElement(child)) {
-            return React.cloneElement(child, { map: map.current })
-          }
-          return child
-        })}
+      {mapLoaded && map.current && children}
     </div>
   )
 }
