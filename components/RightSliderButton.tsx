@@ -31,33 +31,46 @@ const ProjectsDetailsSlider = ({ projects, onProjectClick }: ProjectsDetailsSlid
         <h1 className="relative w-[200px] h-[36px] mt-[-1px] [font-family:'Inter',Helvetica] font-bold text-white text-[26px] tracking-[0] leading-normal">
           Projects Details
         </h1>
+
         <div className="flex justify-around w-full">
-          <Button variant="ghost" className="flex flex-col items-center hover:bg-gray-700/20 rounded-md group">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-white flex items-center justify-center font-bold shadow-lg relative overflow-hidden transition-all duration-300 group-hover:scale-110 border border-blue-300/30">
-              <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-transparent opacity-70"></div>
-              <span className="relative z-10">38</span>
-              <div className="absolute -inset-1 bg-blue-400/20 blur-sm group-hover:bg-blue-400/30 transition-all duration-300"></div>
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center relative group">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-pink-500 to-blue-500 opacity-75 blur-[2px] group-hover:blur-[3px] transition-all duration-300"></div>
+              <div className="absolute inset-[1px] rounded-full bg-black"></div>
+              <div className="absolute inset-[2px] rounded-full border-[1.5px] border-white opacity-10"></div>
+              <div className="absolute inset-0 rounded-full shadow-[0_0_10px_rgba(255,0,255,0.7),0_0_15px_rgba(0,170,255,0.5)] group-hover:shadow-[0_0_15px_rgba(255,0,255,0.8),0_0_20px_rgba(0,170,255,0.6)] transition-all duration-300"></div>
+              <span className="text-white font-bold relative z-10 text-sm group-hover:scale-110 transition-transform duration-300">
+                {projects.length}
+              </span>
             </div>
             <p className="text-xs text-white mt-1 group-hover:text-blue-300 transition-colors">All</p>
-          </Button>
+          </div>
 
-          <Button variant="ghost" className="flex flex-col items-center hover:bg-gray-700/20 rounded-md group">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-green-600 text-white flex items-center justify-center font-bold shadow-lg relative overflow-hidden transition-all duration-300 group-hover:scale-110 border border-green-300/30">
-              <div className="absolute inset-0 bg-gradient-to-tr from-green-500/20 to-transparent opacity-70"></div>
-              <span className="relative z-10">24</span>
-              <div className="absolute -inset-1 bg-green-400/20 blur-sm group-hover:bg-green-400/30 transition-all duration-300"></div>
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center relative group">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-500 to-blue-500 opacity-75 blur-[2px] group-hover:blur-[3px] transition-all duration-300"></div>
+              <div className="absolute inset-[1px] rounded-full bg-black"></div>
+              <div className="absolute inset-[2px] rounded-full border-[1.5px] border-white opacity-10"></div>
+              <div className="absolute inset-0 rounded-full shadow-[0_0_10px_rgba(0,255,127,0.7),0_0_15px_rgba(0,170,255,0.5)] group-hover:shadow-[0_0_15px_rgba(0,255,127,0.8),0_0_20px_rgba(0,170,255,0.6)] transition-all duration-300"></div>
+              <span className="text-white font-bold relative z-10 text-sm group-hover:scale-110 transition-transform duration-300">
+                24
+              </span>
             </div>
             <p className="text-xs text-white mt-1 group-hover:text-green-300 transition-colors">Active</p>
-          </Button>
+          </div>
 
-          <Button variant="ghost" className="flex flex-col items-center hover:bg-gray-700/20 rounded-md group">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 text-white flex items-center justify-center font-bold shadow-lg relative overflow-hidden transition-all duration-300 group-hover:scale-110 border border-yellow-300/30">
-              <div className="absolute inset-0 bg-gradient-to-tr from-yellow-500/20 to-transparent opacity-70"></div>
-              <span className="relative z-10">14</span>
-              <div className="absolute -inset-1 bg-yellow-400/20 blur-sm group-hover:bg-yellow-400/30 transition-all duration-300"></div>
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center relative group">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 opacity-75 blur-[2px] group-hover:blur-[3px] transition-all duration-300"></div>
+              <div className="absolute inset-[1px] rounded-full bg-black"></div>
+              <div className="absolute inset-[2px] rounded-full border-[1.5px] border-white opacity-10"></div>
+              <div className="absolute inset-0 rounded-full shadow-[0_0_10px_rgba(255,165,0,0.7),0_0_15px_rgba(255,69,0,0.5)] group-hover:shadow-[0_0_15px_rgba(255,165,0,0.8),0_0_20px_rgba(255,69,0,0.6)] transition-all duration-300"></div>
+              <span className="text-white font-bold relative z-10 text-sm group-hover:scale-110 transition-transform duration-300">
+                14
+              </span>
             </div>
-            <p className="text-xs text-white mt-1 group-hover:text-yellow-300 transition-colors"> Construction</p>
-          </Button>
+            <p className="text-xs text-white mt-1 group-hover:text-yellow-300 transition-colors">Construction</p>
+          </div>
         </div>
 
         <ScrollArea className="w-full h-[420px] pr-2">

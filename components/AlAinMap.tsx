@@ -13,6 +13,20 @@ import { useMapboxToken } from "@/hooks/useMapboxToken"
 // Update the marker styles CSS
 const markerStyles = `
 .marker-container {
+  position: absolute !important;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: auto;
+}
+
+.mapboxgl-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+.marker-container {
   position: relative;
   width: 300px;
   height: 70px;
@@ -645,6 +659,8 @@ export default function AlAinMap({
       maxZoom: 16,
       dragPan: false, // Disable panning to fix the map in position
       scrollZoom: true, // Enable scroll zoom
+      renderWorldCopies: false, // Add this line to prevent duplicate markers
+      preserveDrawingBuffer: true, // Add this line to improve marker rendering
     })
 
     // Add scroll zoom handler to limit zooming out to initial zoom level
@@ -1209,6 +1225,18 @@ export default function AlAinMap({
           }
         })
 
+        // This ensures markers stay in the correct position when zooming
+        Object.entries(markers).forEach(([name, marker]) => {
+          const position = marker.getLngLat()
+          const point = map.current!.project(position)
+          const element = marker.getElement()
+
+          // Update marker position directly if needed
+          if (element.style.display !== "none") {
+            marker.setLngLat(position)
+          }
+        })
+
         // Toggle ALL polygon visibility based on zoom level
         // Hide ALL polygons when zoomed in, show when zoomed out
         const allPolygons = [
@@ -1421,6 +1449,8 @@ export default function AlAinMap({
     // Create marker container
     const markerElement = document.createElement("div")
     markerElement.className = "marker-container"
+    markerElement.style.position = "absolute" // Ensure absolute positioning
+    markerElement.style.pointerEvents = "auto" // Make sure it can receive clicks
 
     // Add special styling for small markers
     if (size === "small") {

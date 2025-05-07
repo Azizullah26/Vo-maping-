@@ -23,9 +23,9 @@ const colorCombinations = [
 // Add this function to determine if a marker is for Abu Dhabi
 const getMarkerPositionClasses = (name: string) => {
   if (name.includes("Abu Dhabi")) {
-    return "-translate-x-2/3 -translate-y-full -mt-8 -ml-4" // Move up and left
+    return "transform -translate-x-2/3 -translate-y-full -mt-8 -ml-4" // Move up and left
   }
-  return "-translate-x-1/2 -translate-y-full -mt-3" // Default positioning
+  return "transform -translate-x-1/2 -translate-y-full -mt-3" // Default positioning
 }
 
 const MapMarker: React.FC<MapMarkerProps> = ({
@@ -62,9 +62,12 @@ const MapMarker: React.FC<MapMarkerProps> = ({
 
   return (
     <div
-      className={cn("absolute pointer-events-auto cursor-pointer", isActive && "z-10")}
+      className={cn("absolute pointer-events-auto cursor-pointer z-10", isActive && "z-20")}
       style={{
         transform: `translate(${x}px, ${y}px)`,
+        position: "absolute", // Ensure absolute positioning
+        willChange: "transform", // Optimize for animations
+        transformOrigin: "center center", // Ensure proper scaling
       }}
       onClick={onClick}
     >

@@ -1,9 +1,19 @@
+/* Add these styles to the top of the file */
+.marker-fixed {
+  position: absolute !important;
+  z-index: 10;
+  pointer-events: auto;
+  will-change: transform;
+}
+
 .marker-container {
-  position: relative;
-  width: 400px;
+  position: absolute;
+  width: 300px;
   height: 70px;
   pointer-events: auto;
   transform: translate(-50%, -50%);
+  z-index: 1;
+  will-change: transform;
 }
 
 .marker-circle {
