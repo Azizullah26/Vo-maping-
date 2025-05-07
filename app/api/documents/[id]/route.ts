@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { deleteDocument } from "@/lib/document-service"
 
+export const runtime = "edge" // Use edge runtime to avoid native module issues
+
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id
