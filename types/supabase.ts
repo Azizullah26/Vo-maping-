@@ -6,100 +6,97 @@ export interface Database {
       documents: {
         Row: {
           id: string
+          project_id: string
+          project_name?: string
+          file_name?: string
+          file_path?: string
+          file_url?: string
+          title?: string
+          description?: string
+          type?: string
+          size?: number
+          document_type?: string
           created_at: string
-          title: string
-          description: string | null
-          file_path: string
-          file_type: string
-          project_id: string | null
-          user_id: string | null
-          updated_at: string | null
-          status: string | null
-          metadata: Json | null
+          updated_at?: string
+          url?: string
         }
         Insert: {
           id?: string
+          project_id?: string
+          project_name?: string
+          file_name?: string
+          file_path?: string
+          file_url?: string
+          title?: string
+          description?: string
+          type?: string
+          size?: number
+          document_type?: string
           created_at?: string
-          title: string
-          description?: string | null
-          file_path: string
-          file_type: string
-          project_id?: string | null
-          user_id?: string | null
-          updated_at?: string | null
-          status?: string | null
-          metadata?: Json | null
+          updated_at?: string
+          url?: string
         }
         Update: {
           id?: string
-          created_at?: string
-          title?: string
-          description?: string | null
+          project_id?: string
+          project_name?: string
+          file_name?: string
           file_path?: string
-          file_type?: string
-          project_id?: string | null
-          user_id?: string | null
-          updated_at?: string | null
-          status?: string | null
-          metadata?: Json | null
+          file_url?: string
+          title?: string
+          description?: string
+          type?: string
+          size?: number
+          document_type?: string
+          created_at?: string
+          updated_at?: string
+          url?: string
         }
       }
       projects: {
         Row: {
           id: string
-          created_at: string
           name: string
-          description: string | null
-          location: string | null
-          status: string
-          start_date: string | null
-          end_date: string | null
-          budget: number | null
-          manager_id: string | null
-          updated_at: string | null
-          coordinates: Json | null
-          image_url: string | null
+          description?: string
+          location?: string
+          start_date?: string
+          end_date?: string
+          status?: string
+          created_at: string
+          updated_at?: string
+          manager?: string
+          budget?: number
+          progress?: number
         }
         Insert: {
           id?: string
-          created_at?: string
           name: string
-          description?: string | null
-          location?: string | null
+          description?: string
+          location?: string
+          start_date?: string
+          end_date?: string
           status?: string
-          start_date?: string | null
-          end_date?: string | null
-          budget?: number | null
-          manager_id?: string | null
-          updated_at?: string | null
-          coordinates?: Json | null
-          image_url?: string | null
+          created_at?: string
+          updated_at?: string
+          manager?: string
+          budget?: number
+          progress?: number
         }
         Update: {
           id?: string
-          created_at?: string
           name?: string
-          description?: string | null
-          location?: string | null
+          description?: string
+          location?: string
+          start_date?: string
+          end_date?: string
           status?: string
-          start_date?: string | null
-          end_date?: string | null
-          budget?: number | null
-          manager_id?: string | null
-          updated_at?: string | null
-          coordinates?: Json | null
-          image_url?: string | null
+          created_at?: string
+          updated_at?: string
+          manager?: string
+          budget?: number
+          progress?: number
         }
       }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
     }
   }
 }

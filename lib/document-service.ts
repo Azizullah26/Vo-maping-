@@ -1,12 +1,9 @@
-import { Pool } from "pg"
+import { createClient } from "@supabase/supabase-js"
 
-// Initialize Neon PostgreSQL connection
-const neonPool = new Pool({
-  connectionString: process.env.NEON_POSTGRES_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-})
+// Initialize Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 export interface Document {
   id: string
@@ -25,15 +22,18 @@ export interface Document {
  * Get all documents
  */
 export async function getAllDocuments(): Promise<Document[]> {
-  const client = await neonPool.connect()
   try {
-    const result = await client.query(`
-      SELECT * FROM documents
-      ORDER BY created_at DESC
-    `)
-    return result.rows
-  } finally {
-    client.release()
+    const { data, error } = await supabase.from("documents").select("*").order("created_at", { ascending: false })
+
+    if (error) {
+      console.error("Error fetching documents:", error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error("Error in getAllDocuments:", error)
+    return []
   }
 }
 
@@ -41,52 +41,67 @@ export async function getAllDocuments(): Promise<Document[]> {
  * Get documents by project ID
  */
 export async function getDocumentsByProject(projectId: string): Promise<Document[]> {
-  const client = await neonPool.connect()
   try {
-    const result = await client.query(
-      `
-      SELECT * FROM documents
-      WHERE project_id = $1
-      ORDER BY created_at DESC
-      `,
-      [projectId],
-    )
-    return result.rows
-  } finally {
-    client.release()
+    const { data, error } = await supabase
+      .from("documents")
+      .select("*")
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      console.error("Error fetching documents by project:", error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error("Error in getDocumentsByProject:", error)
+    return []
   }
 }
 
 /**
  * Delete a document by ID
  */
-export async function deleteDocument(id: string): Promise<boolean> {
-  const client = await neonPool.connect()
+export async function deleteDocument(id: string): Promise<{ success: boolean; error?: string }> {
   try {
     // First get the document to find the file path
-    const docResult = await client.query(
-      `
-      SELECT file_path FROM documents
-      WHERE id = $1
-      `,
-      [id],
-    )
+    const { data: document, error: fetchError } = await supabase.from("documents").select("*").eq("id", id).single()
 
-    if (docResult.rows.length === 0) {
-      return false
+    if (fetchError) {
+      console.error("Error fetching document:", fetchError)
+      return { success: false, error: fetchError.message }
     }
 
     // Delete from database
-    await client.query(
-      `
-      DELETE FROM documents
-      WHERE id = $1
-      `,
-      [id],
-    )
+    const { error: deleteError } = await supabase.from("documents").delete().eq("id", id)
 
-    return true
-  } finally {
-    client.release()
+    if (deleteError) {
+      console.error("Error deleting document:", deleteError)
+      return { success: false, error: deleteError.message }
+    }
+
+    // If the document has a file in storage, delete it too
+    if (document && document.file_path) {
+      try {
+        const { error: storageError } = await supabase.storage.from("documents").remove([document.file_path])
+
+        if (storageError) {
+          console.warn("Could not delete file from storage:", storageError)
+          // Continue anyway as the database record is deleted
+        }
+      } catch (storageErr) {
+        console.warn("Error when trying to delete file from storage:", storageErr)
+        // Continue anyway as the database record is deleted
+      }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error in deleteDocument:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    }
   }
 }
