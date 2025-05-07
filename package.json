@@ -84,7 +84,9 @@
     "uuid": "latest",
     "jspdf-autotable": "latest",
     "@supabase/auth-helpers-nextjs": "latest",
-    "glob": "latest"
+    "glob": "latest",
+    "html2canvas": "latest",
+    "canvg": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",
