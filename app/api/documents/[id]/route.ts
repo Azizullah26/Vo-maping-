@@ -1,22 +1,30 @@
 import { NextResponse } from "next/server"
-import { deleteDocument } from "@/lib/document-service"
+import { createClient } from "@supabase/supabase-js"
 
-export const runtime = "edge" // Use edge runtime to avoid native module issues
+// Use environment variables for Supabase connection
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id
 
-    const result = await deleteDocument(id)
+    // Create Supabase client (this is serverless-compatible)
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
-    if (!result.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: result.error,
-        },
-        { status: 500 },
-      )
+    // Delete from the documents table
+    const { error: dbError } = await supabase.from("documents").delete().eq("id", id)
+
+    if (dbError) {
+      throw new Error(`Database error: ${dbError.message}`)
+    }
+
+    // Delete from storage (if applicable)
+    try {
+      await supabase.storage.from("documents").remove([`${id}`])
+    } catch (storageError) {
+      console.warn(`Storage error: ${storageError}`)
+      // Continue even if storage deletion fails
     }
 
     return NextResponse.json({
