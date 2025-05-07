@@ -1539,14 +1539,11 @@ export default function AdminPageClient() {
                             <tr key={index} className="border-b hover:bg-gray-50">
                               <td className="py-3 px-4">
                                 <div className="relative">
-                                  <div className="h-8 w-8 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center">
-                                    <Image
-                                      src={`https://randomuser.me/api/portraits/${index % 2 === 0 ? "men" : "women"}/${(index % 10) + 1}.jpg`}
-                                      alt={user.name}
-                                      width={32}
-                                      height={32}
-                                      className="h-full w-full object-cover"
-                                    />
+                                  <div className="h-8 w-8 rounded-full overflow-hidden bg-[#E6E6F8] flex items-center justify-center text-[#1B1464] font-medium">
+                                    {user.name
+                                      .split(" ")
+                                      .map((n) => n[0])
+                                      .join("")}
                                   </div>
                                   {user.status === "Active" && (
                                     <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white">
