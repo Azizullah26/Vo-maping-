@@ -475,6 +475,20 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
     }
   }, [filters]) // Re-run when filters change
 
+  // Fetch documents when selected project changes
+  useEffect(() => {
+    if (selectedProject) {
+      const projectFilter = {
+        ...filters,
+        project: selectedProject.projectNameEn,
+      }
+      fetchDocuments(projectFilter)
+
+      // Update tab to show project details
+      setActiveTab("dashboard")
+    }
+  }, [selectedProject])
+
   // Filter documents based on current filters
   const filteredDocuments = documents.filter((doc) => {
     let match = true
@@ -538,8 +552,9 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
         >
           <div className="flex flex-col p-4 space-y-6 w-full">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-cyan-400">Al Ain 
-</h2>
+              <h2 className="text-xl font-bold text-cyan-400">
+                {selectedProject ? selectedProject.projectNameEn : "Al Ain"}
+              </h2>
               <div className="text-xs text-cyan-300 bg-cyan-900/30 px-2 py-1 rounded border border-cyan-500/30">
                 REAL-TIME
               </div>
@@ -610,7 +625,16 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
                   </button>
                   {/* Update the Docs button to navigate to the documents page when clicked */}
                   <button
-                    onClick={() => router.push("/al-ain/documents")}
+                    onClick={() => {
+                      // Navigate to documents page with the selected project as a query parameter
+                      if (selectedProject) {
+                        router.push(
+                          `/al-ain/documents?project=${encodeURIComponent(selectedProject.projectNameEn)}&id=${selectedProject.id}`,
+                        )
+                      } else {
+                        router.push("/al-ain/documents")
+                      }
+                    }}
                     className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-cyan-500/10 rounded-full scale-0 group-hover:scale-150 transition-transform duration-700"></div>
@@ -653,6 +677,13 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
 
                     <div className="space-y-2">
                       <div className="flex justify-between">
+                        <span className="text-xs text-slate-400">Project ID:</span>
+                        <span className="text-xs text-cyan-300">
+                          {selectedProject ? `PRJ-${selectedProject.id}` : "PRJ-001"}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between">
                         <span className="text-xs text-slate-400">Start Date:</span>
                         <span className="text-xs text-cyan-300">15th June 2025</span>
                       </div>
@@ -670,7 +701,7 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
                       <div className="h-1 w-full bg-slate-700/50 rounded-full my-2">
                         <div
                           className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full"
-                          style={{ width: "28%" }}
+                          style={{ width: `${selectedProject ? (selectedProject.id % 5) * 20 + 20 : 28}%` }}
                         ></div>
                       </div>
 
@@ -691,7 +722,11 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
 
                       <div className="flex justify-between pt-2 border-t border-cyan-900/30 mt-2">
                         <span className="text-xs text-slate-400">Total Cost:</span>
-                        <span className="text-xs text-cyan-300 font-medium">AED 12,800,000</span>
+                        <span className="text-xs text-cyan-300 font-medium">
+                          {selectedProject
+                            ? `AED ${(selectedProject.id * 1.5 + 8).toFixed(1)},000,000`
+                            : "AED 12,800,000"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -727,6 +762,7 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
 
                       {/* Animated elements */}
                       <div className="absolute left-1/3 top-1/3 w-2 h-2 bg-cyan-400/80 rounded-full animate-pulse"></div>
+
                       <div
                         className="absolute right-1/3 top-1/4 w-2 h-2 bg-cyan-400/80 rounded-full animate-pulse"
                         style={{ animationDelay: "0.5s" }}

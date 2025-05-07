@@ -5,7 +5,7 @@ export async function POST() {
   try {
     // Get Supabase credentials from environment variables
     const supabaseUrl = process.env.SUPABASE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.SUPABASE_SUPABASE_SERVICE_ROLE_KEY
+    const supabaseKey = process.env.SUPABASE_SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
     if (!supabaseUrl || !supabaseKey) {
       return NextResponse.json(
@@ -17,11 +17,12 @@ export async function POST() {
     // Initialize Supabase client with service role key for admin privileges
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Check if tables already exist
-    const { data: tablesData, error: tablesError } = await supabase
-      .from("information_schema.tables")
-      .select("table_name")
-      .eq("table_schema", "public")
+    // Check if tables already exist using direct SQL query
+    const { data: tablesData, error: tablesError } = await supabase.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public'
+    `)
 
     if (tablesError) {
       console.error("Error checking tables:", tablesError)
@@ -36,86 +37,78 @@ export async function POST() {
 
     // Create projects table if it doesn't exist
     if (!existingTables.includes("projects")) {
-      const { error: createProjectsError } = await supabase.rpc("create_projects_table")
+      const { error: createProjectsError } = await supabase.query(`
+        CREATE TABLE IF NOT EXISTS projects (
+          id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+          name TEXT NOT NULL,
+          description TEXT,
+          location TEXT,
+          start_date TIMESTAMP WITH TIME ZONE,
+          end_date TIMESTAMP WITH TIME ZONE,
+          status TEXT DEFAULT 'Active',
+          progress INTEGER DEFAULT 0,
+          budget TEXT,
+          manager TEXT,
+          manager_id TEXT,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+      `)
 
       if (createProjectsError) {
-        // Try direct SQL if RPC fails
-        const { error: sqlError } = await supabase.query(`
-          CREATE TABLE IF NOT EXISTS projects (
-            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-            name TEXT NOT NULL,
-            description TEXT,
-            location TEXT,
-            start_date TIMESTAMP WITH TIME ZONE,
-            end_date TIMESTAMP WITH TIME ZONE,
-            status TEXT DEFAULT 'Active',
-            progress INTEGER DEFAULT 0,
-            budget TEXT,
-            manager TEXT,
-            manager_id TEXT,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-          );
-        `)
-
-        if (sqlError) {
-          console.error("Error creating projects table:", sqlError)
-          return NextResponse.json(
-            { success: false, message: `Error creating projects table: ${sqlError.message}` },
-            { status: 500 },
-          )
-        }
+        console.error("Error creating projects table:", createProjectsError)
+        return NextResponse.json(
+          { success: false, message: `Error creating projects table: ${createProjectsError.message}` },
+          { status: 500 },
+        )
       }
     }
 
     // Create documents table if it doesn't exist
     if (!existingTables.includes("documents")) {
-      const { error: createDocumentsError } = await supabase.rpc("create_documents_table")
+      const { error: createDocumentsError } = await supabase.query(`
+        CREATE TABLE IF NOT EXISTS documents (
+          id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+          name TEXT,
+          file_name TEXT,
+          type TEXT,
+          file_type TEXT,
+          size BIGINT,
+          file_size BIGINT,
+          file_path TEXT,
+          file_url TEXT,
+          project_id TEXT NOT NULL,
+          project_name TEXT,
+          document_type TEXT,
+          description TEXT,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+      `)
 
       if (createDocumentsError) {
-        // Try direct SQL if RPC fails
-        const { error: sqlError } = await supabase.query(`
-          CREATE TABLE IF NOT EXISTS documents (
-            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-            name TEXT,
-            file_name TEXT,
-            type TEXT,
-            file_type TEXT,
-            size BIGINT,
-            file_size BIGINT,
-            file_path TEXT,
-            file_url TEXT,
-            project_id TEXT NOT NULL,
-            project_name TEXT,
-            document_type TEXT,
-            description TEXT,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-          );
-        `)
-
-        if (sqlError) {
-          console.error("Error creating documents table:", sqlError)
-          return NextResponse.json(
-            { success: false, message: `Error creating documents table: ${sqlError.message}` },
-            { status: 500 },
-          )
-        }
+        console.error("Error creating documents table:", createDocumentsError)
+        return NextResponse.json(
+          { success: false, message: `Error creating documents table: ${createDocumentsError.message}` },
+          { status: 500 },
+        )
       }
     }
 
-    // Insert sample data if tables are empty
-    const { count: projectCount, error: countError } = await supabase
-      .from("projects")
-      .select("*", { count: "exact", head: true })
+    // Insert sample data if projects table is empty
+    const { data: projectCount, error: countError } = await supabase.query(`
+      SELECT COUNT(*) FROM projects
+    `)
 
     if (countError) {
       console.error("Error counting projects:", countError)
     }
 
-    if (countError || projectCount === 0) {
+    const count = projectCount?.[0]?.count || 0
+
+    if (countError || Number.parseInt(count) === 0) {
       // Insert sample projects
-      const { error: insertError } = await supabase.from("projects").insert([
+      const sampleProjects = [
         {
           name: "مركز شرطة الساد",
           description: "Construction of new police station in Al Saad area",
@@ -143,10 +136,14 @@ export async function POST() {
           budget: "AED 15,200,000",
           manager: "Khalid Al Mansoori",
         },
-      ])
+      ]
 
-      if (insertError) {
-        console.error("Error inserting sample projects:", insertError)
+      for (const project of sampleProjects) {
+        const { error: insertError } = await supabase.from("projects").insert([project])
+
+        if (insertError) {
+          console.error("Error inserting sample project:", insertError)
+        }
       }
     }
 

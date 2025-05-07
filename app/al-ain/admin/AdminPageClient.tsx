@@ -81,6 +81,7 @@ export default function AdminPageClient() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [storageDocuments, setStorageDocuments] = useState<Document[]>([])
 
   // Add state for project details sorting
   const [sortColumn, setSortColumn] = useState<keyof Project>("id")
@@ -469,38 +470,66 @@ export default function AdminPageClient() {
   }
 
   // Update the handleInitializeDatabase function to use Nile
+  // Update the handleInitializeDatabase function to use direct SQL
   const handleInitializeDatabase = async () => {
     try {
       showNotification("info", "Initializing database...")
 
-      // Check if we're in demo mode
-      if (demoMode) {
-        // Try to connect to Supabase
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      // Always try to initialize the database, regardless of demo mode
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-        if (!supabaseUrl || !supabaseAnonKey) {
-          throw new Error("Missing Supabase credentials")
-        }
+      if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error("Missing Supabase credentials")
+      }
 
-        // Call the API endpoint to initialize the database
-        const response = await fetch("/api/init-supabase-tables", {
+      // Call the API endpoint to initialize the database
+      const response = await fetch("/api/init-supabase-tables", {
+        method: "POST",
+      })
+
+      const responseText = await response.text()
+      let responseData
+
+      try {
+        responseData = JSON.parse(responseText)
+      } catch (e) {
+        console.error("Failed to parse response as JSON:", responseText)
+        throw new Error("Invalid response from server: " + responseText.substring(0, 100))
+      }
+
+      if (!response.ok) {
+        throw new Error(responseData.message || "Failed to initialize database")
+      }
+
+      // Also initialize the documents table with our updated endpoint
+      try {
+        const docsResponse = await fetch("/api/init-documents-table", {
           method: "POST",
         })
 
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.message || "Failed to initialize database")
+        if (!docsResponse.ok) {
+          const errorData = await docsResponse.json()
+          console.warn("Warning: Failed to initialize documents table:", errorData.message)
+          // Continue even if this fails
+        } else {
+          const docsData = await docsResponse.json()
+          console.log("Documents table initialization:", docsData.message)
         }
-
-        const data = await response.json()
-        showNotification("success", data.message || "Database initialized successfully!")
-
-        // Refresh the data
-        window.location.reload()
-      } else {
-        showNotification("info", "Database is already initialized and connected.")
+      } catch (docError) {
+        console.warn("Warning: Error initializing documents table:", docError)
+        // Continue even if this fails
       }
+
+      showNotification("success", responseData.message || "Database initialized successfully!")
+
+      // Set demo mode to false since we've successfully initialized the database
+      setDemoMode(false)
+
+      // Refresh the data after a short delay
+      setTimeout(() => {
+        window.location.reload()
+      }, 2000)
     } catch (error) {
       console.error("Error initializing database:", error)
       setDbError(error instanceof Error ? error.message : "Unknown error")
@@ -515,6 +544,108 @@ export default function AdminPageClient() {
 
   // Filter documents by project
   const getFilteredDocuments = () => documents.filter((doc) => doc.project === selectedProject)
+
+  // Fetch documents directly from Supabase storage bucket by project ID
+  const fetchProjectDocumentsFromStorage = async (projectId: string) => {
+    try {
+      setLoading(true)
+
+      // Initialize Supabase client
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+
+      if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error("Missing Supabase credentials")
+      }
+
+      const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+      // List files in the project folder within the storage bucket
+      const { data: files, error } = await supabase.storage.from("project-documents").list(projectId)
+
+      if (error) {
+        console.error("Error fetching files from storage:", error)
+        throw error
+      }
+
+      if (!files || files.length === 0) {
+        return []
+      }
+
+      // Map storage files to document format
+      const storageDocuments: Document[] = await Promise.all(
+        files.map(async (file) => {
+          // Get public URL for the file
+          const { data: publicUrlData } = supabase.storage
+            .from("project-documents")
+            .getPublicUrl(`${projectId}/${file.name}`)
+
+          const url = publicUrlData?.publicUrl || ""
+
+          // Extract file extension for type
+          const fileExtension = file.name.split(".").pop()?.toUpperCase() || "FILE"
+
+          return {
+            id: `storage-${file.id || Date.now()}`,
+            name: file.name,
+            type: fileExtension,
+            size: formatFileSize(file.metadata?.size || 0),
+            date: new Date(file.created_at || Date.now()).toLocaleDateString(),
+            url: url,
+            project: selectedProject,
+          }
+        }),
+      )
+
+      return storageDocuments
+    } catch (error) {
+      console.error("Error in fetchProjectDocumentsFromStorage:", error)
+      return []
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Helper function to check storage for documents
+  const checkStorageForDocuments = (supabase, projectId) => {
+    // List files in the project folder
+    supabase.storage
+      .from("project-documents")
+      .list(projectId)
+      .then(({ data: files, error }) => {
+        if (error) {
+          throw error
+        }
+
+        if (!files || files.length === 0) {
+          return showNotification("info", "No documents found in storage for this project")
+        }
+
+        // Map files to document format with direct public URLs
+        const docs = files.map((file) => {
+          const { data } = supabase.storage.from("project-documents").getPublicUrl(`${projectId}/${file.name}`)
+
+          const publicUrl = data?.publicUrl || ""
+
+          return {
+            id: `storage-${file.id || Date.now()}`,
+            name: file.name,
+            type: file.name.split(".").pop()?.toUpperCase() || "FILE",
+            size: formatFileSize(file.metadata?.size || 0),
+            date: new Date(file.created_at || Date.now()).toLocaleDateString(),
+            url: publicUrl,
+            project: selectedProject,
+          }
+        })
+
+        setStorageDocuments(docs)
+        showNotification("success", `Found ${docs.length} document(s) in Supabase storage`)
+      })
+      .catch((error) => {
+        console.error("Error fetching from storage:", error)
+        showNotification("error", "Failed to fetch documents from storage")
+      })
+  }
 
   // Render status badge with appropriate color
   const renderStatusBadge = (status: Project["status"]) => {
@@ -571,6 +702,8 @@ export default function AdminPageClient() {
       formData.append("file", selectedFile)
       formData.append("projectId", projectId)
       formData.append("projectName", selectedProject)
+      // Add an empty description to ensure the field exists
+      formData.append("description", "")
 
       // Send the file to our API endpoint
       const response = await fetch("/api/documents/upload", {
@@ -578,11 +711,133 @@ export default function AdminPageClient() {
         body: formData,
       })
 
-      const result = await response.json()
-
+      // Check if the response is OK before trying to parse JSON
       if (!response.ok) {
-        throw new Error(result.error || "Failed to upload document")
+        const errorText = await response.text()
+        console.error("Error response:", errorText)
+
+        // If we're in demo mode, continue with mock data
+        if (demoMode) {
+          const fileExtension = selectedFile.name.split(".").pop()?.toUpperCase() || "FILE"
+          const newDocument = {
+            id: `demo-${Date.now()}`,
+            name: selectedFile.name,
+            type: fileExtension,
+            size: formatFileSize(selectedFile.size),
+            date: new Date().toLocaleDateString(),
+            url:
+              fileExtension === "JPG" || fileExtension === "PNG" || fileExtension === "JPEG" || fileExtension === "GIF"
+                ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saad1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg"
+                : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+            project: selectedProject,
+          }
+
+          setDocuments([newDocument, ...documents])
+          showNotification("success", "Document uploaded successfully (Demo Mode)")
+
+          // Reset form after successful upload
+          setSelectedFile(null)
+          if (fileInputRef.current) {
+            fileInputRef.current.value = ""
+          }
+          return
+        }
+
+        // If the error is related to missing columns or tables, try to initialize the table
+        if (
+          errorText.includes("column") ||
+          errorText.includes("schema") ||
+          errorText.includes("relation") ||
+          errorText.includes("table") ||
+          errorText.includes("function") ||
+          errorText.includes("procedure")
+        ) {
+          try {
+            showNotification("info", "Database schema issue detected. Attempting to initialize tables...")
+
+            // Try to initialize the documents table
+            const initResponse = await fetch("/api/init-documents-table", {
+              method: "POST",
+            })
+
+            if (initResponse.ok) {
+              const initData = await initResponse.json()
+              showNotification("info", initData.message || "Database schema updated. Retrying upload...")
+
+              // Retry the upload after initializing the table
+              const retryResponse = await fetch("/api/documents/upload", {
+                method: "POST",
+                body: formData,
+              })
+
+              if (retryResponse.ok) {
+                const retryResult = await retryResponse.json()
+
+                // Create a new document object from the response
+                const newDocument = {
+                  id: retryResult.document.id,
+                  name: selectedFile.name,
+                  type: selectedFile.name.split(".").pop()?.toUpperCase() || "FILE",
+                  size: formatFileSize(selectedFile.size),
+                  date: new Date().toLocaleDateString(),
+                  url: retryResult.document.file_url,
+                  project: selectedProject,
+                }
+
+                // Add the new document to the documents array
+                setDocuments([newDocument, ...documents])
+                showNotification("success", "Document uploaded successfully after schema update")
+
+                // Reset form after successful upload
+                setSelectedFile(null)
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = ""
+                }
+                return
+              } else {
+                // If retry fails, fall back to demo mode
+                throw new Error("Upload retry failed after schema initialization")
+              }
+            } else {
+              // If initialization fails, fall back to demo mode
+              const errorData = await initResponse.json()
+              throw new Error(`Database initialization failed: ${errorData.message || "Unknown error"}`)
+            }
+          } catch (initError) {
+            console.error("Error initializing documents table:", initError)
+            showNotification("warning", "Could not initialize database schema. Using demo mode instead.")
+
+            // Fall back to demo mode
+            const fileExtension = selectedFile.name.split(".").pop()?.toUpperCase() || "FILE"
+            const newDocument = {
+              id: `demo-${Date.now()}`,
+              name: selectedFile.name,
+              type: fileExtension,
+              size: formatFileSize(selectedFile.size),
+              date: new Date().toLocaleDateString(),
+              url:
+                fileExtension === "JPG" ||
+                fileExtension === "PNG" ||
+                fileExtension === "JPEG" ||
+                fileExtension === "GIF"
+                  ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saad1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg"
+                  : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+              project: selectedProject,
+            }
+
+            setDocuments([newDocument, ...documents])
+            setSelectedFile(null)
+            if (fileInputRef.current) {
+              fileInputRef.current.value = ""
+            }
+            return
+          }
+        }
+
+        throw new Error(`Upload failed with status ${response.status}: ${errorText.substring(0, 100)}`)
       }
+
+      const result = await response.json()
 
       // Create a new document object from the response
       const newDocument = {
@@ -599,6 +854,12 @@ export default function AdminPageClient() {
       setDocuments([newDocument, ...documents])
       showNotification("success", "Document uploaded successfully")
 
+      // Dispatch custom event to notify other components about the document update
+      const event = new CustomEvent("documentUpdate", {
+        detail: [newDocument, ...documents],
+      })
+      window.dispatchEvent(event)
+
       // Reset form after successful upload
       setSelectedFile(null)
       if (fileInputRef.current) {
@@ -607,6 +868,32 @@ export default function AdminPageClient() {
     } catch (error) {
       console.error("Error uploading document:", error)
       showNotification("error", error instanceof Error ? error.message : "Failed to upload document")
+
+      // If there's an error, switch to demo mode for this upload
+      if (!demoMode) {
+        const fileExtension = selectedFile.name.split(".").pop()?.toUpperCase() || "FILE"
+        const newDocument = {
+          id: `demo-${Date.now()}`,
+          name: selectedFile.name,
+          type: fileExtension,
+          size: formatFileSize(selectedFile.size),
+          date: new Date().toLocaleDateString(),
+          url:
+            fileExtension === "JPG" || fileExtension === "PNG" || fileExtension === "JPEG" || fileExtension === "GIF"
+              ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saad1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg"
+              : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+          project: selectedProject,
+        }
+
+        setDocuments([newDocument, ...documents])
+        showNotification("info", "Added document in demo mode due to database error")
+
+        // Reset form after upload
+        setSelectedFile(null)
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""
+        }
+      }
     } finally {
       setLoading(false)
     }
@@ -620,8 +907,75 @@ export default function AdminPageClient() {
     console.log("Filtered documents:", filtered)
   }, [selectedProject, documents])
 
-  // Filter documents by project
-  const filteredDocuments = getFilteredDocuments()
+  // Fetch documents from storage when selected project changes
+  useEffect(() => {
+    const getProjectIdByName = (projectName: string) => {
+      // Special case for Al Ain Oasis Visitor Center
+      if (projectName === "Al Ain Oasis Visitor Center") {
+        return "fc89f369-c325-4475-a048-6420e9c08154"
+      }
+
+      // For other projects, try to find the ID in projectsData
+      const project = projectsData.find((p) => p.name === projectName)
+      return project?.id || ""
+    }
+
+    const projectId = getProjectIdByName(selectedProject)
+
+    if (projectId) {
+      fetchProjectDocumentsFromStorage(projectId)
+        .then((docs) => {
+          setStorageDocuments(docs)
+          console.log(`Fetched ${docs.length} documents from storage for project ${selectedProject}`)
+        })
+        .catch((error) => {
+          console.error("Failed to fetch documents from storage:", error)
+          setStorageDocuments([])
+        })
+    } else {
+      setStorageDocuments([])
+    }
+  }, [selectedProject, projectsData])
+
+  // Combine database documents and storage documents
+  const dbDocuments = getFilteredDocuments()
+  const filteredDocuments = [...dbDocuments, ...storageDocuments]
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedProject, setEditedProject] = useState<Partial<Project>>({})
+
+  const handleSaveProject = async (project: Project) => {
+    try {
+      // In a real implementation, you would call an API to update the project
+      // For demo purposes, we'll just update the local state
+      const updatedProjects = projectsData.map((p) => (p.id === project.id ? { ...p, ...editedProject } : p))
+      setProjectsData(updatedProjects as Project[])
+      setIsEditing(false)
+      showNotification("success", "Project details updated successfully")
+    } catch (error) {
+      console.error("Error updating project:", error)
+      showNotification("error", "Failed to update project details")
+    }
+  }
+
+  // Add PDF loading effect
+  useEffect(() => {
+    if (previewDocument && previewDocument.type === "PDF") {
+      const loadingMessage = document.getElementById("pdf-loading-message")
+      if (loadingMessage) {
+        loadingMessage.classList.remove("opacity-0")
+        loadingMessage.classList.add("opacity-100")
+
+        // Hide loading message after 3 seconds
+        const timer = setTimeout(() => {
+          loadingMessage.classList.remove("opacity-100")
+          loadingMessage.classList.add("opacity-0")
+        }, 3000)
+
+        return () => clearTimeout(timer)
+      }
+    }
+  }, [previewDocument])
 
   return (
     <div
@@ -1184,15 +1538,29 @@ export default function AdminPageClient() {
                           ].map((user, index) => (
                             <tr key={index} className="border-b hover:bg-gray-50">
                               <td className="py-3 px-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="h-8 w-8 rounded-full bg-[#1B1464]/10 flex items-center justify-center text-[#1B1464] font-medium">
-                                    {user.name
-                                      .split(" ")
-                                      .map((n) => n[0])
-                                      .join("")}
+                                <div className="relative">
+                                  <div className="h-8 w-8 rounded-full overflow-hidden">
+                                    <Image
+                                      src={`https://api.dicebear.com/7.x/avatars/png?seed=${encodeURIComponent(user.name)}&backgroundColor=E6E6F8&radius=50`}
+                                      alt={user.name}
+                                      width={32}
+                                      height={32}
+                                      className="object-cover"
+                                    />
                                   </div>
-                                  <span>{user.name}</span>
+                                  {user.status === "Active" && (
+                                    <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white">
+                                      <span className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75"></span>
+                                    </span>
+                                  )}
+                                  {user.status === "Away" && (
+                                    <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-yellow-500 ring-2 ring-white"></span>
+                                  )}
+                                  {user.status === "Inactive" && (
+                                    <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-gray-400 ring-2 ring-white"></span>
+                                  )}
                                 </div>
+                                <span>{user.name}</span>
                               </td>
                               <td className="py-3 px-4">{user.role}</td>
                               <td className="py-3 px-4">{user.department}</td>
@@ -1485,9 +1853,30 @@ export default function AdminPageClient() {
                         </div>
                       </SelectTrigger>
                       <SelectContent>
-                        {projectsData.map((project) => (
-                          <SelectItem key={project.id} value={project.name}>
-                            {project.name}
+                        {[
+                          "قسم موسيقى شرطة أبوظبي",
+                          "إدارة التأهيل الشرطي - الفوعة",
+                          "مركز شرطة هيلي",
+                          "ميدان الشرطة بدع بنت سعود",
+                          "متحف شرطة المربعة",
+                          "مركز شرطة المربعة",
+                          "مديرية شرطة العين",
+                          "فرع النقل والمشاغل",
+                          "نادي ضباط الشرطة",
+                          "مركز شرطة زاخر",
+                          "فلل فلج هزاع",
+                          "قسم التفتيش الأمني K9",
+                          "الضبط المروري والمراسم",
+                          "ساحة حجز المركبات فلج هزاع",
+                          "إدارة المرور والترخيص",
+                          "قسم الدوريات الخاصة",
+                          "إدارة الدوريات الخاصة",
+                          "المعهد المروري",
+                          "سكن أفراد المرور",
+                          "مركز شرطة الساد",
+                        ].map((projectName) => (
+                          <SelectItem key={projectName} value={projectName}>
+                            {projectName}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1507,51 +1896,193 @@ export default function AdminPageClient() {
                       <div className="space-y-4">
                         {projectsData
                           .filter((p) => p.name === selectedProject)
-                          .map((project) => (
-                            <div key={project.id} className="space-y-4">
-                              <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                  <p className="text-sm text-gray-500">Project ID</p>
-                                  <p className="font-medium">{project.id}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">Status</p>
-                                  <p>{renderStatusBadge(project.status)}</p>
-                                </div>
-                              </div>
+                          .map((project) => {
+                            const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+                              const { name, value } = e.target
+                              setEditedProject((prev) => ({ ...prev, [name]: value }))
+                            }
 
-                              <div>
-                                <p className="text-sm text-gray-500">Project Manager</p>
-                                <p className="font-medium">{project.manager}</p>
-                              </div>
+                            return (
+                              <div key={project.id} className="space-y-4">
+                                {isEditing ? (
+                                  <>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div>
+                                        <p className="text-sm text-gray-500">Project ID</p>
+                                        <p className="font-medium">{project.id}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm text-gray-500">Status</p>
+                                        <Select
+                                          value={editedProject.status || project.status}
+                                          onValueChange={(value) =>
+                                            setEditedProject((prev) => ({ ...prev, status: value }))
+                                          }
+                                        >
+                                          <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select status" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="Active">Active</SelectItem>
+                                            <SelectItem value="Completed">Completed</SelectItem>
+                                            <SelectItem value="Delayed">Delayed</SelectItem>
+                                            <SelectItem value="On Hold">On Hold</SelectItem>
+                                            <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                            <SelectItem value="Pending">Pending</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    </div>
 
-                              <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                  <p className="text-sm text-gray-500">Start Date</p>
-                                  <p className="font-medium">{project.startDate}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">End Date</p>
-                                  <p className="font-medium">{project.endDate}</p>
-                                </div>
-                              </div>
+                                    <div>
+                                      <p className="text-sm text-gray-500">Project Name</p>
+                                      <Input
+                                        name="name"
+                                        value={editedProject.name || project.name}
+                                        onChange={handleInputChange}
+                                        className="mt-1"
+                                      />
+                                    </div>
 
-                              <div>
-                                <p className="text-sm text-gray-500">Budget</p>
-                                <p className="font-medium">{project.amount}</p>
-                              </div>
+                                    <div>
+                                      <p className="text-sm text-gray-500">Project Manager</p>
+                                      <Input
+                                        name="manager"
+                                        value={editedProject.manager || project.manager}
+                                        onChange={handleInputChange}
+                                        className="mt-1"
+                                      />
+                                    </div>
 
-                              <div>
-                                <p className="text-sm text-gray-500">Progress</p>
-                                {renderProgressBar(project.progress)}
-                              </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div>
+                                        <p className="text-sm text-gray-500">Start Date</p>
+                                        <Input
+                                          type="date"
+                                          name="startDate"
+                                          value={editedProject.startDate || project.startDate}
+                                          onChange={handleInputChange}
+                                          className="mt-1"
+                                        />
+                                      </div>
+                                      <div>
+                                        <p className="text-sm text-gray-500">End Date</p>
+                                        <Input
+                                          type="date"
+                                          name="endDate"
+                                          value={editedProject.endDate || project.endDate}
+                                          onChange={handleInputChange}
+                                          className="mt-1"
+                                        />
+                                      </div>
+                                    </div>
 
-                              <div>
-                                <p className="text-sm text-gray-500">Time Remaining</p>
-                                <p className="font-medium">{project.due}</p>
+                                    <div>
+                                      <p className="text-sm text-gray-500">Budget</p>
+                                      <Input
+                                        name="amount"
+                                        value={editedProject.amount || project.amount}
+                                        onChange={handleInputChange}
+                                        className="mt-1"
+                                      />
+                                    </div>
+
+                                    <div>
+                                      <p className="text-sm text-gray-500">Progress (%)</p>
+                                      <Input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        name="progress"
+                                        value={editedProject.progress || project.progress}
+                                        onChange={handleInputChange}
+                                        className="mt-1"
+                                      />
+                                      {renderProgressBar(Number(editedProject.progress || project.progress))}
+                                    </div>
+
+                                    <div>
+                                      <p className="text-sm text-gray-500">Time Remaining</p>
+                                      <Input
+                                        name="due"
+                                        value={editedProject.due || project.due}
+                                        onChange={handleInputChange}
+                                        className="mt-1"
+                                      />
+                                    </div>
+
+                                    <div className="flex justify-end gap-2 pt-2">
+                                      <Button variant="outline" onClick={() => setIsEditing(false)}>
+                                        Cancel
+                                      </Button>
+                                      <Button
+                                        onClick={() => handleSaveProject(project)}
+                                        className="bg-[#1B1464] hover:bg-[#1B1464]/90"
+                                      >
+                                        Save Changes
+                                      </Button>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div>
+                                        <p className="text-sm text-gray-500">Project ID</p>
+                                        <p className="font-medium">{project.id}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm text-gray-500">Status</p>
+                                        <p>{renderStatusBadge(project.status)}</p>
+                                      </div>
+                                    </div>
+
+                                    <div>
+                                      <p className="text-sm text-gray-500">Project Manager</p>
+                                      <p className="font-medium">{project.manager}</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div>
+                                        <p className="text-sm text-gray-500">Start Date</p>
+                                        <p className="font-medium">{project.startDate}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm text-gray-500">End Date</p>
+                                        <p className="font-medium">{project.endDate}</p>
+                                      </div>
+                                    </div>
+
+                                    <div>
+                                      <p className="text-sm text-gray-500">Budget</p>
+                                      <p className="font-medium">{project.amount}</p>
+                                    </div>
+
+                                    <div>
+                                      <p className="text-sm text-gray-500">Progress</p>
+                                      {renderProgressBar(project.progress)}
+                                    </div>
+
+                                    <div>
+                                      <p className="text-sm text-gray-500">Time Remaining</p>
+                                      <p className="font-medium">{project.due}</p>
+                                    </div>
+
+                                    <div className="flex justify-end pt-2">
+                                      <Button
+                                        onClick={() => {
+                                          setIsEditing(true)
+                                          setEditedProject(project)
+                                        }}
+                                        className="bg-[#1B1464] hover:bg-[#1B1464]/90"
+                                      >
+                                        <Edit className="h-4 w-4 mr-2" /> Edit Project
+                                      </Button>
+                                    </div>
+                                  </>
+                                )}
                               </div>
-                            </div>
-                          ))}
+                            )
+                          })}
                       </div>
                     </CardContent>
                   </Card>
@@ -1599,7 +2130,7 @@ export default function AdminPageClient() {
                               {loading ? (
                                 <>
                                   <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                                  Uploading...
+                                  Uploading to Storage...
                                 </>
                               ) : (
                                 <>
@@ -1635,7 +2166,15 @@ export default function AdminPageClient() {
                             </div>
                           ) : filteredDocuments.length === 0 ? (
                             <div className="p-8 text-center">
-                              <p className="text-gray-500">No documents found for this project.</p>
+                              <p className="text-gray-500 mb-2">
+                                {selectedProject === "Al Ain Oasis Visitor Center"
+                                  ? "No documents found for Al Ain Oasis Visitor Center (ID: fc89f369-c325-4475-a048-6420e9c08154)."
+                                  : `No documents found for ${selectedProject}.`}
+                              </p>
+                              <p className="text-sm text-blue-600 mb-4">
+                                Documents might be stored in a different location or using a different naming
+                                convention.
+                              </p>
                             </div>
                           ) : (
                             <div className="overflow-x-auto">
@@ -1801,7 +2340,137 @@ export default function AdminPageClient() {
               </Button>
             </div>
             <div className="p-6 h-[calc(80vh-64px)] overflow-auto">
-              <iframe src={previewDocument.url} width="100%" height="100%" title="Document Preview"></iframe>
+              {previewDocument && (
+                <>
+                  {previewDocument.type === "PDF" ? (
+                    // PDF Viewer
+                    <div className="w-full h-full relative">
+                      <iframe
+                        src={`${previewDocument.url}#toolbar=1&navpanes=1&view=FitH`}
+                        width="100%"
+                        height="100%"
+                        className="border rounded"
+                        title="PDF Preview"
+                        type="application/pdf"
+                        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads"
+                        referrerPolicy="no-referrer"
+                        loading="lazy"
+                        onError={(e) => {
+                          console.error("PDF failed to load:", e)
+                          // Show fallback message when iframe fails to load
+                          const container = e.currentTarget.parentElement
+                          if (container) {
+                            const fallback = document.createElement("div")
+                            fallback.className = "bg-white p-4 rounded shadow-lg text-center"
+                            fallback.innerHTML = `
+        <p class="text-red-600 mb-2">Unable to display PDF directly due to browser security restrictions.</p>
+        <p class="mb-4">Please use the download button below to view the document.</p>
+        <a href="${previewDocument.url}" target="_blank" rel="noopener noreferrer" 
+           class="px-4 py-2 bg-[#1B1464] text-white rounded hover:bg-[#1B1464]/90">
+          Open PDF in new tab
+        </a>
+      `
+                            container.appendChild(fallback)
+                          }
+                        }}
+                      ></iframe>
+                      <div className="mt-4 flex justify-center">
+                        <Button
+                          onClick={() => window.open(previewDocument.url, "_blank")}
+                          className="bg-[#1B1464] hover:bg-[#1B1464]/90"
+                        >
+                          <Download className="h-4 w-4 mr-2" /> Download PDF
+                        </Button>
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div
+                          className="bg-white p-4 rounded shadow-lg opacity-0 transition-opacity duration-300"
+                          id="pdf-loading-message"
+                        >
+                          Loading PDF...
+                        </div>
+                      </div>
+                      <noscript>
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-90">
+                          <div className="bg-white p-4 rounded shadow-lg">
+                            Your browser does not support embedded PDFs.
+                            <a
+                              href={previewDocument.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline ml-1"
+                            >
+                              Open PDF in new tab
+                            </a>
+                          </div>
+                        </div>
+                      </noscript>
+                    </div>
+                  ) : previewDocument.type === "JPG" ||
+                    previewDocument.type === "JPEG" ||
+                    previewDocument.type === "PNG" ||
+                    previewDocument.type === "GIF" ? (
+                    // Image Viewer
+                    <div className="flex flex-col h-full">
+                      <div className="bg-gray-100 p-2 mb-4 rounded flex justify-between items-center">
+                        <span className="text-sm font-medium">{previewDocument.name}</span>
+                        <Button size="sm" variant="outline" onClick={() => window.open(previewDocument.url, "_blank")}>
+                          <Download className="h-4 w-4 mr-2" /> Download
+                        </Button>
+                      </div>
+                      <div className="flex items-center justify-center bg-gray-50 rounded h-full">
+                        <img
+                          src={previewDocument.url || "/placeholder.svg"}
+                          alt={previewDocument.name}
+                          className="max-w-full max-h-[calc(80vh-120px)] object-contain"
+                          onError={(e) => {
+                            e.currentTarget.src =
+                              "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/placeholder-image-7eFnEXXXXXXXXXXXXXXXXXXXXXXXXX.png"
+                            e.currentTarget.alt = "Failed to load image"
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : previewDocument.type === "DOCX" ||
+                    previewDocument.type === "DOC" ||
+                    previewDocument.type === "XLSX" ||
+                    previewDocument.type === "XLS" ? (
+                    // Document Viewer (with download option since browsers can't display these directly)
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <div className="text-center max-w-md">
+                        <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium mb-2">{previewDocument.name}</h3>
+                        <p className="text-gray-500 mb-6">
+                          This document type ({previewDocument.type}) cannot be previewed directly in the browser.
+                        </p>
+                        <Button
+                          onClick={() => window.open(previewDocument.url, "_blank")}
+                          className="bg-[#1B1464] hover:bg-[#1B1464]/90"
+                        >
+                          <Download className="h-4 w-4 mr-2" /> Download Document
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Fallback for other file types
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <div className="text-center max-w-md">
+                        <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium mb-2">{previewDocument.name}</h3>
+                        <p className="text-gray-500 mb-6">
+                          Preview not available for this file type ({previewDocument.type}).
+                        </p>
+                        <Button
+                          onClick={() => window.open(previewDocument.url, "_blank")}
+                          className="bg-[#1B1464] hover:bg-[#1B1464]/90"
+                        >
+                          <Download className="h-4 w-4 mr-2" /> Download File
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>

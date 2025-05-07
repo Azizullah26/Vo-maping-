@@ -35,6 +35,9 @@ export async function POST(request: NextRequest) {
     const buffer = new Uint8Array(arrayBuffer)
 
     // 1. Upload file to Supabase Storage
+    // Make sure we're using the correct bucket name "project-documents" consistently
+
+    // Update the upload function to explicitly use "project-documents" bucket
     const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
       .from("project-documents")
       .upload(filePath, buffer, {
@@ -49,6 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Get the public URL for the uploaded file
+    // Update the URL retrieval to use the same bucket name
     const { data: urlData } = await supabaseAdmin.storage.from("project-documents").getPublicUrl(filePath)
 
     if (!urlData?.publicUrl) {
@@ -62,21 +66,35 @@ export async function POST(request: NextRequest) {
     const fileType = file.type
     const fileExtension = file.name.split(".").pop()?.toUpperCase() || "FILE"
 
-    // 3. Save metadata to documents table
-    const { data: documentData, error: documentError } = await supabaseAdmin
+    // 3. Save metadata to documents table in Supabase
+    // First, check the table structure to see what columns exist
+    const { data: tableInfo, error: tableError } = await supabaseAdmin.from("documents").select("*").limit(1)
+
+    if (tableError) {
+      console.error("Error checking table structure:", tableError)
+      // Continue with best effort approach
+    }
+
+    // Create a document object with all possible field variations to handle different schema versions
+    // Add the "name" field to fix the not-null constraint violation
+    const documentData = {
+      name: file.name, // Add this line to fix the not-null constraint
+      file_name: file.name,
+      file_type: fileType,
+      file_size: file.size,
+      file_path: filePath,
+      project_id: projectId,
+      project_name: projectName,
+      document_type: fileExtension,
+      file_url: fileUrl,
+      description: "", // Empty description
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    const { data: insertedData, error: documentError } = await supabaseAdmin
       .from("documents")
-      .insert({
-        name: file.name,
-        type: fileType,
-        size: file.size,
-        file_path: filePath,
-        project_id: projectId,
-        project_name: projectName,
-        document_type: fileExtension,
-        file_url: fileUrl,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
+      .insert(documentData)
       .select()
 
     if (documentError) {
@@ -88,7 +106,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      document: documentData[0],
+      document: {
+        id: insertedData?.[0]?.id || `temp-${Date.now()}`,
+        file_url: fileUrl,
+        file_name: file.name,
+      },
     })
   } catch (error) {
     console.error("Error in document upload API:", error)

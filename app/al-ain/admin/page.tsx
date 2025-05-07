@@ -1,4 +1,4 @@
-import AdminPageClient from "./AdminPageClient"
+import AdminWrapper from "./AdminWrapper"
 import { AuthProvider } from "@/app/contexts/AuthContext"
 
 export const metadata = {
@@ -9,7 +9,7 @@ export const metadata = {
 export default function AdminPage() {
   return (
     <AuthProvider>
-      <AdminPageClient />
+      <AdminWrapper />
     </AuthProvider>
   )
 }

@@ -1,12 +1,24 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 import { neon } from "@neondatabase/serverless"
-import { Redis } from "@upstash/redis"
+import type { Redis } from "@upstash/redis"
+let _Redis: any
 import { type DatabaseType, databaseEnvVars, isDatabaseConfigured } from "./database-config"
 
 // Singleton instances
 let supabaseInstance: ReturnType<typeof createSupabaseClient> | null = null
 let neonInstance: ReturnType<typeof neon> | null = null
 let redisInstance: Redis | null = null
+
+if (typeof window === "undefined") {
+  // Only import Redis on the server side
+  import("@upstash/redis")
+    .then((module) => {
+      _Redis = module.Redis
+    })
+    .catch((err) => {
+      console.error("Failed to import Redis:", err)
+    })
+}
 
 /**
  * Get a Supabase client
@@ -79,8 +91,18 @@ export function getNeonClient() {
  * Get a Redis client
  */
 export function getRedisClient() {
+  if (typeof window !== "undefined") {
+    console.error("Redis client cannot be used on the client side")
+    return null
+  }
+
   if (!isDatabaseConfigured("redis")) {
     console.error("Redis is not configured")
+    return null
+  }
+
+  if (!_Redis) {
+    console.error("Redis module not loaded yet")
     return null
   }
 
@@ -93,7 +115,7 @@ export function getRedisClient() {
     }
 
     try {
-      redisInstance = new Redis({
+      redisInstance = new _Redis({
         url,
         token,
       })
