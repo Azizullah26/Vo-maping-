@@ -1,15 +1,8 @@
-import { Pool } from "pg"
-
 // Nile API configuration
 const NILE_API_URL = process.env.NILEDB_API_URL || "https://api.thenile.dev"
 const NILE_API_TOKEN = process.env.NILEDB_API_TOKEN
 const NILE_DATABASE_ID = process.env.NILEDB_DATABASE_ID || "0194e938-6835-709a-88b7-939874e020f7"
 const NILE_WORKSPACE_ID = process.env.NILEDB_WORKSPACE_ID || "0194e937-c587-7a9e-865b-ee1c66fefed3"
-
-const pool = new Pool({
-  connectionString: process.env.NILEDB_POSTGRES_URL,
-  ssl: process.env.VERCEL_ENV === "production" ? { rejectUnauthorized: false } : false,
-})
 
 /**
  * Nile API client for interacting with Nile database
