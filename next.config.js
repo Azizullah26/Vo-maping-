@@ -16,11 +16,26 @@ const nextConfig = {
     ],
     unoptimized: true,
   },
-  // Simplified webpack configuration
-  webpack: (config) => {
-    // Add resolve aliases for problematic packages
-    config.resolve.alias = {
-      ...config.resolve.alias,
+  // Improved webpack configuration to handle polyfills
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Replace Node.js modules with browser-compatible versions or empty objects
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: require.resolve("crypto-browserify"),
+        stream: require.resolve("stream-browserify"),
+        util: require.resolve("util/"),
+        buffer: require.resolve("buffer/"),
+        assert: require.resolve("assert/"),
+        http: false,
+        https: false,
+        os: false,
+        path: false,
+        zlib: false,
+      }
     }
 
     return config

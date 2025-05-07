@@ -79,22 +79,32 @@ export async function initializeDatabase(): Promise<boolean> {
   }
 }
 
-/**
- * Check if the database connection is working
- */
-export async function checkDatabaseConnection(): Promise<boolean> {
+// Add a polyfill-safe version of the database check function
+import { createClient } from "@supabase/supabase-js"
+
+// Create a simple function that doesn't rely on Node.js built-ins
+export async function checkDatabaseConnection() {
   try {
-    if (!sql) {
-      await initializeDatabase()
+    // Check if we have the required environment variables
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      console.warn("Missing Supabase environment variables")
+      return false
     }
 
-    if (sql) {
-      await sql`SELECT 1`
-      return true
+    // Create a Supabase client
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
+    // Perform a simple query to check connection
+    const { data, error } = await supabase.from("documents").select("count", { count: "exact" }).limit(1)
+
+    if (error) {
+      console.error("Supabase connection error:", error)
+      return false
     }
-    return false
+
+    return true
   } catch (error) {
-    console.error("Database connection check failed:", error)
+    console.error("Database check error:", error)
     return false
   }
 }
