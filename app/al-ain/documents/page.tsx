@@ -167,93 +167,202 @@ export default function DocumentsPage() {
   }, [projectId, folderId, searchQuery])
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Breadcrumb
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Al Ain", href: "/al-ain" },
-          { label: "Documents", href: "/al-ain/documents" },
-          ...(projectId ? [{ label: projectId, href: `/al-ain/documents?project=${projectId}` }] : []),
-          ...(currentFolder
-            ? [{ label: currentFolder.split("/").pop() || "", href: `/al-ain/documents?folder=${currentFolder}` }]
-            : []),
-        ]}
-      />
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
+      {/* Header section with background */}
+      <div className="relative bg-[#0a192f] overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-20"></div>
 
-      <div className="flex flex-col md:flex-row gap-6 mt-6">
-        <div className="w-full md:w-1/3 lg:w-1/4">
-          <div className="bg-white rounded-lg shadow p-4">
-            <h2 className="text-xl font-semibold mb-4">Documents</h2>
+        {/* Top decorative element */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500"></div>
 
-            {/* Search input */}
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search documents..."
-                className="w-full px-3 py-2 border rounded-md"
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-              />
-            </div>
+        <div className="container mx-auto px-4 py-8">
+          <Breadcrumb
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Al Ain", href: "/al-ain" },
+              { label: "Documents", href: "/al-ain/documents" },
+              ...(projectId ? [{ label: projectId, href: `/al-ain/documents?project=${projectId}` }] : []),
+              ...(currentFolder
+                ? [{ label: currentFolder.split("/").pop() || "", href: `/al-ain/documents?folder=${currentFolder}` }]
+                : []),
+            ]}
+          />
 
-            {/* Folders list */}
-            {folders.length > 0 && (
-              <div className="mb-4">
-                <h3 className="font-medium mb-2">Folders</h3>
-                <ul className="space-y-1">
-                  {folders.map((folder) => (
-                    <li key={folder}>
-                      <button
-                        onClick={() => handleFolderSelect(folder)}
-                        className="flex items-center text-blue-600 hover:underline"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 mr-1"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                          />
-                        </svg>
-                        {folder.split("/").pop()}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+          {/* Project title and details */}
+          <div className="mt-8 mb-6">
+            <h1 className="text-3xl font-bold text-white mb-2">
+              {projectId ? `${projectId} Documents` : "Al Ain Project Documents"}
+            </h1>
+            <div className="flex items-center space-x-4 text-gray-300">
+              <div className="flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-1 text-cyan-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <span className="text-sm">Last updated: {new Date().toLocaleDateString()}</span>
               </div>
-            )}
-
-            {/* Documents list */}
-            {error ? (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            ) : (
-              <DocumentsList
-                documents={documents}
-                loading={loading}
-                onSelect={handleDocumentSelect}
-                selectedId={selectedDocument?.id}
-              />
-            )}
+              <div className="flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-1 text-cyan-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <span className="text-sm">{documents.length} documents</span>
+              </div>
+              {projectId && (
+                <div className="flex items-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1 text-cyan-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <span className="text-sm">Project ID: {projectId}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="w-full md:w-2/3 lg:w-3/4">
-          <div className="bg-white rounded-lg shadow p-4 min-h-[500px]">
-            {selectedDocument ? (
-              <DocumentPreview document={selectedDocument} />
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-gray-500">Select a document to preview</p>
+      {/* Main content with glass effect */}
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="w-full md:w-1/3 lg:w-1/4">
+            <div className="bg-gray-800/70 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700 p-4">
+              <h2 className="text-xl font-semibold mb-4 text-white">Documents</h2>
+
+              {/* Search input with enhanced styling */}
+              <div className="mb-4 relative">
+                <input
+                  type="text"
+                  placeholder="Search documents..."
+                  className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
               </div>
-            )}
+
+              {/* Folders list with enhanced styling */}
+              {folders.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="font-medium mb-2 text-cyan-400">Folders</h3>
+                  <ul className="space-y-1">
+                    {folders.map((folder) => (
+                      <li key={folder} className="group">
+                        <button
+                          onClick={() => handleFolderSelect(folder)}
+                          className="flex items-center w-full text-gray-300 hover:text-cyan-400 transition-colors py-1 px-2 rounded hover:bg-gray-700/50 group-hover:bg-gray-700/30"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 mr-2 text-gray-400 group-hover:text-cyan-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                            />
+                          </svg>
+                          <span className="truncate">{folder.split("/").pop()}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Documents list with error handling */}
+              {error ? (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              ) : (
+                <DocumentsList
+                  documents={documents}
+                  loading={loading}
+                  onSelect={handleDocumentSelect}
+                  selectedId={selectedDocument?.id}
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="w-full md:w-2/3 lg:w-3/4">
+            <div className="bg-gray-800/70 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700 p-4 min-h-[500px]">
+              {selectedDocument ? (
+                <DocumentPreview document={selectedDocument} />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                  <div className="w-16 h-16 bg-gray-700/50 rounded-full flex items-center justify-center mb-4">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-8 w-8 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-gray-400 mb-2">Select a document to preview</p>
+                  <p className="text-gray-500 text-sm max-w-md">
+                    Browse through the available documents in the sidebar or use the search function to find specific
+                    files.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

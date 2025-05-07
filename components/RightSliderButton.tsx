@@ -308,7 +308,7 @@ export const RightSliderButton = ({
       </Button>
       <div
         className={cn(
-          "fixed top-[5rem] sm:top-16 md:top-[4.5rem] right-0 max-h-[calc(100vh-5rem)] sm:max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-4.5rem)] w-[280px] transform transition-transform ease-out-expo duration-500 z-[99999] shadow-md bg-[#0a192f]/90 overflow-y-auto",
+          "fixed top-1/2 sm:top-1/2 md:top-1/2 right-0 transform -translate-y-1/2 max-h-[80vh] w-[280px] transition-transform ease-out-expo duration-500 z-[99999] shadow-md bg-[#0a192f]/90 overflow-y-auto",
           isOpen ? "translate-x-0" : "translate-x-full",
         )}
       >
