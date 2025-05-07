@@ -67,7 +67,6 @@
     "react-native": "latest",
     "pg-native": "latest",
     "@supabase/supabase-js": "latest",
-    "jspdf": "latest",
     "mapbox-gl": "latest",
     "@react-three/drei": "latest",
     "pdfkit": "latest",
@@ -83,8 +82,7 @@
     "child_process": "latest",
     "uuid": "latest",
     "@supabase/auth-helpers-nextjs": "latest",
-    "glob": "latest",
-    "jspdf-autotable": "latest"
+    "glob": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

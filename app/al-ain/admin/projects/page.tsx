@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, ArrowUpDown, Edit, FileText, Loader2, Plus, Save, Search, Trash2 } from "lucide-react"
+import { ArrowLeft, ArrowUpDown, Edit, Loader2, Plus, Save, Search, Trash2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { toast } from "@/components/ui/use-toast"
@@ -42,7 +42,6 @@ export default function ProjectsPage() {
   const [editFormData, setEditFormData] = useState<Project | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
-  const [isPdfExporting, setIsPdfExporting] = useState(false)
   const tableRef = useRef<HTMLDivElement>(null)
 
   // Fetch projects from the database
@@ -283,80 +282,6 @@ export default function ProjectsPage() {
     })
   }
 
-  // Export to PDF - completely client-side implementation
-  const exportToPDF = async () => {
-    // Only run on client side
-    if (typeof window === "undefined") return
-
-    try {
-      setIsPdfExporting(true)
-
-      // Dynamically import the modules only on client side
-      const jspdfPromise = import("jspdf").catch(() => {
-        console.error("Failed to load jspdf")
-        return { default: null }
-      })
-
-      const autotablePromise = import("jspdf-autotable").catch(() => {
-        console.error("Failed to load jspdf-autotable")
-        return { default: null }
-      })
-
-      const [jspdfModule, autotableModule] = await Promise.all([jspdfPromise, autotablePromise])
-
-      if (!jspdfModule.default || !autotableModule.default) {
-        throw new Error("PDF generation libraries could not be loaded")
-      }
-
-      const jsPDF = jspdfModule.default
-      const autoTable = autotableModule.default
-
-      const doc = new jsPDF()
-
-      // Add title
-      doc.setFontSize(18)
-      doc.text("Projects Report", 14, 22)
-
-      // Add date
-      doc.setFontSize(11)
-      doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 30)
-
-      // Create table
-      autoTable(doc, {
-        head: [["Name", "Start Date", "End Date", "Status", "Progress", "Budget", "Manager"]],
-        body: filteredProjects.map((project) => [
-          project.name,
-          project.start_date,
-          project.end_date,
-          project.status,
-          `${project.progress}%`,
-          project.budget,
-          project.manager,
-        ]),
-        startY: 40,
-        styles: { fontSize: 10, cellPadding: 3 },
-        headStyles: { fillColor: [27, 20, 100] },
-      })
-
-      // Save PDF
-      doc.save("projects-report.pdf")
-
-      toast({
-        title: "PDF Exported",
-        description: "The projects report has been exported to PDF.",
-      })
-    } catch (err) {
-      console.error("Error exporting to PDF:", err)
-      toast({
-        title: "Export Failed",
-        description: "Failed to export projects to PDF. Please try again later.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsPdfExporting(false)
-    }
-  }
-
   // Render status badge with appropriate color
   const renderStatusBadge = (status: Project["status"]) => {
     const statusColors: Record<Project["status"], string> = {
@@ -393,16 +318,7 @@ export default function ProjectsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Projects</h1>
         <div className="flex items-center gap-2">
-          <Button
-            onClick={exportToPDF}
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-1"
-            disabled={isPdfExporting || typeof window === "undefined"}
-          >
-            {isPdfExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
-            {isPdfExporting ? "Exporting..." : "Export PDF"}
-          </Button>
+          {/* PDF Export button removed */}
           <Button className="bg-[#1B1464] hover:bg-[#1B1464]/90">
             <Plus className="h-4 w-4 mr-2" /> Add Project
           </Button>
@@ -514,7 +430,7 @@ export default function ProjectsPage() {
               <TableRow>
                 <TableCell colSpan={8} className="h-24 text-center">
                   <div className="flex justify-center items-center">
-                    <Loader2 className="h-6 w-4 animate-spin mr-2" />
+                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
                     Loading projects...
                   </div>
                 </TableCell>

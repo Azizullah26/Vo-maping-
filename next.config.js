@@ -12,18 +12,7 @@ const nextConfig = {
     unoptimized: true,
   },
   webpack: (config, { isServer }) => {
-    // For server-side rendering, provide empty mocks for browser-only modules
-    if (isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        html2canvas: require.resolve("./lib/empty-module.js"),
-        canvg: require.resolve("./lib/empty-module.js"),
-        jspdf: require.resolve("./lib/empty-module.js"),
-        "jspdf-autotable": require.resolve("./lib/empty-module.js"),
-      }
-    }
-
-    // For client-side, provide fallbacks for node modules
+    // Simplified webpack configuration
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
