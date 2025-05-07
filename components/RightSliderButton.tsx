@@ -32,23 +32,31 @@ const ProjectsDetailsSlider = ({ projects, onProjectClick }: ProjectsDetailsSlid
           Projects Details
         </h1>
         <div className="flex justify-around w-full">
-          <Button variant="ghost" className="flex flex-col items-center hover:bg-gray-700/20 rounded-md">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-white flex items-center justify-center font-bold shadow-md">
-              38
+          <Button variant="ghost" className="flex flex-col items-center hover:bg-gray-700/20 rounded-md group">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-white flex items-center justify-center font-bold shadow-lg relative overflow-hidden transition-all duration-300 group-hover:scale-110 border border-blue-300/30">
+              <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-transparent opacity-70"></div>
+              <span className="relative z-10">38</span>
+              <div className="absolute -inset-1 bg-blue-400/20 blur-sm group-hover:bg-blue-400/30 transition-all duration-300"></div>
             </div>
-            <p className="text-xs text-white mt-1">All</p>
+            <p className="text-xs text-white mt-1 group-hover:text-blue-300 transition-colors">All</p>
           </Button>
-          <Button variant="ghost" className="flex flex-col items-center hover:bg-gray-700/20 rounded-md">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-green-600 text-white flex items-center justify-center font-bold shadow-md">
-              24
+
+          <Button variant="ghost" className="flex flex-col items-center hover:bg-gray-700/20 rounded-md group">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-green-600 text-white flex items-center justify-center font-bold shadow-lg relative overflow-hidden transition-all duration-300 group-hover:scale-110 border border-green-300/30">
+              <div className="absolute inset-0 bg-gradient-to-tr from-green-500/20 to-transparent opacity-70"></div>
+              <span className="relative z-10">24</span>
+              <div className="absolute -inset-1 bg-green-400/20 blur-sm group-hover:bg-green-400/30 transition-all duration-300"></div>
             </div>
-            <p className="text-xs text-white mt-1">Active</p>
+            <p className="text-xs text-white mt-1 group-hover:text-green-300 transition-colors">Active</p>
           </Button>
-          <Button variant="ghost" className="flex flex-col items-center hover:bg-gray-700/20 rounded-md">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 text-white flex items-center justify-center font-bold shadow-md">
-              14
+
+          <Button variant="ghost" className="flex flex-col items-center hover:bg-gray-700/20 rounded-md group">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 text-white flex items-center justify-center font-bold shadow-lg relative overflow-hidden transition-all duration-300 group-hover:scale-110 border border-yellow-300/30">
+              <div className="absolute inset-0 bg-gradient-to-tr from-yellow-500/20 to-transparent opacity-70"></div>
+              <span className="relative z-10">14</span>
+              <div className="absolute -inset-1 bg-yellow-400/20 blur-sm group-hover:bg-yellow-400/30 transition-all duration-300"></div>
             </div>
-            <p className="text-xs text-white mt-1"> Construction</p>
+            <p className="text-xs text-white mt-1 group-hover:text-yellow-300 transition-colors"> Construction</p>
           </Button>
         </div>
 

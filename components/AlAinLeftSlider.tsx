@@ -663,16 +663,26 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
                   {/* Update the Docs button to navigate to the documents page when clicked */}
                   <button
                     onClick={() => {
-                      // Navigate to documents page with the selected project as a query parameter
-                      if (selectedProject) {
-                        router.push(
-                          `/al-ain/documents?project=${encodeURIComponent(selectedProject.projectNameEn)}&id=${selectedProject.id}`,
-                        )
-                      } else {
+                      try {
+                        console.log("Navigating to documents page...")
+                        // Navigate to documents page with the selected project as a query parameter
+                        if (selectedProject) {
+                          console.log("Selected project:", selectedProject)
+                          const url = `/al-ain/documents?project=${encodeURIComponent(selectedProject.projectNameEn)}&id=${selectedProject.id}`
+                          console.log("Navigation URL:", url)
+                          router.push(url)
+                        } else {
+                          console.log("No project selected, navigating to documents page without parameters")
+                          router.push("/al-ain/documents")
+                        }
+                      } catch (error) {
+                        console.error("Navigation error:", error)
+                        // Fallback navigation
                         router.push("/al-ain/documents")
                       }
                     }}
                     className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
+                    aria-label="View documents"
                   >
                     <div className="absolute inset-0 bg-cyan-500/10 rounded-full scale-0 group-hover:scale-150 transition-transform duration-700"></div>
                     <div className="text-cyan-400 mb-1 relative z-10">Docs</div>

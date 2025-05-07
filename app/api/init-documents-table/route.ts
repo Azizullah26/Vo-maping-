@@ -1,126 +1,178 @@
-// Ensure this matches the column structure in supabase/create-document-tables.sql
-// Only use snake_case column names: file_name, file_type, file_size, file_path, file_url,
-// project_id, project_name, description, document_type, created_at, updated_at
-
-import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import { NextResponse } from "next/server"
 
 export async function POST() {
   try {
-    // Initialize Supabase client
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    // Get Supabase credentials from environment variables
+    const supabaseUrl = process.env.SUPABASE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.SUPABASE_SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    if (!supabaseUrl || !supabaseServiceKey) {
+    if (!supabaseUrl || !supabaseKey) {
       return NextResponse.json(
         { success: false, message: "Missing Supabase credentials in environment variables" },
         { status: 500 },
       )
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        persistSession: false,
-      },
-    })
+    // Initialize Supabase client with service role key for admin privileges
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Create the documents table directly with SQL instead of using a stored procedure
-    const createTableSQL = `
-      CREATE TABLE IF NOT EXISTS documents (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        file_name VARCHAR(255) NOT NULL,
-        name VARCHAR(255),
-        file_type VARCHAR(100),
-        type VARCHAR(100),
-        size BIGINT,
-        file_size BIGINT,
-        file_path TEXT,
-        path TEXT,
-        file_url TEXT,
-        url TEXT,
-        project_id VARCHAR(50),
-        projectId VARCHAR(50),
-        project_name VARCHAR(255),
-        projectName VARCHAR(255),
-        description TEXT DEFAULT '',
-        document_type VARCHAR(50),
-        documentType VARCHAR(50),
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-      );
-      
-      -- Enable Row Level Security if it's not already enabled
-      ALTER TABLE IF EXISTS documents ENABLE ROW LEVEL SECURITY;
-    `
+    // Check if documents table exists
+    const { data: documentsExists, error: documentsError } = await supabase
+      .from("documents")
+      .select("id", { count: "exact", head: true })
+      .limit(1)
 
-    // Execute the SQL directly
-    const { error: createTableError } = await supabase
-      .rpc("exec_sql", { sql: createTableSQL })
-      .catch(() => {
-        // If exec_sql RPC doesn't exist, try direct SQL query
-        return supabase.from("_sql").rpc("query", { query: createTableSQL })
+    if (documentsError) {
+      // If error contains "relation \"documents\" does not exist", the table doesn't exist
+      if (documentsError.message.includes("relation") && documentsError.message.includes("does not exist")) {
+        console.log("Documents table does not exist, will create it")
+      } else {
+        console.error("Error checking documents table:", documentsError)
+      }
+    } else {
+      console.log("Documents table exists")
+      return NextResponse.json({
+        success: true,
+        message: "Documents table already exists",
       })
-      .catch(() => {
-        // If both methods fail, try a raw query (may not work in all Supabase setups)
-        return supabase.from("documents").select("*", { count: "exact", head: true })
-      })
-
-    if (createTableError) {
-      console.warn("Warning: Could not create documents table:", createTableError)
-      // Continue anyway, as the table might already exist
     }
 
-    // Try to create a policy for the documents table
-    const createPolicySQL = `
-      DO $$
-      BEGIN
-        IF NOT EXISTS (
-          SELECT FROM pg_policies 
-          WHERE tablename = 'documents' AND policyname = 'Allow all operations for authenticated users'
-        ) THEN
-          CREATE POLICY "Allow all operations for authenticated users" 
-          ON documents FOR ALL 
-          USING (auth.role() = 'authenticated');
-        END IF;
-      EXCEPTION WHEN OTHERS THEN
-        -- Policy creation might fail if RLS is not fully supported
-        NULL;
-      END
-      $$;
-    `
+    // Create documents table
+    console.log("Creating documents table...")
 
-    // Try to execute the policy creation
-    await supabase.rpc("exec_sql", { sql: createPolicySQL }).catch(() => {
-      // Ignore errors with policy creation
-      console.log("Note: Policy creation was skipped or failed, but this is not critical")
-    })
+    // Try multiple approaches to create the table
 
-    // Check if the table exists by querying it
-    const { count, error: checkError } = await supabase.from("documents").select("*", { count: "exact", head: true })
+    // Approach 1: Using _sql
+    try {
+      const { error: createDocumentsError } = await supabase
+        .from("_sql")
+        .select("*")
+        .execute(`
+        CREATE TABLE IF NOT EXISTS documents (
+          id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+          name TEXT,
+          file_name TEXT,
+          type TEXT,
+          file_type TEXT,
+          size BIGINT,
+          file_size BIGINT,
+          file_path TEXT,
+          file_url TEXT,
+          project_id TEXT NOT NULL,
+          project_name TEXT,
+          document_type TEXT,
+          description TEXT,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+      `)
 
-    if (checkError) {
+      if (createDocumentsError) {
+        console.error("Error creating documents table with _sql:", createDocumentsError)
+        throw createDocumentsError
+      } else {
+        console.log("Documents table created successfully with _sql")
+        return NextResponse.json({
+          success: true,
+          message: "Documents table created successfully",
+        })
+      }
+    } catch (err) {
+      console.error("Error with _sql approach:", err)
+      // Continue to next approach
+    }
+
+    // Approach 2: Using rpc exec
+    try {
+      const { error: sqlError } = await supabase.rpc("exec", {
+        query: `
+          CREATE TABLE IF NOT EXISTS documents (
+            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+            name TEXT,
+            file_name TEXT,
+            type TEXT,
+            file_type TEXT,
+            size BIGINT,
+            file_size BIGINT,
+            file_path TEXT,
+            file_url TEXT,
+            project_id TEXT NOT NULL,
+            project_name TEXT,
+            document_type TEXT,
+            description TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+          );
+        `,
+      })
+
+      if (sqlError) {
+        console.error("Error creating documents table with rpc:", sqlError)
+        throw sqlError
+      } else {
+        console.log("Documents table created successfully with rpc")
+        return NextResponse.json({
+          success: true,
+          message: "Documents table created successfully",
+        })
+      }
+    } catch (err) {
+      console.error("Error with rpc approach:", err)
+      // Continue to next approach
+    }
+
+    // Approach 3: Using raw SQL query
+    try {
+      const { error: rawSqlError } = await supabase.auth.admin.executeRaw(`
+        CREATE TABLE IF NOT EXISTS documents (
+          id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+          name TEXT,
+          file_name TEXT,
+          type TEXT,
+          file_type TEXT,
+          size BIGINT,
+          file_size BIGINT,
+          file_path TEXT,
+          file_url TEXT,
+          project_id TEXT NOT NULL,
+          project_name TEXT,
+          document_type TEXT,
+          description TEXT,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+      `)
+
+      if (rawSqlError) {
+        console.error("Error creating documents table with raw SQL:", rawSqlError)
+        throw rawSqlError
+      } else {
+        console.log("Documents table created successfully with raw SQL")
+        return NextResponse.json({
+          success: true,
+          message: "Documents table created successfully",
+        })
+      }
+    } catch (err) {
+      console.error("Error with raw SQL approach:", err)
+      // All approaches failed
       return NextResponse.json(
         {
           success: false,
-          message: "Failed to verify documents table creation",
-          error: checkError.message,
+          message:
+            "Failed to create documents table after trying multiple approaches. Please create it manually in the Supabase dashboard.",
+          error: err instanceof Error ? err.message : String(err),
         },
         { status: 500 },
       )
     }
-
-    return NextResponse.json({
-      success: true,
-      message: "Documents table initialized successfully",
-      exists: count !== null,
-    })
   } catch (error) {
     console.error("Error initializing documents table:", error)
     return NextResponse.json(
       {
         success: false,
-        message: "An error occurred while initializing the documents table",
-        error: error instanceof Error ? error.message : String(error),
+        message: `Error initializing documents table: ${error instanceof Error ? error.message : String(error)}`,
       },
       { status: 500 },
     )
