@@ -206,6 +206,12 @@ const markerStyles = `
   box-shadow: 0 0 16px rgba(255, 255, 255, 1);
 }
 
+/* Fixed position markers */
+.marker-fixed {
+  position: fixed !important;
+  z-index: 1000;
+}
+
 /* Responsive adjustments for all alignments */
 @media (max-width: 640px) {
   .marker-container {
@@ -279,9 +285,24 @@ function areCoordinatesEqual(coord1: [number, number], coord2: [number, number],
 }
 
 // Define markers that should always be hidden at initial zoom
-const ALWAYS_HIDDEN_MARKERS: string[] = ["مبنى إدارات شرطة", "مركز شرطة الجيمي القديم"]
+const ALWAYS_HIDDEN_MARKERS: string[] = ["مركز شرطة الجيمي القديم"]
 
-// Remove the three markers from the HIDDEN_AT_START array
+// Define markers that should always be visible at initial zoom
+const ALWAYS_VISIBLE_MARKERS: string[] = [
+  "16 Projects",
+  "7 Projects",
+  "2 Projects",
+  "1 Project",
+  "Alamerah 2 Projects",
+  "مركز شرطة رماح",
+  "مركز شرطة سويحان",
+  "مركز شرطة الهير",
+]
+
+// Define markers to exclude from the policeLocations loop
+const EXCLUDED_MARKERS: string[] = ["مركز شرطة رماح", "مركز شرطة سويحان", "مركز شرطة الهير"]
+
+// Updated: Remove the three police stations from HIDDEN_AT_START
 const HIDDEN_AT_START = [
   "قسم موسيقى شرطة أبوظبي",
   "إدارة التأهيل الشرطي - الفوعة",
@@ -313,6 +334,7 @@ const HIDDEN_AT_START = [
   "مركز شرطة المقام",
   "مركز شرطة الساد",
   "ساحة حجز المركبات - الساد",
+  "مركز شرطة الوقن",
 ]
 
 // Keep only these two area definitions
@@ -552,6 +574,13 @@ const zakhirPoliceStationArea = {
   id: 0,
 }
 
+// Define actual coordinates for the fixed position markers
+const FIXED_MARKER_COORDINATES = {
+  "مركز شرطة رماح": [55.37815, 24.19234] as [number, number],
+  "مركز شرطة سويحان": [55.33126, 24.47012] as [number, number],
+  "مركز شرطة الهير": [55.736118393917934, 24.5811877336795] as [number, number],
+}
+
 export default function AlAinMap({
   policeLocations,
   onToggleTerrain,
@@ -615,6 +644,20 @@ export default function AlAinMap({
       minZoom: 8.5,
       maxZoom: 16,
       dragPan: false, // Disable panning to fix the map in position
+      scrollZoom: true, // Enable scroll zoom
+    })
+
+    // Add scroll zoom handler to limit zooming out to initial zoom level
+    map.current.scrollZoom.setWheelZoomRate(0.02) // Make zoom smoother
+
+    // Store the initial zoom level
+    const initialZoom = getInitialZoom()
+
+    // Add a handler to prevent zooming out beyond the initial zoom level
+    map.current.on("zoom", () => {
+      if (map.current && map.current.getZoom() < initialZoom) {
+        map.current.setZoom(initialZoom)
+      }
     })
 
     // Set the mapRef if provided
@@ -998,6 +1041,13 @@ export default function AlAinMap({
           return
         }
 
+        // Skip creating markers for the excluded police stations
+        if (EXCLUDED_MARKERS.includes(location.name)) {
+          console.log(`Skipping marker creation for ${location.name} - will create fixed version instead`)
+          return
+        }
+
+        // Create regular markers for all other locations
         markers[location.name] = createMarker({
           name: location.name,
           coordinates: location.coordinates,
@@ -1056,6 +1106,28 @@ export default function AlAinMap({
         map: map.current!,
       })
 
+      // Add the police station markers using the same approach as project markers
+      markers["مركز شرطة رماح"] = createMarker({
+        name: "مركز شرطة رماح",
+        coordinates: FIXED_MARKER_COORDINATES["مركز شرطة رماح"],
+        alignment: "left-aligned",
+        map: map.current!,
+      })
+
+      markers["مركز شرطة سويحان"] = createMarker({
+        name: "مركز شرطة سويحان",
+        coordinates: FIXED_MARKER_COORDINATES["مركز شرطة سويحان"],
+        alignment: "left-aligned",
+        map: map.current!,
+      })
+
+      markers["مركز شرطة الهير"] = createMarker({
+        name: "مركز شرطة الهير",
+        coordinates: FIXED_MARKER_COORDINATES["مركز شرطة الهير"],
+        alignment: "bottom-aligned",
+        map: map.current!,
+      })
+
       // Add the "مركز شرطة المقام" marker with the same effects as "فلل للادرات الشرطية عشارج"
       markers["مركز شرطة المقام"] = createMarker({
         name: "مركز شرطة المقام",
@@ -1105,6 +1177,15 @@ export default function AlAinMap({
         }
       })
 
+      // Make sure the specified markers are always visible at initial zoom
+      ALWAYS_VISIBLE_MARKERS.forEach((markerName) => {
+        if (markers[markerName]) {
+          const element = markers[markerName].getElement()
+          element.style.display = "block"
+          console.log(`Setting ${markerName} to be always visible at initial zoom`)
+        }
+      })
+
       map.current.on("zoom", () => {
         const zoom = map.current!.getZoom()
 
@@ -1118,15 +1199,9 @@ export default function AlAinMap({
             return
           }
 
-          // Handle other markers normally
-          if (
-            name === "16 Projects" ||
-            name === "7 Projects" ||
-            name === "2 Projects" ||
-            name === "1 Project" ||
-            name === "Alamerah 2 Projects"
-          ) {
-            // Show project markers only at lower zoom levels
+          // Handle project markers
+          if (ALWAYS_VISIBLE_MARKERS.includes(name)) {
+            // Show these markers only at lower zoom levels
             element.style.display = zoom >= ZOOM_THRESHOLD ? "none" : "block"
           } else if (HIDDEN_AT_START.includes(name)) {
             // Show other markers only at higher zoom levels
@@ -1407,14 +1482,10 @@ export default function AlAinMap({
     }
 
     // Set initial visibility based on marker name
-    if (
-      name === "16 Projects" ||
-      name === "7 Projects" ||
-      name === "2 Projects" ||
-      name === "1 Project" ||
-      name === "Alamerah 2 Projects"
-    ) {
-      markerElement.style.display = map.getZoom() >= ZOOM_THRESHOLD ? "none" : "block"
+    if (ALWAYS_VISIBLE_MARKERS.includes(name)) {
+      // Always show these markers at initial zoom
+      markerElement.style.display = "block"
+      console.log(`Setting ${name} to be always visible at initial zoom`)
     } else if (ALWAYS_HIDDEN_MARKERS.includes(name)) {
       // Always hide these specific markers
       markerElement.style.display = "none"
