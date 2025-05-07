@@ -16,20 +16,20 @@ const nextConfig = {
     ],
     unoptimized: true,
   },
-  // Improved webpack configuration to handle polyfills
+  // Simplified webpack configuration that doesn't require additional dependencies
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      // Replace Node.js modules with browser-compatible versions or empty objects
+      // Replace Node.js modules with empty objects or false
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
         net: false,
         tls: false,
-        crypto: require.resolve("crypto-browserify"),
-        stream: require.resolve("stream-browserify"),
-        util: require.resolve("util/"),
-        buffer: require.resolve("buffer/"),
-        assert: require.resolve("assert/"),
+        crypto: false,
+        stream: false,
+        util: false,
+        buffer: false,
+        assert: false,
         http: false,
         https: false,
         os: false,
