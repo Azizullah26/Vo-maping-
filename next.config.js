@@ -29,6 +29,7 @@ const nextConfig = {
         util: require.resolve("util/"),
         fs: false,
         net: false,
+        inherits: require.resolve("inherits"), // Add inherits polyfill
       }
     }
 

@@ -1,3 +1,4 @@
+import "../../../lib/polyfills"
 import { NextResponse } from "next/server"
 import { checkDatabaseConnection } from "@/lib/db"
 
