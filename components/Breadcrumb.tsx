@@ -12,7 +12,7 @@ interface BreadcrumbProps {
   currentPath?: string
 }
 
-const Breadcrumb: React.FC<BreadcrumbProps> = ({ items = [], currentPath = "" }) => {
+export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items = [], currentPath = "" }) => {
   return (
     <nav
       aria-label="Breadcrumb navigation"
@@ -104,4 +104,5 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items = [], currentPath = "" })
   )
 }
 
+// Default export for backward compatibility
 export default Breadcrumb

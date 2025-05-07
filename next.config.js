@@ -9,7 +9,12 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["localhost", "example.com", "pbqfgjzvclwgxgvuzmul.supabase.co"],
+    domains: [
+      "localhost",
+      "example.com",
+      "pbqfgjzvclwgxgvuzmul.supabase.co",
+      "hebbkx1anhila5yf.public.blob.vercel-storage.com",
+    ],
     unoptimized: true,
   },
   // Simplified webpack configuration
@@ -35,6 +40,8 @@ const nextConfig = {
   },
   // Add output configuration for standalone deployment
   output: "standalone",
+  // Ensure trailing slashes are handled correctly
+  trailingSlash: false,
 }
 
 module.exports = nextConfig

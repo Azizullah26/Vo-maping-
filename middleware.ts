@@ -19,10 +19,12 @@ export function middleware(request: NextRequest) {
   return response
 }
 
-// Configure middleware to run for all routes
+// Configure middleware to run for specific routes, not all routes
 export const config = {
   matcher: [
-    // Apply to all routes
-    "/(.*)",
+    // Apply to API routes and exclude static files
+    "/api/:path*",
+    // Exclude static files, images, etc.
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 }
