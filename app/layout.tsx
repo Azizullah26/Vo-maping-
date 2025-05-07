@@ -8,8 +8,8 @@ import Script from "next/script"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "UAE Interactive Map",
-  description: "Explore UAE with an interactive map featuring projects and developments",
+  title: "EL RACE Projects – Building Tomorrow's Infrastructure Today",
+  description: "ELRACE Projects is a leading provider of innovative construction and infrastructure solutions across the UAE. From design to delivery, we ensure excellence in every project.",
   openGraph: {
     title: "ELRACE Projects – Building Tomorrow's Infrastructure Today",
     description:
