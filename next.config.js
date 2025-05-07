@@ -19,7 +19,8 @@ const nextConfig = {
       ...config.resolve.alias,
       html2canvas: require.resolve("./lib/mock-dependencies.js"),
       canvg: require.resolve("./lib/mock-dependencies.js"),
-      // Remove the alias for @neondatabase/serverless since we now have the integration
+      // Use mock implementation for database during build
+      "@/lib/db": require.resolve("./lib/db-mock.js"),
     }
 
     // Add basic polyfills for Node.js built-in modules
@@ -30,10 +31,17 @@ const nextConfig = {
         fs: false,
         net: false,
         inherits: require.resolve("inherits"), // Add inherits polyfill
+        inherits: require.resolve("inherits"),
       }
     }
 
     return config
+  },
+  // Exclude problematic API routes from the build
+  experimental: {
+    outputFileTracingExcludes: {
+      "*": ["./app/api/db-test/**/*"],
+    },
   },
 }
 

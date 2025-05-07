@@ -1,9 +1,11 @@
-import "../../../lib/polyfills"
 import { NextResponse } from "next/server"
-import { checkDatabaseConnection } from "@/lib/db"
 
+// Use a dynamic import to avoid loading the problematic code during build time
 export async function GET() {
   try {
+    // Only import and use the database module at runtime, not during build
+    const { checkDatabaseConnection } = await import("@/lib/db-runtime")
+
     const isConnected = await checkDatabaseConnection()
 
     return NextResponse.json({
