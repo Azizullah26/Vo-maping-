@@ -15,6 +15,10 @@ export default async function ProjectsPage() {
     error = err instanceof Error ? err.message : "Failed to load projects"
   }
 
+  // If projects is empty but no error, use a fallback message
+  const hasProjects = projects && projects.length > 0
+  const errorMessage = error || (!hasProjects ? "No projects found or unable to connect to database" : null)
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1b1464]/10 via-[#2a2a72]/10 to-[#000000]/10">
       <TopNav />
@@ -30,14 +34,20 @@ export default async function ProjectsPage() {
           </Link>
         </div>
 
-        {error ? (
+        {errorMessage ? (
           <div className="text-center py-12 bg-white rounded-lg shadow-md">
             <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-700">Error Loading Projects</h2>
-            <p className="text-gray-500 mt-2">{error}</p>
-            <p className="text-gray-500 mt-2">Please check your database connection and try again.</p>
+            <h2 className="text-xl font-semibold text-gray-700">Notice</h2>
+            <p className="text-gray-500 mt-2">{errorMessage}</p>
+            <p className="text-gray-500 mt-2">
+              {hasProjects
+                ? "Showing available projects."
+                : "Showing sample projects until database connection is restored."}
+            </p>
           </div>
-        ) : projects.length === 0 ? (
+        ) : null}
+
+        {!hasProjects && !error ? (
           <div className="text-center py-12 bg-white rounded-lg shadow-md">
             <h2 className="text-xl font-semibold text-gray-700">No projects found</h2>
             <p className="text-gray-500 mt-2">Get started by adding your first project</p>
