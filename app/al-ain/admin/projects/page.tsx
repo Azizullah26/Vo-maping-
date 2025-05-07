@@ -285,9 +285,20 @@ export default function ProjectsPage() {
   // Export to PDF
   const exportToPDF = async () => {
     try {
-      // Dynamic import to avoid SSR issues
-      const { default: jsPDF } = await import("jspdf")
-      const { default: autoTable } = await import("jspdf-autotable")
+      // Use our mock implementation during SSR
+      let jsPDF, autoTable
+
+      if (typeof window === "undefined") {
+        // Server-side rendering - use mocks
+        console.log("Using mock PDF generation on server")
+        return
+      } else {
+        // Client-side - dynamically import the real modules
+        const jsPDFModule = await import("jspdf")
+        const autoTableModule = await import("jspdf-autotable")
+        jsPDF = jsPDFModule.default
+        autoTable = autoTableModule.default
+      }
 
       const doc = new jsPDF()
 
