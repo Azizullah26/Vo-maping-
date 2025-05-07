@@ -208,7 +208,6 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
         // Apply filters if provided
         if (filterOptions.type) {
           // For document type, we need to check the file extension
-          // This assumes the type is stored in a column or can be extracted from the file name
           query = query.ilike("file_name", `%.${filterOptions.type.toLowerCase()}`)
         }
 
@@ -235,7 +234,11 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
         // Execute the query
         const { data, error } = await query
 
-        if (error) throw error
+        if (error) {
+          console.warn("Error fetching documents:", error.message)
+          setDemoDocuments()
+          return
+        }
 
         if (data && data.length > 0) {
           // Format documents
@@ -423,38 +426,64 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
     // Fetch documents initially
     fetchDocuments(filters)
 
-    // Set up Supabase realtime subscription if credentials are available
+    // Set up polling as a fallback mechanism
+    const pollingInterval = setInterval(() => {
+      fetchDocuments(filters)
+    }, 30000) // Poll every 30 seconds as a fallback
+
+    // Try to set up Supabase realtime subscription if credentials are available
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    let subscription
+    let subscription: { unsubscribe: () => void } | undefined
+
     if (supabaseUrl && supabaseAnonKey) {
       try {
         const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-        subscription = supabase
-          .channel("documents-changes")
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "documents",
-            },
-            (payload) => {
-              console.log("Change received in left slider!", payload)
-              fetchDocuments(filters) // Refresh documents when changes occur, maintaining current filters
-            },
-          )
-          .subscribe((status) => {
-            if (status === "SUBSCRIBED") {
-              console.log("Successfully subscribed to documents changes")
-            } else if (status === "CHANNEL_ERROR") {
-              console.error("Failed to subscribe to documents changes")
+        // First check if the documents table exists
+        supabase
+          .from("documents")
+          .select("count", { count: "exact", head: true })
+          .then(({ error }) => {
+            if (error) {
+              console.warn("Documents table may not exist or is not accessible:", error.message)
+              return // Don't attempt to subscribe if table doesn't exist
+            }
+
+            // Table exists, set up subscription
+            try {
+              const channel = supabase.channel("documents-changes")
+
+              subscription = channel
+                .on(
+                  "postgres_changes",
+                  {
+                    event: "*",
+                    schema: "public",
+                    table: "documents",
+                  },
+                  (payload) => {
+                    console.log("Change received in left slider!", payload)
+                    fetchDocuments(filters) // Refresh documents when changes occur
+                  },
+                )
+                .subscribe((status) => {
+                  if (status === "SUBSCRIBED") {
+                    console.log("Successfully subscribed to documents changes")
+                  } else if (status === "CHANNEL_ERROR") {
+                    console.warn("Failed to subscribe to documents changes, falling back to polling")
+                  }
+                })
+            } catch (subError) {
+              console.warn("Error setting up subscription:", subError)
             }
           })
+          .catch((err) => {
+            console.warn("Error checking documents table:", err)
+          })
       } catch (error) {
-        console.error("Error setting up Supabase subscription:", error)
+        console.warn("Error initializing Supabase client:", error)
       }
     }
 
@@ -468,9 +497,17 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
     window.addEventListener("documentUpdate", handleDocumentUpdate as EventListener)
 
     return () => {
+      // Clean up all subscriptions and listeners
+      clearInterval(pollingInterval)
+
       if (subscription) {
-        subscription.unsubscribe()
+        try {
+          subscription.unsubscribe()
+        } catch (error) {
+          console.warn("Error unsubscribing from channel:", error)
+        }
       }
+
       window.removeEventListener("documentUpdate", handleDocumentUpdate as EventListener)
     }
   }, [filters]) // Re-run when filters change
