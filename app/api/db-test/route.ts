@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server"
-import { checkDatabaseConnection } from "@/lib/db"
 
 export async function GET() {
   try {
+    // Import the database function dynamically to avoid build-time issues
+    const { checkDatabaseConnection } = await import("@/lib/db")
+
     const isConnected = await checkDatabaseConnection()
 
     return NextResponse.json({

@@ -1,4 +1,5 @@
-import { neon } from "@neondatabase/serverless"
+// Import dynamically to avoid build-time issues
+let neon: any = null
 
 // Demo data for when database is not configured
 const DEMO_DOCUMENTS = [
@@ -28,6 +29,20 @@ const DEMO_DOCUMENTS = [
   },
 ]
 
+// Dynamically import neon to avoid build-time issues
+async function getNeon() {
+  if (!neon) {
+    try {
+      const module = await import("@neondatabase/serverless")
+      neon = module.neon
+    } catch (error) {
+      console.error("Failed to import neon:", error)
+      return null
+    }
+  }
+  return neon
+}
+
 // SQL client using neon
 let sql: ReturnType<typeof neon> | null = null
 
@@ -44,7 +59,13 @@ export async function initializeDatabase(): Promise<boolean> {
         return false
       }
 
-      sql = neon(connectionString)
+      const neonFn = await getNeon()
+      if (!neonFn) {
+        console.error("Failed to load neon database driver")
+        return false
+      }
+
+      sql = neonFn(connectionString)
 
       // Test the connection
       await sql`SELECT 1`

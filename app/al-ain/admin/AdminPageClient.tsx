@@ -1882,211 +1882,238 @@ export default function AdminPageClient() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {projectsData
-                          .filter((p) => p.name === selectedProject)
-                          .map((project) => {
-                            const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-                              const { name, value } = e.target
-                              setEditedProject((prev) => ({ ...prev, [name]: value }))
-                            }
+                        {projectsData.filter((p) => p.name === selectedProject).length > 0 ? (
+                          projectsData
+                            .filter((p) => p.name === selectedProject)
+                            .map((project) => {
+                              const handleInputChange = (
+                                e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+                              ) => {
+                                const { name, value } = e.target
+                                setEditedProject((prev) => ({ ...prev, [name]: value }))
+                              }
 
-                            return (
-                              <div key={project.id} className="space-y-4">
-                                {isEditing ? (
-                                  <>
-                                    <div>
-                                      <p className="text-sm text-gray-500">Project Name</p>
-                                      <Input
-                                        name="name"
-                                        value={editedProject.name || project.name}
-                                        onChange={handleInputChange}
-                                        className="mt-1"
-                                      />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-2">
+                              return (
+                                <div key={project.id} className="space-y-4">
+                                  {isEditing ? (
+                                    <>
                                       <div>
-                                        <p className="text-sm text-gray-500">Project ID</p>
-                                        <p className="font-medium">{project.id}</p>
-                                      </div>
-                                      <div>
-                                        <p className="text-sm text-gray-500">Status</p>
-                                        <Select
-                                          value={editedProject.status || project.status}
-                                          onValueChange={(value) =>
-                                            setEditedProject((prev) => ({ ...prev, status: value }))
-                                          }
-                                        >
-                                          <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select status" />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="Active">Active</SelectItem>
-                                            <SelectItem value="Completed">Completed</SelectItem>
-                                            <SelectItem value="Delayed">Delayed</SelectItem>
-                                            <SelectItem value="On Hold">On Hold</SelectItem>
-                                            <SelectItem value="Cancelled">Cancelled</SelectItem>
-                                            <SelectItem value="Pending">Pending</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                    </div>
-
-                                    <div>
-                                      <p className="text-sm text-gray-500">Project Manager</p>
-                                      <Input
-                                        name="manager"
-                                        value={editedProject.manager || project.manager}
-                                        onChange={handleInputChange}
-                                        className="mt-1"
-                                      />
-                                    </div>
-
-                                    <div>
-                                      <p className="text-sm text-gray-500">Project Location</p>
-                                      <Input
-                                        name="location"
-                                        value={editedProject.location || project.location || "Al Ain, UAE"}
-                                        onChange={handleInputChange}
-                                        className="mt-1"
-                                      />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-2">
-                                      <div>
-                                        <p className="text-sm text-gray-500">Start Date</p>
+                                        <p className="text-sm text-gray-500">Project Name</p>
                                         <Input
-                                          type="date"
-                                          name="startDate"
-                                          value={editedProject.startDate || project.startDate}
+                                          name="name"
+                                          value={editedProject.name || project.name}
                                           onChange={handleInputChange}
                                           className="mt-1"
                                         />
                                       </div>
+
+                                      <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                          <p className="text-sm text-gray-500">Project ID</p>
+                                          <p className="font-medium">{project.id}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-sm text-gray-500">Status</p>
+                                          <Select
+                                            value={editedProject.status || project.status}
+                                            onValueChange={(value) =>
+                                              setEditedProject((prev) => ({ ...prev, status: value }))
+                                            }
+                                          >
+                                            <SelectTrigger className="w-full">
+                                              <SelectValue placeholder="Select status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="Active">Active</SelectItem>
+                                              <SelectItem value="Completed">Completed</SelectItem>
+                                              <SelectItem value="Delayed">Delayed</SelectItem>
+                                              <SelectItem value="On Hold">On Hold</SelectItem>
+                                              <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                              <SelectItem value="Pending">Pending</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                      </div>
+
                                       <div>
-                                        <p className="text-sm text-gray-500">End Date</p>
+                                        <p className="text-sm text-gray-500">Project Manager</p>
                                         <Input
-                                          type="date"
-                                          name="endDate"
-                                          value={editedProject.endDate || project.endDate}
+                                          name="manager"
+                                          value={editedProject.manager || project.manager}
                                           onChange={handleInputChange}
                                           className="mt-1"
                                         />
                                       </div>
-                                    </div>
 
-                                    <div>
-                                      <p className="text-sm text-gray-500">Time Remaining</p>
-                                      <Input
-                                        name="due"
-                                        value={editedProject.due || project.due}
-                                        onChange={handleInputChange}
-                                        className="mt-1"
-                                      />
-                                    </div>
-
-                                    <div>
-                                      <p className="text-sm text-gray-500">Budget</p>
-                                      <Input
-                                        name="amount"
-                                        value={editedProject.amount || project.amount}
-                                        onChange={handleInputChange}
-                                        className="mt-1"
-                                      />
-                                    </div>
-
-                                    <div>
-                                      <p className="text-sm text-gray-500">Progress (%)</p>
-                                      <Input
-                                        type="number"
-                                        min="0"
-                                        max="100"
-                                        name="progress"
-                                        value={editedProject.progress || project.progress}
-                                        onChange={handleInputChange}
-                                        className="mt-1"
-                                      />
-                                      {renderProgressBar(Number(editedProject.progress || project.progress))}
-                                    </div>
-
-                                    <div className="flex justify-end gap-2 pt-2">
-                                      <Button variant="outline" onClick={() => setIsEditing(false)}>
-                                        Cancel
-                                      </Button>
-                                      <Button
-                                        onClick={() => handleSaveProject(project)}
-                                        className="bg-[#1B1464] hover:bg-[#1B1464]/90"
-                                      >
-                                        Save Changes
-                                      </Button>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <>
-                                    <div className="border-b pb-3">
-                                      <h3 className="text-lg font-bold text-[#1B1464]">{project.name}</h3>
-                                      <p className="text-sm text-gray-600">ID: {project.id}</p>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
                                       <div>
-                                        <p className="text-sm text-gray-500">Status</p>
-                                        <p>{renderStatusBadge(project.status)}</p>
+                                        <p className="text-sm text-gray-500">Project Location</p>
+                                        <Input
+                                          name="location"
+                                          value={editedProject.location || project.location || "Al Ain, UAE"}
+                                          onChange={handleInputChange}
+                                          className="mt-1"
+                                        />
                                       </div>
-                                      <div>
-                                        <p className="text-sm text-gray-500">Progress</p>
-                                        {renderProgressBar(project.progress)}
+
+                                      <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                          <p className="text-sm text-gray-500">Start Date</p>
+                                          <Input
+                                            type="date"
+                                            name="startDate"
+                                            value={editedProject.startDate || project.startDate}
+                                            onChange={handleInputChange}
+                                            className="mt-1"
+                                          />
+                                        </div>
+                                        <div>
+                                          <p className="text-sm text-gray-500">End Date</p>
+                                          <Input
+                                            type="date"
+                                            name="endDate"
+                                            value={editedProject.endDate || project.endDate}
+                                            onChange={handleInputChange}
+                                            className="mt-1"
+                                          />
+                                        </div>
                                       </div>
-                                    </div>
 
-                                    <div>
-                                      <p className="text-sm text-gray-500">Project Manager</p>
-                                      <p className="font-medium">{project.manager}</p>
-                                    </div>
-
-                                    <div>
-                                      <p className="text-sm text-gray-500">Project Location</p>
-                                      <p className="font-medium">{project.location || "Al Ain, UAE"}</p>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <div>
-                                        <p className="text-sm text-gray-500">Start Date</p>
-                                        <p className="font-medium">{project.startDate}</p>
-                                      </div>
-                                      <div>
-                                        <p className="text-sm text-gray-500">End Date</p>
-                                        <p className="font-medium">{project.endDate}</p>
-                                      </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
                                       <div>
                                         <p className="text-sm text-gray-500">Time Remaining</p>
-                                        <p className="font-medium">{project.due}</p>
+                                        <Input
+                                          name="due"
+                                          value={editedProject.due || project.due}
+                                          onChange={handleInputChange}
+                                          className="mt-1"
+                                        />
                                       </div>
+
                                       <div>
                                         <p className="text-sm text-gray-500">Budget</p>
-                                        <p className="font-medium">{project.amount}</p>
+                                        <Input
+                                          name="amount"
+                                          value={editedProject.amount || project.amount}
+                                          onChange={handleInputChange}
+                                          className="mt-1"
+                                        />
                                       </div>
-                                    </div>
 
-                                    <div className="flex justify-end pt-2">
-                                      <Button
-                                        onClick={() => {
-                                          setIsEditing(true)
-                                          setEditedProject(project)
-                                        }}
-                                        className="bg-[#1B1464] hover:bg-[#1B1464]/90"
-                                      >
-                                        <Edit className="h-4 w-4 mr-2" /> Edit Project
-                                      </Button>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
-                            )
-                          })}
+                                      <div>
+                                        <p className="text-sm text-gray-500">Progress (%)</p>
+                                        <Input
+                                          type="number"
+                                          min="0"
+                                          max="100"
+                                          name="progress"
+                                          value={editedProject.progress || project.progress}
+                                          onChange={handleInputChange}
+                                          className="mt-1"
+                                        />
+                                        {renderProgressBar(Number(editedProject.progress || project.progress))}
+                                      </div>
+
+                                      <div className="flex justify-end gap-2 pt-2">
+                                        <Button variant="outline" onClick={() => setIsEditing(false)}>
+                                          Cancel
+                                        </Button>
+                                        <Button
+                                          onClick={() => handleSaveProject(project)}
+                                          className="bg-[#1B1464] hover:bg-[#1B1464]/90"
+                                        >
+                                          Save Changes
+                                        </Button>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div className="border-b pb-3">
+                                        <h3 className="text-lg font-bold text-[#1B1464]">{project.name}</h3>
+                                        <p className="text-sm text-gray-600">ID: {project.id}</p>
+                                      </div>
+
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <p className="text-sm text-gray-500">Status</p>
+                                          <p>{renderStatusBadge(project.status)}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-sm text-gray-500">Progress</p>
+                                          {renderProgressBar(project.progress)}
+                                        </div>
+                                      </div>
+
+                                      <div>
+                                        <p className="text-sm text-gray-500">Project Manager</p>
+                                        <p className="font-medium">{project.manager}</p>
+                                      </div>
+
+                                      <div>
+                                        <p className="text-sm text-gray-500">Project Location</p>
+                                        <p className="font-medium">{project.location || "Al Ain, UAE"}</p>
+                                      </div>
+
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <p className="text-sm text-gray-500">Start Date</p>
+                                          <p className="font-medium">{project.startDate}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-sm text-gray-500">End Date</p>
+                                          <p className="font-medium">{project.endDate}</p>
+                                        </div>
+                                      </div>
+
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <p className="text-sm text-gray-500">Time Remaining</p>
+                                          <p className="font-medium">{project.due}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-sm text-gray-500">Budget</p>
+                                          <p className="font-medium">{project.amount}</p>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex justify-end pt-2">
+                                        <Button
+                                          onClick={() => {
+                                            setIsEditing(true)
+                                            setEditedProject(project)
+                                          }}
+                                          className="bg-[#1B1464] hover:bg-[#1B1464]/90"
+                                        >
+                                          <Edit className="h-4 w-4 mr-2" /> Edit Project
+                                        </Button>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              )
+                            })
+                        ) : (
+                          <div className="text-center py-8">
+                            <Building2 className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                            <h3 className="text-lg font-medium text-gray-600 mb-1">No Project Selected</h3>
+                            <p className="text-sm text-gray-500 mb-4">
+                              Select a project from the dropdown above to view its details
+                            </p>
+                            {selectedProject && (
+                              <p className="text-sm text-amber-600">No data found for project: {selectedProject}</p>
+                            )}
+                            <Button
+                              variant="outline"
+                              className="mt-2"
+                              onClick={() => {
+                                // Set a default project if available
+                                if (projectsData.length > 0) {
+                                  setSelectedProject(projectsData[0].name)
+                                }
+                              }}
+                            >
+                              {projectsData.length > 0 ? "View Available Projects" : "Initialize Projects"}
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
