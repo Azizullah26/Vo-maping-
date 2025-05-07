@@ -1,5 +1,12 @@
-// Use a simple fetch-based approach instead of direct database access
-// This avoids native module dependencies
+import { Pool } from "pg"
+
+// Initialize Neon PostgreSQL connection
+const neonPool = new Pool({
+  connectionString: process.env.NEON_POSTGRES_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+})
 
 export interface Document {
   id: string
@@ -17,71 +24,69 @@ export interface Document {
 /**
  * Get all documents
  */
-export async function getAllDocuments(): Promise<{ success: boolean; data?: Document[]; error?: string }> {
+export async function getAllDocuments(): Promise<Document[]> {
+  const client = await neonPool.connect()
   try {
-    // Use fetch API instead of direct database access
-    const response = await fetch("/api/documents")
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
-    return { success: true, data }
-  } catch (error) {
-    console.error("Error fetching documents:", error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    }
+    const result = await client.query(`
+      SELECT * FROM documents
+      ORDER BY created_at DESC
+    `)
+    return result.rows
+  } finally {
+    client.release()
   }
 }
 
 /**
  * Get documents by project ID
  */
-export async function getDocumentsByProject(
-  projectId: string,
-): Promise<{ success: boolean; data?: Document[]; error?: string }> {
+export async function getDocumentsByProject(projectId: string): Promise<Document[]> {
+  const client = await neonPool.connect()
   try {
-    // Use fetch API instead of direct database access
-    const response = await fetch(`/api/documents/project/${projectId}`)
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
-    return { success: true, data }
-  } catch (error) {
-    console.error("Error fetching documents:", error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    }
+    const result = await client.query(
+      `
+      SELECT * FROM documents
+      WHERE project_id = $1
+      ORDER BY created_at DESC
+      `,
+      [projectId],
+    )
+    return result.rows
+  } finally {
+    client.release()
   }
 }
 
 /**
  * Delete a document by ID
  */
-export async function deleteDocument(id: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteDocument(id: string): Promise<boolean> {
+  const client = await neonPool.connect()
   try {
-    // Use fetch API instead of direct database access
-    const response = await fetch(`/api/documents/${id}`, {
-      method: "DELETE",
-    })
+    // First get the document to find the file path
+    const docResult = await client.query(
+      `
+      SELECT file_path FROM documents
+      WHERE id = $1
+      `,
+      [id],
+    )
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+    if (docResult.rows.length === 0) {
+      return false
     }
 
-    return { success: true }
-  } catch (error) {
-    console.error("Error deleting document:", error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    }
+    // Delete from database
+    await client.query(
+      `
+      DELETE FROM documents
+      WHERE id = $1
+      `,
+      [id],
+    )
+
+    return true
+  } finally {
+    client.release()
   }
 }

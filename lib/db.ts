@@ -1,4 +1,3 @@
-import "./polyfills"
 import { neon } from "@neondatabase/serverless"
 
 // Demo data for when database is not configured

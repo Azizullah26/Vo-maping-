@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  swcMinify: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -8,18 +9,26 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["randomuser.me", "ui-avatars.com"],
+    domains: ["localhost", "example.com"],
     unoptimized: true,
   },
+  // Simplified webpack configuration
   webpack: (config, { isServer }) => {
-    // Simplified webpack configuration
+    // Add resolve aliases for problematic packages
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      html2canvas: require.resolve("./lib/mock-dependencies.js"),
+      canvg: require.resolve("./lib/mock-dependencies.js"),
+      // Remove the alias for @neondatabase/serverless since we now have the integration
+    }
+
+    // Add basic polyfills for Node.js built-in modules
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
+        util: require.resolve("util/"),
         fs: false,
         net: false,
-        tls: false,
-        util: false,
       }
     }
 

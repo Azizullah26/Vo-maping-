@@ -66,6 +66,7 @@
     "expo-gl": "latest",
     "react-native": "latest",
     "pg-native": "latest",
+    "jspdf": "latest",
     "@supabase/supabase-js": "latest",
     "mapbox-gl": "latest",
     "@react-three/drei": "latest",
@@ -81,6 +82,7 @@
     "path": "latest",
     "child_process": "latest",
     "uuid": "latest",
+    "jspdf-autotable": "latest",
     "@supabase/auth-helpers-nextjs": "latest",
     "glob": "latest"
   },

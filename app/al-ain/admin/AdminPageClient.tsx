@@ -65,6 +65,7 @@ interface Project {
   amount: string
   manager: string
   managerId: string
+  location?: string
 }
 
 export default function AdminPageClient() {
@@ -210,6 +211,7 @@ export default function AdminPageClient() {
             amount: proj.budget || "AED 0",
             manager: proj.manager || "Unassigned",
             managerId: proj.manager_id || "",
+            location: proj.location || "Al Ain, UAE",
           }))
 
           // Replace static projectsData with fetched data
@@ -1538,26 +1540,15 @@ export default function AdminPageClient() {
                           ].map((user, index) => (
                             <tr key={index} className="border-b hover:bg-gray-50">
                               <td className="py-3 px-4">
-                                <div className="relative">
-                                  <div className="h-8 w-8 rounded-full overflow-hidden bg-[#E6E6F8] flex items-center justify-center text-[#1B1464] font-medium">
+                                <div className="flex items-center gap-3">
+                                  <div className="h-8 w-8 rounded-full bg-[#1B1464]/10 flex items-center justify-center text-[#1B1464] font-medium">
                                     {user.name
                                       .split(" ")
                                       .map((n) => n[0])
                                       .join("")}
                                   </div>
-                                  {user.status === "Active" && (
-                                    <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white">
-                                      <span className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75"></span>
-                                    </span>
-                                  )}
-                                  {user.status === "Away" && (
-                                    <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-yellow-500 ring-2 ring-white"></span>
-                                  )}
-                                  {user.status === "Inactive" && (
-                                    <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-gray-400 ring-2 ring-white"></span>
-                                  )}
+                                  <span>{user.name}</span>
                                 </div>
-                                <span>{user.name}</span>
                               </td>
                               <td className="py-3 px-4">{user.role}</td>
                               <td className="py-3 px-4">{user.department}</td>
@@ -1885,7 +1876,7 @@ export default function AdminPageClient() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <Card>
+                  <Card className="bg-white shadow-md hover:shadow-lg transition-shadow">
                     <CardHeader>
                       <CardTitle>Project Overview</CardTitle>
                     </CardHeader>
@@ -1903,6 +1894,16 @@ export default function AdminPageClient() {
                               <div key={project.id} className="space-y-4">
                                 {isEditing ? (
                                   <>
+                                    <div>
+                                      <p className="text-sm text-gray-500">Project Name</p>
+                                      <Input
+                                        name="name"
+                                        value={editedProject.name || project.name}
+                                        onChange={handleInputChange}
+                                        className="mt-1"
+                                      />
+                                    </div>
+
                                     <div className="grid grid-cols-2 gap-2">
                                       <div>
                                         <p className="text-sm text-gray-500">Project ID</p>
@@ -1932,20 +1933,20 @@ export default function AdminPageClient() {
                                     </div>
 
                                     <div>
-                                      <p className="text-sm text-gray-500">Project Name</p>
+                                      <p className="text-sm text-gray-500">Project Manager</p>
                                       <Input
-                                        name="name"
-                                        value={editedProject.name || project.name}
+                                        name="manager"
+                                        value={editedProject.manager || project.manager}
                                         onChange={handleInputChange}
                                         className="mt-1"
                                       />
                                     </div>
 
                                     <div>
-                                      <p className="text-sm text-gray-500">Project Manager</p>
+                                      <p className="text-sm text-gray-500">Project Location</p>
                                       <Input
-                                        name="manager"
-                                        value={editedProject.manager || project.manager}
+                                        name="location"
+                                        value={editedProject.location || project.location || "Al Ain, UAE"}
                                         onChange={handleInputChange}
                                         className="mt-1"
                                       />
@@ -1975,6 +1976,16 @@ export default function AdminPageClient() {
                                     </div>
 
                                     <div>
+                                      <p className="text-sm text-gray-500">Time Remaining</p>
+                                      <Input
+                                        name="due"
+                                        value={editedProject.due || project.due}
+                                        onChange={handleInputChange}
+                                        className="mt-1"
+                                      />
+                                    </div>
+
+                                    <div>
                                       <p className="text-sm text-gray-500">Budget</p>
                                       <Input
                                         name="amount"
@@ -1998,16 +2009,6 @@ export default function AdminPageClient() {
                                       {renderProgressBar(Number(editedProject.progress || project.progress))}
                                     </div>
 
-                                    <div>
-                                      <p className="text-sm text-gray-500">Time Remaining</p>
-                                      <Input
-                                        name="due"
-                                        value={editedProject.due || project.due}
-                                        onChange={handleInputChange}
-                                        className="mt-1"
-                                      />
-                                    </div>
-
                                     <div className="flex justify-end gap-2 pt-2">
                                       <Button variant="outline" onClick={() => setIsEditing(false)}>
                                         Cancel
@@ -2022,14 +2023,19 @@ export default function AdminPageClient() {
                                   </>
                                 ) : (
                                   <>
-                                    <div className="grid grid-cols-2 gap-2">
-                                      <div>
-                                        <p className="text-sm text-gray-500">Project ID</p>
-                                        <p className="font-medium">{project.id}</p>
-                                      </div>
+                                    <div className="border-b pb-3">
+                                      <h3 className="text-lg font-bold text-[#1B1464]">{project.name}</h3>
+                                      <p className="text-sm text-gray-600">ID: {project.id}</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
                                       <div>
                                         <p className="text-sm text-gray-500">Status</p>
                                         <p>{renderStatusBadge(project.status)}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm text-gray-500">Progress</p>
+                                        {renderProgressBar(project.progress)}
                                       </div>
                                     </div>
 
@@ -2038,7 +2044,12 @@ export default function AdminPageClient() {
                                       <p className="font-medium">{project.manager}</p>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                      <p className="text-sm text-gray-500">Project Location</p>
+                                      <p className="font-medium">{project.location || "Al Ain, UAE"}</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
                                       <div>
                                         <p className="text-sm text-gray-500">Start Date</p>
                                         <p className="font-medium">{project.startDate}</p>
@@ -2049,19 +2060,15 @@ export default function AdminPageClient() {
                                       </div>
                                     </div>
 
-                                    <div>
-                                      <p className="text-sm text-gray-500">Budget</p>
-                                      <p className="font-medium">{project.amount}</p>
-                                    </div>
-
-                                    <div>
-                                      <p className="text-sm text-gray-500">Progress</p>
-                                      {renderProgressBar(project.progress)}
-                                    </div>
-
-                                    <div>
-                                      <p className="text-sm text-gray-500">Time Remaining</p>
-                                      <p className="font-medium">{project.due}</p>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <p className="text-sm text-gray-500">Time Remaining</p>
+                                        <p className="font-medium">{project.due}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm text-gray-500">Budget</p>
+                                        <p className="font-medium">{project.amount}</p>
+                                      </div>
                                     </div>
 
                                     <div className="flex justify-end pt-2">

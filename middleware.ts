@@ -1,33 +1,19 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
+// This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
-  // Get the pathname of the request
-  const pathname = request.nextUrl.pathname
-
-  // If the request is for the problematic API route and we're in a build environment
-  if (pathname.startsWith("/api/db-test") && process.env.NODE_ENV === "production") {
-    try {
-      // Continue with the request, but catch any errors
-      return NextResponse.next()
-    } catch (error) {
-      // Return a fallback response if there's an error
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Database connection check is not available in this environment",
-          error: "Runtime error",
-        },
-        { status: 500 },
-      )
-    }
+  // Only apply to API routes
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    // Continue with the request, but catch any errors in the response
+    return NextResponse.next()
   }
 
-  // Continue with the request for all other routes
+  // For non-API routes, just continue
   return NextResponse.next()
 }
 
-// Configure the middleware to run only for specific paths
+// Configure middleware to run only for API routes
 export const config = {
-  matcher: ["/api/db-test/:path*"],
+  matcher: "/api/:path*",
 }
