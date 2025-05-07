@@ -42,6 +42,7 @@ export default function ProjectsPage() {
   const [editFormData, setEditFormData] = useState<Project | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
+  const [isPdfExporting, setIsPdfExporting] = useState(false)
   const tableRef = useRef<HTMLDivElement>(null)
 
   // Fetch projects from the database
@@ -282,23 +283,33 @@ export default function ProjectsPage() {
     })
   }
 
-  // Export to PDF
+  // Export to PDF - completely client-side implementation
   const exportToPDF = async () => {
-    try {
-      // Use our mock implementation during SSR
-      let jsPDF, autoTable
+    // Only run on client side
+    if (typeof window === "undefined") return
 
-      if (typeof window === "undefined") {
-        // Server-side rendering - use mocks
-        console.log("Using mock PDF generation on server")
-        return
-      } else {
-        // Client-side - dynamically import the real modules
-        const jsPDFModule = await import("jspdf")
-        const autoTableModule = await import("jspdf-autotable")
-        jsPDF = jsPDFModule.default
-        autoTable = autoTableModule.default
+    try {
+      setIsPdfExporting(true)
+
+      // Dynamically import the modules only on client side
+      const jspdfPromise = import("jspdf").catch(() => {
+        console.error("Failed to load jspdf")
+        return { default: null }
+      })
+
+      const autotablePromise = import("jspdf-autotable").catch(() => {
+        console.error("Failed to load jspdf-autotable")
+        return { default: null }
+      })
+
+      const [jspdfModule, autotableModule] = await Promise.all([jspdfPromise, autotablePromise])
+
+      if (!jspdfModule.default || !autotableModule.default) {
+        throw new Error("PDF generation libraries could not be loaded")
       }
+
+      const jsPDF = jspdfModule.default
+      const autoTable = autotableModule.default
 
       const doc = new jsPDF()
 
@@ -338,9 +349,11 @@ export default function ProjectsPage() {
       console.error("Error exporting to PDF:", err)
       toast({
         title: "Export Failed",
-        description: "Failed to export projects to PDF.",
+        description: "Failed to export projects to PDF. Please try again later.",
         variant: "destructive",
       })
+    } finally {
+      setIsPdfExporting(false)
     }
   }
 
@@ -380,9 +393,15 @@ export default function ProjectsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Projects</h1>
         <div className="flex items-center gap-2">
-          <Button onClick={exportToPDF} variant="outline" size="sm" className="flex items-center gap-1">
-            <FileText className="h-4 w-4" />
-            Export PDF
+          <Button
+            onClick={exportToPDF}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1"
+            disabled={isPdfExporting || typeof window === "undefined"}
+          >
+            {isPdfExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+            {isPdfExporting ? "Exporting..." : "Export PDF"}
           </Button>
           <Button className="bg-[#1B1464] hover:bg-[#1B1464]/90">
             <Plus className="h-4 w-4 mr-2" /> Add Project
@@ -495,7 +514,7 @@ export default function ProjectsPage() {
               <TableRow>
                 <TableCell colSpan={8} className="h-24 text-center">
                   <div className="flex justify-center items-center">
-                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                    <Loader2 className="h-6 w-4 animate-spin mr-2" />
                     Loading projects...
                   </div>
                 </TableCell>
