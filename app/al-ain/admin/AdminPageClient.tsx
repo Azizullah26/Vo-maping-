@@ -1539,13 +1539,13 @@ export default function AdminPageClient() {
                             <tr key={index} className="border-b hover:bg-gray-50">
                               <td className="py-3 px-4">
                                 <div className="relative">
-                                  <div className="h-8 w-8 rounded-full overflow-hidden">
+                                  <div className="h-8 w-8 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center">
                                     <Image
-                                      src={`https://api.dicebear.com/7.x/avatars/png?seed=${encodeURIComponent(user.name)}&backgroundColor=E6E6F8&radius=50`}
+                                      src={`https://randomuser.me/api/portraits/${index % 2 === 0 ? "men" : "women"}/${(index % 10) + 1}.jpg`}
                                       alt={user.name}
                                       width={32}
                                       height={32}
-                                      className="object-cover"
+                                      className="h-full w-full object-cover"
                                     />
                                   </div>
                                   {user.status === "Active" && (
