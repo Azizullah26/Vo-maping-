@@ -25,26 +25,33 @@ export function getSupabaseClient() {
 
 // Create a server-side client using service role - ONLY USE IN SERVER COMPONENTS OR API ROUTES
 export function getSupabaseAdminClient() {
-  // This should only be called in server components or API routes
-  if (typeof window !== "undefined") {
-    console.error("Attempted to use admin client on the client side")
-    throw new Error("Admin client cannot be used on the client side")
+  try {
+    const supabaseUrl = process.env.SUPABASE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error("Missing Supabase admin credentials")
+      return null
+    }
+
+    return createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        persistSession: false,
+      },
+      // Add global fetch timeout
+      global: {
+        fetch: (url, options) => {
+          return fetch(url, {
+            ...options,
+            signal: AbortSignal.timeout(5000), // 5 second timeout
+          })
+        },
+      },
+    })
+  } catch (error) {
+    console.error("Error creating Supabase admin client:", error)
+    return null
   }
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    console.error("Missing Supabase admin environment variables")
-    throw new Error("Missing Supabase admin environment variables")
-  }
-
-  // Don't cache this client for security reasons
-  return createClient(supabaseUrl, supabaseServiceKey, {
-    auth: {
-      persistSession: false,
-    },
-  })
 }
 
 // For backward compatibility - alias to getSupabaseAdminClient

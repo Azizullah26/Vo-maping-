@@ -84,7 +84,7 @@ export async function ensureProjectTable() {
   }
 }
 
-// Get all projects with better error handling and fallback
+// Modify the getProjects function to better handle connection failures during build time
 export async function getProjects(): Promise<Project[]> {
   try {
     // First, try to get the Supabase client
@@ -94,8 +94,16 @@ export async function getProjects(): Promise<Project[]> {
       return getMockProjects() // Return mock data as fallback
     }
 
-    // Try to fetch projects
-    const { data, error } = await supabase.from("projects").select("*").order("created_at", { ascending: false })
+    // Add a timeout to the fetch request
+    const fetchPromise = supabase.from("projects").select("*").order("created_at", { ascending: false })
+
+    // Create a timeout promise
+    const timeoutPromise = new Promise<{ data: null; error: Error }>((_, reject) =>
+      setTimeout(() => reject(new Error("Database fetch timed out")), 5000),
+    )
+
+    // Race the fetch against the timeout
+    const { data, error } = await Promise.race([fetchPromise, timeoutPromise])
 
     if (error) {
       console.error("Error fetching projects:", error)

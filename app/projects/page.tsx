@@ -9,10 +9,53 @@ export default async function ProjectsPage() {
   let error = null
 
   try {
-    projects = await getProjects()
+    // Add a timeout to prevent the page from hanging during build
+    const projectsPromise = getProjects()
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Projects fetch timed out")), 5000),
+    )
+
+    projects = await Promise.race([projectsPromise, timeoutPromise])
   } catch (err) {
     console.error("Error loading projects:", err)
     error = err instanceof Error ? err.message : "Failed to load projects"
+    // Use mock projects as fallback
+    try {
+      const getMockProjects = async () => {
+        return [
+          {
+            id: "mock-1",
+            name: "Abu Dhabi Downtown Development",
+            description: "Major urban development project in downtown Abu Dhabi",
+            location: "Abu Dhabi",
+            coordinates: [54.3773, 24.4539],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          {
+            id: "mock-2",
+            name: "Al Ain Cultural District",
+            description: "New cultural and heritage district in Al Ain",
+            location: "Al Ain",
+            coordinates: [55.7666, 24.1302],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          {
+            id: "mock-3",
+            name: "Dubai Marina Extension",
+            description: "Extension of the Dubai Marina area with new facilities",
+            location: "Dubai",
+            coordinates: [55.1376, 25.0806],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+        ]
+      }
+      projects = await getMockProjects()
+    } catch (fallbackErr) {
+      console.error("Even fallback failed:", fallbackErr)
+    }
   }
 
   // If projects is empty but no error, use a fallback message
