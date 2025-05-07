@@ -141,9 +141,9 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
               <Link
                 href="#"
                 className={cn(
-                  "text-white transition-colors text-sm sm:text-base font-medium",
+                  "text-white transition-colors text-xs sm:text-sm font-medium",
                   glowStyles.glowOnHover,
-                  "px-3 py-1.5 rounded-md",
+                  "px-2 py-1 rounded-md scale-90 transform",
                 )}
               >
                 Construction Project

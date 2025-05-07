@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -31,10 +30,10 @@ const nextConfig = {
   // Ensure trailing slashes are handled correctly
   trailingSlash: false,
   experimental: {
-    // Disable some experimental features that might cause issues
-    serverActions: true,
-    serverComponentsExternalPackages: [],
+    // Updated experimental features for Next.js 15.2.4
   },
+  // Moved from experimental.serverComponentsExternalPackages
+  serverExternalPackages: [],
 }
 
 module.exports = nextConfig
