@@ -18,22 +18,10 @@ const nextConfig = {
     unoptimized: true,
   },
   // Simplified webpack configuration
-  webpack: (config, { isServer }) => {
+  webpack: (config) => {
     // Add resolve aliases for problematic packages
     config.resolve.alias = {
       ...config.resolve.alias,
-      html2canvas: require.resolve("./lib/mock-dependencies.js"),
-      canvg: require.resolve("./lib/mock-dependencies.js"),
-    }
-
-    // Add basic polyfills for Node.js built-in modules
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        util: require.resolve("util/"),
-        fs: false,
-        net: false,
-      }
     }
 
     return config
@@ -42,6 +30,11 @@ const nextConfig = {
   output: "standalone",
   // Ensure trailing slashes are handled correctly
   trailingSlash: false,
+  experimental: {
+    // Disable some experimental features that might cause issues
+    serverActions: true,
+    serverComponentsExternalPackages: [],
+  },
 }
 
 module.exports = nextConfig
