@@ -5,7 +5,6 @@ import { useState, useCallback, useRef } from "react"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { Button } from "@/components/ui/button"
 import { TopNav } from "@/components/TopNav"
-import { CesiumViewerModal } from "@/components/CesiumViewerModal"
 import { MapIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Breadcrumb from "@/components/Breadcrumb"
@@ -253,15 +252,26 @@ const policeLocations: PoliceLocation[] = [
   },
 ]
 
+const filterButtons = [
+  { id: "police", label: "Police", icon: MapIcon },
+  // Add more filter buttons as needed
+]
+
+const glowStyles = {
+  glowOnHover:
+    "before:absolute before:inset-0 before:border-0 before:border-white/10 before:transition-colors before:duration-300 hover:before:border-[1px]",
+}
+
 export default function AlAinPage() {
   const [showingTerrain, setShowingTerrain] = useState(false)
   const [showProjects, setShowProjects] = useState(false)
   const [showAdmin, setShowAdmin] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [showCesiumViewer, setShowCesiumViewer] = useState(false)
   const [isLeftSliderOpen, setIsLeftSliderOpen] = useState(false)
   const router = useRouter()
   const mapRef = useRef<mapboxgl.Map | null>(null)
+  const [showFilters, setShowFilters] = useState(true)
+  const [selectedFilters, setSelectedFilters] = useState<{ [key: string]: boolean }>({})
 
   const [selectedProject, setSelectedProject] = useState<{
     id: number
@@ -270,6 +280,13 @@ export default function AlAinPage() {
     projectNameEn: string
     coordinates: [number, number]
   } | null>(null)
+
+  const handleFilterChange = (type: string, id: string) => {
+    setSelectedFilters((prevFilters) => ({
+      ...prevFilters,
+      [id]: !prevFilters[id],
+    }))
+  }
 
   const handleProjectSelect = (project: {
     id: number
@@ -339,13 +356,18 @@ export default function AlAinPage() {
         onAdminClick={toggleAdmin}
         showAdmin={showAdmin}
       />
-      <Breadcrumb
-        items={[
-          { label: "UAE", path: "/" },
-          { label: "Al Ain", path: "/al-ain" },
-        ]}
-        className="fixed top-4 left-4 z-50"
-      />
+
+      {/* Breadcrumb positioned below the logo */}
+      <div className="fixed top-14 sm:top-16 md:top-18 left-0 right-0 z-40 px-2 py-1">
+        <div className="w-full max-w-[1800px] mx-auto">
+          <Breadcrumb
+            items={[
+              { label: "UAE", path: "/" },
+              { label: "Al Ain", path: "/al-ain" },
+            ]}
+          />
+        </div>
+      </div>
 
       {/* Add the AlAinLeftSlider component */}
       <AlAinLeftSlider isOpen={isLeftSliderOpen} toggleSlider={toggleLeftSlider} selectedProject={selectedProject} />
@@ -386,14 +408,6 @@ export default function AlAinPage() {
           </div>
         </div>
       )}
-      {/* Cesium Viewer Button */}
-      <Button
-        onClick={() => setShowCesiumViewer(true)}
-        className="fixed top-20 right-4 z-50 bg-white/80 hover:bg-white text-gray-800 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-105"
-        aria-label="Open Al Ain 3D viewer"
-      >
-        <MapIcon className="h-5 w-5" />
-      </Button>
 
       <RightSliderButton
         isOpen={showProjects}
@@ -401,9 +415,6 @@ export default function AlAinPage() {
         toggleProjects={toggleProjects}
         openLeftSlider={handleProjectSelect}
       />
-
-      {/* Cesium Viewer Modal */}
-      <CesiumViewerModal isOpen={showCesiumViewer} onClose={() => setShowCesiumViewer(false)} />
     </div>
   )
 }

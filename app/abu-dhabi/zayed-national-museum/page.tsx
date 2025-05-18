@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
@@ -51,17 +51,26 @@ export default function ZayedNationalMuseumPage() {
   const [rotation, setRotation] = useState(0)
   const router = useRouter()
 
-  const handleZoomIn = () => {
+  // Memoize handlers to prevent unnecessary re-renders
+  const handleZoomIn = useCallback(() => {
     setZoomLevel((prev) => Math.min(prev + 0.2, 3))
-  }
+  }, [])
 
-  const handleZoomOut = () => {
+  const handleZoomOut = useCallback(() => {
     setZoomLevel((prev) => Math.max(prev - 0.2, 0.5))
-  }
+  }, [])
 
-  const handleRotate = () => {
+  const handleRotate = useCallback(() => {
     setRotation((prev) => (prev + 90) % 360)
-  }
+  }, [])
+
+  // Add a cleanup effect
+  useEffect(() => {
+    // Cleanup function
+    return () => {
+      // Clean up any resources if needed
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-300/50 via-orange-300/50 to-fuchsia-900/50">
@@ -90,6 +99,8 @@ export default function ZayedNationalMuseumPage() {
                           className="object-cover"
                           sizes="(max-width: 768px) 100vw, 50vw"
                           priority={index === 0}
+                          loading={index === 0 ? "eager" : "lazy"}
+                          quality={85}
                         />
                       </div>
                     </CarouselItem>
@@ -185,7 +196,7 @@ export default function ZayedNationalMuseumPage() {
       {/* Document Viewer Panel */}
       <div
         className={cn(
-          "fixed right-0 top-0 h-full w-[600px] bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50",
+          "fixed right-0 top-0 h-full w-[600px] bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 overflow-hidden",
           showDocuments ? "translate-x-0" : "translate-x-full",
         )}
       >
@@ -237,6 +248,7 @@ export default function ZayedNationalMuseumPage() {
               style={{
                 transform: `scale(${zoomLevel}) rotate(${rotation}deg)`,
                 transformOrigin: "top left",
+                willChange: "transform",
               }}
             >
               <Image
@@ -246,6 +258,7 @@ export default function ZayedNationalMuseumPage() {
                 height={1600}
                 className="w-full h-auto"
                 priority
+                quality={85}
               />
             </div>
           </div>

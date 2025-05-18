@@ -3,7 +3,13 @@ export const westRegionBoundary = {
   features: [
     {
       type: "Feature",
-      properties: {},
+      properties: {
+        stroke: "#ffffff",
+        "stroke-width": 2,
+        "stroke-opacity": 0.8,
+        fill: "#f5f5f5",
+        "fill-opacity": 0.4,
+      },
       geometry: {
         type: "Polygon",
         coordinates: [

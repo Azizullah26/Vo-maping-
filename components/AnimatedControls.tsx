@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { Compass } from "lucide-react"
 
 interface AnimatedControlsProps {
   onResetView: () => void
@@ -67,15 +66,6 @@ export function AnimatedControls({ onResetView, onToggleTerrain }: AnimatedContr
           transition: transform 0.15s ease;
         }
       `}</style>
-      <div className="absolute top-24 right-4 z-10 flex flex-col gap-2 transform scale-100 sm:scale-100 origin-top-right">
-        <button
-          onClick={onResetView}
-          className="bg-white/80 hover:bg-white text-gray-800 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-105"
-          aria-label="Reset view"
-        >
-          <Compass className="h-4 w-4 sm:h-5 sm:w-5" />
-        </button>
-      </div>
     </>
   )
 }

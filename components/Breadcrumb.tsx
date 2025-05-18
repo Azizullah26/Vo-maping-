@@ -16,7 +16,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items = [], currentPath 
   return (
     <nav
       aria-label="Breadcrumb navigation"
-      className="bg-gray-900/90 px-2 py-2 rounded-l-full flex items-center justify-between w-fit"
+      className="px-2 py-2 rounded-l-full flex items-center justify-between w-fit mt-6 sm:mt-8 md:mt-10"
     >
       <div className="flex items-center space-x-2">
         <Link

@@ -16,11 +16,103 @@ export default function DocumentsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [currentFolder, setCurrentFolder] = useState("")
   const [folders, setFolders] = useState<string[]>([])
+  const [navigationHistory, setNavigationHistory] = useState<string[]>([])
+  const [historyIndex, setHistoryIndex] = useState(-1)
 
   const router = useRouter()
   const searchParams = useSearchParams()
-  const projectId = searchParams.get("project")
-  const folderId = searchParams.get("folder")
+  const projectId = searchParams?.get("project") || ""
+  const folderId = searchParams?.get("folder") || ""
+
+  // Initialize navigation history when component mounts
+  useEffect(() => {
+    try {
+      const currentPath = `/al-ain/documents${projectId ? `?project=${projectId}` : ""}${folderId ? `&folder=${folderId}` : ""}`
+      setNavigationHistory([currentPath])
+      setHistoryIndex(0)
+    } catch (err) {
+      console.error("Error initializing navigation history:", err)
+    }
+  }, [])
+
+  // Function to navigate back
+  const handleBack = () => {
+    if (historyIndex > 0) {
+      try {
+        const newIndex = historyIndex - 1
+        setHistoryIndex(newIndex)
+        const previousPath = navigationHistory[newIndex] || ""
+
+        // Extract parameters from the path
+        const urlParams = new URLSearchParams(previousPath.split("?")[1] || "")
+        const prevProjectId = urlParams.get("project")
+        const prevFolderId = urlParams.get("folder")
+
+        // Update state
+        if (prevProjectId !== projectId) {
+          // Handle project change
+        }
+
+        if (prevFolderId !== folderId) {
+          setCurrentFolder(prevFolderId || "")
+        }
+
+        // Clear selected document when navigating back
+        setSelectedDocument(null)
+
+        // Update URL without triggering a new history entry
+        router.push(previousPath, { scroll: false })
+      } catch (err) {
+        console.error("Error navigating back:", err)
+      }
+    }
+  }
+
+  // Function to navigate forward
+  const handleForward = () => {
+    if (historyIndex < navigationHistory.length - 1) {
+      try {
+        const newIndex = historyIndex + 1
+        setHistoryIndex(newIndex)
+        const nextPath = navigationHistory[newIndex] || ""
+
+        // Extract parameters from the path
+        const urlParams = new URLSearchParams(nextPath.split("?")[1] || "")
+        const nextProjectId = urlParams.get("project")
+        const nextFolderId = urlParams.get("folder")
+
+        // Update state
+        if (nextProjectId !== projectId) {
+          // Handle project change
+        }
+
+        if (nextFolderId !== folderId) {
+          setCurrentFolder(nextFolderId || "")
+        }
+
+        // Clear selected document when navigating forward
+        setSelectedDocument(null)
+
+        // Update URL without triggering a new history entry
+        router.push(nextPath, { scroll: false })
+      } catch (err) {
+        console.error("Error navigating forward:", err)
+      }
+    }
+  }
+
+  // Function to add a new entry to navigation history
+  const addToHistory = (path: string) => {
+    try {
+      // Remove any forward history if we're navigating from a point in history
+      const newHistory = navigationHistory.slice(0, historyIndex + 1)
+      newHistory.push(path)
+      setNavigationHistory(newHistory)
+      setHistoryIndex(newHistory.length - 1)
+    } catch (err) {
+      console.error("Error adding to history:", err)
+    }
+  }
 
   // Function to fetch documents from Supabase
   const fetchDocuments = async () => {
@@ -147,18 +239,101 @@ export default function DocumentsPage() {
 
   // Function to handle document selection
   const handleDocumentSelect = (document: any) => {
-    setSelectedDocument(document)
+    try {
+      setSelectedDocument(document)
+
+      // Add to navigation history when selecting a document
+      const newPath = `/al-ain/documents${projectId ? `?project=${projectId}` : ""}${folderId ? `&folder=${folderId}` : ""}&doc=${document.id}`
+      addToHistory(newPath)
+    } catch (err) {
+      console.error("Error selecting document:", err)
+    }
   }
 
   // Function to handle folder navigation
   const handleFolderSelect = (folder: string) => {
-    setCurrentFolder(folder)
-    router.push(`/al-ain/documents?folder=${folder}${projectId ? `&project=${projectId}` : ""}`)
+    try {
+      setCurrentFolder(folder)
+      setSelectedDocument(null) // Clear selected document when changing folders
+
+      // Create the new path
+      const newPath = `/al-ain/documents?folder=${folder}${projectId ? `&project=${projectId}` : ""}`
+
+      // Add to navigation history
+      addToHistory(newPath)
+
+      // Navigate to the new path
+      router.push(newPath, { scroll: false })
+    } catch (err) {
+      console.error("Error selecting folder:", err)
+    }
+  }
+
+  // Function to handle project navigation
+  const handleProjectSelect = (project: string) => {
+    try {
+      setSelectedDocument(null) // Clear selected document when changing projects
+
+      // Create the new path
+      const newPath = `/al-ain/documents?project=${project}${currentFolder ? `&folder=${currentFolder}` : ""}`
+
+      // Add to navigation history
+      addToHistory(newPath)
+
+      // Navigate to the new path
+      router.push(newPath, { scroll: false })
+    } catch (err) {
+      console.error("Error selecting project:", err)
+    }
+  }
+
+  // Function to handle breadcrumb navigation
+  const handleBreadcrumbClick = (path: string) => {
+    try {
+      // Add to navigation history
+      addToHistory(path)
+
+      // Navigate to the path
+      router.push(path, { scroll: false })
+
+      // Clear selected document when using breadcrumb navigation
+      setSelectedDocument(null)
+    } catch (err) {
+      console.error("Error handling breadcrumb click:", err)
+    }
   }
 
   // Function to handle search
   const handleSearch = (query: string) => {
-    setSearchQuery(query)
+    try {
+      setSearchQuery(query)
+
+      // Only add to history if the search is executed (not on every keystroke)
+      if (query.length > 2 || query.length === 0) {
+        const newPath = `/al-ain/documents${projectId ? `?project=${projectId}` : ""}${folderId ? `&folder=${folderId}` : ""}&search=${encodeURIComponent(query)}`
+        addToHistory(newPath)
+      }
+    } catch (err) {
+      console.error("Error handling search:", err)
+    }
+  }
+
+  // Function to handle document close
+  const handleCloseDocument = () => {
+    try {
+      setSelectedDocument(null)
+
+      // Create the path without the document
+      const newPath = `/al-ain/documents${projectId ? `?project=${projectId}` : ""}${folderId ? `&folder=${folderId}` : ""}`
+
+      // Add to navigation history
+      addToHistory(newPath)
+
+      // Navigate to the new path
+      router.push(newPath, { scroll: false })
+    } catch (err) {
+      console.error("Error closing document:", err)
+    }
   }
 
   // Load documents on initial render and when dependencies change
@@ -166,88 +341,125 @@ export default function DocumentsPage() {
     fetchDocuments()
   }, [projectId, folderId, searchQuery])
 
+  // Prepare breadcrumb items with safe values
+  const breadcrumbItems = [
+    { label: "Home", href: "/", onClick: () => handleBreadcrumbClick("/") },
+    { label: "Al Ain", href: "/al-ain", onClick: () => handleBreadcrumbClick("/al-ain") },
+    {
+      label: "Documents",
+      href: "/al-ain/documents",
+      onClick: () => handleBreadcrumbClick("/al-ain/documents"),
+    },
+    ...(projectId
+      ? [
+          {
+            label: projectId,
+            href: `/al-ain/documents?project=${projectId}`,
+            onClick: () => handleBreadcrumbClick(`/al-ain/documents?project=${projectId}`),
+          },
+        ]
+      : []),
+    ...(currentFolder
+      ? [
+          {
+            label: currentFolder.split("/").pop() || "",
+            href: `/al-ain/documents?folder=${currentFolder}`,
+            onClick: () =>
+              handleBreadcrumbClick(
+                `/al-ain/documents?folder=${currentFolder}${projectId ? `&project=${projectId}` : ""}`,
+              ),
+          },
+        ]
+      : []),
+    ...(selectedDocument
+      ? [
+          {
+            label: selectedDocument.title || "Document",
+            href: "#",
+            current: true,
+          },
+        ]
+      : []),
+  ]
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
       {/* Header section with background */}
       <div className="relative bg-[#0a192f] overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-20"></div>
+        <div className="fixed inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-20 pointer-events-none z-0"></div>
 
         {/* Top decorative element */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500"></div>
 
-        <div className="container mx-auto px-4 py-8">
+        {/* Navigation controls */}
+        <div className="container mx-auto px-4 pt-4">
           <Breadcrumb
-            items={[
-              { label: "Home", href: "/" },
-              { label: "Al Ain", href: "/al-ain" },
-              { label: "Documents", href: "/al-ain/documents" },
-              ...(projectId ? [{ label: projectId, href: `/al-ain/documents?project=${projectId}` }] : []),
-              ...(currentFolder
-                ? [{ label: currentFolder.split("/").pop() || "", href: `/al-ain/documents?folder=${currentFolder}` }]
-                : []),
-            ]}
+            items={breadcrumbItems.map((item) => ({
+              label: item.label || "",
+              path: item.href || "#",
+            }))}
           />
+        </div>
 
-          {/* Project title and details */}
-          <div className="mt-8 mb-6">
-            <h1 className="text-3xl font-bold text-white mb-2">
-              {projectId ? `${projectId} Documents` : "Al Ain Project Documents"}
-            </h1>
-            <div className="flex items-center space-x-4 text-gray-300">
-              <div className="flex items-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1 text-cyan-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                <span className="text-sm">Last updated: {new Date().toLocaleDateString()}</span>
-              </div>
-              <div className="flex items-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1 text-cyan-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                <span className="text-sm">{documents.length} documents</span>
-              </div>
-              {projectId && (
-                <div className="flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-1 text-cyan-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <span className="text-sm">Project ID: {projectId}</span>
-                </div>
-              )}
+        {/* Project title and details */}
+        <div className="mt-8 mb-6 pl-5">
+          <h1 className="text-3xl font-bold text-white mb-2">
+            {projectId ? `${projectId} Documents` : "Al Ain Project Documents"}
+          </h1>
+          <div className="flex items-center space-x-4 text-gray-300">
+            <div className="flex items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-1 text-cyan-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <span className="text-sm">Last updated: {new Date().toLocaleDateString()}</span>
             </div>
+            <div className="flex items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-1 text-cyan-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <span className="text-sm">{documents.length} documents</span>
+            </div>
+            {projectId && (
+              <div className="flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-1 text-cyan-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"
+                  />
+                </svg>
+                <span className="text-sm">Project ID: {projectId}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -293,11 +505,15 @@ export default function DocumentsPage() {
                       <li key={folder} className="group">
                         <button
                           onClick={() => handleFolderSelect(folder)}
-                          className="flex items-center w-full text-gray-300 hover:text-cyan-400 transition-colors py-1 px-2 rounded hover:bg-gray-700/50 group-hover:bg-gray-700/30"
+                          className={`flex items-center w-full text-gray-300 hover:text-cyan-400 transition-colors py-1 px-2 rounded hover:bg-gray-700/50 group-hover:bg-gray-700/30 ${
+                            currentFolder === folder ? "bg-gray-700/50 text-cyan-400" : ""
+                          }`}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4 mr-2 text-gray-400 group-hover:text-cyan-400"
+                            className={`h-4 w-4 mr-2 ${
+                              currentFolder === folder ? "text-cyan-400" : "text-gray-400 group-hover:text-cyan-400"
+                            }`}
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -336,7 +552,27 @@ export default function DocumentsPage() {
           <div className="w-full md:w-2/3 lg:w-3/4">
             <div className="bg-gray-800/70 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700 p-4 min-h-[500px]">
               {selectedDocument ? (
-                <DocumentPreview document={selectedDocument} />
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold text-white">{selectedDocument.title}</h2>
+                    <button
+                      onClick={handleCloseDocument}
+                      className="p-1 rounded-full hover:bg-gray-700/60 text-gray-400 hover:text-white transition-colors"
+                      aria-label="Close document"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <DocumentPreview document={selectedDocument} />
+                </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center p-8">
                   <div className="w-16 h-16 bg-gray-700/50 rounded-full flex items-center justify-center mb-4">

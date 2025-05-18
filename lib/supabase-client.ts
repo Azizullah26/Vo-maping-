@@ -6,8 +6,13 @@ let supabaseInstance: ReturnType<typeof createClient> | null = null
 export function getSupabaseClient() {
   if (supabaseInstance) return supabaseInstance
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  // Try Next.js style environment variables first
+  let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  let supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  // Fall back to React App style environment variables if needed
+  if (!supabaseUrl) supabaseUrl = process.env.REACT_APP_SUPABASE_URL
+  if (!supabaseAnonKey) supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
     console.error("Missing Supabase environment variables")

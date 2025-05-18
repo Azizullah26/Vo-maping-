@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight, Thermometer, Wind, Droplets, MapPin, Search, Filter, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, Film } from "lucide-react"
 import "@/styles/vue-futuristic-alain.css"
 import { useRouter } from "next/navigation"
 import { createClient } from "@supabase/supabase-js"
@@ -173,6 +173,11 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
   const [documentTypes, setDocumentTypes] = useState<string[]>([])
   const [projectNames, setProjectNames] = useState<string[]>([])
   const [searchTerm, setSearchTerm] = useState("")
+
+  // Ensure activeTab is always "dashboard" since other tabs are removed
+  useEffect(() => {
+    setActiveTab("dashboard")
+  }, [])
 
   // Add a function to fetch documents from Supabase with filtering
   const fetchDocuments = async (filterOptions: DocumentFilters = {}) => {
@@ -549,8 +554,8 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
     <>
       <button
         onClick={toggleSlider}
-        className={`fixed top-1/2 transform -translate-y-1/2 z-50 p-2 bg-[#0a192f]/80 backdrop-blur-sm rounded-r-md hover:bg-[#0a192f] transition-all duration-300 ${
-          isOpen ? "left-[320px]" : "left-0"
+        className={`fixed top-1/2 transform -translate-y-1/2 z-50 p-3 bg-[#0a192f]/80 backdrop-blur-sm rounded-full hover:bg-[#0a192f] transition-all duration-300 border border-cyan-500/30 ${
+          isOpen ? "left-[280px]" : "left-0"
         }`}
         aria-label={isOpen ? "Hide Dashboard" : "Show Dashboard"}
       >
@@ -563,12 +568,12 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
 
       <div
         className={cn(
-          "fixed top-[5rem] sm:top-16 md:top-[4.5rem] left-0 max-h-[calc(100vh-5rem)] sm:max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-4.5rem)] w-[90%] sm:w-[320px] transform transition-transform ease-out-expo duration-500 z-40 bg-[#0a192f]/90 backdrop-blur-sm overflow-hidden border-r border-cyan-500/30",
+          "fixed top-[7rem] sm:top-[7.5rem] md:top-[8rem] left-0 max-h-[calc(100vh-12rem)] sm:max-h-[calc(100vh-13rem)] md:max-h-[calc(100vh-14rem)] w-[80%] sm:w-[280px] transform transition-transform ease-out-expo duration-500 z-40 bg-black/90 backdrop-blur-sm overflow-hidden border-r border-cyan-500/30 rounded-tr-lg",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         {/* Background grid pattern - z-index adjusted to ensure it doesn't block scrolling */}
-        <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-10 pointer-events-none z-0"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-20 pointer-events-none z-0"></div>
 
         {/* Top decorative element */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 z-10"></div>
@@ -584,83 +589,21 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
 
         {/* Main content area - scrollable with enhanced vertical scrolling */}
         <div
-          className="h-full overflow-y-auto overflow-x-hidden pr-2 no-scrollbar relative z-20"
-          style={{ maxHeight: "calc(100vh - 5rem)", overflowY: "auto" }}
+          className="h-[95%] overflow-y-auto overflow-x-hidden pr-2 no-scrollbar relative z-20 text-white"
+          style={{ maxHeight: "calc(100vh - 6rem)", overflowY: "auto" }}
         >
-          <div className="flex flex-col p-4 space-y-6 w-full">
+          <div className="flex flex-col p-4 space-y-6 w-full bg-slate-800/30 rounded-xl border border-cyan-500/10 shadow-inner shadow-cyan-900/20">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-cyan-400">
                 {selectedProject ? selectedProject.projectNameEn : "Al Ain"}
               </h2>
-              <div className="text-xs text-cyan-300 bg-cyan-900/30 px-2 py-1 rounded border border-cyan-500/30">
-                REAL-TIME
-              </div>
-            </div>
-
-            {/* Add a new tab for documents */}
-            {/* Update the activeTab state to include 'documents' */}
-            {/* Modify the tabs section to include a documents tab: */}
-            <div className="flex space-x-4 mb-6">
-              <button
-                className={`px-3 py-2 text-sm rounded-md transition-all ${
-                  activeTab === "dashboard"
-                    ? "bg-cyan-900/50 text-cyan-300 border border-cyan-500/50"
-                    : "text-slate-400 hover:text-cyan-300"
-                }`}
-                onClick={() => setActiveTab("dashboard")}
-              >
-                Dashboard
-              </button>
-              <button
-                className={`px-3 py-2 text-sm rounded-md transition-all ${
-                  activeTab === "projects"
-                    ? "bg-cyan-900/50 text-cyan-300 border border-cyan-500/50"
-                    : "text-slate-400 hover:text-cyan-300"
-                }`}
-                onClick={() => setActiveTab("projects")}
-              >
-                Projects
-              </button>
-              <button
-                className={`px-3 py-2 text-sm rounded-md transition-all ${
-                  activeTab === "documents"
-                    ? "bg-cyan-900/50 text-cyan-300 border border-cyan-500/50"
-                    : "text-slate-400 hover:text-cyan-300"
-                }`}
-                onClick={() => setActiveTab("documents")}
-              >
-                Documents
-              </button>
-              <button
-                className={`px-3 py-2 text-sm rounded-md transition-all ${
-                  activeTab === "analytics"
-                    ? "bg-cyan-900/50 text-cyan-300 border border-cyan-500/50"
-                    : "text-slate-400 hover:text-cyan-300"
-                }`}
-                onClick={() => setActiveTab("analytics")}
-              >
-                Analytics
-              </button>
             </div>
 
             {activeTab === "dashboard" && (
               <div className="space-y-6">
                 {/* Quick Action Buttons */}
                 <div className="grid grid-cols-4 gap-2 mb-4">
-                  <button className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden">
-                    <div className="absolute inset-0 bg-cyan-500/10 rounded-full scale-0 group-hover:scale-150 transition-transform duration-700"></div>
-                    <div className="text-cyan-400 mb-1 relative z-10">Live</div>
-                    <div className="h-2 w-2 bg-green-500 rounded-full animate-ping relative z-10"></div>
-                  </button>
-                  <button className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden">
-                    <div className="absolute inset-0 bg-cyan-500/10 rounded-full scale-0 group-hover:scale-150 transition-transform duration-700"></div>
-                    <div className="text-cyan-400 mb-1 relative z-10">3D</div>
-                    <div className="relative z-10">
-                      <div className="h-3 w-3 border-2 border-cyan-400 rounded-sm animate-spin"></div>
-                      <div className="absolute top-0 left-0 h-3 w-3 border-2 border-cyan-400 rounded-sm animate-ping opacity-30"></div>
-                    </div>
-                  </button>
-                  {/* Update the Docs button to navigate to the documents page when clicked */}
+                  {/* Docs button */}
                   <button
                     onClick={() => {
                       try {
@@ -695,7 +638,19 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
                       <div className="h-0.5 w-2 bg-cyan-400 animate-pulse" style={{ animationDelay: "0.4s" }}></div>
                     </div>
                   </button>
-                  <button className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden">
+
+                  {/* Media button */}
+                  <button
+                    onClick={() => {
+                      try {
+                        console.log("Navigating to media page...")
+                        router.push("/al-ain/media")
+                      } catch (error) {
+                        console.error("Navigation error:", error)
+                      }
+                    }}
+                    className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
+                  >
                     <div className="absolute inset-0 bg-cyan-500/10 rounded-full scale-0 group-hover:scale-150 transition-transform duration-700"></div>
 
                     {/* Add corner elements similar to the slider panel */}
@@ -710,66 +665,136 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-1 w-1 bg-white rounded-full animate-ping"></div>
                     </div>
                   </button>
+
+                  {/* 3D button */}
+                  <button
+                    onClick={() => {
+                      try {
+                        console.log("Navigating to 3D page...")
+                        router.push("/al-ain/3d")
+                      } catch (error) {
+                        console.error("Navigation error:", error)
+                      }
+                    }}
+                    className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-cyan-500/10 rounded-full scale-0 group-hover:scale-150 transition-transform duration-700"></div>
+                    <div className="text-cyan-400 mb-1 relative z-10">3D</div>
+                    <div className="relative z-10">
+                      <div className="h-3 w-3 border-2 border-cyan-400 rounded-sm animate-spin"></div>
+                      <div className="absolute top-0 left-0 h-3 w-3 border-2 border-cyan-400 rounded-sm animate-ping opacity-30"></div>
+                    </div>
+                  </button>
+
+                  {/* Live button */}
+                  <button
+                    onClick={() => {
+                      try {
+                        console.log("Navigating to live page...")
+                        router.push("/al-ain/live")
+                      } catch (error) {
+                        console.error("Navigation error:", error)
+                      }
+                    }}
+                    className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-cyan-500/10 rounded-full scale-0 group-hover:scale-150 transition-transform duration-700"></div>
+                    <div className="text-cyan-400 mb-1 relative z-10">Live</div>
+                    <div className="h-2 w-2 bg-green-500 rounded-full animate-ping relative z-10"></div>
+                  </button>
                 </div>
 
                 {/* Project Summary */}
                 <div>
-                  <h3 className="text-sm uppercase text-slate-400 mb-3 sticky top-0 bg-slate-900/80 py-2 backdrop-blur-sm z-10">
+                  <h3 className="text-sm uppercase bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent font-bold mb-3 sticky top-0 bg-slate-900/80 py-2 backdrop-blur-sm z-10">
                     Project Summary
                   </h3>
-                  <div className="vue-card overflow-hidden bg-gradient-to-br from-slate-800/50 to-slate-900/50">
-                    <h4 className="text-cyan-300 font-medium border-b border-cyan-900/30 pb-2 mb-3">
+                  <div className="vue-card overflow-hidden bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 hover:border-cyan-400/40 transition-all duration-300 shadow-lg shadow-cyan-900/20">
+                    <h4 className="text-white font-medium pb-2 mb-3 relative">
                       {selectedProject ? selectedProject.projectNameEn : "Al Ain Police Station Renovation Project"}
+                      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-cyan-500 via-blue-400 to-purple-500"></div>
+                      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-cyan-500 via-blue-400 to-purple-500 blur-[2px]"></div>
+                      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-cyan-500 via-blue-400 to-purple-500 blur-[4px] opacity-50"></div>
                     </h4>
 
                     <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-xs text-slate-400">Project ID:</span>
-                        <span className="text-xs text-cyan-300">
+                      <div className="flex justify-between items-center group hover:bg-cyan-900/10 p-1 rounded-md transition-all">
+                        <span className="text-xs text-slate-400 group-hover:text-cyan-300 transition-colors">
+                          Project ID:
+                        </span>
+                        <span className="text-xs font-medium text-cyan-300 group-hover:text-white transition-colors">
                           {selectedProject ? `PRJ-${selectedProject.id}` : "PRJ-001"}
                         </span>
                       </div>
 
-                      <div className="flex justify-between">
-                        <span className="text-xs text-slate-400">Start Date:</span>
-                        <span className="text-xs text-cyan-300">15th June 2025</span>
+                      <div className="flex justify-between items-center group hover:bg-cyan-900/10 p-1 rounded-md transition-all">
+                        <span className="text-xs text-slate-400 group-hover:text-cyan-300 transition-colors">
+                          Start Date:
+                        </span>
+                        <span className="text-xs font-medium text-emerald-300 group-hover:text-emerald-200 transition-colors">
+                          15th June 2025
+                        </span>
                       </div>
 
-                      <div className="flex justify-between">
-                        <span className="text-xs text-slate-400">End Date:</span>
-                        <span className="text-xs text-cyan-300">30th December 2025</span>
+                      <div className="flex justify-between items-center group hover:bg-cyan-900/10 p-1 rounded-md transition-all">
+                        <span className="text-xs text-slate-400 group-hover:text-cyan-300 transition-colors">
+                          End Date:
+                        </span>
+                        <span className="text-xs font-medium text-amber-300 group-hover:text-amber-200 transition-colors">
+                          30th December 2025
+                        </span>
                       </div>
 
-                      <div className="flex justify-between">
-                        <span className="text-xs text-slate-400">Remaining Days:</span>
-                        <span className="text-xs text-cyan-300 font-medium">246 days</span>
+                      <div className="flex justify-between items-center group hover:bg-cyan-900/10 p-1 rounded-md transition-all">
+                        <span className="text-xs text-slate-400 group-hover:text-cyan-300 transition-colors">
+                          Remaining Days:
+                        </span>
+                        <span className="text-xs font-medium bg-gradient-to-r from-cyan-300 to-purple-400 bg-clip-text text-transparent">
+                          246 days
+                        </span>
                       </div>
 
-                      <div className="h-1 w-full bg-slate-700/50 rounded-full my-2">
+                      <div className="h-2 w-full bg-slate-700/50 rounded-full my-3 overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full"
+                          className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded-full relative"
                           style={{ width: `${selectedProject ? (selectedProject.id % 5) * 20 + 20 : 28}%` }}
-                        ></div>
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
+                        </div>
                       </div>
 
-                      <div className="flex justify-between">
-                        <span className="text-xs text-slate-400">Company:</span>
-                        <span className="text-xs text-cyan-300">Al Ain Development</span>
+                      <div className="flex justify-between items-center group hover:bg-cyan-900/10 p-1 rounded-md transition-all">
+                        <span className="text-xs text-slate-400 group-hover:text-cyan-300 transition-colors">
+                          Company:
+                        </span>
+                        <span className="text-xs font-medium text-blue-300 group-hover:text-blue-200 transition-colors">
+                          Al Ain Development
+                        </span>
                       </div>
 
-                      <div className="flex justify-between">
-                        <span className="text-xs text-slate-400">Project Manager (Company):</span>
-                        <span className="text-xs text-cyan-300">Eng. Mohammed</span>
+                      <div className="flex justify-between items-center group hover:bg-cyan-900/10 p-1 rounded-md transition-all">
+                        <span className="text-xs text-slate-400 group-hover:text-cyan-300 transition-colors">
+                          Project Manager (Company):
+                        </span>
+                        <span className="text-xs font-medium text-purple-300 group-hover:text-purple-200 transition-colors">
+                          Eng. Mohammed
+                        </span>
                       </div>
 
-                      <div className="flex justify-between">
-                        <span className="text-xs text-slate-400">Project Manager (Police):</span>
-                        <span className="text-xs text-cyan-300">Eng. Khalid Al Shamsi</span>
+                      <div className="flex justify-between items-center group hover:bg-cyan-900/10 p-1 rounded-md transition-all">
+                        <span className="text-xs text-slate-400 group-hover:text-cyan-300 transition-colors">
+                          Project Manager (Police):
+                        </span>
+                        <span className="text-xs font-medium text-indigo-300 group-hover:text-indigo-200 transition-colors">
+                          Eng. Khalid Al Shamsi
+                        </span>
                       </div>
 
-                      <div className="flex justify-between pt-2 border-t border-cyan-900/30 mt-2">
-                        <span className="text-xs text-slate-400">Total Cost:</span>
-                        <span className="text-xs text-cyan-300 font-medium">
+                      <div className="flex justify-between pt-2 border-t border-cyan-900/30 mt-2 items-center group hover:bg-[#8B0000]/20 p-1 rounded-md transition-all bg-[#8B0000]/10">
+                        <span className="text-xs text-white/80 group-hover:text-white transition-colors font-medium">
+                          Total Cost:
+                        </span>
+                        <span className="text-xs font-bold text-white">
                           {selectedProject
                             ? `AED ${(selectedProject.id * 1.5 + 8).toFixed(1)},000,000`
                             : "AED 12,800,000"}
@@ -862,36 +887,94 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
 
                 {/* Environmental Data */}
                 <div>
-                  <h3 className="text-sm uppercase text-slate-400 mb-3 sticky top-0 bg-slate-900/80 py-2 backdrop-blur-sm z-10">
-                    Environmental Data
+                  <h3 className="text-sm uppercase text-slate-400 mb-3 sticky top-0 bg-slate-900/80 py-2 backdrop-blur-sm z-10 flex items-center gap-2">
+                    <Film className="h-4 w-4 text-cyan-400" />
+                    <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent font-bold">
+                      Media
+                    </span>
                   </h3>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="vue-env-card">
-                      <div className="vue-env-icon-wrapper">
-                        <div className="vue-env-icon-inner">
-                          <Thermometer size={20} className="text-cyan-400 mb-1" />
-                          <span className="text-xs text-cyan-300">TEMP</span>
+                  <div className="relative h-40 overflow-hidden rounded-lg border border-cyan-500/30 bg-slate-900/50">
+                    {/* Add a style block for the animation */}
+                    <style jsx>{`
+                      @keyframes slideLeft {
+                        0% { transform: translateX(100%); }
+                        100% { transform: translateX(-100%); }
+                      }
+                      .photo-slider {
+                        display: flex;
+                        animation: slideLeft 20s linear infinite;
+                      }
+                      .photo-slider:hover {
+                        animation-play-state: paused;
+                      }
+                    `}</style>
+
+                    {/* Overlay effects */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-transparent to-slate-900/80 z-10 pointer-events-none"></div>
+                    <div className="absolute top-0 left-0 w-full h-px bg-cyan-500/20 vue-scan-line z-20 pointer-events-none"></div>
+                    <div className="absolute inset-0 bg-cyan-900/10 vue-video-noise pointer-events-none"></div>
+
+                    {/* Futuristic corner elements */}
+                    <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-cyan-500/50 z-20"></div>
+                    <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-cyan-500/50 z-20"></div>
+                    <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-cyan-500/50 z-20"></div>
+                    <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-cyan-500/50 z-20"></div>
+
+                    {/* Photo slider */}
+                    <div className="photo-slider h-full">
+                      <div className="flex-shrink-0 h-full w-48 relative mx-1">
+                        <div className="absolute inset-0 bg-[url('/al-ain-oasis-cityscape.png')] bg-cover bg-center"></div>
+                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
+                          <div className="text-xs text-cyan-300">Al Ain Oasis</div>
                         </div>
                       </div>
-                      <div className="text-lg font-bold text-white">{Math.round(temperature)}°C</div>
+                      <div className="flex-shrink-0 h-full w-48 relative mx-1">
+                        <div className="absolute inset-0 bg-[url('/al-ain-city-traffic.png')] bg-cover bg-center"></div>
+                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
+                          <div className="text-xs text-cyan-300">City Center</div>
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0 h-full w-48 relative mx-1">
+                        <div className="absolute inset-0 bg-[url('/al-ain-street-surveillance.png')] bg-cover bg-center"></div>
+                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
+                          <div className="text-xs text-cyan-300">Main Street</div>
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0 h-full w-48 relative mx-1">
+                        <div className="absolute inset-0 bg-[url('/al-ain-grand-entrance.png')] bg-cover bg-center"></div>
+                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
+                          <div className="text-xs text-cyan-300">Police HQ</div>
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0 h-full w-48 relative mx-1">
+                        <div className="absolute inset-0 bg-[url('/al-ain-parking-lot-daytime.png')] bg-cover bg-center"></div>
+                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
+                          <div className="text-xs text-cyan-300">Parking Area</div>
+                        </div>
+                      </div>
+
+                      {/* Duplicate the first few images to make the loop seamless */}
+                      <div className="flex-shrink-0 h-full w-48 relative mx-1">
+                        <div className="absolute inset-0 bg-[url('/al-ain-oasis-cityscape.png')] bg-cover bg-center"></div>
+                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
+                          <div className="text-xs text-cyan-300">Al Ain Oasis</div>
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0 h-full w-48 relative mx-1">
+                        <div className="absolute inset-0 bg-[url('/al-ain-city-traffic.png')] bg-cover bg-center"></div>
+                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
+                          <div className="text-xs text-cyan-300">City Center</div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="vue-env-card">
-                      <div className="vue-env-icon-wrapper">
-                        <div className="vue-env-icon-inner">
-                          <Droplets size={20} className="text-cyan-400 mb-1" />
-                          <span className="text-xs text-cyan-300">HUM</span>
-                        </div>
-                      </div>
-                      <div className="text-lg font-bold text-white">{Math.round(humidity)}%</div>
-                    </div>
-                    <div className="vue-env-card">
-                      <div className="vue-env-icon-wrapper">
-                        <div className="vue-env-icon-inner">
-                          <Wind size={20} className="text-cyan-400 mb-1" />
-                          <span className="text-xs text-cyan-300">WIND</span>
-                        </div>
-                      </div>
-                      <div className="text-lg font-bold text-white">{Math.round(windSpeed)} km/h</div>
+
+                    {/* Controls indicator */}
+                    <div className="absolute bottom-2 right-2 flex space-x-1 z-20">
+                      <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 bg-cyan-400/50 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 bg-cyan-400/50 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 bg-cyan-400/50 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 bg-cyan-400/50 rounded-full"></div>
                     </div>
                   </div>
                 </div>
@@ -1005,250 +1088,6 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
                         <div className="absolute inset-0 bg-[url('/al-ain-parking-lot-daytime.png')] bg-cover bg-center animate-pulse"></div>
                         <div className="absolute inset-0 bg-cyan-900/20 vue-video-noise"></div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Add the documents tab content with enhanced filtering */}
-            {activeTab === "documents" && (
-              <div className="space-y-6">
-                <h3 className="text-sm uppercase text-slate-400 mb-3 sticky top-0 bg-slate-900/80 py-2 backdrop-blur-sm z-10 flex justify-between items-center">
-                  <span>Project Documents</span>
-                  <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className="text-xs flex items-center gap-1 text-cyan-400 hover:text-cyan-300"
-                  >
-                    <Filter size={12} />
-                    {showFilters ? "Hide Filters" : "Show Filters"}
-                  </button>
-                </h3>
-
-                {/* Search and filter section */}
-                {showFilters && (
-                  <div className="vue-card bg-slate-800/50 space-y-3">
-                    <form onSubmit={handleSearch} className="flex items-center gap-2">
-                      <div className="relative flex-1">
-                        <input
-                          type="text"
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          placeholder="Search documents..."
-                          className="w-full bg-slate-700/50 border border-cyan-900/30 rounded-md py-1 px-3 pl-8 text-sm text-cyan-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                        />
-                        <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                      </div>
-                      <button
-                        type="submit"
-                        className="bg-cyan-900/50 text-cyan-300 border border-cyan-500/30 rounded-md px-3 py-1 text-sm hover:bg-cyan-800/50 transition-colors"
-                      >
-                        Search
-                      </button>
-                    </form>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs text-slate-400 block mb-1">Document Type</label>
-                        <select
-                          value={filters.type || ""}
-                          onChange={(e) => setFilters({ ...filters, type: e.target.value || undefined })}
-                          className="w-full bg-slate-700/50 border border-cyan-900/30 rounded-md py-1 px-2 text-sm text-cyan-100"
-                        >
-                          <option value="">All Types</option>
-                          {documentTypes.map((type) => (
-                            <option key={type} value={type}>
-                              {type}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-xs text-slate-400 block mb-1">Project</label>
-                        <select
-                          value={filters.project || ""}
-                          onChange={(e) => setFilters({ ...filters, project: e.target.value || undefined })}
-                          className="w-full bg-slate-700/50 border border-cyan-900/30 rounded-md py-1 px-2 text-sm text-cyan-100"
-                        >
-                          <option value="">All Projects</option>
-                          {projectNames.map((project) => (
-                            <option key={project} value={project}>
-                              {project}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between pt-2">
-                      <button
-                        onClick={clearFilters}
-                        className="text-xs flex items-center gap-1 text-slate-400 hover:text-cyan-300"
-                      >
-                        <X size={12} />
-                        Clear Filters
-                      </button>
-                      <button
-                        onClick={applyFilters}
-                        className="bg-cyan-900/50 text-cyan-300 border border-cyan-500/30 rounded-md px-3 py-1 text-xs hover:bg-cyan-800/50 transition-colors"
-                      >
-                        Apply Filters
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {loadingDocuments ? (
-                  <div className="flex justify-center items-center py-8">
-                    <div className="h-6 w-6 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                ) : filteredDocuments.length > 0 ? (
-                  <div className="space-y-3">
-                    {filteredDocuments.map((doc) => (
-                      <div key={doc.id} className="vue-card">
-                        <div className="flex items-start space-x-3">
-                          <div className="vue-icon-container">
-                            <MapPin size={20} className="text-cyan-400" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-cyan-300 font-medium mb-1 truncate">{doc.name}</div>
-                            <div className="text-xs text-slate-400 mb-2">
-                              {doc.type} • {doc.size} • {doc.date}
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <a
-                                href={doc.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs px-2 py-0.5 bg-cyan-900/30 text-cyan-400 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all"
-                              >
-                                View
-                              </a>
-                              <a
-                                href={doc.url}
-                                download
-                                className="text-xs px-2 py-0.5 bg-cyan-900/30 text-cyan-400 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all"
-                              >
-                                Download
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="text-cyan-400 mb-2">No documents found</div>
-                    <div className="text-xs text-slate-400">
-                      {Object.keys(filters).length > 0
-                        ? "Try adjusting your filters or search terms"
-                        : "Upload documents from the admin dashboard"}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex justify-center mt-4">
-                  <button
-                    onClick={() => router.push("/al-ain/documents")}
-                    className="px-4 py-2 bg-cyan-900/50 text-cyan-300 rounded-md border border-cyan-500/30 hover:bg-cyan-800/50 transition-all text-sm"
-                  >
-                    View All Documents
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Projects tab content remains the same */}
-            {activeTab === "projects" && (
-              <div className="space-y-6">
-                <h3 className="text-sm uppercase text-slate-400 mb-3 sticky top-0 bg-slate-900/80 py-2 backdrop-blur-sm z-10">
-                  Featured Projects
-                </h3>
-                {projects.map((project, index) => (
-                  <div key={index} className="vue-card">
-                    <div className="flex items-start space-x-3">
-                      <div className="vue-icon-container">
-                        <MapPin size={20} className="text-cyan-400" />
-                      </div>
-                      <div>
-                        <div className="text-cyan-300 font-medium mb-1">{project.name}</div>
-                        <div className="text-xs text-slate-400 mb-2">{project.description}</div>
-                        <div className="flex items-center space-x-2">
-                          <div className="text-xs px-2 py-0.5 bg-cyan-900/30 text-cyan-400 rounded-full border border-cyan-500/30">
-                            {project.status}
-                          </div>
-                          <div className="text-xs text-slate-500">{project.completion}% Complete</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Analytics tab content remains the same */}
-            {activeTab === "analytics" && (
-              <div className="space-y-6">
-                <h3 className="text-sm uppercase text-slate-400 mb-3 sticky top-0 bg-slate-900/80 py-2 backdrop-blur-sm z-10">
-                  Performance Metrics
-                </h3>
-                <div className="vue-card">
-                  <div className="flex justify-between items-center mb-3">
-                    <div className="text-cyan-300 font-medium">System Resources</div>
-                    <div className="text-xs text-cyan-400">Real-time</div>
-                  </div>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-400">CPU Usage</span>
-                        <span className="text-cyan-300">42%</span>
-                      </div>
-                      <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 w-[42%] vue-progress-animate"></div>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-400">Memory</span>
-                        <span className="text-cyan-300">68%</span>
-                      </div>
-                      <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 w-[68%] vue-progress-animate"></div>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-400">Network</span>
-                        <span className="text-cyan-300">35%</span>
-                      </div>
-                      <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 w-[35%] vue-progress-animate"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <h3 className="text-sm uppercase text-slate-400 mb-3 sticky top-0 bg-slate-900/80 py-2 backdrop-blur-sm z-10">
-                  Traffic Sources
-                </h3>
-                <div className="vue-card">
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm text-slate-300">Direct</div>
-                      <div className="text-xs text-cyan-300">45%</div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm text-slate-300">Search</div>
-                      <div className="text-xs text-cyan-300">32%</div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm text-slate-300">Referral</div>
-                      <div className="text-xs text-cyan-300">18%</div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm text-slate-300">Social</div>
-                      <div className="text-xs text-cyan-300">5%</div>
                     </div>
                   </div>
                 </div>

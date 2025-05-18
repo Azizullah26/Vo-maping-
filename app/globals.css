@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Calvin font */
+@font-face {
+  font-family: "Calvin";
+  src: url("/fonts/Calvin.woff2") format("woff2"), url("/fonts/Calvin.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Calvin";
+  src: url("/fonts/Calvin-Bold.woff2") format("woff2"), url("/fonts/Calvin-Bold.woff") format("woff");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -33,6 +50,7 @@
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
+    --font-calvin: "Calvin", system-ui, sans-serif;
   }
 
   .dark {

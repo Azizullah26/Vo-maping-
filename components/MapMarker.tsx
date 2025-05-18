@@ -3,6 +3,7 @@
 import type React from "react"
 import { cn } from "@/lib/utils"
 import mapboxgl from "mapbox-gl"
+import { useEffect } from "react"
 
 interface MapMarkerProps {
   x: number
@@ -12,21 +13,87 @@ interface MapMarkerProps {
   size?: "small" | "medium" | "large"
   colorIndex: number
   onClick?: () => void
+  direction?: "default" | "left" | "right"
 }
 
 const colorCombinations = [
-  ["#ffbc00", "#ff0058"],
-  ["#03a9f4", "#ff0058"],
-  ["#4dff03", "#00d0ff"],
+  ["#ffffff", "#000000"],
+  ["#ffffff", "#000000"],
+  ["#ffffff", "#000000"],
+  ["#ffffff", "#000000"],
 ]
 
 // Add this function to determine if a marker is for Abu Dhabi
 const getMarkerPositionClasses = (name: string) => {
-  if (name.includes("Abu Dhabi")) {
+  if (
+    name.includes("Abu Dhabi") ||
+    name.includes("Al Ain") ||
+    name.includes("Dubai") ||
+    name.includes("West Region") ||
+    name.includes("Other Cities")
+  ) {
     return "transform -translate-x-2/3 -translate-y-full -mt-8 -ml-4" // Move up and left
   }
   return "transform -translate-x-1/2 -translate-y-full -mt-3" // Default positioning
 }
+
+// Add keyframes for the animations
+const animationKeyframes = `
+@keyframes pulsate {
+  0% {
+    transform: scale(0.1, 0.1);
+    opacity: 0.0;
+  }
+  50% {
+    opacity: 1.0;
+  }
+  100% {
+    transform: scale(1.2, 1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes bounce {
+  0% {
+    opacity: 0;
+    transform: translateY(-2000px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(30px);
+  }
+  80% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}
+`
 
 const MapMarker: React.FC<MapMarkerProps> = ({
   x,
@@ -36,29 +103,49 @@ const MapMarker: React.FC<MapMarkerProps> = ({
   size = "medium",
   colorIndex,
   onClick,
+  direction = "default",
 }) => {
   const sizes = {
     small: {
-      width: "w-16 sm:w-20",
-      height: "h-6 sm:h-7",
-      text: "text-xs sm:text-sm",
+      width: "w-12 sm:w-14", // Further reduced from w-14 sm:w-16
+      height: "h-4 sm:h-5", // Further reduced from h-5 sm:h-6
+      text: "text-[10px]", // Smaller text size
       offset: "translate-y-0",
     },
     medium: {
-      width: "w-20 sm:w-24",
-      height: "h-7 sm:h-8",
-      text: "text-sm",
-      offset: "translate-y-2 sm:translate-y-4",
+      width: "w-14 sm:w-16", // Further reduced from w-16 sm:w-20
+      height: "h-5 sm:h-6", // Further reduced from h-6 sm:h-7
+      text: "text-[10px] sm:text-xs", // Smaller text size
+      offset: "translate-y-1 sm:translate-y-2", // Adjusted offset
     },
     large: {
-      width: "w-24 sm:w-28",
-      height: "h-8 sm:h-9",
-      text: "text-sm sm:text-base",
-      offset: "translate-y-4 sm:translate-y-8",
+      width: "w-16 sm:w-20", // Further reduced from w-20 sm:w-24
+      height: "h-6 sm:h-7", // Further reduced from h-7 sm:h-8
+      text: "text-xs", // Smaller text size
+      offset: "translate-y-2 sm:translate-y-4", // Adjusted offset
     },
   }
 
   const [color1, color2] = colorCombinations[colorIndex % colorCombinations.length]
+
+  // Add the keyframes to the document
+  useEffect(() => {
+    // Check if the style already exists
+    if (!document.getElementById("marker-animations")) {
+      const styleElement = document.createElement("style")
+      styleElement.id = "marker-animations"
+      styleElement.innerHTML = animationKeyframes
+      document.head.appendChild(styleElement)
+
+      return () => {
+        // Clean up on unmount
+        const element = document.getElementById("marker-animations")
+        if (element) {
+          element.remove()
+        }
+      }
+    }
+  }, [])
 
   return (
     <div
@@ -71,35 +158,170 @@ const MapMarker: React.FC<MapMarkerProps> = ({
       }}
       onClick={onClick}
     >
-      <div className={`relative ${getMarkerPositionClasses(name)} ${sizes[size].offset}`}>
+      <div
+        className={`relative ${getMarkerPositionClasses(name)} ${sizes[size].offset}`}
+        style={{
+          transform: "translateY(-30px)",
+          animation: "bounce 1s both",
+        }}
+      >
         <div
           className={`
-            ${sizes[size].width} ${sizes[size].height} rounded-full
-            transition-all duration-200 flex items-center justify-center
-            animate-float relative overflow-hidden
-            ${isActive ? "scale-110" : "scale-100"}
-          `}
+    ${sizes[size].width} ${sizes[size].height} rounded-lg
+    transition-all duration-300 flex items-center justify-center
+    relative overflow-hidden
+    ${isActive ? "scale-110" : "scale-100"}
+    hover:scale-110 group
+  `}
           style={{
-            background: `conic-gradient(rgb(0 0 0 / 0.75) 0 0) padding-box, 
-                       linear-gradient(45deg, ${color1}, ${color2}) border-box`,
-            border: "solid 4px transparent",
+            backgroundColor: "#ffffff",
+            color: "#000000",
+            transition: "all 0.3s ease",
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = "#000000"
+            e.currentTarget.style.color = "#ffffff"
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = "#ffffff"
+            e.currentTarget.style.color = "#000000"
           }}
         >
-          <div
-            className="absolute inset-x-0 -top-1 bottom-0 -z-10 opacity-75 blur-md"
-            style={{
-              background: `linear-gradient(45deg, ${color1}, ${color2})`,
-            }}
-          />
-
-          <span className={`${sizes[size].text} font-bold font-semibold text-white truncate px-2 relative z-10`}>
-            {name}
-          </span>
+          <span className={`${sizes[size].text} font-bold font-calvin truncate px-2 relative z-10`}>{name}</span>
         </div>
 
-        <div className="absolute left-1/2 top-full -translate-x-1/2">
-          <div className="w-[2px] h-4 bg-white rounded-full" />
-        </div>
+        {/* Add dashed lines with direction support - FUTURISTIC VERSION */}
+        {direction === "left" ? (
+          <>
+            {/* Left-pointing dashed line - FUTURISTIC */}
+            <div
+              className="absolute right-full top-1/2 -translate-y-1/2 h-[2px] w-[50px]"
+              style={{
+                background: "linear-gradient(90deg, #00f2fe, #4facfe, #00f2fe)",
+                backgroundSize: "200% auto",
+                animation: "flow 3s linear infinite",
+                boxShadow: "0 0 8px rgba(0, 242, 254, 0.7)",
+                opacity: 0.8,
+              }}
+            >
+              {/* Overlay for dotted effect */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: "linear-gradient(90deg, transparent 50%, rgba(0, 0, 0, 0.5) 50%)",
+                  backgroundSize: "6px 2px",
+                  backgroundRepeat: "repeat-x",
+                  animation: "pulse 2s infinite",
+                }}
+              />
+            </div>
+            {/* Circle at the end of the line with pulse effect */}
+            <div
+              className="absolute right-[calc(100%+50px)] top-1/2 -translate-y-1/2 w-2 h-2 rounded-full"
+              style={{
+                background: "radial-gradient(circle, #4facfe 0%, #00f2fe 100%)",
+                boxShadow: "0 0 10px #00f2fe, 0 0 20px rgba(0, 242, 254, 0.5)",
+              }}
+            >
+              {/* Pulse effect for the endpoint */}
+              <div
+                style={{
+                  position: "absolute",
+                  width: "14px",
+                  height: "14px",
+                  borderRadius: "50%",
+                  background: "rgba(1,4,2,0.2)",
+                  transform: "translate(-50%, -50%) rotateX(55deg)",
+                  top: "50%",
+                  left: "50%",
+                  zIndex: -1,
+                }}
+              >
+                <div
+                  style={{
+                    content: '""',
+                    position: "absolute",
+                    borderRadius: "50%",
+                    height: "20px",
+                    width: "20px",
+                    margin: "-10px 0 0 -10px",
+                    background:
+                      "radial-gradient(circle, rgba(0, 247, 255, 0.92) 0%, rgba(136, 227, 252, 1) 38%, rgba(0, 55, 207, 1) 53%, rgba(217, 0, 0, 1) 100%)",
+                    boxShadow: "0 0 1px 2px #FFFFFF",
+                    animation: "pulsate 1s ease-out infinite",
+                    animationDelay: "1.1s",
+                    opacity: 0,
+                  }}
+                />
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Default vertical dashed line - FUTURISTIC */}
+            <div
+              className="absolute left-1/2 top-full -translate-x-1/2 w-[2px] h-[50px]"
+              style={{
+                background: "linear-gradient(0deg, #00f2fe, #4facfe, #00f2fe)",
+                backgroundSize: "auto 200%",
+                animation: "flow 3s linear infinite",
+                boxShadow: "0 0 8px rgba(0, 242, 254, 0.7)",
+                opacity: 0.8,
+              }}
+            >
+              {/* Overlay for dotted effect */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: "linear-gradient(0deg, transparent 50%, rgba(0, 0, 0, 0.5) 50%)",
+                  backgroundSize: "2px 6px",
+                  backgroundRepeat: "repeat-y",
+                  animation: "pulse 2s infinite",
+                }}
+              />
+            </div>
+            {/* Circle at the end of the line with pulse effect */}
+            <div
+              className="absolute left-1/2 top-[calc(100%+50px)] -translate-x-1/2 w-2 h-2 rounded-full"
+              style={{
+                background: "radial-gradient(circle, #4facfe 0%, #00f2fe 100%)",
+                boxShadow: "0 0 10px #00f2fe, 0 0 20px rgba(0, 242, 254, 0.5)",
+              }}
+            >
+              {/* Pulse effect for the endpoint */}
+              <div
+                style={{
+                  position: "absolute",
+                  width: "14px",
+                  height: "14px",
+                  borderRadius: "50%",
+                  background: "rgba(1,4,2,0.2)",
+                  transform: "translate(-50%, -50%) rotateX(55deg)",
+                  top: "50%",
+                  left: "50%",
+                  zIndex: -1,
+                }}
+              >
+                <div
+                  style={{
+                    content: '""',
+                    position: "absolute",
+                    borderRadius: "50%",
+                    height: "20px",
+                    width: "20px",
+                    margin: "-10px 0 0 -10px",
+                    background:
+                      "radial-gradient(circle, rgba(0, 247, 255, 0.92) 0%, rgba(136, 227, 252, 1) 38%, rgba(0, 55, 207, 1) 53%, rgba(217, 0, 0, 1) 100%)",
+                    boxShadow: "0 0 1px 2px #FFFFFF",
+                    animation: "pulsate 1s ease-out infinite",
+                    animationDelay: "1.1s",
+                    opacity: 0,
+                  }}
+                />
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
@@ -131,6 +353,11 @@ export const createMapMarker = ({ name, coordinates, alignment, onClick, map }) 
 
 export const getMarkerAlignment = (name: string) => {
   return markerAlignments[name] || "right-aligned"
+}
+
+export const CUSTOM_MARKER_COORDINATES = {
+  latitude: 24.566557378557178,
+  longitude: 54.707019986771485,
 }
 
 export default MapMarker
