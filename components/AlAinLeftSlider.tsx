@@ -285,6 +285,15 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
   const setDemoDocuments = () => {
     const demoData = [
       {
+        id: "6",
+        name: "Al Ain Floor Plan.pdf",
+        type: "PDF",
+        size: "4.2 MB",
+        date: "2023-05-18",
+        url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/floor-plan-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+        project: "مركز شرطة الساد",
+      },
+      {
         id: "1",
         name: "Project Overview.pdf",
         type: "PDF",
@@ -530,6 +539,30 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
       setActiveTab("dashboard")
     }
   }, [selectedProject])
+
+  // Add this new useEffect to highlight the floor plan document when the Saad Police Station project is selected
+  useEffect(() => {
+    if (selectedProject && selectedProject.projectNameAr === "مركز شرطة الساد") {
+      // Make sure the floor plan document is loaded and visible
+      const hasFloorPlan = documents.some((doc) => doc.name === "Al Ain Floor Plan.pdf")
+
+      if (!hasFloorPlan) {
+        // If the floor plan isn't in the current documents, add it
+        const floorPlanDoc = {
+          id: "6",
+          name: "Al Ain Floor Plan.pdf",
+          type: "PDF",
+          size: "4.2 MB",
+          date: "2023-05-18",
+          url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/floor-plan-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+          project: "مركز شرطة الساد",
+        }
+
+        // Add the floor plan at the beginning of the documents array
+        setDocuments((prevDocs) => [floorPlanDoc, ...prevDocs])
+      }
+    }
+  }, [selectedProject, documents])
 
   // Filter documents based on current filters
   const filteredDocuments = documents.filter((doc) => {

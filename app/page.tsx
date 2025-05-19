@@ -194,11 +194,12 @@ export default function Home() {
   const getInitialZoom = useCallback(() => {
     if (typeof window === "undefined") return 6.5
     const width = window.innerWidth
-    if (width < 480) return 5.3
-    if (width < 640) return 5.7
-    if (width < 768) return 6.0
-    if (width < 1024) return 6.5
-    return 7.0
+    if (width < 480) return 5.0 // Smaller mobile devices
+    if (width < 640) return 5.5 // Mobile devices
+    if (width < 768) return 5.8 // Large mobile/Small tablets
+    if (width < 1024) return 6.2 // Tablets
+    if (width < 1280) return 6.5 // Small desktops
+    return 7.0 // Large desktops
   }, [])
 
   // Function to add all regions and their interactions
@@ -245,11 +246,11 @@ export default function Home() {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: "mapbox://styles/azizullah2611/cm7009fqu01j101pbe23262j4",
-        center: [54.5, 24.2],
+        center: windowSize.width < 480 ? [54.3, 24.0] : [54.5, 24.2], // Adjust center for small screens
         zoom: initialZoom,
         minZoom: Math.max(initialZoom - 1.5, 4.0),
         maxZoom: 15,
-        pitch: isMobile ? 35 : 45,
+        pitch: windowSize.width < 640 ? 30 : windowSize.width < 1024 ? 40 : 45, // Adjust pitch based on screen size
         bearing: 0,
         attributionControl: false,
         trackResize: true,
@@ -298,7 +299,7 @@ export default function Home() {
       setMapLoaded(false)
       setStyleLoaded(false)
     }
-  }, [error, getInitialZoom, isMobile, loading, token])
+  }, [error, getInitialZoom, isMobile, loading, token, windowSize.width])
 
   // Effect to initialize the map
   useEffect(() => {
@@ -321,21 +322,33 @@ export default function Home() {
       })
 
       if (map.current && !map.current._removed) {
+        // Resize the map to fit the container
         map.current.resize()
 
+        // Adjust zoom based on screen size
         const newZoom = getInitialZoom()
         if (Math.abs(map.current.getZoom() - newZoom) > 0.5) {
           map.current.setZoom(newZoom)
         }
 
-        const newPitch = window.innerWidth < 640 ? 35 : 45
+        // Adjust pitch based on screen size
+        const newPitch = window.innerWidth < 640 ? 30 : window.innerWidth < 1024 ? 40 : 45
         if (Math.abs(map.current.getPitch() - newPitch) > 5) {
           map.current.setPitch(newPitch)
+        }
+
+        // Adjust center for very small screens
+        if (window.innerWidth < 480) {
+          map.current.setCenter([54.3, 24.0])
+        } else {
+          map.current.setCenter([54.5, 24.2])
         }
       }
     }
 
     window.addEventListener("resize", handleResize)
+    // Call once to set initial size
+    handleResize()
 
     return () => {
       window.removeEventListener("resize", handleResize)
@@ -362,7 +375,22 @@ export default function Home() {
       markersRef.current.clear()
 
       const markerScale =
-        windowSize.width < 640 ? 0.75 : windowSize.width < 768 ? 0.85 : windowSize.width < 1024 ? 0.9 : 1
+        windowSize.width < 480
+          ? 0.65
+          : // Extra small screens
+            windowSize.width < 640
+            ? 0.75
+            : // Small mobile
+              windowSize.width < 768
+              ? 0.85
+              : // Large mobile
+                windowSize.width < 1024
+                ? 0.9
+                : // Tablets
+                  windowSize.width < 1280
+                  ? 0.95
+                  : // Small desktops
+                    1 // Large desktops
 
       uaeMarkers.forEach((marker) => {
         const el = document.createElement("div")
@@ -482,7 +510,7 @@ export default function Home() {
             alt="Cloud 1"
             width={300}
             height={150}
-            className="absolute left-0 animate-cloud-fast opacity-50 w-[150px] sm:w-[200px] md:w-[300px]"
+            className="absolute left-0 animate-cloud-fast opacity-50 w-[120px] xs:w-[150px] sm:w-[200px] md:w-[250px] lg:w-[300px]"
             priority
           />
         </div>
@@ -493,7 +521,7 @@ export default function Home() {
             alt="Cloud 3"
             width={400}
             height={200}
-            className="absolute left-1/3 animate-cloud-medium opacity-60 scale-x-[-1] w-[200px] sm:w-[250px] md:w-[350px]"
+            className="absolute left-1/3 animate-cloud-medium opacity-60 scale-x-[-1] w-[150px] xs:w-[180px] sm:w-[250px] md:w-[300px] lg:w-[350px]"
           />
         </div>
 
@@ -511,15 +539,17 @@ export default function Home() {
         )}
       </div>
 
-      <div className={`fixed ${isMobile ? "top-1/5" : "top-1/4"} z-50 pointer-events-none`}>
+      <div
+        className={`fixed ${windowSize.width < 640 ? "top-[15%]" : windowSize.width < 1024 ? "top-1/5" : "top-1/4"} z-50 pointer-events-none`}
+      >
         <Image
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/isolated-plane-details-zZkhEVsNZiw649CY3B0tyR5DoCwxLz.png"
           alt="Flying airplane"
           width={150}
           height={50}
-          className="animate-fly w-[80px] xs:w-[100px] sm:w-[125px] md:w-[150px]"
+          className="animate-fly w-[60px] xs:w-[80px] sm:w-[100px] md:w-[125px] lg:w-[150px]"
           priority
-          sizes="(max-width: 480px) 80px, (max-width: 640px) 100px, (max-width: 768px) 125px, 150px"
+          sizes="(max-width: 480px) 60px, (max-width: 640px) 80px, (max-width: 768px) 100px, (max-width: 1024px) 125px, 150px"
         />
       </div>
 
@@ -527,15 +557,15 @@ export default function Home() {
         <div ref={mapContainer} className="w-full h-full" />
       </div>
 
-      <div className="fixed top-20 left-4 z-40 weather-widget hidden sm:block">
+      <div className="fixed top-20 left-4 z-40 weather-widget hidden xs:block transform scale-90 xs:scale-95 sm:scale-100 origin-top-left">
         <WeatherWidget />
       </div>
 
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-black/80 p-4 rounded-lg flex flex-col items-center">
-            <div className="w-10 h-10 border-4 border-t-white border-r-white/50 border-b-white/30 border-l-white/10 rounded-full animate-spin mb-2"></div>
-            <p className="text-white text-sm">Loading map...</p>
+          <div className="bg-black/80 p-3 xs:p-4 rounded-lg flex flex-col items-center">
+            <div className="w-8 h-8 xs:w-10 xs:h-10 border-3 xs:border-4 border-t-white border-r-white/50 border-b-white/30 border-l-white/10 rounded-full animate-spin mb-2"></div>
+            <p className="text-white text-xs xs:text-sm">Loading map...</p>
           </div>
         </div>
       )}

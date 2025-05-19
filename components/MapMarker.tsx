@@ -32,9 +32,9 @@ const getMarkerPositionClasses = (name: string) => {
     name.includes("West Region") ||
     name.includes("Other Cities")
   ) {
-    return "transform -translate-x-2/3 -translate-y-full -mt-8 -ml-4" // Move up and left
+    return "transform -translate-x-2/3 -translate-y-full -mt-4 -ml-4" // Adjusted for pointer
   }
-  return "transform -translate-x-1/2 -translate-y-full -mt-3" // Default positioning
+  return "transform -translate-x-1/2 -translate-y-full -mt-1" // Adjusted for pointer
 }
 
 // Add keyframes for the animations
@@ -167,27 +167,41 @@ const MapMarker: React.FC<MapMarkerProps> = ({
       >
         <div
           className={`
-    ${sizes[size].width} ${sizes[size].height} rounded-lg
-    transition-all duration-300 flex items-center justify-center
-    relative overflow-hidden
-    ${isActive ? "scale-110" : "scale-100"}
-    hover:scale-110 group
-  `}
+${sizes[size].width} ${sizes[size].height} rounded-lg
+transition-all duration-300 flex items-center justify-center
+relative overflow-visible
+${isActive ? "scale-110" : "scale-100"}
+hover:scale-110 group
+`}
           style={{
             backgroundColor: "#ffffff",
             color: "#000000",
             transition: "all 0.3s ease",
+            position: "relative",
           }}
           onMouseOver={(e) => {
             e.currentTarget.style.backgroundColor = "#000000"
             e.currentTarget.style.color = "#ffffff"
+            const arrow = e.currentTarget.querySelector(".pointer-arrow")
+            if (arrow) arrow.style.borderTopColor = "#000000"
           }}
           onMouseOut={(e) => {
             e.currentTarget.style.backgroundColor = "#ffffff"
             e.currentTarget.style.color = "#000000"
+            const arrow = e.currentTarget.querySelector(".pointer-arrow")
+            if (arrow) arrow.style.borderTopColor = "#ffffff"
           }}
         >
           <span className={`${sizes[size].text} font-bold font-calvin truncate px-2 relative z-10`}>{name}</span>
+          <div
+            className="pointer-arrow absolute w-0 h-0 left-1/2 -bottom-2 -translate-x-1/2"
+            style={{
+              borderLeft: "8px solid transparent",
+              borderRight: "8px solid transparent",
+              borderTop: "8px solid #ffffff",
+              zIndex: 5,
+            }}
+          />
         </div>
 
         {/* Add dashed lines with direction support - FUTURISTIC VERSION */}
@@ -203,18 +217,7 @@ const MapMarker: React.FC<MapMarkerProps> = ({
                 boxShadow: "0 0 8px rgba(0, 242, 254, 0.7)",
                 opacity: 0.8,
               }}
-            >
-              {/* Overlay for dotted effect */}
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage: "linear-gradient(90deg, transparent 50%, rgba(0, 0, 0, 0.5) 50%)",
-                  backgroundSize: "6px 2px",
-                  backgroundRepeat: "repeat-x",
-                  animation: "pulse 2s infinite",
-                }}
-              />
-            </div>
+            ></div>
             {/* Circle at the end of the line with pulse effect */}
             <div
               className="absolute right-[calc(100%+50px)] top-1/2 -translate-y-1/2 w-2 h-2 rounded-full"
@@ -258,28 +261,6 @@ const MapMarker: React.FC<MapMarkerProps> = ({
           </>
         ) : (
           <>
-            {/* Default vertical dashed line - FUTURISTIC */}
-            <div
-              className="absolute left-1/2 top-full -translate-x-1/2 w-[2px] h-[50px]"
-              style={{
-                background: "linear-gradient(0deg, #00f2fe, #4facfe, #00f2fe)",
-                backgroundSize: "auto 200%",
-                animation: "flow 3s linear infinite",
-                boxShadow: "0 0 8px rgba(0, 242, 254, 0.7)",
-                opacity: 0.8,
-              }}
-            >
-              {/* Overlay for dotted effect */}
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage: "linear-gradient(0deg, transparent 50%, rgba(0, 0, 0, 0.5) 50%)",
-                  backgroundSize: "2px 6px",
-                  backgroundRepeat: "repeat-y",
-                  animation: "pulse 2s infinite",
-                }}
-              />
-            </div>
             {/* Circle at the end of the line with pulse effect */}
             <div
               className="absolute left-1/2 top-[calc(100%+50px)] -translate-x-1/2 w-2 h-2 rounded-full"

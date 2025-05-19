@@ -140,8 +140,8 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
         </div>
       </div>
 
-      {/* Filter buttons row - keep as is */}
-      {isAlAinPage && (
+      {/* Filter buttons row - only show when showFilters is true */}
+      {isAlAinPage && showFilters && (
         <div
           className={cn(
             "fixed top-[1.75rem] sm:top-[2rem] md:top-[2.25rem] left-0 right-0 z-40",

@@ -6,6 +6,7 @@ import { Building2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import Image from "next/image"
+import { useMobile } from "@/hooks/use-mobile"
 
 interface ProjectsDetailsSliderProps {
   projects: {
@@ -130,6 +131,8 @@ export const RightSliderButton = ({
   toggleProjects,
   openLeftSlider,
 }: RightSliderButtonProps): JSX.Element => {
+  const isMobile = useMobile()
+
   // Project data for mapping
   const projects = [
     {
@@ -258,7 +261,7 @@ export const RightSliderButton = ({
     },
     {
       id: 18,
-      imageSrc: "https://abudhabi-desertsafari.com/en/tours/al-ain-images/al-ain-city-tour-4.webp",
+      imageSrc: "https://abu-dhabi.realestate/wp-content/uploads/2024/05/al-ain-properties-1.jpg",
       projectNameAr: "إدارة الدوريات الخاصة",
       projectNameEn: "Active",
       coordinates: [55.723325119991586, 24.191513430459977],
@@ -289,6 +292,11 @@ export const RightSliderButton = ({
     // Make sure openLeftSlider is a function before calling it
     if (typeof openLeftSlider === "function") {
       openLeftSlider(project)
+
+      // On mobile, close the right slider when opening the left slider
+      if (isMobile && isOpen) {
+        onClose()
+      }
     } else {
       console.error("openLeftSlider is not a function")
     }
