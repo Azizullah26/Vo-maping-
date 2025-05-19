@@ -271,11 +271,12 @@ export default function Home() {
         fadeDuration: 0,
       })
 
-      const scale = new mapboxgl.ScaleControl({
-        maxWidth: isMobile ? 80 : 150,
-        unit: "metric",
-      })
-      map.current.addControl(scale, "bottom-left")
+      // Remove these lines
+      // const scale = new mapboxgl.ScaleControl({
+      //   maxWidth: isMobile ? 80 : 150,
+      //   unit: "metric",
+      // });
+      // map.current.addControl(scale, "bottom-left");
 
       // Disable map rotation with touch rotation gesture
       map.current.touchZoomRotate.disableRotation()

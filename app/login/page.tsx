@@ -2,132 +2,10 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef, Suspense } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Canvas, useFrame, useThree } from "@react-three/fiber"
-import { OrbitControls, Stars, useTexture, Environment, Text, Float } from "@react-three/drei"
-import { Vector3, type Mesh } from "three"
 import { motion } from "framer-motion"
 import { useAuth } from "@/app/contexts/AuthContext"
-
-// 3D Earth component
-function Earth({ scale = 1.5 }) {
-  const earthRef = useRef<Mesh>(null)
-  const cloudRef = useRef<Mesh>(null)
-
-  // Load textures
-  const [earthTexture, cloudTexture, normalMap, specularMap] = useTexture([
-    "/assets/earth_daymap.png",
-    "/assets/earth_clouds.png",
-    "/assets/earth_normal.png",
-    "/assets/earth_specular.png",
-  ])
-
-  // Rotate the earth
-  useFrame(({ clock }) => {
-    if (earthRef.current) {
-      earthRef.current.rotation.y = clock.getElapsedTime() * 0.05
-    }
-    if (cloudRef.current) {
-      cloudRef.current.rotation.y = clock.getElapsedTime() * 0.07
-    }
-  })
-
-  return (
-    <group>
-      {/* Earth sphere */}
-      <mesh ref={earthRef} scale={scale}>
-        <sphereGeometry args={[1, 64, 64]} />
-        <meshPhysicalMaterial
-          map={earthTexture}
-          normalMap={normalMap}
-          metalnessMap={specularMap}
-          metalness={0.2}
-          roughness={0.7}
-        />
-      </mesh>
-
-      {/* Cloud layer */}
-      <mesh ref={cloudRef} scale={scale * 1.01}>
-        <sphereGeometry args={[1, 64, 64]} />
-        <meshStandardMaterial map={cloudTexture} transparent={true} opacity={0.4} depthWrite={false} />
-      </mesh>
-    </group>
-  )
-}
-
-// Floating points representing cities
-function LocationPoints() {
-  const points = [
-    { position: [0.8, 0.6, 1.1], label: "Abu Dhabi" },
-    { position: [0.9, 0.5, 1.0], label: "Dubai" },
-    { position: [0.7, 0.7, 1.0], label: "Al Ain" },
-    { position: [-0.5, 0.8, 0.9], label: "New York" },
-    { position: [0.1, 0.9, 0.8], label: "London" },
-    { position: [-0.8, 0.2, 0.9], label: "Tokyo" },
-  ]
-
-  return (
-    <group>
-      {points.map((point, i) => (
-        <group key={i} position={new Vector3(...point.position).normalize().multiplyScalar(1.6)}>
-          <mesh>
-            <sphereGeometry args={[0.02, 16, 16]} />
-            <meshStandardMaterial color="#00ffff" emissive="#00ffff" emissiveIntensity={2} />
-          </mesh>
-          <Float speed={5} rotationIntensity={0} floatIntensity={0.2}>
-            <Text position={[0, 0.05, 0]} fontSize={0.05} color="#ffffff" anchorX="center" anchorY="middle">
-              {point.label}
-            </Text>
-          </Float>
-        </group>
-      ))}
-    </group>
-  )
-}
-
-// Connection lines between points
-function ConnectionLines() {
-  const linesRef = useRef<any>()
-
-  useFrame(({ clock }) => {
-    if (linesRef.current) {
-      linesRef.current.rotation.y = clock.getElapsedTime() * 0.03
-    }
-  })
-
-  return (
-    <group ref={linesRef}>
-      <mesh>
-        <sphereGeometry args={[1.55, 24, 24]} />
-        <meshBasicMaterial color="#0066ff" wireframe={true} transparent opacity={0.1} />
-      </mesh>
-    </group>
-  )
-}
-
-// Camera controller
-function CameraController() {
-  const { camera } = useThree()
-  const controlsRef = useRef<any>()
-
-  useEffect(() => {
-    camera.position.set(0, 0, 4)
-  }, [camera])
-
-  return (
-    <OrbitControls
-      ref={controlsRef}
-      enableZoom={false}
-      enablePan={false}
-      rotateSpeed={0.2}
-      autoRotate
-      autoRotateSpeed={0.1}
-      minPolarAngle={Math.PI / 2 - 0.5}
-      maxPolarAngle={Math.PI / 2 + 0.5}
-    />
-  )
-}
 
 // Login form component
 function LoginForm() {
@@ -168,7 +46,7 @@ function LoginForm() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
-      className="absolute top-1/2 right-[10%] transform -translate-y-1/2 w-full max-w-md z-10"
+      className="w-full max-w-md z-10"
     >
       <div className="backdrop-blur-md bg-black/30 p-8 rounded-xl border border-cyan-500/30 shadow-[0_0_15px_rgba(0,200,255,0.3)]">
         <div className="mb-6 text-center">
@@ -238,25 +116,9 @@ function LoginForm() {
 // Main login page component
 export default function LoginPage() {
   return (
-    <div className="relative w-full h-screen bg-gradient-to-b from-gray-900 to-black overflow-hidden">
-      {/* 3D Canvas */}
-      <div className="absolute inset-0">
-        <Canvas>
-          <CameraController />
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} intensity={1} />
-          <Suspense fallback={null}>
-            <Earth />
-            <LocationPoints />
-            <ConnectionLines />
-            <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
-            <Environment preset="night" />
-          </Suspense>
-        </Canvas>
-      </div>
-
+    <div className="flex items-center justify-center w-full h-screen bg-gradient-to-b from-gray-900 to-black overflow-hidden">
       {/* Overlay elements */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-gray-900/40 to-black pointer-events-none"></div>
 
       {/* Login form */}
       <LoginForm />
