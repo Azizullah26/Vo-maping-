@@ -1,7 +1,7 @@
 "use client"
 
 import dynamic from "next/dynamic"
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { Button } from "@/components/ui/button"
 import { TopNav } from "@/components/TopNav"
@@ -272,6 +272,7 @@ export default function AlAinPage() {
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const [showFilters, setShowFilters] = useState(true)
   const [selectedFilters, setSelectedFilters] = useState<{ [key: string]: boolean }>({})
+  const [isClient, setIsClient] = useState(false)
 
   const [selectedProject, setSelectedProject] = useState<{
     id: number
@@ -280,6 +281,11 @@ export default function AlAinPage() {
     projectNameEn: string
     coordinates: [number, number]
   } | null>(null)
+
+  // Set isClient to true when component mounts
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const handleFilterChange = (type: string, id: string) => {
     setSelectedFilters((prevFilters) => ({
@@ -325,6 +331,15 @@ export default function AlAinPage() {
 
   const toggleLeftSlider = () => {
     setIsLeftSliderOpen(!isLeftSliderOpen)
+  }
+
+  // Show loading state if not client-side yet
+  if (!isClient) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    )
   }
 
   if (error) {

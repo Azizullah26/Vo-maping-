@@ -4,12 +4,14 @@ import { Inter } from "next/font/google"
 import type React from "react"
 import { TopNav } from "@/components/TopNav"
 import Script from "next/script"
+import { AuthProvider } from "@/app/contexts/AuthContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
   title: "EL RACE Projects – Building Tomorrow's Infrastructure Today",
-  description: "ELRACE Projects is a leading provider of innovative construction and infrastructure solutions across the UAE. From design to delivery, we ensure excellence in every project.",
+  description:
+    "ELRACE Projects is a leading provider of innovative construction and infrastructure solutions across the UAE. From design to delivery, we ensure excellence in every project.",
   openGraph: {
     title: "ELRACE Projects – Building Tomorrow's Infrastructure Today",
     description:
@@ -63,10 +65,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta property="og:type" content="website" />
       </head>
       <body className={`${inter.className} h-full m-0 p-0`}>
-        <div className="relative">
-          <TopNav />
-          {children}
-        </div>
+        <AuthProvider>
+          <div className="relative">
+            <TopNav />
+            {children}
+          </div>
+        </AuthProvider>
         <Script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js" strategy="afterInteractive" />
       </body>
     </html>

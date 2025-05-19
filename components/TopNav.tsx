@@ -3,13 +3,14 @@
 import type React from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { MapPin, Building2, Building, Home, Warehouse } from "lucide-react"
+import { MapPin, Building2, Building, Home, Warehouse, LogOut, User } from "lucide-react"
 import styles from "@/styles/nav-button.module.css"
 import glowStyles from "@/styles/glow-button.module.css"
 import { cn } from "@/lib/utils"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useAuth } from "@/app/contexts/AuthContext"
 
 // Add this import for the scrollbar-hide utility
 import "tailwind-scrollbar-hide"
@@ -66,6 +67,16 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
   const isLivePage = pathname === "/al-ain/live"
   const [showFilters, setShowFilters] = useState(false)
   const [selectedFilters, setSelectedFilters] = useState<Record<string, boolean>>({})
+  const [isAuthReady, setIsAuthReady] = useState(false)
+  const auth = useAuth()
+  const router = useRouter()
+
+  // Wait for auth to be ready before accessing its properties
+  useEffect(() => {
+    if (auth) {
+      setIsAuthReady(true)
+    }
+  }, [auth])
 
   const handleFilterChange = (categoryName: string, filterId: string) => {
     setSelectedFilters((current) => ({
@@ -74,76 +85,102 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
     }))
   }
 
+  const handleLogout = () => {
+    if (isAuthReady && auth.logout) {
+      auth.logout()
+      router.push("/login")
+    }
+  }
+
   return (
     <>
       {/* Simplified top section with just logo, text and map button */}
       <div className="fixed top-0 left-0 z-50 px-1.5 xxs:px-2 py-1">
-        <div className="flex items-center gap-x-1 xxs:gap-x-1.5 xs:gap-x-2 sm:gap-x-3">
-          <Link
-            href="/"
-            className={cn(
-              "flex items-center gap-x-1 xxs:gap-x-1.5 xs:gap-x-2 sm:gap-x-3",
-              "rounded-md transition-transform duration-200",
-            )}
-          >
-            {isAlAinPage ? (
-              // Special styling for Al Ain page logo
-              <div className="logo-container-alain scale-75 xxs:scale-90 xs:scale-95 sm:scale-100">
-                <div className="logo-inner">
-                  <Image
-                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/abu-dhabi-police-logo-21AF543362-3m65MtbIg4ridptp8p3WCPp3VaFyE4.png"
-                    alt="Abu Dhabi Police Logo"
-                    width={40}
-                    height={40}
-                    className="logo-image w-5 h-5 xxs:w-6 xxs:h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 md:w-10 md:h-10"
-                    priority
-                  />
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-x-1 xxs:gap-x-1.5 xs:gap-x-2 sm:gap-x-3">
+            <Link
+              href="/"
+              className={cn(
+                "flex items-center gap-x-1 xxs:gap-x-1.5 xs:gap-x-2 sm:gap-x-3",
+                "rounded-md transition-transform duration-200",
+              )}
+            >
+              {isAlAinPage ? (
+                // Special styling for Al Ain page logo
+                <div className="logo-container-alain scale-75 xxs:scale-90 xs:scale-95 sm:scale-100">
+                  <div className="logo-inner">
+                    <Image
+                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/abu-dhabi-police-logo-21AF543362-3m65MtbIg4ridptp8p3WCPp3VaFyE4.png"
+                      alt="Abu Dhabi Police Logo"
+                      width={30}
+                      height={30}
+                      className="logo-image w-3 h-3 xxs:w-4 xxs:h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 md:w-7 md:h-7"
+                      priority
+                    />
+                  </div>
+                  <div className="logo-glow"></div>
                 </div>
-                <div className="logo-glow"></div>
+              ) : (
+                // Default logo for other pages
+                <Image
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/abu-dhabi-police-logo-21AF543362-nwLnkElCePIGxnmxG49FlWYFtViagS.png"
+                  alt="Abu Dhabi Police Logo"
+                  width={40}
+                  height={40}
+                  className="w-5 h-5 xxs:w-6 xxs:h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 object-contain"
+                  priority
+                />
+              )}
+              {isAlAinPage && (
+                <div className="flex flex-col">
+                  <span className="text-white font-bold text-[6px] xxs:text-[7px] xs:text-[8px] sm:text-[10px] md:text-xs">
+                    AL AIN POLICE
+                  </span>
+                  <span className="text-white/70 text-[5px] xxs:text-[6px] xs:text-[7px] sm:text-[8px] md:text-[10px] font-semibold">
+                    شرطة العين
+                  </span>
+                </div>
+              )}
+            </Link>
+            <nav className="flex items-center">
+              <ul className="flex items-center gap-x-1 sm:gap-x-2">
+                {navigationItems.map((item) => (
+                  <li key={item.title}>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        styles.btn,
+                        glowStyles.glowOnHover,
+                        "flex items-center gap-x-1 px-1.5 xxs:px-2 py-0.5 xxs:py-1 xs:px-2.5 xs:py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2",
+                        "text-white transition-colors text-[8px] xxs:text-[9px] xs:text-[10px] sm:text-xs md:text-sm font-medium",
+                        "rounded-md border border-white/30",
+                      )}
+                    >
+                      <item.icon className="h-3 w-3 xxs:h-3.5 xxs:w-3.5 xs:h-3.5 xs:w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 flex-shrink-0" />
+                      <span className="hidden xxs:inline">{item.title}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+
+          {/* User info and logout - only show when auth is ready and user exists */}
+          {isAuthReady && auth.user && (
+            <div className="flex items-center gap-x-2 mr-2">
+              <div className="hidden sm:flex items-center gap-x-1 bg-black/30 px-2 py-1 rounded-md border border-white/10">
+                <User className="h-3 w-3 text-cyan-400" />
+                <span className="text-[10px] text-white">{auth.user}</span>
               </div>
-            ) : (
-              // Default logo for other pages
-              <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/abu-dhabi-police-logo-21AF543362-nwLnkElCePIGxnmxG49FlWYFtViagS.png"
-                alt="Abu Dhabi Police Logo"
-                width={40}
-                height={40}
-                className="w-5 h-5 xxs:w-6 xxs:h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 object-contain"
-                priority
-              />
-            )}
-            {isAlAinPage && (
-              <div className="flex flex-col">
-                <span className="text-white font-bold text-[6px] xxs:text-[7px] xs:text-[8px] sm:text-[10px] md:text-xs">
-                  AL AIN POLICE
-                </span>
-                <span className="text-white/70 text-[5px] xxs:text-[6px] xs:text-[7px] sm:text-[8px] md:text-[10px] font-semibold">
-                  شرطة العين
-                </span>
-              </div>
-            )}
-          </Link>
-          <nav className="flex items-center">
-            <ul className="flex items-center gap-x-1 sm:gap-x-2">
-              {navigationItems.map((item) => (
-                <li key={item.title}>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      styles.btn,
-                      glowStyles.glowOnHover,
-                      "flex items-center gap-x-1 px-1.5 xxs:px-2 py-0.5 xxs:py-1 xs:px-2.5 xs:py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2",
-                      "text-white transition-colors text-[8px] xxs:text-[9px] xs:text-[10px] sm:text-xs md:text-sm font-medium",
-                      "rounded-md border border-white/30",
-                    )}
-                  >
-                    <item.icon className="h-3 w-3 xxs:h-3.5 xxs:w-3.5 xs:h-3.5 xs:w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 flex-shrink-0" />
-                    <span className="hidden xxs:inline">{item.title}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-x-1 bg-red-900/30 hover:bg-red-900/50 px-2 py-1 rounded-md border border-red-500/30 transition-colors duration-200"
+              >
+                <LogOut className="h-3 w-3 text-red-400" />
+                <span className="text-[10px] text-white hidden sm:inline">Logout</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -256,26 +293,11 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
                 <span className="text-[8px] xxs:text-[9px] xs:text-[10px]">Manage</span>
               </Link>
 
-              {/* Log In button */}
-              <Link
-                href="/login"
-                className="flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white"
-              >
-                <svg
-                  className="h-3 w-3 xxs:h-3.5 xxs:w-3.5 xs:h-4 xs:w-4 mb-0.5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span className="text-[8px] xxs:text-[9px] xs:text-[10px]">Log In</span>
-              </Link>
+              {/* User profile button */}
+              <div className="flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white">
+                <User className="h-3 w-3 xxs:h-3.5 xxs:w-3.5 xs:h-4 xs:w-4 mb-0.5" />
+                <span className="text-[8px] xxs:text-[9px] xs:text-[10px]">Profile</span>
+              </div>
             </div>
           </div>
         </div>

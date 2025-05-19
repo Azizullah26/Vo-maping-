@@ -15,6 +15,7 @@ import dynamic from "next/dynamic"
 import { otherCitiesBoundary, OTHER_CITIES_IDENTIFIER } from "@/data/otherCitiesCoordinates"
 import { useMapboxToken } from "@/hooks/useMapboxToken"
 import { useMobile } from "@/hooks/use-mobile"
+import { TopNav } from "@/components/TopNav"
 
 // Lazy load the WeatherWidget
 const WeatherWidget = dynamic(() => import("@/components/WeatherWidget").then((mod) => mod.WeatherWidget), {
@@ -72,6 +73,12 @@ export default function Home() {
     width: typeof window !== "undefined" ? window.innerWidth : 0,
     height: typeof window !== "undefined" ? window.innerHeight : 0,
   })
+  const [isClient, setIsClient] = useState(false)
+
+  // Set isClient to true when component mounts
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const handleMarkerClick = useCallback(
     (marker: (typeof uaeMarkers)[0]) => {
@@ -140,7 +147,7 @@ export default function Home() {
       if (!map.current || !styleLoaded) return
 
       map.current.on("click", layerId, (e) => {
-        if (e.features && e.features[0].geometry.type === "Polygon") {
+        if (e.features && e.features[0] && e.features[0].geometry && e.features[0].geometry.type === "Polygon") {
           try {
             // Instead of fitting to bounds, just zoom in at the current center
             if (map.current) {
@@ -303,7 +310,9 @@ export default function Home() {
 
   // Effect to initialize the map
   useEffect(() => {
-    initializeMap()
+    if (isClient) {
+      initializeMap()
+    }
 
     return () => {
       if (map.current && !map.current._removed) {
@@ -311,10 +320,12 @@ export default function Home() {
         map.current = null
       }
     }
-  }, [initializeMap])
+  }, [initializeMap, isClient])
 
   // Effect to handle window resize
   useEffect(() => {
+    if (!isClient) return
+
     const handleResize = () => {
       setWindowSize({
         width: window.innerWidth,
@@ -353,7 +364,7 @@ export default function Home() {
     return () => {
       window.removeEventListener("resize", handleResize)
     }
-  }, [getInitialZoom])
+  }, [getInitialZoom, isClient])
 
   // Effect to setup regions once style is loaded
   useEffect(() => {
@@ -365,141 +376,155 @@ export default function Home() {
 
   // Effect to add markers once map is loaded
   useEffect(() => {
-    if (mapLoaded && styleLoaded && map.current && !map.current._removed) {
-      console.log("Adding markers")
+    if (!isClient || !mapLoaded || !styleLoaded || !map.current || map.current._removed) return
 
-      // Clear existing markers
-      markersRef.current.forEach((marker) => {
-        marker.remove()
+    console.log("Adding markers")
+
+    // Clear existing markers
+    markersRef.current.forEach((marker) => {
+      marker.remove()
+    })
+    markersRef.current.clear()
+
+    // Refined marker scaling for better consistency across devices
+    const markerScale =
+      windowSize.width < 360
+        ? 0.6 // Extra small phones
+        : windowSize.width < 480
+          ? 0.7 // Small phones
+          : windowSize.width < 640
+            ? 0.8 // Medium phones
+            : windowSize.width < 768
+              ? 0.85 // Large phones/Small tablets
+              : windowSize.width < 1024
+                ? 0.9 // Tablets
+                : windowSize.width < 1280
+                  ? 0.95 // Small desktops
+                  : 1 // Large desktops
+
+    uaeMarkers.forEach((marker) => {
+      const el = document.createElement("div")
+      el.className = "custom-marker"
+
+      el.style.cursor = "pointer"
+      el.addEventListener("click", (e) => {
+        e.stopPropagation()
+        console.log(`Marker element clicked: ${marker.name}`)
+        handleMarkerClick(marker)
       })
-      markersRef.current.clear()
 
-      // Refined marker scaling for better consistency across devices
-      const markerScale =
-        windowSize.width < 360
-          ? 0.6 // Extra small phones
-          : windowSize.width < 480
-            ? 0.7 // Small phones
-            : windowSize.width < 640
-              ? 0.8 // Medium phones
-              : windowSize.width < 768
-                ? 0.85 // Large phones/Small tablets
-                : windowSize.width < 1024
-                  ? 0.9 // Tablets
-                  : windowSize.width < 1280
-                    ? 0.95 // Small desktops
-                    : 1 // Large desktops
+      el.style.transform = `scale(${markerScale})`
+      el.style.transformOrigin = "center bottom"
 
-      uaeMarkers.forEach((marker) => {
-        const el = document.createElement("div")
-        el.className = "custom-marker"
+      const markerComponent = (
+        <MapMarker
+          key={marker.name}
+          x={0}
+          y={0}
+          name={marker.name}
+          size={marker.size}
+          colorIndex={marker.colorIndex}
+          coordinates={marker.coordinates}
+          onClick={() => {
+            console.log(`MapMarker component clicked: ${marker.name}`)
+            handleMarkerClick(marker)
+          }}
+        />
+      )
 
-        el.style.cursor = "pointer"
-        el.addEventListener("click", (e) => {
-          e.stopPropagation()
-          console.log(`Marker element clicked: ${marker.name}`)
-          handleMarkerClick(marker)
-        })
+      const markerRoot = ReactDOM.createRoot(el)
+      markerRoot.render(markerComponent)
 
-        el.style.transform = `scale(${markerScale})`
-        el.style.transformOrigin = "center bottom"
-
-        const markerComponent = (
-          <MapMarker
-            key={marker.name}
-            x={0}
-            y={0}
-            name={marker.name}
-            size={marker.size}
-            colorIndex={marker.colorIndex}
-            coordinates={marker.coordinates}
-            onClick={() => {
-              console.log(`MapMarker component clicked: ${marker.name}`)
-              handleMarkerClick(marker)
-            }}
-          />
-        )
-
-        const markerRoot = ReactDOM.createRoot(el)
-        markerRoot.render(markerComponent)
-
-        const mapboxMarker = new mapboxgl.Marker({
-          element: el,
-          anchor: "center",
-        })
-          .setLngLat(marker.coordinates)
-          .addTo(map.current!)
-
-        mapboxMarker.getElement().addEventListener("click", () => {
-          console.log(`Mapbox marker clicked: ${marker.name}`)
-          handleMarkerClick(marker)
-        })
-
-        markersRef.current.set(marker.name, mapboxMarker)
+      const mapboxMarker = new mapboxgl.Marker({
+        element: el,
+        anchor: "center",
       })
-    }
-  }, [mapLoaded, styleLoaded, handleMarkerClick, windowSize])
+        .setLngLat(marker.coordinates)
+        .addTo(map.current!)
+
+      mapboxMarker.getElement().addEventListener("click", () => {
+        console.log(`Mapbox marker clicked: ${marker.name}`)
+        handleMarkerClick(marker)
+      })
+
+      markersRef.current.set(marker.name, mapboxMarker)
+    })
+  }, [mapLoaded, styleLoaded, handleMarkerClick, windowSize, isClient])
 
   // Effect to add dark overlay
   useEffect(() => {
-    if (mapLoaded && styleLoaded && map.current && !map.current._removed) {
-      try {
-        if (map.current.getLayer("dark-overlay")) {
-          map.current.removeLayer("dark-overlay")
-        }
+    if (!isClient || !mapLoaded || !styleLoaded || !map.current || map.current._removed) return
 
-        if (!map.current.getSource("overlay-source")) {
-          map.current.addSource("overlay-source", {
-            type: "geojson",
-            data: {
-              type: "Feature",
-              geometry: {
-                type: "Polygon",
-                coordinates: [
-                  [
-                    [-180, -90],
-                    [180, -90],
-                    [180, 90],
-                    [-180, 90],
-                    [-180, -90],
-                  ],
+    try {
+      if (map.current.getLayer("dark-overlay")) {
+        map.current.removeLayer("dark-overlay")
+      }
+
+      if (!map.current.getSource("overlay-source")) {
+        map.current.addSource("overlay-source", {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-180, -90],
+                  [180, -90],
+                  [180, 90],
+                  [-180, 90],
+                  [-180, -90],
                 ],
-              },
-            },
-          })
-        }
-
-        const layers = map.current.getStyle().layers || []
-
-        let firstSymbolId
-        for (const layer of layers) {
-          if (layer.type === "symbol") {
-            firstSymbolId = layer.id
-            break
-          }
-        }
-
-        map.current.addLayer(
-          {
-            id: "dark-overlay",
-            type: "fill",
-            source: "overlay-source",
-            layout: {},
-            paint: {
-              "fill-color": "#000000",
-              "fill-opacity": isMobile ? 0.3 : 0.4,
+              ],
             },
           },
-          firstSymbolId,
-        )
-      } catch (error) {
-        console.error("Error adding dark overlay:", error)
+        })
       }
+
+      const layers = map.current.getStyle().layers || []
+
+      let firstSymbolId
+      for (const layer of layers) {
+        if (layer.type === "symbol") {
+          firstSymbolId = layer.id
+          break
+        }
+      }
+
+      map.current.addLayer(
+        {
+          id: "dark-overlay",
+          type: "fill",
+          source: "overlay-source",
+          layout: {},
+          paint: {
+            "fill-color": "#000000",
+            "fill-opacity": isMobile ? 0.3 : 0.4,
+          },
+        },
+        firstSymbolId,
+      )
+    } catch (error) {
+      console.error("Error adding dark overlay:", error)
     }
-  }, [mapLoaded, styleLoaded, isMobile])
+  }, [mapLoaded, styleLoaded, isMobile, isClient])
+
+  // Show loading state if not client-side yet
+  if (!isClient) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="bg-black/80 p-3 xs:p-4 rounded-lg flex flex-col items-center">
+          <div className="w-8 h-8 xs:w-10 xs:h-10 border-3 xs:border-4 border-t-white border-r-white/50 border-b-white/30 border-l-white/10 rounded-full animate-spin mb-2"></div>
+          <p className="text-white text-xs xs:text-sm">Loading map...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
+      <TopNav />
+
       <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
         {/* Reduced number of clouds and made them smaller/less opaque */}
         <div className="absolute w-full">
@@ -535,28 +560,6 @@ export default function Home() {
             />
           </div>
         )}
-      </div>
-
-      <div
-        className={`fixed ${
-          windowSize.width < 360
-            ? "top-[12%]"
-            : windowSize.width < 640
-              ? "top-[15%]"
-              : windowSize.width < 1024
-                ? "top-1/5"
-                : "top-1/4"
-        } z-50 pointer-events-none`}
-      >
-        <Image
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/isolated-plane-details-zZkhEVsNZiw649CY3B0tyR5DoCwxLz.png"
-          alt="Flying airplane"
-          width={150}
-          height={50}
-          className="animate-fly w-[50px] xxs:w-[60px] xs:w-[80px] sm:w-[100px] md:w-[125px] lg:w-[150px]"
-          priority
-          sizes="(max-width: 360px) 50px, (max-width: 480px) 60px, (max-width: 640px) 80px, (max-width: 768px) 100px, (max-width: 1024px) 125px, 150px"
-        />
       </div>
 
       <div className="relative w-full h-full">

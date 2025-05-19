@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.9.1",
     "@neondatabase/serverless": "latest",
     "@radix-ui/react-accordion": "1.2.2",
@@ -58,10 +59,12 @@
     "expo-asset": "latest",
     "expo-file-system": "latest",
     "expo-gl": "latest",
+    "framer-motion": "latest",
     "fs": "latest",
     "glob": "latest",
     "html2canvas": "latest",
     "input-otp": "1.4.1",
+    "js-cookie": "latest",
     "jspdf": "latest",
     "jspdf-autotable": "latest",
     "lucide-react": "^0.454.0",
