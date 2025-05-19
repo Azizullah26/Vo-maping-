@@ -510,6 +510,15 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
 
     window.addEventListener("documentUpdate", handleDocumentUpdate as EventListener)
 
+    // Listen for the closeSliders event
+    const handleCloseSliders = () => {
+      if (isOpen) {
+        toggleSlider()
+      }
+    }
+
+    window.addEventListener("closeSliders", handleCloseSliders)
+
     return () => {
       // Clean up all subscriptions and listeners
       clearInterval(pollingInterval)
@@ -523,8 +532,9 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
       }
 
       window.removeEventListener("documentUpdate", handleDocumentUpdate as EventListener)
+      window.removeEventListener("closeSliders", handleCloseSliders)
     }
-  }, [filters]) // Re-run when filters change
+  }, [filters, isOpen, toggleSlider]) // Re-run when filters change
 
   // Fetch documents when selected project changes
   useEffect(() => {
@@ -538,7 +548,7 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
       // Update tab to show project details
       setActiveTab("dashboard")
     }
-  }, [selectedProject])
+  }, [selectedProject, filters])
 
   // Add this new useEffect to highlight the floor plan document when the Saad Police Station project is selected
   useEffect(() => {

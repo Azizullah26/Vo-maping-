@@ -82,7 +82,16 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items = [], currentPath 
       </div>
 
       <button
-        onClick={() => window.history.back()}
+        onClick={(e) => {
+          e.preventDefault()
+          // Close any open sliders by dispatching a custom event
+          const closeSliderEvent = new CustomEvent("closeSliders")
+          window.dispatchEvent(closeSliderEvent)
+          // Add a small delay before navigating back
+          setTimeout(() => {
+            window.history.back()
+          }, 50)
+        }}
         className="text-gray-300 hover:text-black hover:bg-white p-1 bg-amber-900 ml-2 transition-all rounded-full"
         aria-label="Go back"
       >
