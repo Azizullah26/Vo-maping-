@@ -202,6 +202,11 @@ const markerStyles = `
   pointer-events: none;
   animation: pulse 2s infinite;
 }
+
+/* Hide Mapbox attribution */
+.mapboxgl-ctrl-bottom-right {
+  display: none !important;
+}
 `
 
 interface PoliceLocation {
@@ -500,6 +505,7 @@ export default function AlAinMap({
         scrollZoom: true, // Enable scroll zoom
         renderWorldCopies: false, // Add this line to prevent duplicate markers
         preserveDrawingBuffer: true, // Add this line to improve marker rendering
+        attributionControl: false, // Remove attribution control
       })
     } catch (error) {
       console.error("Error initializing map:", error)

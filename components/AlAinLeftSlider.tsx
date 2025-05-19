@@ -604,6 +604,10 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
           "fixed top-[7rem] sm:top-[7.5rem] md:top-[8rem] left-0 max-h-[calc(100vh-12rem)] sm:max-h-[calc(100vh-13rem)] md:max-h-[calc(100vh-14rem)] w-[80%] sm:w-[280px] transform transition-transform ease-out-expo duration-500 z-40 bg-black/90 backdrop-blur-sm overflow-hidden border-r border-cyan-500/30 rounded-tr-lg",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
+        style={{
+          pointerEvents: isOpen ? "auto" : "none",
+        }}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Background grid pattern - z-index adjusted to ensure it doesn't block scrolling */}
         <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-20 pointer-events-none z-0"></div>
@@ -623,7 +627,13 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
         {/* Main content area - scrollable with enhanced vertical scrolling */}
         <div
           className="h-[95%] overflow-y-auto overflow-x-hidden pr-2 no-scrollbar relative z-20 text-white"
-          style={{ maxHeight: "calc(100vh - 6rem)", overflowY: "auto" }}
+          style={{
+            maxHeight: "calc(100vh - 6rem)",
+            overflowY: "auto",
+            visibility: isOpen ? "visible" : "hidden",
+            opacity: isOpen ? 1 : 0,
+            transition: "visibility 0s, opacity 0.3s ease-out",
+          }}
         >
           <div className="flex flex-col p-4 space-y-6 w-full bg-slate-800/30 rounded-xl border border-cyan-500/10 shadow-inner shadow-cyan-900/20">
             <div className="flex justify-between items-center mb-6">

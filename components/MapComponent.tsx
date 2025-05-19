@@ -6,6 +6,13 @@ import mapboxgl from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useMapboxToken } from "../hooks/useMapboxToken"
 
+// Add CSS to hide Mapbox attribution
+const mapStyles = `
+  .mapboxgl-ctrl-bottom-right {
+    display: none !important;
+  }
+`
+
 interface MapComponentProps {
   center: [number, number]
   zoom: number
@@ -29,6 +36,17 @@ export default function MapComponent({
   const { token, loading, error } = useMapboxToken()
 
   useEffect(() => {
+    // Add the CSS to hide Mapbox attribution
+    const styleElement = document.createElement("style")
+    styleElement.textContent = mapStyles
+    document.head.appendChild(styleElement)
+
+    return () => {
+      document.head.removeChild(styleElement)
+    }
+  }, [])
+
+  useEffect(() => {
     if (loading || error || !token || !mapContainer.current) return
 
     if (map.current) return // already initialized
@@ -39,6 +57,7 @@ export default function MapComponent({
       center: center,
       zoom: zoom,
       accessToken: token,
+      attributionControl: false, // Disable attribution control
     })
 
     map.current.on("load", () => {
