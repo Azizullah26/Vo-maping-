@@ -261,6 +261,9 @@
     -webkit-transform-style: preserve-3d;
     transform-style: preserve-3d;
     will-change: transform;
+    filter: brightness(1.1) contrast(1.1);
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
   }
 
   .video-marker video {
@@ -423,26 +426,135 @@
 }
 
 /* Media queries */
-@media (max-width: 640px) {
+@media (max-width: 360px) {
+  .xxs-hidden {
+    display: none !important;
+  }
+
   .mapboxgl-ctrl-bottom-right {
-    bottom: 60px !important;
+    bottom: 55px !important;
+    right: 5px !important;
+  }
+
+  .mapboxgl-ctrl-group {
+    transform: scale(0.75);
   }
 
   .custom-marker {
     @apply scale-75;
   }
 
-  .animate-cloud {
-    animation-duration: 25s;
-  }
-  .animate-cloud-slow {
-    animation-duration: 35s;
-  }
-  .animate-cloud-medium {
-    animation-duration: 30s;
-  }
   .animate-cloud-fast {
-    animation-duration: 20s;
+    animation-duration: 18s;
+  }
+}
+
+@media (max-width: 480px) {
+  .xs-hidden {
+    display: none !important;
+  }
+
+  .xs-full-width {
+    width: 100% !important;
+  }
+
+  .xs-text-xs {
+    font-size: 0.75rem !important;
+  }
+
+  .xs-py-1 {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+
+  .xs-px-2 {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  .mapboxgl-ctrl-group {
+    transform: scale(0.8);
+    transform-origin: bottom right;
+  }
+
+  .mapboxgl-ctrl-bottom-right {
+    bottom: 60px !important;
+    right: 8px !important;
+  }
+
+  .mapboxgl-ctrl-bottom-left {
+    bottom: 8px !important;
+    left: 8px !important;
+  }
+
+  .custom-marker {
+    transform: scale(0.7) !important;
+  }
+
+  .animate-cloud-fast {
+    animation-duration: 25s !important;
+  }
+
+  .animate-cloud-medium {
+    animation-duration: 35s !important;
+  }
+
+  .animate-cloud-slow {
+    animation-duration: 45s !important;
+  }
+}
+
+/* Small devices (phones, 640px and down) */
+@media (max-width: 640px) {
+  .mobile-nav-compact {
+    padding: 0.5rem !important;
+  }
+
+  .mobile-hidden {
+    display: none !important;
+  }
+
+  .mobile-full-width {
+    width: 100% !important;
+  }
+
+  .mobile-text-sm {
+    font-size: 0.875rem !important;
+  }
+
+  .mobile-py-1 {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+
+  .mobile-px-2 {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  .map-controls {
+    transform: scale(0.9);
+    transform-origin: bottom right;
+  }
+
+  .map-overlay-text {
+    font-size: 0.75rem !important;
+  }
+
+  .custom-marker {
+    transform: scale(0.8);
+  }
+
+  .animate-cloud-fast {
+    animation-duration: 30s !important;
+  }
+
+  .animate-cloud-medium {
+    animation-duration: 40s !important;
+  }
+
+  .animate-cloud-slow {
+    animation-duration: 50s !important;
   }
 
   .video-marker {
@@ -452,6 +564,16 @@
 }
 
 @media (min-width: 641px) and (max-width: 768px) {
+  .tablet-py-2 {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  .tablet-px-4 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
   .custom-marker {
     @apply scale-90;
   }
@@ -983,5 +1105,72 @@ Add these styles to ensure dropdowns appear above other elements
   .mapboxgl-ctrl button {
     min-width: 36px;
     min-height: 36px;
+  }
+}
+
+/* Extra small screen support */
+@media (max-width: 360px) {
+  .xxs\:scale-80 {
+    transform: scale(0.8);
+  }
+
+  .xxs\:scale-90 {
+    transform: scale(0.9);
+  }
+
+  .xxs\:w-\[60px\] {
+    width: 60px;
+  }
+
+  .xxs\:h-\[6px\] {
+    height: 6px;
+  }
+
+  .xxs\:text-\[7px\] {
+    font-size: 7px;
+  }
+
+  .xxs\:text-\[9px\] {
+    font-size: 9px;
+  }
+
+  .xxs\:w-\[170px\] {
+    width: 170px;
+  }
+
+  .xxs\:h-\[190px\] {
+    height: 190px;
+  }
+
+  .xxs\:block {
+    display: block;
+  }
+
+  .xxs\:px-1\.5 {
+    padding-left: 0.375rem;
+    padding-right: 0.375rem;
+  }
+
+  .xxs\:py-1 {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .xxs\:gap-1\.5 {
+    gap: 0.375rem;
+  }
+
+  .xxs\:px-2 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .xxs\:py-1\.5 {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+  }
+
+  .xxs\:inline {
+    display: inline;
   }
 }

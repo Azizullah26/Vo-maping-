@@ -374,23 +374,21 @@ export default function Home() {
       })
       markersRef.current.clear()
 
+      // Refined marker scaling for better consistency across devices
       const markerScale =
-        windowSize.width < 480
-          ? 0.65
-          : // Extra small screens
-            windowSize.width < 640
-            ? 0.75
-            : // Small mobile
-              windowSize.width < 768
-              ? 0.85
-              : // Large mobile
-                windowSize.width < 1024
-                ? 0.9
-                : // Tablets
-                  windowSize.width < 1280
-                  ? 0.95
-                  : // Small desktops
-                    1 // Large desktops
+        windowSize.width < 360
+          ? 0.6 // Extra small phones
+          : windowSize.width < 480
+            ? 0.7 // Small phones
+            : windowSize.width < 640
+              ? 0.8 // Medium phones
+              : windowSize.width < 768
+                ? 0.85 // Large phones/Small tablets
+                : windowSize.width < 1024
+                  ? 0.9 // Tablets
+                  : windowSize.width < 1280
+                    ? 0.95 // Small desktops
+                    : 1 // Large desktops
 
       uaeMarkers.forEach((marker) => {
         const el = document.createElement("div")
@@ -540,16 +538,24 @@ export default function Home() {
       </div>
 
       <div
-        className={`fixed ${windowSize.width < 640 ? "top-[15%]" : windowSize.width < 1024 ? "top-1/5" : "top-1/4"} z-50 pointer-events-none`}
+        className={`fixed ${
+          windowSize.width < 360
+            ? "top-[12%]"
+            : windowSize.width < 640
+              ? "top-[15%]"
+              : windowSize.width < 1024
+                ? "top-1/5"
+                : "top-1/4"
+        } z-50 pointer-events-none`}
       >
         <Image
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/isolated-plane-details-zZkhEVsNZiw649CY3B0tyR5DoCwxLz.png"
           alt="Flying airplane"
           width={150}
           height={50}
-          className="animate-fly w-[60px] xs:w-[80px] sm:w-[100px] md:w-[125px] lg:w-[150px]"
+          className="animate-fly w-[50px] xxs:w-[60px] xs:w-[80px] sm:w-[100px] md:w-[125px] lg:w-[150px]"
           priority
-          sizes="(max-width: 480px) 60px, (max-width: 640px) 80px, (max-width: 768px) 100px, (max-width: 1024px) 125px, 150px"
+          sizes="(max-width: 360px) 50px, (max-width: 480px) 60px, (max-width: 640px) 80px, (max-width: 768px) 100px, (max-width: 1024px) 125px, 150px"
         />
       </div>
 
@@ -557,7 +563,7 @@ export default function Home() {
         <div ref={mapContainer} className="w-full h-full" />
       </div>
 
-      <div className="fixed top-20 left-4 z-40 weather-widget hidden xs:block transform scale-90 xs:scale-95 sm:scale-100 origin-top-left">
+      <div className="fixed top-20 left-4 z-40 weather-widget hidden xxs:block transform scale-75 xxs:scale-80 xs:scale-90 sm:scale-95 md:scale-100 origin-top-left">
         <WeatherWidget />
       </div>
 
