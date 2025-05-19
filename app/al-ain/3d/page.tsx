@@ -11,7 +11,6 @@ import {
   Maximize2,
   RotateCcw,
   Search,
-  ExternalLink,
   AlertCircle,
   ImageIcon,
 } from "lucide-react"
@@ -70,15 +69,6 @@ export default function ThreeDPage() {
   const [selectedModel, setSelectedModel] = useState<string | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [modelLoadError, setModelLoadError] = useState<string | null>(null)
-
-  // Coohom redirect URL
-  const coohomRedirectUrl =
-    "https://www.coohom.com/api/saas/openapi/v2/redirect?url=https%3A%2F%2Fwww.coohom.com%2Fpub%2Ftool%2Fyundesign%2Fcloud%3Fdesignid%3D3FO430QBEPAP%26openkuai%3D1%26kuaidaquery%3Dceshi%26customTagIds%3D9441%2C9442&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFuZW5nQHF1bmhlbWFpbC5jb20iLCJleHAiOjE2NDExMTcyNDQsInZhbGlkYXRlZCI6ZmFsc2UsImlkIjoiM0ZPNElYMjBORDYzIiwibG9jYWxlIjoia29fS1IiLCJrX2lkIjoiM0ZPNElYMjBORDYzIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9VU0VSIiwiUk9MRV9HVUVTVCIsIlJPTEVfU0FBU19VU0VSIl0sInVzZXJuYW1lIjoiQW5lbmdnIiwiYV9pZCI6IjNGTzRLNzlRR0ZNSiIsInJfaWQiOiIzRk80Szc5UUdGTUoiLCJyZWFsX3VzZXIiOiJjaGVuZ3lpbmcifQ.WEG_dSKouotYMYKZ_QEy_PTd8n0Vttkpdufq2LyLDJo&locale=en_US"
-
-  // Handle Coohom redirect
-  const handleCoohomRedirect = () => {
-    window.open(coohomRedirectUrl, "_blank", "noopener,noreferrer")
-  }
 
   // Update the models to use built-in duck.glb with different scales and positions
   const models = {
@@ -217,13 +207,6 @@ export default function ThreeDPage() {
             <ArrowLeft className="h-5 w-5 text-cyan-400" />
           </button>
           <h1 className="text-xl font-bold text-cyan-400">3D Models</h1>
-          <button
-            className="ml-4 px-4 py-2 bg-cyan-700 hover:bg-cyan-600 text-white rounded-md flex items-center gap-2 transition-colors shadow-md"
-            onClick={handleCoohomRedirect}
-          >
-            <ExternalLink className="h-4 w-4" />
-            RCC 3D Viewer
-          </button>
         </div>
         <div className="relative">
           <input

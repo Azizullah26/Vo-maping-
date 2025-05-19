@@ -14,6 +14,7 @@ interface MapMarkerProps {
   colorIndex: number
   onClick?: () => void
   direction?: "default" | "left" | "right"
+  coordinates?: [number, number]
 }
 
 const colorCombinations = [
@@ -30,7 +31,8 @@ const getMarkerPositionClasses = (name: string) => {
     name.includes("Al Ain") ||
     name.includes("Dubai") ||
     name.includes("West Region") ||
-    name.includes("Other Cities")
+    name.includes("Other Cities") ||
+    name.includes("Western Region")
   ) {
     return "transform -translate-x-2/3 -translate-y-full -mt-4 -ml-4" // Adjusted for pointer
   }
@@ -104,12 +106,13 @@ const MapMarker: React.FC<MapMarkerProps> = ({
   colorIndex,
   onClick,
   direction = "default",
+  coordinates,
 }) => {
   const sizes = {
     small: {
       width: "w-12 sm:w-14", // Further reduced from w-14 sm:w-16
       height: "h-4 sm:h-5", // Further reduced from h-5 sm:h-6
-      text: "text-[10px]", // Smaller text size
+      text: "text-[10px] sm:text-xs", // Smaller text size
       offset: "translate-y-0",
     },
     medium: {
@@ -121,7 +124,7 @@ const MapMarker: React.FC<MapMarkerProps> = ({
     large: {
       width: "w-16 sm:w-20", // Further reduced from w-20 sm:w-24
       height: "h-6 sm:h-7", // Further reduced from h-7 sm:h-8
-      text: "text-xs", // Smaller text size
+      text: "text-xs sm:text-sm", // Smaller text size
       offset: "translate-y-2 sm:translate-y-4", // Adjusted offset
     },
   }
@@ -178,6 +181,8 @@ hover:scale-110 group
             color: "#000000",
             transition: "all 0.3s ease",
             position: "relative",
+            boxShadow: "0 0 10px rgba(255, 255, 255, 0.5)",
+            border: "1px solid rgba(255, 255, 255, 0.3)",
           }}
           onMouseOver={(e) => {
             e.currentTarget.style.backgroundColor = "#000000"
@@ -200,6 +205,7 @@ hover:scale-110 group
               borderRight: "8px solid transparent",
               borderTop: "8px solid #ffffff",
               zIndex: 5,
+              filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))",
             }}
           />
         </div>

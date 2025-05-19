@@ -87,86 +87,88 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
 
   return (
     <>
-      {/* Simplified top section with just logo, text and map button */}
-      <div className="fixed top-0 left-0 z-50 px-1.5 xxs:px-2 py-1">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-x-1 xxs:gap-x-1.5 xs:gap-x-2 sm:gap-x-3">
-            <Link
-              href="/"
-              className={cn(
-                "flex items-center gap-x-1 xxs:gap-x-1.5 xs:gap-x-2 sm:gap-x-3",
-                "rounded-md transition-transform duration-200",
-              )}
-            >
-              {isAlAinPage ? (
-                // Special styling for Al Ain page logo
-                <div className="logo-container-alain scale-75 xxs:scale-90 xs:scale-95 sm:scale-100">
-                  <div className="logo-inner">
-                    <Image
-                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/abu-dhabi-police-logo-21AF543362-3m65MtbIg4ridptp8p3WCPp3VaFyE4.png"
-                      alt="Abu Dhabi Police Logo"
-                      width={30}
-                      height={30}
-                      className="logo-image w-3 h-3 xxs:w-4 xxs:h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 md:w-7 md:h-7"
-                      priority
-                    />
+      {/* Simplified top section with just logo, text and map button - hide on documents page */}
+      {!isDocumentsPage && (
+        <div className="fixed top-0 left-0 z-50 px-1.5 xxs:px-2 py-1">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-x-1 xxs:gap-x-1.5 xs:gap-x-2 sm:gap-x-3">
+              <Link
+                href="/"
+                className={cn(
+                  "flex items-center gap-x-1 xxs:gap-x-1.5 xs:gap-x-2 sm:gap-x-3",
+                  "rounded-md transition-transform duration-200",
+                )}
+              >
+                {isAlAinPage ? (
+                  // Special styling for Al Ain page logo
+                  <div className="logo-container-alain scale-75 xxs:scale-90 xs:scale-95 sm:scale-100">
+                    <div className="logo-inner">
+                      <Image
+                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/abu-dhabi-police-logo-21AF543362-3m65MtbIg4ridptp8p3WCPp3VaFyE4.png"
+                        alt="Abu Dhabi Police Logo"
+                        width={30}
+                        height={30}
+                        className="logo-image w-3 h-3 xxs:w-4 xxs:h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 md:w-7 md:h-7"
+                        priority
+                      />
+                    </div>
+                    <div className="logo-glow"></div>
                   </div>
-                  <div className="logo-glow"></div>
-                </div>
-              ) : (
-                // Default logo for other pages
-                <Image
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/abu-dhabi-police-logo-21AF543362-nwLnkElCePIGxnmxG49FlWYFtViagS.png"
-                  alt="Abu Dhabi Police Logo"
-                  width={40}
-                  height={40}
-                  className="w-5 h-5 xxs:w-6 xxs:h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 object-contain"
-                  priority
-                />
-              )}
-              {isAlAinPage && (
-                <div className="flex flex-col">
-                  <span className="text-white font-bold text-[6px] xxs:text-[7px] xs:text-[8px] sm:text-[10px] md:text-xs">
-                    AL AIN POLICE
-                  </span>
-                  <span className="text-white/70 text-[5px] xxs:text-[6px] xs:text-[7px] sm:text-[8px] md:text-[10px] font-semibold">
-                    شرطة العين
-                  </span>
-                </div>
-              )}
-            </Link>
-            <nav className="flex items-center">
-              <ul className="flex items-center gap-x-1 sm:gap-x-2">
-                {navigationItems.map((item) => (
-                  <li key={item.title}>
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        styles.btn,
-                        glowStyles.glowOnHover,
-                        "flex items-center gap-x-1 px-1.5 xxs:px-2 py-0.5 xxs:py-1 xs:px-2.5 xs:py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2",
-                        "text-white transition-colors text-[8px] xxs:text-[9px] xs:text-[10px] sm:text-xs md:text-sm font-medium",
-                        "rounded-md border border-white/30",
-                      )}
-                    >
-                      <item.icon className="h-3 w-3 xxs:h-3.5 xxs:w-3.5 xs:h-3.5 xs:w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 flex-shrink-0" />
-                      <span className="hidden xxs:inline">{item.title}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </div>
+                ) : (
+                  // Default logo for other pages
+                  <Image
+                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/abu-dhabi-police-logo-21AF543362-nwLnkElCePIGxnmxG49FlWYFtViagS.png"
+                    alt="Abu Dhabi Police Logo"
+                    width={40}
+                    height={40}
+                    className="w-5 h-5 xxs:w-6 xxs:h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 object-contain"
+                    priority
+                  />
+                )}
+                {isAlAinPage && (
+                  <div className="flex flex-col">
+                    <span className="text-white font-bold text-[6px] xxs:text-[7px] xs:text-[8px] sm:text-[10px] md:text-xs">
+                      AL AIN POLICE
+                    </span>
+                    <span className="text-white/70 text-[5px] xxs:text-[6px] xs:text-[7px] sm:text-[8px] md:text-[10px] font-semibold">
+                      شرطة العين
+                    </span>
+                  </div>
+                )}
+              </Link>
+              <nav className="flex items-center">
+                <ul className="flex items-center gap-x-1 sm:gap-x-2">
+                  {navigationItems.map((item) => (
+                    <li key={item.title}>
+                      <Link
+                        href={item.href}
+                        className={cn(
+                          styles.btn,
+                          glowStyles.glowOnHover,
+                          "flex items-center gap-x-1 px-1.5 xxs:px-2 py-0.5 xxs:py-1 xs:px-2.5 xs:py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2",
+                          "text-white transition-colors text-[8px] xxs:text-[9px] xs:text-[10px] sm:text-xs md:text-sm font-medium",
+                          "rounded-md border border-white/30",
+                        )}
+                      >
+                        <item.icon className="h-3 w-3 xxs:h-3.5 xxs:w-3.5 xs:h-3.5 xs:w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 flex-shrink-0" />
+                        <span className="hidden xxs:inline">{item.title}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </div>
 
-          {/* User info - always show guest user */}
-          <div className="flex items-center gap-x-2 mr-2">
-            <div className="hidden sm:flex items-center gap-x-1 bg-black/30 px-2 py-1 rounded-md border border-white/10">
-              <User className="h-3 w-3 text-cyan-400" />
-              <span className="text-[10px] text-white">{auth.user || "Guest User"}</span>
+            {/* User info - always show guest user */}
+            <div className="flex items-center gap-x-2 mr-2">
+              <div className="hidden sm:flex items-center gap-x-1 bg-black/30 px-2 py-1 rounded-md border border-white/10">
+                <User className="h-3 w-3 text-cyan-400" />
+                <span className="text-[10px] text-white">{auth.user || "Guest User"}</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Filter buttons row - only show when showFilters is true */}
       {isAlAinPage && showFilters && (
@@ -257,7 +259,7 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
 
               {/* Manage button */}
               <Link
-                href="/admin"
+                href="/manage"
                 className="flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white"
               >
                 <svg

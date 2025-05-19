@@ -288,3 +288,26 @@
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
   transform: translate(-50%, -50%);
 }
+
+/* Add these new styles for better mobile visibility */
+@media (max-width: 480px) {
+  .mapboxgl-marker {
+    z-index: 10 !important;
+  }
+
+  .mapboxgl-marker:hover {
+    z-index: 20 !important;
+  }
+
+  /* Ensure markers are visible on mobile */
+  .custom-marker {
+    transform-origin: center bottom !important;
+  }
+
+  /* Ensure text is readable on mobile */
+  .marker-button {
+    font-size: 0.9em !important;
+    padding: 6px 12px !important;
+    white-space: nowrap !important;
+  }
+}

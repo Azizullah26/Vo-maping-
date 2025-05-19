@@ -334,37 +334,41 @@ export default function AlAinPage() {
   }
 
   // Show loading state if not client-side yet
-  if (!isClient) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    )
-  }
+  const loadingState = (
+    <div className="flex items-center justify-center min-h-screen bg-gray-900">
+      <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  )
 
-  if (error) {
-    return (
-      <div className="w-full h-full min-h-screen flex items-center justify-center bg-red-50 text-red-500 p-4">
-        <div className="text-center max-w-md">
-          <p className="font-semibold mb-2">An error occurred</p>
-          <p className="text-sm text-red-400 mb-4">{error}</p>
-          <Button
-            variant="destructive"
-            onClick={() => {
-              setError(null)
-              window.location.reload()
-            }}
-            className="w-full sm:w-auto"
-          >
-            Try Again
-          </Button>
-        </div>
+  const errorState = (
+    <div className="w-full h-full min-h-screen flex items-center justify-center bg-red-50 text-red-500 p-4">
+      <div className="text-center max-w-md">
+        <p className="font-semibold mb-2">An error occurred</p>
+        <p className="text-sm text-red-400 mb-4">{error}</p>
+        <Button
+          variant="destructive"
+          onClick={() => {
+            setError(null)
+            window.location.reload()
+          }}
+          className="w-full sm:w-auto"
+        >
+          Try Again
+        </Button>
       </div>
-    )
-  }
+    </div>
+  )
+
+  useEffect(() => {
+    if (showAdmin) {
+      router.replace("/")
+    }
+  }, [showAdmin, router])
 
   return (
     <div className="relative w-full h-[100dvh] overflow-hidden">
+      {loadingState}
+      {error && errorState}
       <TopNav
         onToggleProjects={toggleProjects}
         showProjects={showProjects}

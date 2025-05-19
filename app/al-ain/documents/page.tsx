@@ -466,6 +466,87 @@ export default function DocumentsPage() {
 
       {/* Main content with glass effect */}
       <div className="container mx-auto px-4 py-6">
+        {/* External Documents Section */}
+        <div className="mb-6 bg-gray-800/70 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700 p-4">
+          <h2 className="text-xl font-semibold mb-4 text-white flex items-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2 text-cyan-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+              />
+            </svg>
+            External Documents
+          </h2>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <a
+              href="https://pdf.ac/2eEs05"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col bg-gray-700/50 hover:bg-gray-600/50 transition-colors rounded-lg overflow-hidden border border-gray-600 hover:border-cyan-500/30"
+            >
+              <div className="p-4">
+                <div className="flex items-center mb-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-red-400 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <h3 className="font-medium text-white">Al Ain Project Documents</h3>
+                </div>
+                <p className="text-sm text-gray-300 mb-3">Collection of project documents and specifications</p>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-gray-400">External Link</span>
+                  <span className="text-xs px-2 py-1 bg-cyan-900/50 text-cyan-300 rounded">PDF Collection</span>
+                </div>
+              </div>
+            </a>
+
+            <div className="flex flex-col bg-gray-700/50 rounded-lg overflow-hidden border border-gray-600">
+              <div className="p-4">
+                <div className="flex items-center mb-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-cyan-400 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <h3 className="font-medium text-white">How to Access</h3>
+                </div>
+                <p className="text-sm text-gray-300">
+                  Click on the link to access the external document repository. You may need to request access if the
+                  documents are restricted.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col md:flex-row gap-6">
           <div className="w-full md:w-1/3 lg:w-1/4">
             <div className="bg-gray-800/70 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700 p-4">

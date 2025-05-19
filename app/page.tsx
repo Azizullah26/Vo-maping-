@@ -1,584 +1,467 @@
 "use client"
 
-import { useEffect, useRef, useState, useCallback } from "react"
-import mapboxgl from "mapbox-gl"
-import "mapbox-gl/dist/mapbox-gl.css"
-import Image from "next/image"
-import { abuDhabiCityBoundary } from "@/data/abuDhabiCityCoordinates"
-import { alainBoundaryData } from "@/data/alainCoordinates"
-import { westRegionBoundary, WEST_REGION_IDENTIFIER } from "@/data/westRegionCoordinates"
-import { dubaiCityBoundary, DUBAI_CITY_IDENTIFIER } from "@/data/dubaiCityCoordinates"
-import MapMarker from "@/components/MapMarker"
-import * as ReactDOM from "react-dom/client"
-import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
-import { otherCitiesBoundary, OTHER_CITIES_IDENTIFIER } from "@/data/otherCitiesCoordinates"
-import { useMapboxToken } from "@/hooks/useMapboxToken"
-import { useMobile } from "@/hooks/use-mobile"
+import { useState, useCallback, useRef, useEffect } from "react"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
+import { Button } from "@/components/ui/button"
 import { TopNav } from "@/components/TopNav"
+import { MapIcon } from "lucide-react"
+import { useRouter } from "next/navigation"
+import Breadcrumb from "@/components/Breadcrumb"
+import { RightSliderButton } from "@/components/RightSliderButton"
+import AlAinLeftSlider from "@/components/AlAinLeftSlider"
+import type mapboxgl from "mapbox-gl"
 
-// Lazy load the WeatherWidget
-const WeatherWidget = dynamic(() => import("@/components/WeatherWidget").then((mod) => mod.WeatherWidget), {
+// Dynamically import components that use Cesium
+const AlAinTerrainViewer = dynamic(() => import("@/components/AlAinTerrainViewer"), {
   ssr: false,
-  loading: () => <div className="w-[203px] h-[200px] bg-gray-800/50 backdrop-blur-sm rounded-lg animate-pulse" />,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+      <div className="text-center">
+        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-gray-600">Loading terrain viewer...</p>
+      </div>
+    </div>
+  ),
 })
 
-const uaeMarkers = [
+const AlAinMap = dynamic(() => import("@/components/AlAinMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+      <div className="text-center">
+        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-gray-600">Loading map...</p>
+      </div>
+    </div>
+  ),
+})
+
+interface PoliceLocation {
+  name: string
+  coordinates: [number, number]
+  type: string
+  description: string
+}
+
+const boundaryPolygon = [
+  [
+    [55.792934807493964, 24.367725088902347],
+    [55.77562828563876, 24.36085942002154],
+    [55.76454086233821, 24.354590136715615],
+    [55.73422041764334, 24.310095425111143],
+    [55.71975549501471, 24.274644495298617],
+    [55.72021053631016, 24.25912725117452],
+    [55.739950439509016, 24.258702895259475],
+    [55.75926904431816, 24.261521142546115],
+    [55.76790865436482, 24.2622104299477],
+    [55.79086891050778, 24.279246819050897],
+    [55.80739608639843, 24.310419968342657],
+    [55.83448229133111, 24.326944907156445],
+    [55.83425274722214, 24.363334008192155],
+    [55.792934807493964, 24.367725088902347],
+  ],
+]
+
+const policeLocations: PoliceLocation[] = [
   {
-    name: "Western Region",
-    coordinates: [53.87278175962723, 24.042024462497247] as [number, number],
-    size: "medium" as const,
-    colorIndex: 0,
+    name: "إدارة التأهيل الشرطي - الفوعة",
+    coordinates: [55.804094143988124, 24.33356950894388],
+    type: "police",
+    description: "مركز تأهيل وتدريب الشرطة في منطقة الفوعة",
   },
   {
-    name: "Abu Dhabi",
-    coordinates: [54.66979766635052, 24.68024705061484] as [number, number],
-    size: "large" as const,
-    colorIndex: 1,
-    description:
-      "Abu Dhabi, the capital of the UAE, is a modern marvel blending traditional heritage with futuristic vision. Home to iconic landmarks like the Sheikh Zayed Grand Mosque and Louvre Abu Dhabi, the city offers a perfect balance of culture, luxury, and innovation.",
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download.jpg-kq5OY30TX7ktQ8DWG63QWBDR8T9B3Q.jpeg",
-    zoomLevel: 12,
+    name: "مركز شرطة هيلي",
+    coordinates: [55.76486147272425, 24.277296159962688],
+    type: "police",
+    description: "مركز شرطة يخدم منطقة هيلي",
   },
   {
-    name: "Al Ain",
-    coordinates: [55.639593245161706, 24.542777037539345] as [number, number],
-    size: "medium" as const,
-    colorIndex: 2,
+    name: "مركز شرطة الهير",
+    coordinates: [55.736118393917934, 24.5811877336795],
+    type: "police",
+    description: "مركز شرطة في منطقة الهير",
   },
   {
-    name: "Dubai",
-    coordinates: [55.29697034790328, 25.455502707312035] as [number, number],
-    size: "large" as const,
-    colorIndex: 3,
+    name: "مركز شرطة سويحان",
+    coordinates: [55.331635765622394, 24.46829853547152],
+    type: "police",
+    description: "مركز شرطة رئيسي في سويحان",
   },
   {
-    name: "Other Cities",
-    coordinates: [56.15525759716897, 25.317058173109572] as [number, number],
-    size: "medium" as const,
-    colorIndex: 1,
+    name: "قسم موسيقى شرطة أبوظبي",
+    coordinates: [55.80752936967028, 24.342548523036186],
+    type: "police",
+    description: "قسم الموسيقى التابع لشرطة أبوظبي",
+  },
+  {
+    name: "مركز شرطة المربعة",
+    coordinates: [55.776750053389094, 24.221008086930823],
+    type: "police",
+    description: "مركز شرطة في منطقة المربعة",
+  },
+  {
+    name: "ميدان الشرطة بدع بنت سعود",
+    coordinates: [55.73906058820131, 24.307406827212986],
+    type: "police",
+    description: "ميدان تدريب الشرطة",
+  },
+  {
+    name: "متحف شرطة المربعة",
+    coordinates: [55.776750053389094, 24.221008086930823],
+    type: "police",
+    description: "متحف يوثق تاريخ الشرطة في المنطقة",
+  },
+  {
+    name: "مركز شرطة الساد",
+    coordinates: [55.517515867556455, 24.213101755771433],
+    type: "police",
+    description: "مركز شرطة في منطقة الساد",
+  },
+  {
+    name: "ساحة حجز المركبات -asad",
+    coordinates: [55.504756086046854, 24.21166835043384],
+    type: "police",
+    description: "ساحة حجز المركبات التابعة لمركز شرطةasad",
+  },
+  {
+    name: "ادارة المهام الخاصة العين",
+    coordinates: [55.724096640469895, 24.1956108396531],
+    type: "police",
+    description: "إدارة العمليات والمهام الخاصة",
+  },
+  {
+    name: "مركز شرطة فلج هزاع",
+    coordinates: [55.72710955627929, 24.19954145588217],
+    type: "police",
+    description: "مركز شرطة في منطقة فلج هزاع",
+  },
+  {
+    name: "قسم هندسة المرور",
+    coordinates: [55.7225168640654, 24.19328471799456],
+    type: "police",
+    description: "قسم هندسة وتخطيط المرور",
+  },
+  {
+    name: "المتابعة الشرطية والرعاية اللاحقة",
+    coordinates: [55.722557288830416, 24.19360483409058],
+    type: "police",
+    description: "قسم المتابعة الشرطية والرعاية اللاحقة",
+  },
+  {
+    name: "المعهد المروري",
+    coordinates: [55.72411502267644, 24.19240048461677],
+    type: "police",
+    description: "معهد تدريب وتأهيل السائقين",
+  },
+  {
+    name: "إدارة الأسلحة والمتفجرات",
+    coordinates: [55.72427804325733, 24.19797500690261],
+    type: "police",
+    description: "إدارة ترخيص ومراقبة الأسلحة والمتفجرات",
+  },
+  {
+    name: "فلل فلج هزاع",
+    coordinates: [55.72680131200215, 24.186317410709492],
+    type: "police",
+    description: "مجمع إدارات (الأدلة الجنائية - التفتيش الأمني - الشرطة المجتمعية - تأجير المركبات - الاستقطاب)",
+  },
+  {
+    name: "الضبط المروري والمراسم",
+    coordinates: [55.7286784476679, 24.191336582641284],
+    type: "police",
+    description: "قسم الضبط المروري والمراسم",
+  },
+  {
+    name: "قسم الدوريات الخاصة",
+    coordinates: [55.7234652185187, 24.191243364694444],
+    type: "police",
+    description: "قسم الدوريات الخاصة",
+  },
+  {
+    name: "سكن أفراد المرور",
+    coordinates: [55.724324255872546, 24.193154596995498],
+    type: "police",
+    description: "سكن منتسبي إدارة المرور",
+  },
+  {
+    name: "إدارة الدوريات الخاصة",
+    coordinates: [55.723325119991586, 24.191513430459977],
+    type: "police",
+    description: "إدارة الدوريات الخاصة",
+  },
+  {
+    name: "قسم التفتيش الأمني K9",
+    coordinates: [55.72352938898794, 24.18905139894737],
+    type: "police",
+    description: "وحدة الكلاب البوليسية والتفتيش الأمني",
+  },
+  {
+    name: "ساحة حجز المركبات فلج هزاع",
+    coordinates: [55.726040750462175, 24.19089476054195],
+    type: "police",
+    description: "ساحة حجز المركبات في منطقة فلج هزاع",
+  },
+  {
+    name: "مبنى التحريات والمخدرات",
+    coordinates: [55.71923885266557, 24.196245342189755],
+    type: "police",
+    description: "إدارة مكافحة المخدرات والتحريات",
+  },
+  {
+    name: "مديرية شرطة العين",
+    coordinates: [55.7404449670278, 24.233199622911968],
+    type: "police",
+    description: "المقر الرئيسي لشرطة العين",
+  },
+  {
+    name: "نادي ضباط الشرطة",
+    coordinates: [55.74130397171359, 24.235157925682785],
+    type: "police",
+    description: "نادي اجتماعي وترفيهي لضباط الشرطة",
+  },
+  {
+    name: "فرع النقل والمشاغل",
+    coordinates: [55.74303931401195, 24.2348982203018],
+    type: "police",
+    description: "فرع النقل والمشاغل",
+  },
+  {
+    name: "مبنى إدارات الشرطة",
+    coordinates: [55.74252775199696, 24.23252678639456],
+    type: "police",
+    description: "مبنى يضم إدارات (التربية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
+  },
+  {
+    name: "مركز شرطة رماح",
+    coordinates: [55.32528990210085, 24.18069207722408],
+    type: "police",
+    description: "مركز شرطة في منطقة رماح (الاعلام الامني)",
+  },
+  {
+    name: "مركز شرطة زاخر",
+    coordinates: [55.70650103250864, 24.13198773085604],
+    type: "police",
+    description: "مركز شرطة في منطقة زاخر",
+  },
+  {
+    name: "مركز شرطة الوقن",
+    coordinates: [55.56621526707235, 23.626998471785996],
+    type: "police",
+    description: "مركز شرطة في منطقة الوقن",
   },
 ]
 
+const filterButtons = [
+  { id: "police", label: "Police", icon: MapIcon },
+  // Add more filter buttons as needed
+]
+
+const glowStyles = {
+  glowOnHover:
+    "before:absolute before:inset-0 before:border-0 before:border-white/10 before:transition-colors before:duration-300 hover:before:border-[1px]",
+}
+
 export default function Home() {
-  const mapContainer = useRef<HTMLDivElement>(null)
-  const map = useRef<mapboxgl.Map | null>(null)
-  const [mapLoaded, setMapLoaded] = useState(false)
-  const [styleLoaded, setStyleLoaded] = useState(false)
+  const [showingTerrain, setShowingTerrain] = useState(false)
+  const [showProjects, setShowProjects] = useState(false)
+  const [showAdmin, setShowAdmin] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isLeftSliderOpen, setIsLeftSliderOpen] = useState(false)
   const router = useRouter()
-  const markersRef = useRef(new Map())
-  const { token, loading, error } = useMapboxToken()
-  const isMobile = useMobile()
-  const [windowSize, setWindowSize] = useState({
-    width: typeof window !== "undefined" ? window.innerWidth : 0,
-    height: typeof window !== "undefined" ? window.innerHeight : 0,
-  })
+  const mapRef = useRef<mapboxgl.Map | null>(null)
+  const [showFilters, setShowFilters] = useState(true)
+  const [selectedFilters, setSelectedFilters] = useState<{ [key: string]: boolean }>({})
   const [isClient, setIsClient] = useState(false)
+
+  const [selectedProject, setSelectedProject] = useState<{
+    id: number
+    imageSrc: string
+    projectNameAr: string
+    projectNameEn: string
+    coordinates: [number, number]
+  } | null>(null)
+
+  const uaeMarkers = [
+    {
+      name: "Western Region",
+      coordinates: [53.87278175962723, 24.042024462497247] as [number, number],
+      size: "medium" as const,
+      colorIndex: 0,
+    },
+    {
+      name: "Abu Dhabi",
+      coordinates: [54.66979766635052, 24.68024705061484] as [number, number],
+      size: "large" as const,
+      colorIndex: 1,
+      description:
+        "Abu Dhabi, the capital of the UAE, is a modern marvel blending traditional heritage with futuristic vision. Home to iconic landmarks like the Sheikh Zayed Grand Mosque and Louvre Abu Dhabi, the city offers a perfect balance of culture, luxury, and innovation.",
+      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download.jpg-kq5OY30TX7ktQ8DWG63QWBDR8T9B3Q.jpeg",
+      zoomLevel: 12,
+    },
+    {
+      name: "Al Ain",
+      coordinates: [55.639593245161706, 24.542777037539345] as [number, number],
+      size: "medium" as const,
+      colorIndex: 2,
+    },
+    {
+      name: "Dubai",
+      coordinates: [55.29697034790328, 25.455502707312035] as [number, number],
+      size: "large" as const,
+      colorIndex: 3,
+    },
+    {
+      name: "Other Cities",
+      coordinates: [56.15525759716897, 25.317058173109572] as [number, number],
+      size: "medium" as const,
+      colorIndex: 1,
+    },
+  ]
 
   // Set isClient to true when component mounts
   useEffect(() => {
     setIsClient(true)
   }, [])
 
-  const handleMarkerClick = useCallback(
-    (marker: (typeof uaeMarkers)[0]) => {
-      console.log(`Marker clicked: ${marker.name}`)
-      if (marker.name === "Abu Dhabi") {
-        router.push("/abu-dhabi")
-      } else if (marker.name === "Al Ain") {
-        router.push("/al-ain")
-      } else if (map.current) {
-        // Instead of flying to the marker, just zoom in at the current center
-        map.current.easeTo({
-          zoom: 9,
-          duration: 2000,
-        })
-      }
-    },
-    [router],
-  )
+  const handleFilterChange = (type: string, id: string) => {
+    setSelectedFilters((prevFilters) => ({
+      ...prevFilters,
+      [id]: !prevFilters[id],
+    }))
+  }
 
-  const addRegion = useCallback(
-    (id: string, data: any, color: string) => {
-      if (!map.current || !styleLoaded) return
+  const handleProjectSelect = (project: {
+    id: number
+    imageSrc: string
+    projectNameAr: string
+    projectNameEn: string
+    coordinates: [number, number]
+  }) => {
+    setSelectedProject(project)
+    setIsLeftSliderOpen(true) // Open the left slider when a project is selected
 
-      try {
-        // Check if the source already exists to avoid errors
-        if (!map.current.getSource(id)) {
-          map.current.addSource(id, {
-            type: "geojson",
-            data: data,
-          })
-        }
-
-        // Check if the layer already exists to avoid errors
-        if (!map.current.getLayer(`${id}-fill`)) {
-          map.current.addLayer({
-            id: `${id}-fill`,
-            type: "fill",
-            source: id,
-            paint: {
-              "fill-color": "#333333",
-              "fill-opacity": 0.4,
-            },
-          })
-        }
-
-        if (!map.current.getLayer(`${id}-outline`)) {
-          map.current.addLayer({
-            id: `${id}-outline`,
-            type: "line",
-            source: id,
-            paint: {
-              "line-color": "#ffffff",
-              "line-width": 4,
-            },
-          })
-        }
-      } catch (error) {
-        console.error(`Error adding region ${id}:`, error)
-      }
-    },
-    [styleLoaded],
-  )
-
-  const addClickZoom = useCallback(
-    (layerId: string) => {
-      if (!map.current || !styleLoaded) return
-
-      map.current.on("click", layerId, (e) => {
-        if (e.features && e.features[0] && e.features[0].geometry && e.features[0].geometry.type === "Polygon") {
-          try {
-            // Instead of fitting to bounds, just zoom in at the current center
-            if (map.current) {
-              map.current.easeTo({
-                zoom: Math.min(map.current.getZoom() + 1, 10),
-                duration: 1000,
-              })
-            }
-          } catch (error) {
-            console.error(`Error handling click zoom for ${layerId}:`, error)
-          }
-        }
+    // Zoom to the project location on the map
+    if (mapRef.current && project.coordinates) {
+      mapRef.current.flyTo({
+        center: project.coordinates,
+        zoom: 14,
+        duration: 2000,
       })
-    },
-    [styleLoaded],
-  )
+    }
+  }
 
-  const addHoverEffect = useCallback(
-    (layerId: string, defaultColor: string, hoverColor: string, defaultOpacity: number, hoverOpacity: number) => {
-      if (!map.current || !styleLoaded) return
-
-      const handleMouseEnter = () => {
-        if (map.current) {
-          map.current.getCanvas().style.cursor = "pointer"
-          map.current.setPaintProperty(layerId, "fill-color", "#555555")
-          map.current.setPaintProperty(layerId, "fill-opacity", 0.6)
-        }
-      }
-
-      const handleMouseLeave = () => {
-        if (map.current) {
-          map.current.getCanvas().style.cursor = ""
-          map.current.setPaintProperty(layerId, "fill-color", "#333333")
-          map.current.setPaintProperty(layerId, "fill-opacity", 0.4)
-        }
-      }
-
-      map.current.on("mouseenter", layerId, handleMouseEnter)
-      map.current.on("mouseleave", layerId, handleMouseLeave)
-
-      return () => {
-        if (map.current) {
-          map.current.off("mouseenter", layerId, handleMouseEnter)
-          map.current.off("mouseleave", layerId, handleMouseLeave)
-        }
-      }
-    },
-    [styleLoaded],
-  )
-
-  const getInitialZoom = useCallback(() => {
-    if (typeof window === "undefined") return 6.5
-    const width = window.innerWidth
-    if (width < 480) return 5.0 // Smaller mobile devices
-    if (width < 640) return 5.5 // Mobile devices
-    if (width < 768) return 5.8 // Large mobile/Small tablets
-    if (width < 1024) return 6.2 // Tablets
-    if (width < 1280) return 6.5 // Small desktops
-    return 7.0 // Large desktops
+  const handleTerrainError = useCallback((error: Error) => {
+    console.error("Terrain viewer error:", error.message)
+    setShowingTerrain(false)
+    setError(error.message)
   }, [])
 
-  // Function to add all regions and their interactions
-  const setupRegions = useCallback(() => {
-    if (!map.current || !styleLoaded) return
+  const toggleProjects = () => {
+    setShowProjects(!showProjects)
+    if (showAdmin) setShowAdmin(false)
+  }
 
-    try {
-      addRegion("abu-dhabi-city", abuDhabiCityBoundary, "#333333")
-      addRegion("alain-boundary", alainBoundaryData, "#333333")
-      addRegion(WEST_REGION_IDENTIFIER, westRegionBoundary, "#333333")
-      addRegion(DUBAI_CITY_IDENTIFIER, dubaiCityBoundary, "#333333")
-      addRegion(OTHER_CITIES_IDENTIFIER, otherCitiesBoundary, "#333333")
+  const toggleAdmin = () => {
+    router.push("/manage")
+  }
 
-      if (map.current.getLayer("uae-boundary-fill")) {
-        map.current.setLayoutProperty("uae-boundary-fill", "visibility", "none")
-        map.current.setLayoutProperty("uae-boundary-outline", "visibility", "none")
-      }
-
-      const regions = ["abu-dhabi-city", "alain-boundary", WEST_REGION_IDENTIFIER, DUBAI_CITY_IDENTIFIER]
-      regions.forEach((region) => addClickZoom(`${region}-fill`))
-
-      addHoverEffect("abu-dhabi-city-fill", "#333333", "#555555", 0.4, 0.6)
-      addHoverEffect("alain-boundary-fill", "#333333", "#555555", 0.4, 0.6)
-      addHoverEffect(`${WEST_REGION_IDENTIFIER}-fill`, "#333333", "#555555", 0.4, 0.6)
-      addHoverEffect(`${DUBAI_CITY_IDENTIFIER}-fill`, "#333333", "#555555", 0.4, 0.6)
-      addHoverEffect(`${OTHER_CITIES_IDENTIFIER}-fill`, "#333333", "#555555", 0.4, 0.6)
-    } catch (error) {
-      console.error("Error setting up regions:", error)
-    }
-  }, [addRegion, addClickZoom, addHoverEffect, styleLoaded])
-
-  const initializeMap = useCallback(() => {
-    try {
-      if (map.current || !mapContainer.current) return
-      if (loading) return
-      if (error || !token) {
-        throw new Error("Mapbox access token error: " + (error || "Token not available"))
-      }
-
-      mapboxgl.accessToken = token
-
-      const initialZoom = getInitialZoom()
-
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: "mapbox://styles/azizullah2611/cm7009fqu01j101pbe23262j4",
-        center: windowSize.width < 480 ? [54.3, 24.0] : [54.5, 24.2], // Adjust center for small screens
-        zoom: initialZoom,
-        minZoom: Math.max(initialZoom - 1.5, 4.0),
-        maxZoom: 15,
-        pitch: windowSize.width < 640 ? 30 : windowSize.width < 1024 ? 40 : 45, // Adjust pitch based on screen size
-        bearing: 0,
-        attributionControl: false,
-        trackResize: true,
-        dragPan: false, // Disable panning
-        scrollZoom: false,
-        boxZoom: false,
-        doubleClickZoom: false,
-        touchZoomRotate: false,
-        keyboard: false,
-        interactive: false, // Disable all interactive features
-        fadeDuration: 0,
-      })
-
-      // Remove these lines
-      // const scale = new mapboxgl.ScaleControl({
-      //   maxWidth: isMobile ? 80 : 150,
-      //   unit: "metric",
-      // });
-      // map.current.addControl(scale, "bottom-left");
-
-      // Disable map rotation with touch rotation gesture
-      map.current.touchZoomRotate.disableRotation()
-
-      // Disable map drag pan
-      map.current.dragPan.disable()
-
-      // Disable keyboard interactions
-      map.current.keyboard.disable()
-
-      // Listen for the style.load event specifically
-      map.current.on("style.load", () => {
-        console.log("Map style loaded")
-        setStyleLoaded(true)
-      })
-
-      map.current.on("load", () => {
-        console.log("Map loaded")
-        setMapLoaded(true)
-      })
-
-      // Add error handling
-      map.current.on("error", (e) => {
-        console.error("Mapbox error:", e.error)
-      })
-    } catch (error) {
-      console.error("Error initializing map:", error)
-      setMapLoaded(false)
-      setStyleLoaded(false)
-    }
-  }, [error, getInitialZoom, isMobile, loading, token, windowSize.width])
-
-  // Effect to initialize the map
-  useEffect(() => {
-    if (isClient) {
-      initializeMap()
-    }
-
-    return () => {
-      if (map.current && !map.current._removed) {
-        map.current.remove()
-        map.current = null
-      }
-    }
-  }, [initializeMap, isClient])
-
-  // Effect to handle window resize
-  useEffect(() => {
-    if (!isClient) return
-
-    const handleResize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      })
-
-      if (map.current && !map.current._removed) {
-        // Resize the map to fit the container
-        map.current.resize()
-
-        // Adjust zoom based on screen size
-        const newZoom = getInitialZoom()
-        if (Math.abs(map.current.getZoom() - newZoom) > 0.5) {
-          map.current.setZoom(newZoom)
-        }
-
-        // Adjust pitch based on screen size
-        const newPitch = window.innerWidth < 640 ? 30 : window.innerWidth < 1024 ? 40 : 45
-        if (Math.abs(map.current.getPitch() - newPitch) > 5) {
-          map.current.setPitch(newPitch)
-        }
-
-        // Adjust center for very small screens
-        if (window.innerWidth < 480) {
-          map.current.setCenter([54.3, 24.0])
-        } else {
-          map.current.setCenter([54.5, 24.2])
-        }
-      }
-    }
-
-    window.addEventListener("resize", handleResize)
-    // Call once to set initial size
-    handleResize()
-
-    return () => {
-      window.removeEventListener("resize", handleResize)
-    }
-  }, [getInitialZoom, isClient])
-
-  // Effect to setup regions once style is loaded
-  useEffect(() => {
-    if (styleLoaded && map.current) {
-      console.log("Setting up regions")
-      setupRegions()
-    }
-  }, [styleLoaded, setupRegions])
-
-  // Effect to add markers once map is loaded
-  useEffect(() => {
-    if (!isClient || !mapLoaded || !styleLoaded || !map.current || map.current._removed) return
-
-    console.log("Adding markers")
-
-    // Clear existing markers
-    markersRef.current.forEach((marker) => {
-      marker.remove()
-    })
-    markersRef.current.clear()
-
-    // Refined marker scaling for better consistency across devices
-    const markerScale =
-      windowSize.width < 360
-        ? 0.6 // Extra small phones
-        : windowSize.width < 480
-          ? 0.7 // Small phones
-          : windowSize.width < 640
-            ? 0.8 // Medium phones
-            : windowSize.width < 768
-              ? 0.85 // Large phones/Small tablets
-              : windowSize.width < 1024
-                ? 0.9 // Tablets
-                : windowSize.width < 1280
-                  ? 0.95 // Small desktops
-                  : 1 // Large desktops
-
-    uaeMarkers.forEach((marker) => {
-      const el = document.createElement("div")
-      el.className = "custom-marker"
-
-      el.style.cursor = "pointer"
-      el.addEventListener("click", (e) => {
-        e.stopPropagation()
-        console.log(`Marker element clicked: ${marker.name}`)
-        handleMarkerClick(marker)
-      })
-
-      el.style.transform = `scale(${markerScale})`
-      el.style.transformOrigin = "center bottom"
-
-      const markerComponent = (
-        <MapMarker
-          key={marker.name}
-          x={0}
-          y={0}
-          name={marker.name}
-          size={marker.size}
-          colorIndex={marker.colorIndex}
-          coordinates={marker.coordinates}
-          onClick={() => {
-            console.log(`MapMarker component clicked: ${marker.name}`)
-            handleMarkerClick(marker)
-          }}
-        />
-      )
-
-      const markerRoot = ReactDOM.createRoot(el)
-      markerRoot.render(markerComponent)
-
-      const mapboxMarker = new mapboxgl.Marker({
-        element: el,
-        anchor: "center",
-      })
-        .setLngLat(marker.coordinates)
-        .addTo(map.current!)
-
-      mapboxMarker.getElement().addEventListener("click", () => {
-        console.log(`Mapbox marker clicked: ${marker.name}`)
-        handleMarkerClick(marker)
-      })
-
-      markersRef.current.set(marker.name, mapboxMarker)
-    })
-  }, [mapLoaded, styleLoaded, handleMarkerClick, windowSize, isClient])
-
-  // Effect to add dark overlay
-  useEffect(() => {
-    if (!isClient || !mapLoaded || !styleLoaded || !map.current || map.current._removed) return
-
-    try {
-      if (map.current.getLayer("dark-overlay")) {
-        map.current.removeLayer("dark-overlay")
-      }
-
-      if (!map.current.getSource("overlay-source")) {
-        map.current.addSource("overlay-source", {
-          type: "geojson",
-          data: {
-            type: "Feature",
-            geometry: {
-              type: "Polygon",
-              coordinates: [
-                [
-                  [-180, -90],
-                  [180, -90],
-                  [180, 90],
-                  [-180, 90],
-                  [-180, -90],
-                ],
-              ],
-            },
-          },
-        })
-      }
-
-      const layers = map.current.getStyle().layers || []
-
-      let firstSymbolId
-      for (const layer of layers) {
-        if (layer.type === "symbol") {
-          firstSymbolId = layer.id
-          break
-        }
-      }
-
-      map.current.addLayer(
-        {
-          id: "dark-overlay",
-          type: "fill",
-          source: "overlay-source",
-          layout: {},
-          paint: {
-            "fill-color": "#000000",
-            "fill-opacity": isMobile ? 0.3 : 0.4,
-          },
-        },
-        firstSymbolId,
-      )
-    } catch (error) {
-      console.error("Error adding dark overlay:", error)
-    }
-  }, [mapLoaded, styleLoaded, isMobile, isClient])
+  const toggleLeftSlider = () => {
+    setIsLeftSliderOpen(!isLeftSliderOpen)
+  }
 
   // Show loading state if not client-side yet
   if (!isClient) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div className="bg-black/80 p-3 xs:p-4 rounded-lg flex flex-col items-center">
-          <div className="w-8 h-8 xs:w-10 xs:h-10 border-3 xs:border-4 border-t-white border-r-white/50 border-b-white/30 border-l-white/10 rounded-full animate-spin mb-2"></div>
-          <p className="text-white text-xs xs:text-sm">Loading map...</p>
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-full min-h-screen flex items-center justify-center bg-red-50 text-red-500 p-4">
+        <div className="text-center max-w-md">
+          <p className="font-semibold mb-2">An error occurred</p>
+          <p className="text-sm text-red-400 mb-4">{error}</p>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              setError(null)
+              window.location.reload()
+            }}
+            className="w-full sm:w-auto"
+          >
+            Try Again
+          </Button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      <TopNav />
+    <div className="relative w-full h-[100dvh] overflow-hidden">
+      <TopNav
+        onToggleProjects={toggleProjects}
+        showProjects={showProjects}
+        onAdminClick={toggleAdmin}
+        showAdmin={showAdmin}
+      />
 
-      <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
-        {/* Reduced number of clouds and made them smaller/less opaque */}
-        <div className="absolute w-full">
-          <Image
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/clouds-6rqsL8YqlRI1TMaunqYleo5dJEVV1B.png"
-            alt="Cloud 1"
-            width={300}
-            height={150}
-            className="absolute left-0 animate-cloud-fast opacity-50 w-[120px] xs:w-[150px] sm:w-[200px] md:w-[250px] lg:w-[300px]"
-            priority
-          />
+      {/* Breadcrumb positioned below the logo */}
+      <div className="fixed top-14 sm:top-16 md:top-18 left-0 right-0 z-40 px-2 py-1">
+        <div className="w-full max-w-[1800px] mx-auto">
+          <Breadcrumb items={[{ label: "Al Ain", path: "/" }]} />
         </div>
-
-        <div className="absolute w-full top-1/3">
-          <Image
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/clouds-6rqsL8YqlRI1TMaunqYleo5dJEVV1B.png"
-            alt="Cloud 3"
-            width={400}
-            height={200}
-            className="absolute left-1/3 animate-cloud-medium opacity-60 scale-x-[-1] w-[150px] xs:w-[180px] sm:w-[250px] md:w-[300px] lg:w-[350px]"
-          />
-        </div>
-
-        {/* Only show one cloud in the bottom section */}
-        {!isMobile && (
-          <div className="absolute w-full top-2/3">
-            <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/clouds-6rqsL8YqlRI1TMaunqYleo5dJEVV1B.png"
-              alt="Cloud 5"
-              width={450}
-              height={225}
-              className="absolute left-2/3 animate-cloud-slow opacity-55 w-[225px] sm:w-[300px] md:w-[400px]"
-            />
-          </div>
-        )}
       </div>
 
-      <div className="relative w-full h-full">
-        <div ref={mapContainer} className="w-full h-full" />
-      </div>
+      {/* Add the AlAinLeftSlider component */}
+      <AlAinLeftSlider isOpen={isLeftSliderOpen} toggleSlider={toggleLeftSlider} selectedProject={selectedProject} />
 
-      <div className="fixed top-20 left-4 z-40 weather-widget hidden xxs:block transform scale-75 xxs:scale-80 xs:scale-90 sm:scale-95 md:scale-100 origin-top-left">
-        <WeatherWidget />
-      </div>
+      <AlAinMap
+        policeLocations={policeLocations}
+        onToggleTerrain={() => setShowingTerrain(true)}
+        offsetX={60}
+        offsetY={60}
+        mapRef={mapRef}
+      />
 
-      {loading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-black/80 p-3 xs:p-4 rounded-lg flex flex-col items-center">
-            <div className="w-8 h-8 xs:w-10 xs:h-10 border-3 xs:border-4 border-t-white border-r-white/50 border-b-white/30 border-l-white/10 rounded-full animate-spin mb-2"></div>
-            <p className="text-white text-xs xs:text-sm">Loading map...</p>
+      {showingTerrain && (
+        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm backdrop-brightness-75">
+          <div className="relative w-full h-full max-w-[2000px] mx-auto">
+            <ErrorBoundary
+              fallbackRender={({ error, resetErrorBoundary }) => (
+                <div className="w-full h-full flex items-center justify-center bg-red-50 text-red-500 p-4">
+                  <div className="text-center max-w-md">
+                    <p className="font-semibold mb-2">Failed to load terrain viewer</p>
+                    <p className="text-sm text-red-400 mb-4">{error.message}</p>
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        resetErrorBoundary()
+                        setShowingTerrain(false)
+                      }}
+                      className="w-full sm:w-auto"
+                    >
+                      Return to Map View
+                    </Button>
+                  </div>
+                </div>
+              )}
+            >
+              <AlAinTerrainViewer onError={handleTerrainError} onClose={() => setShowingTerrain(false)} />
+            </ErrorBoundary>
           </div>
         </div>
       )}
+
+      <RightSliderButton
+        isOpen={showProjects}
+        onClose={() => setShowProjects(false)}
+        toggleProjects={toggleProjects}
+        openLeftSlider={handleProjectSelect}
+      />
     </div>
   )
 }
