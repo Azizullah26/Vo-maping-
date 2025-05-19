@@ -24,7 +24,6 @@ const ProjectsDetailsSlider = ({ projects, onProjectClick }: ProjectsDetailsSlid
       <div className="flex flex-col w-full h-full p-4 relative z-10">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-cyan-400">Abu Dhabi Projects</h2>
-          <div className="text-xs text-cyan-300 bg-cyan-900/30 px-2 py-1 rounded border border-cyan-500/30">LIVE</div>
         </div>
 
         <div className="flex justify-around w-full mb-4 relative before:content-[''] before:absolute before:inset-0 before:bg-[#0a1a3d]/40 before:rounded-xl before:backdrop-blur-sm before:z-0 p-2 rounded-xl border border-cyan-500/10">

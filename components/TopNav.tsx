@@ -3,7 +3,7 @@
 import type React from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { MapPin, Building2, Building, Home, Warehouse, LogOut, User } from "lucide-react"
+import { MapPin, Building2, Building, Home, Warehouse, User } from "lucide-react"
 import styles from "@/styles/nav-button.module.css"
 import glowStyles from "@/styles/glow-button.module.css"
 import { cn } from "@/lib/utils"
@@ -85,13 +85,6 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
     }))
   }
 
-  const handleLogout = () => {
-    if (isAuthReady && auth.logout) {
-      auth.logout()
-      router.push("/login")
-    }
-  }
-
   return (
     <>
       {/* Simplified top section with just logo, text and map button */}
@@ -165,22 +158,13 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
             </nav>
           </div>
 
-          {/* User info and logout - only show when auth is ready and user exists */}
-          {isAuthReady && auth.user && (
-            <div className="flex items-center gap-x-2 mr-2">
-              <div className="hidden sm:flex items-center gap-x-1 bg-black/30 px-2 py-1 rounded-md border border-white/10">
-                <User className="h-3 w-3 text-cyan-400" />
-                <span className="text-[10px] text-white">{auth.user}</span>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-x-1 bg-red-900/30 hover:bg-red-900/50 px-2 py-1 rounded-md border border-red-500/30 transition-colors duration-200"
-              >
-                <LogOut className="h-3 w-3 text-red-400" />
-                <span className="text-[10px] text-white hidden sm:inline">Logout</span>
-              </button>
+          {/* User info - always show guest user */}
+          <div className="flex items-center gap-x-2 mr-2">
+            <div className="hidden sm:flex items-center gap-x-1 bg-black/30 px-2 py-1 rounded-md border border-white/10">
+              <User className="h-3 w-3 text-cyan-400" />
+              <span className="text-[10px] text-white">{auth.user || "Guest User"}</span>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
