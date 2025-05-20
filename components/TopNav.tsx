@@ -248,11 +248,11 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
 
               {/* City button */}
               <Link
-                href={isAlAinPage ? "/abu-dhabi" : "/al-ain"}
+                href={pathname === "/abu-dhabi" ? "/" : "/abu-dhabi"}
                 className="flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white"
               >
                 <span className="text-[8px] xxs:text-[9px] xs:text-[10px] font-medium">
-                  {isAlAinPage ? "Abu Dhabi" : "Al Ain"}
+                  {pathname === "/abu-dhabi" ? "Al Ain" : "Abu Dhabi"}
                 </span>
                 <span className="text-[6px] xxs:text-[7px] xs:text-[8px]">City</span>
               </Link>
