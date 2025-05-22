@@ -67,7 +67,19 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items = [], currentPath 
                 </svg>
               </span>
               {index === items.length - 1 ? (
-                <span className="text-black bg-white px-2 py-1 rounded-full text-sm">{item.label}</span>
+                <button
+                  onClick={() => (window.location.href = "/al-ain")}
+                  className="text-black bg-white px-2 py-1 rounded-full text-sm cursor-pointer hover:bg-gray-100 transition-colors"
+                >
+                  {item.label}
+                </button>
+              ) : item.label.toLowerCase() === "documents" ? (
+                <button
+                  onClick={() => window.history.back()}
+                  className="text-gray-300 hover:text-black hover:bg-white px-2 py-1 rounded transition-all text-sm cursor-pointer"
+                >
+                  {item.label}
+                </button>
               ) : (
                 <Link
                   href={item.path}

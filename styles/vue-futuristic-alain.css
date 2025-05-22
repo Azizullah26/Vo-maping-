@@ -1,6 +1,6 @@
 /* Vue Futuristic CSS for Al Ain */
 .vue-card {
-  @apply bg-gradient-to-br from-slate-800/50 to-slate-900/50 p-4 rounded-lg border border-cyan-500/20 shadow-inner shadow-cyan-500/5 backdrop-blur-sm relative overflow-hidden;
+  @apply bg-gradient-to-br from-slate-800/50 to-slate-900/50 p-4 rounded-lg border border-cyan-500/20 hover:border-cyan-400/40 transition-all duration-300 shadow-lg shadow-cyan-900/20;
 }
 
 .vue-card::before {
@@ -14,7 +14,7 @@
 }
 
 .vue-env-card {
-  @apply bg-gradient-to-br from-slate-800/70 to-slate-900/70 p-3 rounded-lg border border-cyan-500/20 flex flex-col items-center justify-center;
+  @apply p-3 bg-gradient-to-br from-slate-800/40 to-slate-900/40 rounded-lg border border-cyan-500/10 hover:border-cyan-400/30 transition-all duration-300;
 }
 
 .vue-env-icon-wrapper {
@@ -56,28 +56,53 @@
 }
 
 .vue-video-container {
-  @apply bg-black rounded-lg border border-cyan-500/20 overflow-hidden relative;
+  @apply relative rounded-lg overflow-hidden border border-cyan-500/20 bg-gradient-to-br from-slate-900 to-slate-800;
 }
 
 .vue-video-noise {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   opacity: 0.05;
+  mix-blend-mode: overlay;
+  pointer-events: none;
 }
 
 .vue-scan-line {
-  animation: scanline 2s linear infinite;
+  animation: scanLine 2s linear infinite;
+  box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
 }
 
 .vue-camera-thumbnail {
-  @apply h-16 bg-black rounded border border-cyan-500/20 overflow-hidden;
+  @apply h-20 rounded-md overflow-hidden border border-cyan-500/20 hover:border-cyan-400/40 transition-all duration-300 shadow-md;
 }
 
-@keyframes scanline {
+.vue-animate-pulse {
+  animation: vuePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes vuePulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.vue-glow {
+  box-shadow: 0 0 5px rgba(0, 255, 255, 0.5), 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.vue-glow-text {
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.5), 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+@keyframes scanLine {
   0% {
     transform: translateY(-100%);
   }
   100% {
-    transform: translateY(100%);
+    transform: translateY(1000%);
   }
 }
 
@@ -101,4 +126,19 @@
 
 .ease-out-expo {
   transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .vue-card {
+    @apply p-3;
+  }
+
+  .vue-env-card {
+    @apply p-2;
+  }
+
+  .vue-video-container {
+    height: 120px;
+  }
 }

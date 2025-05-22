@@ -2,12 +2,14 @@
 
 import type React from "react"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import mapboxgl from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useRouter } from "next/navigation"
 import { AnimatedControls } from "@/components/AnimatedControls"
 import { useMapboxToken } from "@/hooks/useMapboxToken"
+import alainStrokeLines from "@/data/alain-stroke-lines.json"
+import { MarkerHoverWidget } from "@/components/MarkerHoverWidget"
 
 const markerStyles = `
 @keyframes pulse {
@@ -207,6 +209,42 @@ const markerStyles = `
 .mapboxgl-ctrl-bottom-right {
   display: none !important;
 }
+
+.marker-tooltip {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 1000;
+  transform: translate(-50%, -130%);
+  white-space: nowrap;
+  box-shadow: 0 0 10px rgba(0, 204, 255, 0.5);
+  border: 1px solid rgba(0, 204, 255, 0.3);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.marker-tooltip.visible {
+  opacity: 1;
+}
+
+.marker-dimmed {
+  opacity: 0.2 !important;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+  filter: grayscale(80%);
+}
+
+.marker-highlighted {
+  opacity: 1 !important;
+  z-index: 1000 !important;
+  transform: scale(1.1);
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 0 8px rgba(0, 204, 255, 0.8));
+}
 `
 
 interface PoliceLocation {
@@ -228,10 +266,13 @@ interface AlAinMapProps {
   offsetX?: number
   offsetY?: number
   mapRef?: React.MutableRefObject<mapboxgl.Map | null>
+  rightSliderRef?: React.MutableRefObject<{ openLeftSlider: (project: any) => void } | null>
 }
 
 // Add these constants at the top of the file after the interfaces
 const ZOOM_THRESHOLD = 12
+// Define the zoom level at which to allow free movement
+const FREE_MOVEMENT_ZOOM_THRESHOLD = 6.5
 
 // Define coordinates to exclude
 const EXCLUDED_COORDINATES: [number, number] = [55.74252775199696, 24.23252678639456]
@@ -302,7 +343,7 @@ const HIDDEN_AT_START = [
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
   "مركز شرطة الساد",
-  "ساحة حجز المركبات - الساد",
+  "ساحة حجز المركبات -asad",
   "مركز شرطة الوقن",
 ]
 
@@ -351,12 +392,82 @@ const TECH_LINE_CONNECTIONS = [
   { from: "1 Project", to: "مركز شرطة رماح", type: "solid" },
 ]
 
+const HOVERABLE_MARKERS = [
+  "قسم موسيقى شرطة أبوظبي",
+  "إدارة التأهيل الشرطي - الفوعة",
+  "مركز شرطة هيلي",
+  "ميدان الشرطة بدع بنت سعود",
+  "متحف شرطة المربعة",
+  "مركز شرطة المربعة",
+  "مديرية شرطة العين",
+  "فرع النقل والمشاغل",
+  "نادي ضباط الشرطة",
+  "مركز شرطة زاخر",
+  "فلل فلج هزاع",
+  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم التفتيش الأمني - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
+  "قسم التفتيش الأمني K9",
+  "الضبط المروري والمراسم",
+  "ساحة حجز المركبات فلج هزاع",
+  "إدارة المرور والترخيص",
+  "قسم الدوريات الخاصة",
+  "إدارة الدوريات الخاصة",
+  "المعهد المروري",
+  "سكن أفراد المرور",
+  "قسم هندسة المرور",
+  "المتابعة الشرطية والرعاية اللاحقة",
+  "ادارة المهام الخاصة العين",
+  "مبنى التحريات والمخدرات",
+  "إدارة الأسلحة والمتفجرات",
+  "مركز شرطة فلج هزاع",
+  "فلل للادرات الشرطية عشارج",
+  "مركز شرطة المقام",
+  "مركز شرطةasad",
+  "ساحة حجز المركبات -asad",
+  "مركز شرطة الوقن",
+]
+
+// Define markers that should navigate to dashboard when clicked
+const DASHBOARD_NAVIGATION_MARKERS = [
+  "قسم موسيقى شرطة أبوظبي",
+  "إدارة التأهيل الشرطي - الفوعة",
+  "مركز شرطة هيلي",
+  "ميدان الشرطة بدع بنت سعود",
+  "متحف شرطة المربعة",
+  "مركز شرطة المربعة",
+  "مديرية شرطة العين",
+  "فرع النقل والمشاغل",
+  "نادي ضباط الشرطة",
+  "مركز شرطة زاخر",
+  "فلل فلج هزاع",
+  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم التفتيش الأمني - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
+  "قسم التفتيش الأمني K9",
+  "الضبط المروري والمراسم",
+  "ساحة حجز المركبات فلج هزاع",
+  "إدارة المرور والترخيص",
+  "قسم الدوريات الخاصة",
+  "إدارة الدوريات الخاصة",
+  "المعهد المروري",
+  "سكن أفراد المرور",
+  "قسم هندسة المرور",
+  "المتابعة الشرطية والرعاية اللاحقة",
+  "ادارة المهام الخاصة العين",
+  "مبنى التحريات والمخدرات",
+  "إدارة الأسلحة والمتفجرات",
+  "مركز شرطة فلج هزاع",
+  "فلل للادرات الشرطية عشارج",
+  "مركز شرطة المقام",
+  "مركز شرطة الساد",
+  "ساحة حجز المركبات - الساد",
+  "مركز شرطة الوقن",
+]
+
 export default function AlAinMap({
   policeLocations,
   onToggleTerrain,
   offsetX = 0,
   offsetY = 0,
   mapRef,
+  rightSliderRef,
 }: AlAinMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
@@ -367,8 +478,89 @@ export default function AlAinMap({
   const [lng] = useState(55.74)
   const [lat] = useState(24.13)
   const [zoom] = useState(10)
-  const initialZoomRef = useRef<number>(5)
+  const initialZoomRef = useRef<number>(4.5)
   const { token, loading, error } = useMapboxToken()
+  const isMovingRef = useRef(false)
+  const lastMoveTimeRef = useRef(0)
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const initialCenterRef = useRef<[number, number]>([0, 0])
+  const [hoveredMarker, setHoveredMarker] = useState<string | null>(null)
+  const tooltipRef = useRef<HTMLDivElement | null>(null)
+
+  const updateSlidersWithMarkerInfo = useCallback(
+    (markerName: string | null) => {
+      if (!markerName) return
+
+      // Find the corresponding project data for the right slider
+      const projectData = {
+        id: 1, // Default ID
+        imageSrc: getMarkerImage(markerName),
+        projectNameAr: markerName,
+        projectNameEn: getEnglishName(markerName),
+        coordinates: getMarkerCoordinates(markerName),
+      }
+
+      // Trigger the right slider to open the left slider with this project
+      if (rightSliderRef.current && rightSliderRef.current.openLeftSlider) {
+        rightSliderRef.current.openLeftSlider(projectData)
+      }
+
+      // Dispatch a custom event that the left slider can listen for
+      const event = new CustomEvent("markerHovered", {
+        detail: {
+          project: projectData,
+        },
+      })
+      window.dispatchEvent(event)
+    },
+    [rightSliderRef],
+  )
+
+  function getMarkerImage(name: string): string {
+    // Map marker names to image URLs
+    const imageMap: { [key: string]: string } = {
+      "قسم موسيقى شرطة أبوظبي": "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
+      "إدارة التأهيل الشرطي - الفوعة":
+        "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
+      "مركز شرطة هيلي": "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
+      "ميدان الشرطة بدع بنت سعود":
+        "https://media-cdn.tripadvisor.com/media/photo-s/06/53/d8/8e/city-seasons-hotel-al.jpg",
+      "متحف شرطة المربعة":
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTP2QgVN8QLQxgnvTH8hVSuL2gqC8s2D_7CqA&s",
+      "مركز شرطة المربعة":
+        "https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_267,q_40,w_400/hotelier-images/cb/6f/dedc57f138551de78e7919b395b1a380cc620aaa8b27da05282b37f64ff8.jpeg",
+      "مديرية شرطة العين": "https://photos.hotelbeds.com/giata/bigger/10/107054/107054a_hb_a_001.jpg",
+      // Add more mappings for other markers
+    }
+
+    return imageMap[name] || "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg" // Default image
+  }
+
+  function getEnglishName(name: string): string {
+    // Map Arabic names to English names
+    const nameMap: { [key: string]: string } = {
+      "قسم موسيقى شرطة أبوظبي": "Abu Dhabi Police Music Department",
+      "إدارة التأهيل الشرطي - الفوعة": "Police Rehabilitation Department - Al Foua",
+      "مركز شرطة هيلي": "Hili Police Station",
+      "ميدان الشرطة بدع بنت سعود": "Police Square in Bida Bint Saud",
+      "متحف شرطة المربعة": "Al Murabba Police Museum",
+      "مركز شرطة المربعة": "Al Murabba Police Station",
+      "مديرية شرطة العين": "Al Ain Police Directorate",
+      // Add more mappings for other markers
+    }
+
+    return nameMap[name] || "Police Facility" // Default English name
+  }
+
+  function getMarkerCoordinates(name: string): [number, number] {
+    // This function would ideally get the actual coordinates from your markers
+    // For now, return a default if not found
+    if (markersRef.current && markersRef.current[name]) {
+      const lngLat = markersRef.current[name].getLngLat()
+      return [lngLat.lng, lngLat.lat]
+    }
+    return [55.74, 24.13] // Default coordinates
+  }
 
   // Function to create a tech line between two points
   const createTechLine = (
@@ -439,19 +631,51 @@ export default function AlAinMap({
       })
       techLinesRef.current = []
 
-      // Create new lines
-      TECH_LINE_CONNECTIONS.forEach((connection) => {
-        const fromCoords = markerPositions[connection.from]
-        const toCoords = markerPositions[connection.to]
-
-        if (fromCoords && toCoords && isValidCoordinate(fromCoords) && isValidCoordinate(toCoords)) {
-          createTechLine(map, fromCoords, toCoords, connection.type as "solid" | "dotted")
-        }
-      })
+      // Comment out or remove the code that creates new lines
+      // TECH_LINE_CONNECTIONS.forEach((connection) => {
+      //   const fromCoords = markerPositions[connection.from]
+      //   const toCoords = markerPositions[connection.to]
+      //
+      //   if (fromCoords && toCoords && isValidCoordinate(fromCoords) && isValidCoordinate(toCoords)) {
+      //     createTechLine(map, fromCoords, toCoords, connection.type as "solid" | "dotted")
+      //   }
+      // })
     } catch (error) {
       console.error("Error updating tech lines:", error)
     }
   }
+
+  // Debounced function to update marker positions
+  const debouncedUpdateMarkers = () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      if (!map.current) return
+
+      // Update marker positions
+      Object.entries(markersRef.current).forEach(([name, marker]) => {
+        try {
+          const position = marker.getLngLat()
+          if (position) {
+            const element = marker.getElement()
+            if (element.style.display !== "none") {
+              marker.setLngLat(position)
+            }
+          }
+        } catch (error) {
+          console.error(`Error updating marker position for ${name}:`, error)
+        }
+      })
+    }, 100) // 100ms debounce
+  }
+
+  useEffect(() => {
+    if (rightSliderRef) {
+      rightSliderRef.current = rightSliderRef.current
+    }
+  }, [rightSliderRef])
 
   useEffect(() => {
     if (map.current) return
@@ -477,9 +701,12 @@ export default function AlAinMap({
     const centerLng = baseCenterLng + lngOffset
     const centerLat = baseCenterLat - latOffset // Subtract for Y because coordinates increase northward
 
+    // Store the initial center coordinates
+    initialCenterRef.current = [centerLng, centerLat]
+
     const getInitialZoom = () => {
-      if (typeof window === "undefined") return 5
-      return 5 // Set to 5 for all device sizes as requested
+      if (typeof window === "undefined") return 4.5
+      return 4.5 // Reduced from 5 to 4.5 to zoom out a bit more
     }
 
     // Store the initial zoom level in the ref
@@ -499,21 +726,25 @@ export default function AlAinMap({
           [54.5, 23.5], // Southwest coordinates
           [56.5, 25.0], // Northeast coordinates
         ],
-        minZoom: 5, // Allow zooming out further
+        minZoom: 4, // Changed from 5 to 4 to allow zooming out further
         maxZoom: 16,
-        dragPan: true, // Change from false to true to enable panning
+        dragPan: true, // Enable panning
         scrollZoom: true, // Enable scroll zoom
-        renderWorldCopies: false, // Add this line to prevent duplicate markers
-        preserveDrawingBuffer: true, // Add this line to improve marker rendering
+        renderWorldCopies: false, // Prevent duplicate markers
+        preserveDrawingBuffer: true, // Improve marker rendering
         attributionControl: false, // Remove attribution control
+        fadeDuration: 0, // Reduce fade duration for smoother transitions
+        trackResize: true, // Ensure map resizes with container
+        interactive: true, // Ensure the map is interactive
       })
     } catch (error) {
       console.error("Error initializing map:", error)
       return
     }
 
-    // Add scroll zoom handler to limit zooming out to initial zoom level
+    // Improve scroll zoom behavior
     map.current.scrollZoom.setWheelZoomRate(0.02) // Make zoom smoother
+    map.current.scrollZoom.setZoomRate(0.01) // Slower zoom rate for smoother zooming
 
     // Disable the minZoom constraint from the map options
     // This allows our custom handler to take precedence
@@ -534,19 +765,8 @@ export default function AlAinMap({
       setMapLoaded(true)
       if (!map.current) return
 
-      // Add this after the map.current.on("load", () => { line, inside the load event handler
-      map.current.on("drag", (e) => {
-        try {
-          // Get the current center
-          const center = map.current!.getCenter()
-
-          // Force the longitude to stay at the initial longitude
-          // This restricts horizontal movement while allowing vertical movement
-          map.current!.setCenter([centerLng, center.lat])
-        } catch (error) {
-          console.error("Error handling drag event:", error)
-        }
-      })
+      // Optimize rendering
+      map.current.getCanvas().style.willChange = "transform"
 
       try {
         // Add the dark overlay layer FIRST
@@ -574,6 +794,86 @@ export default function AlAinMap({
       } catch (error) {
         console.error("Error adding map layers:", error)
       }
+
+      // Add the Al Ain stroke lines to the map AFTER the dark overlay
+      try {
+        // Add the first stroke line (light gray)
+        map.current.addSource("alain-stroke-1", {
+          type: "geojson",
+          data: alainStrokeLines.features[0],
+          tolerance: 0.5, // Add tolerance for better performance
+        })
+
+        map.current.addLayer({
+          id: "alain-stroke-1",
+          type: "line",
+          source: "alain-stroke-1",
+          layout: {
+            "line-join": "round",
+            "line-cap": "round",
+            visibility: "visible",
+          },
+          paint: {
+            "line-color": alainStrokeLines.features[0].properties.stroke,
+            "line-width": alainStrokeLines.features[0].properties["stroke-width"],
+            "line-opacity": alainStrokeLines.features[0].properties["stroke-opacity"],
+          },
+        })
+
+        // Add the second stroke line (white)
+        map.current.addSource("alain-stroke-2", {
+          type: "geojson",
+          data: alainStrokeLines.features[1],
+          tolerance: 0.5, // Add tolerance for better performance
+        })
+
+        map.current.addLayer({
+          id: "alain-stroke-2",
+          type: "line",
+          source: "alain-stroke-2",
+          layout: {
+            "line-join": "round",
+            "line-cap": "round",
+            visibility: "visible",
+          },
+          paint: {
+            "line-color": alainStrokeLines.features[1].properties.stroke,
+            "line-width": alainStrokeLines.features[1].properties["stroke-width"],
+            "line-opacity": alainStrokeLines.features[1].properties["stroke-opacity"],
+          },
+        })
+      } catch (error) {
+        console.error("Error adding Al Ain stroke lines:", error)
+      }
+
+      // Improved drag handling for smoother movement
+      map.current.on("dragstart", () => {
+        isMovingRef.current = true
+      })
+
+      map.current.on("dragend", () => {
+        isMovingRef.current = false
+      })
+
+      // Modified drag event to allow movement when zoomed in
+      map.current.on("drag", () => {
+        try {
+          if (!map.current) return
+
+          // Get the current zoom level
+          const currentZoom = map.current.getZoom()
+
+          // Only restrict movement when at or near the initial zoom level
+          if (currentZoom <= FREE_MOVEMENT_ZOOM_THRESHOLD) {
+            // Force the map to stay at the initial center coordinates
+            // This restricts both horizontal and vertical movement when zoomed out
+            map.current.setCenter(initialCenterRef.current)
+          }
+          // When zoomed in beyond the threshold, allow free movement in all directions
+        } catch (error) {
+          console.error("Error handling drag event:", error)
+        }
+      })
 
       // Create an object to store all markers
       const markers: { [key: string]: mapboxgl.Marker } = {}
@@ -814,15 +1114,11 @@ export default function AlAinMap({
         console.error("Error setting marker visibility:", error)
       }
 
-      try {
-        // Create tech lines between markers
-        updateTechLines(map.current, markerPositions)
-      } catch (error) {
-        console.error("Error creating tech lines:", error)
-      }
-
+      // Optimize zoom event handling
       map.current.on("zoom", () => {
         try {
+          if (isMovingRef.current) return // Skip updates during movement
+
           const zoom = map.current!.getZoom()
 
           // Toggle visibility based on zoom level
@@ -845,15 +1141,33 @@ export default function AlAinMap({
             }
           })
 
-          // This ensures markers stay in the correct position when zooming
-          Object.entries(markers).forEach(([name, marker]) => {
+          // Use debounced update for marker positions
+          debouncedUpdateMarkers()
+        } catch (error) {
+          console.error("Error handling zoom event:", error)
+        }
+      })
+
+      // Optimize move event handling
+      map.current.on("move", () => {
+        // Skip frequent updates during movement
+        if (isMovingRef.current) return
+
+        // Use debounced update for marker positions
+        debouncedUpdateMarkers()
+      })
+
+      // Add moveend event for final position updates
+      map.current.on("moveend", () => {
+        isMovingRef.current = false
+
+        // Update marker positions after movement ends
+        if (map.current) {
+          Object.entries(markersRef.current).forEach(([name, marker]) => {
             try {
               const position = marker.getLngLat()
               if (position) {
-                const point = map.current!.project(position)
                 const element = marker.getElement()
-
-                // Update marker position directly if needed
                 if (element.style.display !== "none") {
                   marker.setLngLat(position)
                 }
@@ -862,20 +1176,6 @@ export default function AlAinMap({
               console.error(`Error updating marker position for ${name}:`, error)
             }
           })
-
-          // Update tech lines on zoom
-          updateTechLines(map.current!, markerPositions)
-        } catch (error) {
-          console.error("Error handling zoom event:", error)
-        }
-      })
-
-      // Update tech lines on move
-      map.current.on("move", () => {
-        try {
-          updateTechLines(map.current!, markerPositions)
-        } catch (error) {
-          console.error("Error handling move event:", error)
         }
       })
     })
@@ -886,8 +1186,12 @@ export default function AlAinMap({
 
     return () => {
       try {
+        // Clear any pending debounce timers
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current)
+        }
+
         map.current?.remove()
-        document.head.removeChild(styleSheet)
         // Remove any dynamically added styles
         document.querySelectorAll("style[data-marker-style]").forEach((el) => el.remove())
         // Remove tech lines
@@ -928,6 +1232,67 @@ export default function AlAinMap({
       markerElement.className = "marker-container"
       markerElement.style.position = "absolute" // Ensure absolute positioning
       markerElement.style.pointerEvents = "auto" // Make sure it can receive clicks
+      markerElement.style.willChange = "transform" // Optimize for animations
+
+      // Add hover events for specific markers
+      if (HOVERABLE_MARKERS.includes(name)) {
+        markerElement.addEventListener("mouseenter", (e) => {
+          e.stopPropagation()
+          setHoveredMarker(name)
+
+          // Create or update tooltip
+          let tooltip = document.getElementById(`tooltip-${name}`)
+          if (!tooltip) {
+            tooltip = document.createElement("div")
+            tooltip.id = `tooltip-${name}`
+            tooltip.className = "marker-tooltip"
+            tooltip.textContent = name
+            markerElement.appendChild(tooltip)
+          }
+          tooltip.classList.add("visible")
+
+          // Hide all other markers and highlight this one
+          Object.entries(markersRef.current).forEach(([markerName, marker]) => {
+            const element = marker.getElement()
+            if (markerName !== name) {
+              // Hide other markers
+              element.classList.add("marker-dimmed")
+              element.style.opacity = "0.2" // Make them very dim
+            } else {
+              // Highlight this marker
+              element.classList.add("marker-highlighted")
+              element.style.opacity = "1"
+              element.style.zIndex = "1000" // Bring to front
+
+              // Add a glow effect
+              element.style.filter = "drop-shadow(0 0 8px rgba(0, 204, 255, 0.8))"
+            }
+          })
+
+          // REMOVED: updateSlidersWithMarkerInfo(name)
+        })
+
+        markerElement.addEventListener("mouseleave", (e) => {
+          e.stopPropagation()
+          setHoveredMarker(null)
+
+          // Hide tooltip
+          const tooltip = document.getElementById(`tooltip-${name}`)
+          if (tooltip) {
+            tooltip.classList.remove("visible")
+          }
+
+          // Restore all markers to normal state
+          Object.entries(markersRef.current).forEach(([_, marker]) => {
+            const element = marker.getElement()
+            element.classList.remove("marker-dimmed")
+            element.classList.remove("marker-highlighted")
+            element.style.opacity = "" // Reset to default
+            element.style.zIndex = "" // Reset to default
+            element.style.filter = "" // Remove glow effect
+          })
+        })
+      }
 
       // Add special styling for small markers
       if (size === "small") {
@@ -979,9 +1344,59 @@ export default function AlAinMap({
       // Make the entire marker clickable
       markerElement.onclick = (e) => {
         e.stopPropagation()
+
+        // Get the marker's coordinates
+        const markerCoordinates = coordinates
+
+        // Define project markers - these should zoom when clicked
+        const projectMarkers = [
+          "16 Projects",
+          "7 Projects",
+          "2 Projects",
+          "1 Project",
+          "5 Projects",
+          "2Projects",
+          "مركز شرطة رماح",
+          "مركز شرطة سويحان",
+          "مركز شرطة الهير",
+          ...HOVERABLE_MARKERS, // Include all hoverable markers
+        ]
+
+        // Special case for Saad Police Station
         if (name === "مركز شرطة الساد") {
           router.push("/al-ain/saad-police-station")
-        } else {
+        }
+        // For all project markers and hoverable markers, zoom to location
+        else if (projectMarkers.includes(name)) {
+          // Zoom to the marker location with animation
+          map.flyTo({
+            center: markerCoordinates,
+            zoom: 13, // Adjust zoom level as needed
+            duration: 1500, // Animation duration in milliseconds
+            essential: true, // This animation is considered essential for the user experience
+            easing: (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t), // Smoother easing function
+          })
+          console.log(`Zoomed to ${name} at coordinates ${markerCoordinates}`)
+
+          // Check if this marker should navigate to dashboard
+          if (DASHBOARD_NAVIGATION_MARKERS.includes(name)) {
+            // Generate a project ID based on the name
+            const englishName = getEnglishName(name)
+            const projectId = englishName
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/(^-|-$)/g, "")
+
+            // Navigate to the project dashboard after a short delay to allow zoom animation to start
+            setTimeout(() => {
+              router.push(
+                `/dashboard/${projectId}?name=${encodeURIComponent(englishName)}&nameAr=${encodeURIComponent(name)}`,
+              )
+            }, 500)
+          }
+        }
+        // For any other markers
+        else {
           console.log(`Clicked ${name}`)
         }
       }
@@ -993,6 +1408,9 @@ export default function AlAinMap({
       const marker = new mapboxgl.Marker({
         element: markerElement,
         anchor: "center",
+        offset: [0, 0],
+        pitchAlignment: "map",
+        rotationAlignment: "map",
       })
         .setLngLat(coordinates)
         .addTo(map)
@@ -1018,7 +1436,7 @@ export default function AlAinMap({
       case "مبنى التحريات والمخدرات":
       case "المتابعة الشرطية والرعاية اللاحقة":
         return "left-aligned"
-      case "مركز شرطة الساد":
+      case "مركز شرطةasad":
       case "مركز شرطة الهير":
       case "1 Project":
       case "فلل فلج هزاع":
@@ -1027,7 +1445,7 @@ export default function AlAinMap({
       case "نادي ضباط الشرطة":
       case "قسم موسيقى شرطة أبوظبي":
       case "مديرية شرطة العين":
-      case "ساحة حجز المركبات - الساد":
+      case "ساحة حجز المركبات -asad":
       case "فلل للادرات الشرطية عشارج":
       case "مركز شرطة المقام":
       case "مركز شرطة فلج هزاع":
@@ -1052,15 +1470,21 @@ export default function AlAinMap({
         onResetView={() => {
           if (map.current) {
             map.current.easeTo({
-              center: [55.503133160600925, 24.106600838029317], // Updated to match the new center coordinates
+              center: initialCenterRef.current, // Use the stored initial center
               bearing: 0,
               pitch: 0,
+              zoom: initialZoomRef.current, // Reset to initial zoom level
               duration: 1500,
+              easing: (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t), // Smoother easing function
             })
           }
         }}
         onToggleTerrain={onToggleTerrain}
       />
+      {/* Add tooltip container */}
+      <div ref={tooltipRef} className="absolute pointer-events-none" style={{ display: "none" }} />
+      {/* Add the MarkerHoverWidget */}
+      <MarkerHoverWidget markerName={hoveredMarker} isVisible={!!hoveredMarker} />
     </div>
   )
 }

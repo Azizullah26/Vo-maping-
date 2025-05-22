@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight, Film } from "lucide-react"
+import { Film } from "lucide-react"
 import "@/styles/vue-futuristic-alain.css"
 import { useRouter } from "next/navigation"
 import { createClient } from "@supabase/supabase-js"
@@ -153,9 +153,22 @@ interface AlAinLeftSliderProps {
     projectNameAr: string
     projectNameEn: string
   } | null
+  setSelectedProject: React.Dispatch<
+    React.SetStateAction<{
+      id: number
+      imageSrc: string
+      projectNameAr: string
+      projectNameEn: string
+    } | null>
+  >
 }
 
-export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject }: AlAinLeftSliderProps) {
+export default function AlAinLeftSlider({
+  isOpen,
+  toggleSlider,
+  selectedProject,
+  setSelectedProject,
+}: AlAinLeftSliderProps) {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [chartData, setChartData] = useState([35, 65, 45, 70, 55, 40, 60])
   const [temperature, setTemperature] = useState(32) // Higher temperature for Al Ain
@@ -510,6 +523,29 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
 
     window.addEventListener("documentUpdate", handleDocumentUpdate as EventListener)
 
+    // Add an event listener to update the left slider when a marker is hovered
+    // Add this inside the useEffect hook that fetches documents (around line 200)
+
+    // Listen for marker hover events
+    const handleMarkerHover = (event: CustomEvent) => {
+      if (event.detail && event.detail.project) {
+        // Update the selected project
+        if (typeof setSelectedProject === "function") {
+          setSelectedProject(event.detail.project)
+        }
+
+        // Open the slider if it's not already open
+        if (!isOpen && typeof toggleSlider === "function") {
+          toggleSlider()
+        }
+
+        // Update the active tab to show project details
+        setActiveTab("dashboard")
+      }
+    }
+
+    window.addEventListener("markerHovered", handleMarkerHover as EventListener)
+
     return () => {
       // Clean up all subscriptions and listeners
       clearInterval(pollingInterval)
@@ -523,8 +559,9 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
       }
 
       window.removeEventListener("documentUpdate", handleDocumentUpdate as EventListener)
+      window.removeEventListener("markerHovered", handleMarkerHover as EventListener)
     }
-  }, [filters]) // Re-run when filters change
+  }, [filters, isOpen, toggleSlider, setSelectedProject]) // Re-run when filters change
 
   // Fetch documents when selected project changes
   useEffect(() => {
@@ -585,23 +622,9 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
 
   return (
     <>
-      <button
-        onClick={toggleSlider}
-        className={`fixed top-1/2 transform -translate-y-1/2 z-50 p-3 bg-[#0a192f]/80 backdrop-blur-sm rounded-full hover:bg-[#0a192f] transition-all duration-300 border border-cyan-500/30 ${
-          isOpen ? "left-[280px]" : "left-0"
-        }`}
-        aria-label={isOpen ? "Hide Dashboard" : "Show Dashboard"}
-      >
-        {isOpen ? (
-          <ChevronLeft className="h-5 w-5 text-cyan-400" />
-        ) : (
-          <ChevronRight className="h-5 w-5 text-cyan-400" />
-        )}
-      </button>
-
       <div
         className={cn(
-          "fixed top-[7rem] sm:top-[7.5rem] md:top-[8rem] left-0 max-h-[calc(100vh-12rem)] sm:max-h-[calc(100vh-13rem)] md:max-h-[calc(100vh-14rem)] w-[80%] sm:w-[280px] transform transition-transform ease-out-expo duration-500 z-40 bg-black/90 backdrop-blur-sm overflow-hidden border-r border-cyan-500/30 rounded-tr-lg",
+          "fixed top-[7rem] sm:top-[7.5rem] md:top-[8rem] left-0 max-h-[calc(100vh-12rem)] sm:max-h-[calc(100vh-13rem)] md:max-h-[calc(100vh-14rem)] w-[80%] sm:w-[280px] transform transition-transform ease-out-expo duration-500 z-40 bg-black/90 backdrop-blur-sm overflow-hidden rounded-tr-lg",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
         style={{
@@ -613,16 +636,16 @@ export default function AlAinLeftSlider({ isOpen, toggleSlider, selectedProject 
         <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-20 pointer-events-none z-0"></div>
 
         {/* Top decorative element */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 z-10"></div>
+        {/* <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 z-10"></div> */}
 
         {/* Left decorative element */}
-        <div className="absolute top-0 left-0 bottom-0 w-1 bg-gradient-to-b from-cyan-500 via-blue-500 to-cyan-500 z-10"></div>
+        {/* <div className="absolute top-0 left-0 bottom-0 w-1 bg-gradient-to-b from-cyan-500 via-blue-500 to-cyan-500 z-10"></div> */}
 
         {/* Animated corner elements */}
-        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-500 animate-pulse z-10"></div>
-        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-500 animate-pulse z-10"></div>
-        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-500 animate-pulse z-10"></div>
-        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-500 animate-pulse z-10"></div>
+        {/* <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-500 z-10"></div>
+        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-500 z-10"></div>
+        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-500 z-10"></div>
+        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-500 z-10"></div> */}
 
         {/* Main content area - scrollable with enhanced vertical scrolling */}
         <div

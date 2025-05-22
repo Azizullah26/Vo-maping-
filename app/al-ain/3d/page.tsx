@@ -1,8 +1,8 @@
 "use client"
 
 import React from "react"
-
-import { useState, Suspense, useEffect } from "react"
+import { useFrame } from "@react-three/fiber"
+import { useState, Suspense, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
@@ -16,6 +16,7 @@ import {
 } from "lucide-react"
 import { Canvas } from "@react-three/fiber"
 import { OrbitControls, useGLTF, Environment, Html } from "@react-three/drei"
+import type { Group } from "three"
 
 // Custom Error Boundary component
 class ErrorBoundary extends React.Component<
@@ -39,10 +40,167 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-// Fixed 3D Model component that properly uses the useGLTF hook
+// Update the models object to include more realistic building 3D models
+// Replace the models object with this updated version:
+
+const models = {
+  buildings: [
+    {
+      id: 1,
+      name: "Al Ain Police Headquarters",
+      thumbnail: "/al-ain-grand-entrance.png",
+      url: "/assets/3d/duck.glb", // Replace with actual building model when available
+      type: "glb",
+      scale: 0.5,
+      position: [0, -1, 0],
+      description: "Modern police headquarters with advanced security features",
+    },
+    {
+      id: 2,
+      name: "Al Saad Police Station",
+      thumbnail: "/al-ain-street-surveillance.png",
+      url: "/assets/3d/duck.glb", // Replace with actual building model when available
+      type: "glb",
+      scale: 0.4,
+      position: [0, -1, 0],
+      description: "Community police station serving the Al Saad district",
+    },
+    {
+      id: 3,
+      name: "Al Ain Smart City Center",
+      thumbnail: "/al-ain-oasis-cityscape.png",
+      url: "/assets/3d/duck.glb", // Replace with actual building model when available
+      type: "glb",
+      scale: 0.6,
+      position: [0, -1, 0],
+      description: "Central monitoring facility for city-wide surveillance",
+    },
+    {
+      id: 4,
+      name: "Surveillance Command Center",
+      thumbnail: "/al-ain-city-traffic.png",
+      url: "/assets/3d/duck.glb", // Replace with actual building model when available
+      type: "glb",
+      scale: 0.45,
+      position: [0, -1, 0],
+      description: "Main command center for coordinating security operations",
+    },
+  ],
+  "2d-view": [
+    {
+      id: 1,
+      name: "Detailed Floor Plan",
+      thumbnail: "https://templacity.com/wp-content/uploads/2025/03/2d-to-3d-floorplan-scaled.jpg",
+      url: "https://templacity.com/wp-content/uploads/2025/03/2d-to-3d-floorplan-scaled.jpg",
+      type: "image",
+    },
+    {
+      id: 2,
+      name: "Police Station Blueprint",
+      thumbnail: "/al-ain-street-surveillance.png",
+      url: "/al-ain-street-surveillance.png",
+      type: "image",
+    },
+    {
+      id: 3,
+      name: "City Layout",
+      thumbnail: "/al-ain-oasis-cityscape.png",
+      url: "/al-ain-oasis-cityscape.png",
+      type: "image",
+    },
+  ],
+  equipment: [
+    {
+      id: 6,
+      name: "Security Camera",
+      thumbnail: "/al-ain-street-surveillance.png",
+      url: "/assets/3d/duck.glb",
+      type: "glb",
+      scale: 0.8,
+      position: [0, -1, 0],
+    },
+    {
+      id: 7,
+      name: "Security Gate",
+      thumbnail: "/al-ain-grand-entrance.png",
+      url: "/assets/3d/duck.glb",
+      type: "glb",
+      scale: 1.7,
+      position: [0, -1, 0],
+    },
+  ],
+}
+
+// Update the Model component to handle building-specific rendering
+// Replace the Model component with this enhanced version:
+
 function Model({ url }: { url: string }) {
-  const { scene, nodes, materials } = useGLTF(url)
-  return <primitive object={scene} scale={1.5} position={[0, -1, 0]} />
+  const modelRef = useRef<Group>(null)
+  const { scene } = useGLTF(url)
+
+  // Find the model data to get scale and position
+  const modelData = Object.values(models)
+    .flat()
+    .find((model) => model.url === url)
+
+  const scale = modelData?.scale || 0.01
+  const position = modelData?.position || [0, -1, 0]
+
+  useFrame((state, delta) => {
+    if (modelRef.current) {
+      // Slower rotation for buildings
+      modelRef.current.rotation.y += delta * 0.2
+    }
+  })
+
+  // If the URL contains duck.glb, render a building shape instead
+  if (url.includes("duck.glb")) {
+    return (
+      <group ref={modelRef} position={[0, 0, 0]} scale={1}>
+        {/* Main building body */}
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[2, 3, 2]} />
+          <meshStandardMaterial color="#0891b2" />
+        </mesh>
+
+        {/* Building top */}
+        <mesh position={[0, 2, 0]}>
+          <boxGeometry args={[1.5, 0.5, 1.5]} />
+          <meshStandardMaterial color="#0e7490" />
+        </mesh>
+
+        {/* Windows */}
+        <mesh position={[0, 0.5, 1.01]}>
+          <planeGeometry args={[1.5, 0.8]} />
+          <meshStandardMaterial color="#164e63" metalness={0.8} roughness={0.2} />
+        </mesh>
+
+        <mesh position={[0, 0.5, -1.01]}>
+          <planeGeometry args={[1.5, 0.8]} />
+          <meshStandardMaterial color="#164e63" metalness={0.8} roughness={0.2} />
+        </mesh>
+
+        <mesh position={[1.01, 0.5, 0]}>
+          <planeGeometry args={[1.5, 0.8]} />
+          <meshStandardMaterial color="#164e63" metalness={0.8} roughness={0.2} />
+        </mesh>
+
+        <mesh position={[-1.01, 0.5, 0]}>
+          <planeGeometry args={[1.5, 0.8]} />
+          <meshStandardMaterial color="#164e63" metalness={0.8} roughness={0.2} />
+        </mesh>
+
+        {/* Door */}
+        <mesh position={[0, -1.25, 1.01]}>
+          <planeGeometry args={[0.6, 1]} />
+          <meshStandardMaterial color="#1e293b" />
+        </mesh>
+      </group>
+    )
+  }
+
+  // For other models, load them normally
+  return <primitive ref={modelRef} object={scene} scale={scale} position={position} />
 }
 
 // Fallback component to display when model loading fails
@@ -69,82 +227,6 @@ export default function ThreeDPage() {
   const [selectedModel, setSelectedModel] = useState<string | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [modelLoadError, setModelLoadError] = useState<string | null>(null)
-
-  // Update the models to use built-in duck.glb with different scales and positions
-  const models = {
-    buildings: [
-      {
-        id: 1,
-        name: "Modern Office Building",
-        thumbnail: "/al-ain-grand-entrance.png",
-        url: "/assets/3d/duck.glb",
-        type: "glb",
-        scale: 2.0,
-        position: [0, -1, 0],
-      },
-      {
-        id: 2,
-        name: "Police Station",
-        thumbnail: "/al-ain-street-surveillance.png",
-        url: "/assets/3d/duck.glb",
-        type: "glb",
-        scale: 1.5,
-        position: [0, -1, 0],
-      },
-      {
-        id: 3,
-        name: "City Building",
-        thumbnail: "/al-ain-oasis-cityscape.png",
-        url: "/assets/3d/duck.glb",
-        type: "glb",
-        scale: 2.5,
-        position: [0, -1, 0],
-      },
-    ],
-    "2d-view": [
-      {
-        id: 1,
-        name: "Detailed Floor Plan",
-        thumbnail: "https://templacity.com/wp-content/uploads/2025/03/2d-to-3d-floorplan-scaled.jpg",
-        url: "https://templacity.com/wp-content/uploads/2025/03/2d-to-3d-floorplan-scaled.jpg",
-        type: "image",
-      },
-      {
-        id: 2,
-        name: "Police Station Blueprint",
-        thumbnail: "/al-ain-street-surveillance.png",
-        url: "/al-ain-street-surveillance.png",
-        type: "image",
-      },
-      {
-        id: 3,
-        name: "City Layout",
-        thumbnail: "/al-ain-oasis-cityscape.png",
-        url: "/al-ain-oasis-cityscape.png",
-        type: "image",
-      },
-    ],
-    equipment: [
-      {
-        id: 6,
-        name: "Security Camera",
-        thumbnail: "/al-ain-street-surveillance.png",
-        url: "/assets/3d/duck.glb",
-        type: "glb",
-        scale: 0.8,
-        position: [0, -1, 0],
-      },
-      {
-        id: 7,
-        name: "Security Gate",
-        thumbnail: "/al-ain-grand-entrance.png",
-        url: "/assets/3d/duck.glb",
-        type: "glb",
-        scale: 1.7,
-        position: [0, -1, 0],
-      },
-    ],
-  }
 
   // Toggle fullscreen mode
   const toggleFullscreen = () => {
@@ -275,8 +357,9 @@ export default function ThreeDPage() {
               ) : (
                 <div className="w-full h-full">
                   <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
-                    <ambientLight intensity={0.5} />
-                    <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+                    <ambientLight intensity={0.7} />
+                    <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} />
+                    <directionalLight position={[-5, 5, -5]} intensity={0.5} />
                     <Suspense fallback={<ModelFallback />}>
                       <ErrorBoundary fallback={<ModelFallback />}>
                         <Model url={selectedModel} />
@@ -297,6 +380,18 @@ export default function ThreeDPage() {
             )}
           </div>
         </div>
+        {selectedModelData && (
+          <div className="mt-4 p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+            <h3 className="text-cyan-400 text-sm font-medium mb-1">About this building</h3>
+            <p className="text-slate-200 text-xs">{selectedModelData.description || "No description available."}</p>
+            <div className="mt-2 text-xs text-slate-400">
+              <span className="inline-block px-2 py-0.5 bg-slate-800 rounded mr-2">3D Model</span>
+              <span className="inline-block px-2 py-0.5 bg-slate-800 rounded">
+                Scale: {selectedModelData.scale || "Default"}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Model Library */}
         <div
