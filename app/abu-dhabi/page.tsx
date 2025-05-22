@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { ProjectsRightSlider } from "@/components/ProjectsRightSlider"
 import { ProjectDetailsLeftSlider } from "@/components/ProjectDetailsLeftSlider"
 import { MapFilters, typeFilters } from "@/components/MapFilters"
@@ -11,8 +11,11 @@ import { Button } from "@/components/ui/button"
 import { MapPin, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { projects } from "@/data/abu-dhabi-projects"
+import { useMobile } from "@/hooks/use-mobile"
+import MapInstructionWidget from "@/components/MapInstructionWidget"
 
 export default function AbuDhabiPage() {
+  const isMobile = useMobile()
   const [isRightSliderOpen, setIsRightSliderOpen] = useState(true)
   const [isLeftSliderOpen, setIsLeftSliderOpen] = useState(false)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
@@ -21,6 +24,16 @@ export default function AbuDhabiPage() {
   const [showCategoryFilters, setShowCategoryFilters] = useState(false)
   const [hoveredProject, setHoveredProject] = useState<Project | null>(null)
   const [activeButton, setActiveButton] = useState<string | null>(null)
+  const [showInstructions, setShowInstructions] = useState(true)
+
+  // Hide instructions after 4 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowInstructions(false)
+    }, 4000)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   // Handle project selection
   const handleProjectSelect = useCallback((project: Project) => {
@@ -71,32 +84,34 @@ export default function AbuDhabiPage() {
   return (
     <div className="fixed inset-0 w-screen h-screen overflow-hidden bg-gray-900">
       {/* Header */}
-      <header className="absolute top-0 left-0 right-0 h-[70px] z-50 bg-black/80 backdrop-blur-sm border-b border-white/10 px-4 flex items-center justify-between">
+      <header className="absolute top-0 left-0 right-0 h-[70px] z-50 bg-black/80 backdrop-blur-sm border-b border-white/10 px-2 sm:px-4 flex items-center justify-between">
         {/* Logo and title */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 sm:gap-3">
           <Image
             src="/abu-dhabi-police-logo.png"
             alt="Abu Dhabi Police Logo"
-            width={50}
-            height={50}
+            width={isMobile ? 40 : 50}
+            height={isMobile ? 40 : 50}
             className="object-contain"
           />
-          <div className="h-6 w-px bg-white/20 mx-2"></div>
-          <div className="text-white">Abu Dhabi</div>
+          <div className="h-6 w-px bg-white/20 mx-1 sm:mx-2 hidden xs:block"></div>
+          <div className="text-white text-sm sm:text-base">Abu Dhabi</div>
 
           {/* Map Filters button moved here */}
-          <div className="h-6 w-px bg-white/20 mx-2"></div>
+          <div className="h-6 w-px bg-white/20 mx-1 sm:mx-2 hidden xs:block"></div>
           <Button
             variant="ghost"
-            size="sm"
+            size={isMobile ? "xs" : "sm"}
             className={cn(
               "bg-black text-white hover:bg-white hover:text-black transition-all duration-200",
+              "text-xs sm:text-sm px-1.5 sm:px-3 py-1 h-auto",
               activeButton === "filters" && "bg-red-600 text-white hover:bg-red-700",
             )}
             onClick={toggleCategoryFilters}
           >
-            <MapPin className="h-4 w-4 mr-1" />
-            Map Filters
+            <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            <span className="hidden xxs:inline">Map Filters</span>
+            <span className="xxs:hidden">Filters</span>
           </Button>
         </div>
 
@@ -104,18 +119,19 @@ export default function AbuDhabiPage() {
         <div className="flex-1"></div>
 
         {/* Right side controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Button
             variant="ghost"
-            size="sm"
+            size={isMobile ? "xs" : "sm"}
             className={cn(
               "bg-black text-white hover:bg-white hover:text-black transition-all duration-200",
+              "text-xs sm:text-sm px-1.5 sm:px-3 py-1 h-auto",
               activeButton === "profile" && "bg-red-600 text-white hover:bg-red-700",
             )}
             onClick={handleProfile}
           >
-            <User className="h-4 w-4 mr-1" />
-            Profile
+            <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            <span className="hidden xxs:inline">Profile</span>
           </Button>
         </div>
       </header>
@@ -134,6 +150,9 @@ export default function AbuDhabiPage() {
           showTypeFilters={false} // Don't show type filters here
         />
       </div>
+
+      {/* Instruction Widget */}
+      {showInstructions && <MapInstructionWidget />}
 
       {/* Static Map Image */}
       <div className="absolute inset-0 w-full h-full">

@@ -1,6 +1,5 @@
 "use client"
 
-import dynamic from "next/dynamic"
 import { useState, useCallback, useRef, useEffect } from "react"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { Button } from "@/components/ui/button"
@@ -11,31 +10,9 @@ import Breadcrumb from "@/components/Breadcrumb"
 import { RightSliderButton } from "@/components/RightSliderButton"
 import AlAinLeftSlider from "@/components/AlAinLeftSlider"
 import type mapboxgl from "mapbox-gl"
-
-// Dynamically import components that use Cesium
-const AlAinTerrainViewer = dynamic(() => import("@/components/AlAinTerrainViewer"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-gray-600">Loading terrain viewer...</p>
-      </div>
-    </div>
-  ),
-})
-
-const AlAinMap = dynamic(() => import("@/components/AlAinMap"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-gray-600">Loading map...</p>
-      </div>
-    </div>
-  ),
-})
+import AlAinTerrainViewer from "@/components/AlAinTerrainViewer"
+import AlAinMap from "@/components/AlAinMap"
+import MapInstructionWidget from "@/components/MapInstructionWidget"
 
 interface PoliceLocation {
   name: string
@@ -273,6 +250,7 @@ export default function AlAinPage() {
   const [showFilters, setShowFilters] = useState(true)
   const [selectedFilters, setSelectedFilters] = useState<{ [key: string]: boolean }>({})
   const [isClient, setIsClient] = useState(false)
+  const [showInstructions, setShowInstructions] = useState(true)
 
   const [selectedProject, setSelectedProject] = useState<{
     id: number
@@ -285,6 +263,13 @@ export default function AlAinPage() {
   // Set isClient to true when component mounts
   useEffect(() => {
     setIsClient(true)
+
+    // Hide instructions after 4 seconds
+    const timer = setTimeout(() => {
+      setShowInstructions(false)
+    }, 4000)
+
+    return () => clearTimeout(timer)
   }, [])
 
   const handleFilterChange = (type: string, id: string) => {
@@ -367,7 +352,7 @@ export default function AlAinPage() {
 
   return (
     <div className="relative w-full h-[100dvh] overflow-hidden">
-      {loadingState}
+      {!isClient && loadingState}
       {error && errorState}
       <TopNav
         onToggleProjects={toggleProjects}
@@ -398,6 +383,9 @@ export default function AlAinPage() {
         offsetY={60}
         mapRef={mapRef}
       />
+
+      {/* Instruction Widget */}
+      {showInstructions && <MapInstructionWidget />}
 
       {showingTerrain && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">

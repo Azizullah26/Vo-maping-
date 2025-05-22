@@ -486,6 +486,7 @@ export default function AlAinMap({
   const initialCenterRef = useRef<[number, number]>([0, 0])
   const [hoveredMarker, setHoveredMarker] = useState<string | null>(null)
   const tooltipRef = useRef<HTMLDivElement | null>(null)
+  const lastCenterRef = useRef<mapboxgl.LngLat | null>(null)
 
   const updateSlidersWithMarkerInfo = useCallback(
     (markerName: string | null) => {
@@ -765,6 +766,9 @@ export default function AlAinMap({
       setMapLoaded(true)
       if (!map.current) return
 
+      // Store the initial center
+      lastCenterRef.current = map.current.getCenter()
+
       // Optimize rendering
       map.current.getCanvas().style.willChange = "transform"
 
@@ -855,7 +859,7 @@ export default function AlAinMap({
         isMovingRef.current = false
       })
 
-      // Modified drag event to allow movement when zoomed in
+      // Modified drag event handler to strictly prevent horizontal movement at initial zoom
       map.current.on("drag", () => {
         try {
           if (!map.current) return
@@ -865,13 +869,55 @@ export default function AlAinMap({
 
           // Only restrict movement when at or near the initial zoom level
           if (currentZoom <= FREE_MOVEMENT_ZOOM_THRESHOLD) {
-            // Force the map to stay at the initial center coordinates
-            // This restricts both horizontal and vertical movement when zoomed out
-            map.current.setCenter(initialCenterRef.current)
+            // Get the current center
+            const currentCenter = map.current.getCenter()
+
+            // Always use the initial longitude but allow latitude to change
+            // This strictly prevents any horizontal movement
+            const fixedLng = initialCenterRef.current[0]
+
+            // Set the center with fixed longitude but current latitude
+            map.current.setCenter(new mapboxgl.LngLat(fixedLng, currentCenter.lat))
           }
           // When zoomed in beyond the threshold, allow free movement in all directions
         } catch (error) {
           console.error("Error handling drag event:", error)
+        }
+      })
+
+      // Also update the moveend event to ensure the horizontal position is maintained
+      map.current.on("moveend", () => {
+        isMovingRef.current = false
+
+        // Ensure horizontal position is maintained at initial zoom
+        if (map.current) {
+          const currentZoom = map.current.getZoom()
+          if (currentZoom <= FREE_MOVEMENT_ZOOM_THRESHOLD) {
+            const currentCenter = map.current.getCenter()
+            const fixedLng = initialCenterRef.current[0]
+
+            // Only apply if the longitude has changed (prevents infinite loop)
+            if (Math.abs(currentCenter.lng - fixedLng) > 0.0001) {
+              map.current.setCenter(new mapboxgl.LngLat(fixedLng, currentCenter.lat))
+            }
+          }
+        }
+
+        // Update marker positions after movement ends
+        if (map.current) {
+          Object.entries(markersRef.current).forEach(([name, marker]) => {
+            try {
+              const position = marker.getLngLat()
+              if (position) {
+                const element = marker.getElement()
+                if (element.style.display !== "none") {
+                  marker.setLngLat(position)
+                }
+              }
+            } catch (error) {
+              console.error(`Error updating marker position for ${name}:`, error)
+            }
+          })
         }
       })
 
@@ -1141,6 +1187,11 @@ export default function AlAinMap({
             }
           })
 
+          // Update the lastCenterRef when zoom changes
+          if (zoom > FREE_MOVEMENT_ZOOM_THRESHOLD) {
+            lastCenterRef.current = map.current.getCenter()
+          }
+
           // Use debounced update for marker positions
           debouncedUpdateMarkers()
         } catch (error) {
@@ -1179,6 +1230,23 @@ export default function AlAinMap({
         }
       })
     })
+
+    // Add this code right after the map initialization to ensure the initial center is properly stored
+
+    // After map initialization, make sure to store the initial center
+    if (map.current) {
+      // Store the initial center coordinates more explicitly
+      initialCenterRef.current = [centerLng, centerLat]
+      console.log("Initial center set to:", initialCenterRef.current)
+
+      // Disable the default drag pan handler and replace with our custom one
+      // This ensures our custom drag behavior takes precedence
+      map.current.dragPan.disable()
+      map.current.dragPan.enable({
+        linearity: 0.3, // Make dragging smoother
+        easing: (t) => t, // Linear easing for more predictable movement
+      })
+    }
 
     // Disable map rotation to keep it fixed
     map.current.touchZoomRotate.disableRotation()
