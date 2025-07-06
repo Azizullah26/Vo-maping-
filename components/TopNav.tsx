@@ -2,7 +2,7 @@
 
 import type React from "react"
 import Link from "next/link"
-import { MapPin, Building2, Home, Warehouse, User, LayoutDashboard, Building } from "lucide-react"
+import { MapPin, Building2, Home, Warehouse, LayoutDashboard, Building, LogOut } from "lucide-react"
 import styles from "@/styles/nav-button.module.css"
 import glowStyles from "@/styles/glow-button.module.css"
 import { cn } from "@/lib/utils"
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/app/contexts/AuthContext"
 import { PageSwipingPanel } from "@/components/PageSwipingPanel"
+import { useLoginAuth } from "@/app/contexts/LoginAuthContext"
 
 // Add this import for the scrollbar-hide utility
 import "tailwind-scrollbar-hide"
@@ -33,6 +34,10 @@ const mobileStyles = `
       height: 4px;
       border-radius: 50%;
       background-color: #06b6d4;
+    }
+
+    .active-nav-item span:last-child {
+      width: 100%;
     }
   }
 `
@@ -82,7 +87,7 @@ interface TopNavProps {
 }
 
 // Update the TopNav component to include the admin button
-export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin }: TopNavProps) {
+function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin }: TopNavProps) {
   const pathname = usePathname() || ""
   const isAlAinPage = pathname === "/al-ain"
   const isAbuDhabiPage = pathname === "/abu-dhabi" || pathname.startsWith("/abu-dhabi/")
@@ -95,6 +100,7 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
   const auth = useAuth()
   const router = useRouter()
   const isProjectsPage = pathname === "/projects-details" || pathname === "/abu-dhabi/projects"
+  const { logout, isAuthenticated } = useLoginAuth()
 
   // Wait for auth to be ready before accessing its properties
   useEffect(() => {
@@ -117,13 +123,16 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
 
   return (
     <>
-      {/* Simplified top section with just logo, text and map button - hide on documents page */}
-      {!isDocumentsPage && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-white/10 rounded-b-[20px] xxs:rounded-b-[25px] sm:rounded-b-[30px]">
-          <div className="w-full max-w-[1800px] mx-auto px-1 xxs:px-2">
-            {/* The inner div with flex items-center justify-between has been removed */}
-          </div>
-        </div>
+      {/* Logout button positioned on the map - only show on main page */}
+      {!isDocumentsPage && pathname === "/" && (
+        <button
+          onClick={logout}
+          className="fixed top-2 right-2 z-50 flex items-center space-x-1 px-2 py-1 rounded-lg bg-red-600/80 hover:bg-red-700 text-white transition-colors text-xs shadow-md"
+          title="Logout"
+        >
+          <LogOut className="h-3 w-3" />
+          <span className="hidden sm:inline">Logout</span>
+        </button>
       )}
 
       {/* Filter buttons row - only show when showFilters is true */}
@@ -172,90 +181,98 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
       )}
 
       {/* Footer Navigation - hide on documents page */}
-      {!isDocumentsPage && !isLivePage && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900 border-t border-white/10 rounded-t-[20px] xxs:rounded-t-[25px] sm:rounded-t-[30px]">
-          <div className="w-full max-w-[1800px] mx-auto px-1 xxs:px-2">
-            <div className="flex items-center justify-between py-2 xxs:py-2.5 xs:py-3 sm:py-2">
-              {/* Dashboard button */}
-              <Link
-                href="/dashboard"
-                className="flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white"
-              >
-                <LayoutDashboard className="h-3 w-3 xxs:h-3.5 xxs:w-3.5 xs:h-4 xs:w-4 mb-0.5" />
-                <span className="text-[8px] xxs:text-[9px] xs:text-[10px]">Dashboard</span>
-              </Link>
-
-              {/* Projects Details button */}
-              <Link
-                href={pathname.startsWith("/abu-dhabi") ? "/abu-dhabi/projects" : "/projects-details"}
-                className={`flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white relative group touch-target ${isProjectsPage ? "active-nav-item" : ""}`}
-              >
-                <Building2 className="h-3 w-3 xxs:h-3.5 xxs:w-3.5 xs:h-4 xs:w-4 sm:h-5 sm:w-5 mb-0.5" />
-                <span className="text-[8px] xxs:text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap">Projects</span>
-                <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
-              </Link>
-
-              {/* Cities button */}
-              <button
-                onClick={() => setIsPageSwipingOpen(true)}
-                className="flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white"
-              >
-                <Building className="h-3 w-3 xxs:h-3.5 xxs:w-3.5 xs:h-4 xs:w-4 mb-0.5" />
-                <span className="text-[8px] xxs:text-[9px] xs:text-[10px]">Cities</span>
-              </button>
-
-              {/* Manage button */}
-              <Link
-                href="/manage"
-                className="flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white"
-              >
-                <svg
-                  className="h-3 w-3 xxs:h-3.5 xxs:w-3.5 xs:h-4 xs:w-4 mb-0.5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
+      {!isDocumentsPage &&
+        !isLivePage &&
+        !pathname.includes("/dashboard/") &&
+        !pathname.startsWith("/work-order/") &&
+        pathname !== "/work-order" &&
+        pathname !== "/login" &&
+        pathname !== "/al-ain/16-projects" && (
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900 border-t border-white/10 rounded-t-[20px] xxs:rounded-t-[25px] sm:rounded-t-[30px]">
+            <div className="w-full max-w-[1800px] mx-auto px-1 xxs:px-2">
+              <div className="flex items-center justify-between py-2 xxs:py-2.5 xs:py-3 sm:py-2">
+                {/* Dashboard button */}
+                <Link
+                  href={
+                    pathname.startsWith("/abu-dhabi") || pathname.includes("abu-dhabi")
+                      ? "/dashboard/abu-dhabi"
+                      : "/dashboard"
+                  }
+                  className={`flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white relative group touch-target ${pathname === "/dashboard" || pathname === "/dashboard/abu-dhabi" ? "active-nav-item" : ""}`}
                 >
-                  <circle cx="12" cy="12" r="3" />
-                  <path
-                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 1.82-.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span className="text-[8px] xxs:text-[9px] xs:text-[10px]">Manage</span>
-              </Link>
+                  <LayoutDashboard className="h-4 w-4 xxs:h-4.5 xxs:w-4.5 xs:h-5 xs:w-5 mb-0.5" />
+                  <span className="text-[9px] xxs:text-[10px] xs:text-[11px]">Dashboard</span>
+                  <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
+                </Link>
 
-              {/* User profile button - only show on non-Abu Dhabi pages */}
-              {!isAbuDhabiPage && (
-                <div className="flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white">
-                  <User className="h-3 w-3 xxs:h-3.5 xxs:w-3.5 xs:h-4 xs:w-4 mb-0.5" />
-                  <span className="text-[8px] xxs:text-[9px] xs:text-[10px]">Profile</span>
-                </div>
-              )}
+                {/* Projects Details button */}
+                <Link
+                  href={pathname.startsWith("/abu-dhabi") ? "/abu-dhabi/projects" : "/projects-details"}
+                  className={`flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white relative group touch-target ${isProjectsPage ? "active-nav-item" : ""}`}
+                >
+                  <Building2 className="h-4 w-4 xxs:h-4.5 xxs:w-4.5 xs:h-5 xs:w-5 sm:h-5.5 sm:w-5.5 mb-0.5" />
+                  <span className="text-[9px] xxs:text-[10px] xs:text-[11px] sm:text-sm whitespace-nowrap">
+                    Projects
+                  </span>
+                  <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
+                </Link>
 
-              {/* Admin button */}
-              {showAdmin && (
+                {/* Cities button */}
                 <button
-                  className="flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white"
-                  onClick={onAdminClick}
+                  onClick={() => setIsPageSwipingOpen(true)}
+                  className="flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white relative group touch-target"
+                >
+                  <Building className="h-4 w-4 xxs:h-4.5 xxs:w-4.5 xs:h-5 xs:w-5 mb-0.5" />
+                  <span className="text-[9px] xxs:text-[10px] xs:text-[11px]">Cities</span>
+                  <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
+                </button>
+
+                {/* Manage button */}
+                <Link
+                  href="/manage"
+                  className={`flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white relative group touch-target ${pathname === "/manage" ? "active-nav-item" : ""}`}
                 >
                   <svg
-                    className="h-3 w-3 xxs:h-3.5 xxs:w-3.5 xs:h-4 xs:w-4 mb-0.5"
+                    className="h-4 w-4 xxs:h-4.5 xxs:w-4.5 xs:h-5 xs:w-5 mb-0.5"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
                   >
-                    <path d="M12 2L2 22h20L12 2z" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                      d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 1.82-.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
-                  <span className="text-[8px] xxs:text-[9px] xs:text-[10px]">Admin</span>
-                </button>
-              )}
+                  <span className="text-[9px] xxs:text-[10px] xs:text-[11px]">Manage</span>
+                  <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
+                </Link>
+
+                {/* Admin button */}
+                {showAdmin && (
+                  <button
+                    className="flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white relative group touch-target"
+                    onClick={onAdminClick}
+                  >
+                    <svg
+                      className="h-4 w-4 xxs:h-4.5 xxs:w-4.5 xs:h-5 xs:w-5 mb-0.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M12 2L2 22h20L12 2z" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span className="text-[9px] xxs:text-[10px] xs:text-[11px]">Admin</span>
+                    <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Page Swiping Panel */}
       <PageSwipingPanel isOpen={isPageSwipingOpen} onClose={() => setIsPageSwipingOpen(false)} />
@@ -263,4 +280,6 @@ export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin
   )
 }
 
+// Export both named and default exports
+export { TopNav }
 export default TopNav

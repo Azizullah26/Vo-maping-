@@ -1,175 +1,310 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CheckCircle, XCircle, ExternalLink, Database, HardDrive } from "lucide-react"
-import { createClient } from "@supabase/supabase-js"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Settings, Database, Key, Save, RefreshCw, CheckCircle, AlertCircle } from "lucide-react"
+
+interface ConfigSection {
+  id: string
+  title: string
+  description: string
+  icon: React.ReactNode
+  fields: ConfigField[]
+}
+
+interface ConfigField {
+  key: string
+  label: string
+  type: "text" | "password" | "textarea" | "url"
+  value: string
+  placeholder?: string
+  required?: boolean
+}
 
 export default function SetupPage() {
-  const [databaseStatus, setDatabaseStatus] = useState<"checking" | "success" | "error" | null>(null)
-  const [databaseMessage, setDatabaseMessage] = useState("")
-  const [bucketStatus, setBucketStatus] = useState<"checking" | "success" | "error" | null>(null)
-  const [bucketMessage, setBucketMessage] = useState("")
+  const [saving, setSaving] = useState(false)
+  const [testingConnection, setTestingConnection] = useState(false)
+  const [connectionStatus, setConnectionStatus] = useState<"success" | "error" | null>(null)
 
-  // Get environment variables with fallbacks
-  const supabaseUrl =
-    process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    process.env.REACT_APP_SUPABASE_URL ||
-    "https://igxzfbxlfptgthfxtbae.supabase.co"
+  const [config, setConfig] = useState<ConfigSection[]>([
+    {
+      id: "database",
+      title: "Database Configuration",
+      description: "Configure your database connection settings",
+      icon: <Database className="w-5 h-5" />,
+      fields: [
+        {
+          key: "DATABASE_URL",
+          label: "Database URL",
+          type: "password",
+          value: process.env.NEXT_PUBLIC_DATABASE_URL || "",
+          placeholder: "postgresql://user:password@host:port/database",
+          required: true,
+        },
+        {
+          key: "DB_HOST",
+          label: "Database Host",
+          type: "text",
+          value: "",
+          placeholder: "localhost",
+        },
+        {
+          key: "DB_PORT",
+          label: "Database Port",
+          type: "text",
+          value: "5432",
+          placeholder: "5432",
+        },
+        {
+          key: "DB_NAME",
+          label: "Database Name",
+          type: "text",
+          value: "",
+          placeholder: "alain_db",
+        },
+      ],
+    },
+    {
+      id: "api",
+      title: "API Configuration",
+      description: "Configure external API keys and endpoints",
+      icon: <Key className="w-5 h-5" />,
+      fields: [
+        {
+          key: "MAPBOX_ACCESS_TOKEN",
+          label: "Mapbox Access Token",
+          type: "password",
+          value: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "",
+          placeholder: "pk.ey...",
+          required: true,
+        },
+        {
+          key: "SUPABASE_URL",
+          label: "Supabase URL",
+          type: "url",
+          value: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+          placeholder: "https://your-project.supabase.co",
+        },
+        {
+          key: "SUPABASE_ANON_KEY",
+          label: "Supabase Anonymous Key",
+          type: "password",
+          value: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+          placeholder: "eyJ...",
+        },
+      ],
+    },
+    {
+      id: "system",
+      title: "System Settings",
+      description: "General system configuration",
+      icon: <Settings className="w-5 h-5" />,
+      fields: [
+        {
+          key: "APP_NAME",
+          label: "Application Name",
+          type: "text",
+          value: "Al Ain Interactive Map",
+          placeholder: "Al Ain Interactive Map",
+        },
+        {
+          key: "APP_DESCRIPTION",
+          label: "Application Description",
+          type: "textarea",
+          value: "Interactive mapping system for Al Ain city projects and locations",
+          placeholder: "Describe your application...",
+        },
+        {
+          key: "BASE_URL",
+          label: "Base URL",
+          type: "url",
+          value: process.env.NEXT_PUBLIC_BASE_URL || "",
+          placeholder: "https://your-domain.com",
+        },
+      ],
+    },
+  ])
 
-  const supabaseKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    process.env.REACT_APP_SUPABASE_ANON_KEY ||
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlneHpmYnhsZnB0Z3RoZnh0YmFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyNDAwNzcsImV4cCI6MjA1NjgxNjA3N30.OFjYjmuwJ2a_VHqoWdwFy6HxIk9phU0skCoaaBkIxhQ"
+  const updateField = (sectionId: string, fieldKey: string, value: string) => {
+    setConfig((prev) =>
+      prev.map((section) =>
+        section.id === sectionId
+          ? {
+              ...section,
+              fields: section.fields.map((field) => (field.key === fieldKey ? { ...field, value } : field)),
+            }
+          : section,
+      ),
+    )
+  }
 
-  const checkDatabaseStatus = async () => {
-    setDatabaseStatus("checking")
-    setDatabaseMessage("Checking database status...")
+  const testDatabaseConnection = async () => {
+    setTestingConnection(true)
+    setConnectionStatus(null)
 
     try {
-      const response = await fetch("/api/setup-database")
-      const data = await response.json()
+      const response = await fetch("/api/database-test", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          databaseUrl: config.find((s) => s.id === "database")?.fields.find((f) => f.key === "DATABASE_URL")?.value,
+        }),
+      })
 
-      if (data.success) {
-        setDatabaseStatus("success")
-        setDatabaseMessage(data.message)
+      if (response.ok) {
+        setConnectionStatus("success")
       } else {
-        setDatabaseStatus("error")
-        setDatabaseMessage(data.message || "Failed to check database status")
+        setConnectionStatus("error")
       }
     } catch (error) {
-      setDatabaseStatus("error")
-      setDatabaseMessage("Error checking database status")
-      console.error(error)
+      setConnectionStatus("error")
+    } finally {
+      setTestingConnection(false)
     }
   }
 
-  const checkBucketStatus = async () => {
-    setBucketStatus("checking")
-    setBucketMessage("Checking bucket status...")
+  const saveConfiguration = async () => {
+    setSaving(true)
 
     try {
-      const supabase = createClient(supabaseUrl, supabaseKey)
-      const { data, error } = await supabase.storage.getBucket("project-documents")
+      // Prepare configuration data
+      const configData = {}
+      config.forEach((section) => {
+        section.fields.forEach((field) => {
+          configData[field.key] = field.value
+        })
+      })
 
-      if (error) {
-        if (error.message.includes("The resource was not found")) {
-          setBucketStatus("error")
-          setBucketMessage('Bucket "project-documents" does not exist. Please create it in the Supabase dashboard.')
-        } else {
-          setBucketStatus("error")
-          setBucketMessage(`Error checking bucket: ${error.message}`)
-        }
+      const response = await fetch("/api/admin/config", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(configData),
+      })
+
+      if (response.ok) {
+        // Show success message
+        alert("Configuration saved successfully!")
       } else {
-        setBucketStatus("success")
-        setBucketMessage('Bucket "project-documents" exists and is accessible.')
+        throw new Error("Failed to save configuration")
       }
-    } catch (error: any) {
-      setBucketStatus("error")
-      setBucketMessage(`Error checking bucket: ${error.message || "Unknown error"}`)
-      console.error(error)
+    } catch (error) {
+      alert("Error saving configuration: " + error.message)
+    } finally {
+      setSaving(false)
     }
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Database and Storage Setup</CardTitle>
-          <CardDescription>Configure your Supabase database and storage for the Al Ain Admin Dashboard</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">1. Create Documents Table</h3>
-            <div className="bg-muted p-4 rounded-md">
-              <pre className="text-sm overflow-x-auto whitespace-pre-wrap">
-                {`CREATE TABLE IF NOT EXISTS documents (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  project_id TEXT NOT NULL,
-  file_name TEXT NOT NULL,
-  file_path TEXT NOT NULL,
-  file_type TEXT NOT NULL,
-  file_size INTEGER NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);`}
-              </pre>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button onClick={checkDatabaseStatus} disabled={databaseStatus === "checking"}>
-                <Database className="mr-2 h-4 w-4" />
-                {databaseStatus === "checking" ? "Checking..." : "Check Table Status"}
-              </Button>
-              {databaseStatus && (
-                <span className="flex items-center gap-2">
-                  {databaseStatus === "success" ? (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                  ) : databaseStatus === "error" ? (
-                    <XCircle className="h-5 w-5 text-red-500" />
-                  ) : null}
-                  {databaseMessage}
-                </span>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">System Setup</h1>
+          <p className="text-gray-600">Configure your Al Ain system settings</p>
+        </div>
+        <Button onClick={saveConfiguration} disabled={saving} className="flex items-center gap-2">
+          <Save className="w-4 h-4" />
+          {saving ? "Saving..." : "Save Configuration"}
+        </Button>
+      </div>
+
+      {/* Configuration Sections */}
+      <div className="space-y-6">
+        {config.map((section) => (
+          <Card key={section.id}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {section.icon}
+                {section.title}
+              </CardTitle>
+              <p className="text-sm text-gray-600">{section.description}</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {section.fields.map((field) => (
+                  <div key={field.key} className={field.type === "textarea" ? "md:col-span-2" : ""}>
+                    <Label htmlFor={field.key}>
+                      {field.label}
+                      {field.required && <span className="text-red-500 ml-1">*</span>}
+                    </Label>
+                    {field.type === "textarea" ? (
+                      <Textarea
+                        id={field.key}
+                        value={field.value}
+                        onChange={(e) => updateField(section.id, field.key, e.target.value)}
+                        placeholder={field.placeholder}
+                        rows={3}
+                      />
+                    ) : (
+                      <Input
+                        id={field.key}
+                        type={field.type}
+                        value={field.value}
+                        onChange={(e) => updateField(section.id, field.key, e.target.value)}
+                        placeholder={field.placeholder}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Database Connection Test */}
+              {section.id === "database" && (
+                <div className="pt-4 border-t">
+                  <div className="flex items-center gap-4">
+                    <Button
+                      variant="outline"
+                      onClick={testDatabaseConnection}
+                      disabled={testingConnection}
+                      className="flex items-center gap-2 bg-transparent"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${testingConnection ? "animate-spin" : ""}`} />
+                      {testingConnection ? "Testing..." : "Test Connection"}
+                    </Button>
+
+                    {connectionStatus && (
+                      <Alert
+                        className={`flex-1 ${connectionStatus === "success" ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}
+                      >
+                        {connectionStatus === "success" ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4 text-red-600" />
+                        )}
+                        <AlertDescription
+                          className={connectionStatus === "success" ? "text-green-800" : "text-red-800"}
+                        >
+                          {connectionStatus === "success"
+                            ? "Database connection successful!"
+                            : "Database connection failed. Please check your settings."}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </div>
+                </div>
               )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">2. Create Storage Bucket</h3>
-            <ol className="list-decimal list-inside space-y-2">
-              <li>Go to the Supabase dashboard</li>
-              <li>Navigate to the Storage section</li>
-              <li>Click "New Bucket"</li>
-              <li>
-                Enter the name: <strong>project-documents</strong>
-              </li>
-              <li>Make sure "Private" is selected</li>
-              <li>Click "Create bucket"</li>
-            </ol>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <Button
-                variant="outline"
-                onClick={() => window.open("https://app.supabase.com/project/_/storage/buckets", "_blank")}
-              >
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Open Supabase Dashboard
-              </Button>
-              <Button onClick={checkBucketStatus} disabled={bucketStatus === "checking"}>
-                <HardDrive className="mr-2 h-4 w-4" />
-                {bucketStatus === "checking" ? "Checking..." : "Check Bucket Status"}
-              </Button>
-            </div>
-            {bucketStatus && (
-              <Alert variant={bucketStatus === "success" ? "default" : "destructive"}>
-                <AlertTitle className="flex items-center gap-2">
-                  {bucketStatus === "success" ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
-                  {bucketStatus === "success" ? "Success" : "Error"}
-                </AlertTitle>
-                <AlertDescription>{bucketMessage}</AlertDescription>
-              </Alert>
-            )}
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">3. Environment Variables</h3>
-            <div className="bg-muted p-4 rounded-md">
-              <p className="text-sm mb-2">Your current Supabase configuration:</p>
-              <pre className="text-sm overflow-x-auto">
-                {`NEXT_PUBLIC_SUPABASE_URL=${supabaseUrl}
-NEXT_PUBLIC_SUPABASE_ANON_KEY=${supabaseKey.substring(0, 10)}...`}
-              </pre>
-            </div>
-            <Alert>
-              <AlertTitle>Next.js Environment Variables</AlertTitle>
-              <AlertDescription>
-                For Next.js projects, use <code className="bg-muted px-1 rounded">NEXT_PUBLIC_</code> prefix instead of{" "}
-                <code className="bg-muted px-1 rounded">REACT_APP_</code> for client-side variables.
-              </AlertDescription>
-            </Alert>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Save Button */}
+      <div className="flex justify-end">
+        <Button onClick={saveConfiguration} disabled={saving} size="lg" className="flex items-center gap-2">
+          <Save className="w-4 h-4" />
+          {saving ? "Saving Configuration..." : "Save All Settings"}
+        </Button>
+      </div>
     </div>
   )
 }

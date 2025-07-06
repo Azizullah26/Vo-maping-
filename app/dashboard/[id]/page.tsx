@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Film, ArrowLeft } from "lucide-react"
+import { Film, ArrowLeft, Paintbrush, Home, Grid3X3, Building } from "lucide-react"
 import "@/styles/vue-futuristic-alain.css"
-import Link from "next/link"
 
 interface ProjectDocument {
   id: string
@@ -50,10 +49,12 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
     endDate: "30th December 2025",
     completion: 28 + (Number.parseInt(projectId) % 5) * 15,
     budget: `AED ${(Number.parseInt(projectId) * 1.5 + 8).toFixed(1)},000,000`,
-    company: "Al Ain Development",
+    company: "Elrace Contracting",
     managerCompany: "Eng. Mohammed",
     managerPolice: "Eng. Khalid Al Shamsi",
   })
+
+  const [selectedImage, setSelectedImage] = useState<{ url: string; title: string } | null>(null)
 
   // Add this style block
   const styleBlock = `
@@ -184,7 +185,7 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
         type: "JPG",
         size: "12.8 MB",
         date: "2023-11-28",
-        url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saad1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+        url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saad1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5.jpg",
         project: projectNameAr,
       },
     ]
@@ -203,28 +204,40 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
     }
   }, [chartData])
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedImage(null)
+      }
+    }
+
+    if (selectedImage) {
+      document.addEventListener("keydown", handleKeyDown)
+      return () => {
+        document.removeEventListener("keydown", handleKeyDown)
+      }
+    }
+  }, [selectedImage])
+
   return (
     <div className="min-h-screen bg-black/90 backdrop-blur-sm">
       {/* Background grid pattern */}
       <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-20 pointer-events-none z-0"></div>
 
       {/* Main content area */}
-      <div
-        className="h-[95%] overflow-y-auto overflow-x-hidden pr-2 no-scrollbar relative z-20 text-white mx-auto max-w-[800px] p-4"
-        style={{
-          maxHeight: "calc(100vh - 6rem)",
-          overflowY: "auto",
-        }}
-      >
+      <div className="min-h-screen overflow-x-hidden relative z-20 text-white mx-auto max-w-[800px] p-4 pb-24">
         {/* Breadcrumb navigation */}
         <div className="mb-6 flex items-center">
-          <Link href="/projects-details" className="text-cyan-400 hover:text-cyan-300 flex items-center">
+          <button
+            onClick={() => router.back()}
+            className="text-cyan-400 hover:text-cyan-300 flex items-center cursor-pointer transition-colors"
+          >
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Projects
-          </Link>
+          </button>
         </div>
 
-        <div className="flex flex-col p-4 space-y-6 w-full bg-slate-800/30 rounded-xl border border-cyan-500/10 shadow-inner shadow-cyan-900/20">
+        <div className="flex flex-col p-4 pb-8 space-y-6 w-full bg-slate-800/30 rounded-xl border border-cyan-500/10 shadow-inner shadow-cyan-900/20">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-cyan-400">
               {projectData.name}
@@ -246,7 +259,7 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
                     router.push("/al-ain/documents")
                   }
                 }}
-                className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
+                className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/50 hover:border-cyan-400/50 transition-all hover:scale-105 group relative overflow-hidden"
                 aria-label="View documents"
               >
                 <div className="text-cyan-400 mb-1 relative z-10">Docs</div>
@@ -267,7 +280,7 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
                     console.error("Navigation error:", error)
                   }
                 }}
-                className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
+                className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/50 hover:border-cyan-400/50 transition-all hover:scale-105 group relative overflow-hidden"
               >
                 {/* Add corner elements similar to the slider panel */}
                 <div className="absolute top-0 left-0 w-2 h-2 border-t-1 border-l-1 border-cyan-500 animate-pulse"></div>
@@ -278,7 +291,7 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
                 <div className="text-cyan-400 mb-1 relative z-10">Media</div>
                 <div className="relative z-10">
                   <div className="h-3 w-3 bg-cyan-400 rounded-sm animate-pulse"></div>
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-1 w-1 bg-white rounded-full animate-ping"></div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-1 w-1 bg-white rounded-full"></div>
                 </div>
               </button>
 
@@ -292,7 +305,7 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
                     console.error("Navigation error:", error)
                   }
                 }}
-                className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
+                className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/50 hover:border-cyan-400/50 transition-all hover:scale-105 group relative overflow-hidden"
               >
                 <div className="text-cyan-400 mb-1 relative z-10">3D</div>
                 <div className="relative z-10">
@@ -311,7 +324,7 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
                     console.error("Navigation error:", error)
                   }
                 }}
-                className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
+                className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/50 hover:border-cyan-400/50 transition-all hover:scale-105 group relative overflow-hidden"
               >
                 <div className="text-cyan-400 mb-1 relative z-10">Live</div>
                 <div className="h-2 w-2 bg-green-500 rounded-full animate-ping relative z-10"></div>
@@ -335,10 +348,28 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
                 <div className="space-y-2">
                   <div className="flex justify-between items-center group hover:bg-cyan-900/10 p-1 rounded-md transition-all">
                     <span className="text-xs text-slate-400 group-hover:text-cyan-300 transition-colors">
-                      Project ID:
+                      Project Name:
                     </span>
                     <span className="text-xs font-medium text-cyan-300 group-hover:text-white transition-colors">
-                      PRJ-{projectId}
+                      {projectData.name}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center group hover:bg-cyan-900/10 p-1 rounded-md transition-all">
+                    <span className="text-xs text-slate-400 group-hover:text-cyan-300 transition-colors">
+                      Work Order No:
+                    </span>
+                    <span className="text-xs font-medium text-cyan-300 group-hover:text-white transition-colors">
+                      WO-{projectId}-2025
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center group hover:bg-cyan-900/10 p-1 rounded-md transition-all">
+                    <span className="text-xs text-slate-400 group-hover:text-cyan-300 transition-colors">
+                      Duration:
+                    </span>
+                    <span className="text-xs font-medium text-cyan-300 group-hover:text-white transition-colors">
+                      198 days
                     </span>
                   </div>
 
@@ -369,6 +400,15 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
                     </span>
                   </div>
 
+                  <div className="flex justify-between items-center group hover:bg-cyan-900/10 p-1 rounded-md transition-all">
+                    <span className="text-xs text-slate-400 group-hover:text-cyan-300 transition-colors">
+                      Company Name:
+                    </span>
+                    <span className="text-xs font-medium text-blue-300 group-hover:text-blue-200 transition-colors">
+                      Elrace Contracting
+                    </span>
+                  </div>
+
                   <div className="h-2 w-full bg-slate-700/50 rounded-full my-3 overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded-full relative"
@@ -379,9 +419,20 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
                   </div>
 
                   <div className="flex justify-between items-center group hover:bg-cyan-900/10 p-1 rounded-md transition-all">
-                    <span className="text-xs text-slate-400 group-hover:text-cyan-300 transition-colors">Company:</span>
-                    <span className="text-xs font-medium text-blue-300 group-hover:text-blue-200 transition-colors">
-                      {projectData.company}
+                    <span className="text-xs text-slate-400 group-hover:text-cyan-300 transition-colors">
+                      Percentage:
+                    </span>
+                    <span className="text-xs font-medium text-green-300 group-hover:text-green-200 transition-colors">
+                      {projectData.completion}%
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center group hover:bg-cyan-900/10 p-1 rounded-md transition-all">
+                    <span className="text-xs text-slate-400 group-hover:text-cyan-300 transition-colors">
+                      Project Manager (Client):
+                    </span>
+                    <span className="text-xs font-medium text-indigo-300 group-hover:text-indigo-200 transition-colors">
+                      {projectData.managerPolice}
                     </span>
                   </div>
 
@@ -394,21 +445,155 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center group hover:bg-cyan-900/10 p-1 rounded-md transition-all">
-                    <span className="text-xs text-slate-400 group-hover:text-cyan-300 transition-colors">
-                      Project Manager (Police):
-                    </span>
-                    <span className="text-xs font-medium text-indigo-300 group-hover:text-indigo-200 transition-colors">
-                      {projectData.managerPolice}
-                    </span>
-                  </div>
-
                   <div className="flex justify-between pt-2 border-t border-cyan-900/30 mt-2 items-center group hover:bg-[#8B0000]/20 p-1 rounded-md transition-all bg-[#8B0000]/10">
                     <span className="text-xs text-white/80 group-hover:text-white transition-colors font-medium">
                       Total Cost:
                     </span>
                     <span className="text-xs font-bold text-white">{projectData.budget}</span>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Analytics Chart */}
+            <div>
+              <h3 className="text-sm uppercase text-slate-400 mb-3 sticky top-0 bg-slate-900/80 py-2 backdrop-blur-sm z-10">
+                Work Summary
+              </h3>
+              <div className="vue-card">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="text-cyan-300 font-medium">Project Progress</div>
+                  <div className="text-xs text-cyan-400">Last 7 Days</div>
+                </div>
+
+                <div className="flex flex-col space-y-3 mt-4">
+                  <button
+                    onClick={() => router.push(`/dashboard/${projectId}/painting`)}
+                    className="group flex items-center justify-between p-3 bg-gradient-to-r from-slate-800/40 to-slate-700/40 hover:from-slate-700/60 hover:to-slate-600/60 rounded-lg border border-slate-500/30 hover:border-slate-400/70 transition-all duration-300 overflow-hidden relative"
+                  >
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-400 flex items-center justify-center mr-3 shadow-lg shadow-cyan-500/20">
+                        <Paintbrush className="h-5 w-5 text-white" />
+                      </div>
+                      <span className="text-slate-300 group-hover:text-white font-medium transition-colors">
+                        Painting Work
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="h-1.5 w-16 bg-slate-700/70 rounded-full overflow-hidden mr-3">
+                        <div
+                          className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full"
+                          style={{ width: "75%" }}
+                        ></div>
+                      </div>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-slate-500 group-hover:text-slate-400 transition-transform group-hover:translate-x-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                    <div className="absolute bottom-0 left-0 h-0.5 w-full bg-gradient-to-r from-slate-500 via-slate-400 to-transparent"></div>
+                  </button>
+
+                  <button
+                    onClick={() => router.push(`/dashboard/${projectId}/ceiling`)}
+                    className="group flex items-center justify-between p-3 bg-gradient-to-r from-slate-800/40 to-slate-700/40 hover:from-slate-700/60 hover:to-slate-600/60 rounded-lg border border-slate-500/30 hover:border-slate-400/70 transition-all duration-300 overflow-hidden relative"
+                  >
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-400 flex items-center justify-center mr-3 shadow-lg shadow-purple-500/20">
+                        <Home className="h-5 w-5 text-white" />
+                      </div>
+                      <span className="text-slate-300 group-hover:text-white font-medium transition-colors">
+                        Ceiling Work
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="h-1.5 w-16 bg-slate-700/70 rounded-full overflow-hidden mr-3">
+                        <div
+                          className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full"
+                          style={{ width: "60%" }}
+                        ></div>
+                      </div>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-slate-500 group-hover:text-slate-400 transition-transform group-hover:translate-x-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                    <div className="absolute bottom-0 left-0 h-0.5 w-full bg-gradient-to-r from-slate-500 via-slate-400 to-transparent"></div>
+                  </button>
+
+                  <button
+                    onClick={() => router.push(`/dashboard/${projectId}/tiles`)}
+                    className="group flex items-center justify-between p-3 bg-gradient-to-r from-slate-800/40 to-slate-700/40 hover:from-slate-700/60 hover:to-slate-600/60 rounded-lg border border-slate-500/30 hover:border-slate-400/70 transition-all duration-300 overflow-hidden relative"
+                  >
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-400 flex items-center justify-center mr-3 shadow-lg shadow-emerald-500/20">
+                        <Grid3X3 className="h-5 w-5 text-white" />
+                      </div>
+                      <span className="text-slate-300 group-hover:text-white font-medium transition-colors">
+                        Tiles Work
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="h-1.5 w-16 bg-slate-700/70 rounded-full overflow-hidden mr-3">
+                        <div
+                          className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
+                          style={{ width: "45%" }}
+                        ></div>
+                      </div>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-slate-500 group-hover:text-slate-400 transition-transform group-hover:translate-x-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                    <div className="absolute bottom-0 left-0 h-0.5 w-full bg-gradient-to-r from-slate-500 via-slate-400 to-transparent"></div>
+                  </button>
+
+                  <button
+                    onClick={() => router.push(`/dashboard/${projectId}/partition`)}
+                    className="group flex items-center justify-between p-3 bg-gradient-to-r from-slate-800/40 to-slate-700/40 hover:from-slate-700/60 hover:to-slate-600/60 rounded-lg border border-slate-500/30 hover:border-slate-400/70 transition-all duration-300 overflow-hidden relative"
+                  >
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-400 flex items-center justify-center mr-3 shadow-lg shadow-amber-500/20">
+                        <Building className="h-5 w-5 text-white" />
+                      </div>
+                      <span className="text-slate-300 group-hover:text-white font-medium transition-colors">
+                        Partition Work
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="h-1.5 w-16 bg-slate-700/70 rounded-full overflow-hidden mr-3">
+                        <div
+                          className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full"
+                          style={{ width: "30%" }}
+                        ></div>
+                      </div>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-slate-500 group-hover:text-slate-400 transition-transform group-hover:translate-x-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                    <div className="absolute bottom-0 left-0 h-0.5 w-full bg-gradient-to-r from-slate-500 via-slate-400 to-transparent"></div>
+                  </button>
                 </div>
               </div>
             </div>
@@ -531,31 +716,62 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
 
                 {/* Photo slider */}
                 <div className="photo-slider h-full">
-                  <div className="flex-shrink-0 h-full w-48 relative mx-1">
+                  <div
+                    className="flex-shrink-0 h-full w-48 relative mx-1 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() =>
+                      setSelectedImage({ url: "/al-ain-oasis-cityscape.png", title: `${projectData.name} - View 1` })
+                    }
+                  >
                     <div className="absolute inset-0 bg-[url('/al-ain-oasis-cityscape.png')] bg-cover bg-center"></div>
                     <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
                       <div className="text-xs text-cyan-300">{projectData.name} - View 1</div>
                     </div>
                   </div>
-                  <div className="flex-shrink-0 h-full w-48 relative mx-1">
+                  <div
+                    className="flex-shrink-0 h-full w-48 relative mx-1 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() =>
+                      setSelectedImage({ url: "/al-ain-city-traffic.png", title: `${projectData.name} - View 2` })
+                    }
+                  >
                     <div className="absolute inset-0 bg-[url('/al-ain-city-traffic.png')] bg-cover bg-center"></div>
                     <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
                       <div className="text-xs text-cyan-300">{projectData.name} - View 2</div>
                     </div>
                   </div>
-                  <div className="flex-shrink-0 h-full w-48 relative mx-1">
+                  <div
+                    className="flex-shrink-0 h-full w-48 relative mx-1 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() =>
+                      setSelectedImage({
+                        url: "/al-ain-street-surveillance.png",
+                        title: `${projectData.name} - View 3`,
+                      })
+                    }
+                  >
                     <div className="absolute inset-0 bg-[url('/al-ain-street-surveillance.png')] bg-cover bg-center"></div>
                     <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
                       <div className="text-xs text-cyan-300">{projectData.name} - View 3</div>
                     </div>
                   </div>
-                  <div className="flex-shrink-0 h-full w-48 relative mx-1">
+                  <div
+                    className="flex-shrink-0 h-full w-48 relative mx-1 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() =>
+                      setSelectedImage({ url: "/al-ain-grand-entrance.png", title: `${projectData.name} - View 4` })
+                    }
+                  >
                     <div className="absolute inset-0 bg-[url('/al-ain-grand-entrance.png')] bg-cover bg-center"></div>
                     <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
                       <div className="text-xs text-cyan-300">{projectData.name} - View 4</div>
                     </div>
                   </div>
-                  <div className="flex-shrink-0 h-full w-48 relative mx-1">
+                  <div
+                    className="flex-shrink-0 h-full w-48 relative mx-1 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() =>
+                      setSelectedImage({
+                        url: "/al-ain-parking-lot-daytime.png",
+                        title: `${projectData.name} - View 5`,
+                      })
+                    }
+                  >
                     <div className="absolute inset-0 bg-[url('/al-ain-parking-lot-daytime.png')] bg-cover bg-center"></div>
                     <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
                       <div className="text-xs text-cyan-300">{projectData.name} - View 5</div>
@@ -563,13 +779,23 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
                   </div>
 
                   {/* Duplicate the first few images to make the loop seamless */}
-                  <div className="flex-shrink-0 h-full w-48 relative mx-1">
+                  <div
+                    className="flex-shrink-0 h-full w-48 relative mx-1 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() =>
+                      setSelectedImage({ url: "/al-ain-oasis-cityscape.png", title: `${projectData.name} - View 1` })
+                    }
+                  >
                     <div className="absolute inset-0 bg-[url('/al-ain-oasis-cityscape.png')] bg-cover bg-center"></div>
                     <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
                       <div className="text-xs text-cyan-300">{projectData.name} - View 1</div>
                     </div>
                   </div>
-                  <div className="flex-shrink-0 h-full w-48 relative mx-1">
+                  <div
+                    className="flex-shrink-0 h-full w-48 relative mx-1 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() =>
+                      setSelectedImage({ url: "/al-ain-city-traffic.png", title: `${projectData.name} - View 2` })
+                    }
+                  >
                     <div className="absolute inset-0 bg-[url('/al-ain-city-traffic.png')] bg-cover bg-center"></div>
                     <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
                       <div className="text-xs text-cyan-300">{projectData.name} - View 2</div>
@@ -583,34 +809,6 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
                   <div className="w-1.5 h-1.5 bg-cyan-400/50 rounded-full"></div>
                   <div className="w-1.5 h-1.5 bg-cyan-400/50 rounded-full"></div>
                   <div className="w-1.5 h-1.5 bg-cyan-400/50 rounded-full"></div>
-                  <div className="w-1.5 h-1.5 bg-cyan-400/50 rounded-full"></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Analytics Chart */}
-            <div>
-              <h3 className="text-sm uppercase text-slate-400 mb-3 sticky top-0 bg-slate-900/80 py-2 backdrop-blur-sm z-10">
-                Analytics
-              </h3>
-              <div className="vue-card">
-                <div className="flex justify-between items-center mb-3">
-                  <div className="text-cyan-300 font-medium">Project Progress</div>
-                  <div className="text-xs text-cyan-400">Last 7 Days</div>
-                </div>
-                <div className="flex items-end h-32 space-x-2">
-                  {chartData.map((value, index) => (
-                    <div key={index} className="flex-1 flex flex-col items-center">
-                      <div
-                        className="w-full bg-gradient-to-t from-cyan-500 to-cyan-400 rounded-sm vue-bar-animate"
-                        style={{
-                          height: `${value}%`,
-                          animationDelay: `${index * 0.1}s`,
-                        }}
-                      ></div>
-                      <div className="text-xs text-slate-500 mt-1">D{index + 1}</div>
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>
@@ -654,6 +852,43 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
             </div>
           </div>
         </div>
+        {/* Image Popup Modal */}
+        {selectedImage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+            <div className="relative max-w-4xl max-h-[90vh] w-full mx-4">
+              {/* Close button */}
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute top-4 right-4 z-10 w-10 h-10 bg-slate-900/80 hover:bg-slate-800 rounded-full flex items-center justify-center text-cyan-400 hover:text-white transition-all border border-cyan-500/30 hover:border-cyan-400"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              {/* Image container */}
+              <div className="relative bg-slate-900/50 rounded-lg border border-cyan-500/30 overflow-hidden">
+                <img
+                  src={selectedImage.url || "/placeholder.svg"}
+                  alt={selectedImage.title}
+                  className="w-full h-auto max-h-[80vh] object-contain"
+                />
+
+                {/* Image title overlay */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                  <h3 className="text-cyan-300 font-medium">{selectedImage.title}</h3>
+                  <p className="text-slate-400 text-sm">Click outside or press ESC to close</p>
+                </div>
+
+                {/* Futuristic corner elements */}
+                <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-cyan-500/50"></div>
+                <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-cyan-500/50"></div>
+                <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-cyan-500/50"></div>
+                <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-cyan-500/50"></div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

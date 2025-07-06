@@ -1,0 +1,13 @@
+.property-default {
+  height: 273px;
+  position: relative;
+  width: 186px;
+}
+
+.property-default .vector {
+  height: 275px;
+  left: -2px;
+  position: absolute;
+  top: -2px;
+  width: 190px;
+}

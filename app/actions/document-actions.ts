@@ -1,36 +1,36 @@
 "use server"
-import { uploadToBlob, deleteFromBlob } from "@/lib/blob-client"
 import { revalidatePath } from "next/cache"
-
-// Types
-export interface Document {
-  id: string
-  name: string
-  description: string
-  file_url: string
-  file_type: string
-  file_size: number
-  project_id: string
-  created_at: string
-}
-
-// Get Supabase client from our utility
 import { getSupabaseAdminClient } from "@/lib/supabase-client"
 
-// Function to get Supabase client
+// Update Document interface to match project_documents table
+export interface Document {
+  id: string
+  project_name: string
+  file_name: string
+  file_url: string
+  uploaded_at: string
+}
+
+// Function to get Supabase client (using admin client for server actions)
 function getSupabaseClient() {
   return getSupabaseAdminClient()
 }
 
-// Create document table if it doesn't exist
+// Create document table if it doesn't exist (now project_documents)
 export async function ensureDocumentTable() {
   const supabase = getSupabaseClient()
+  if (!supabase) return { success: false, error: "Supabase client not initialized" }
 
   // Using RPC to create table if it doesn't exist
-  const { error } = await supabase.rpc("create_documents_table_if_not_exists")
+  // This RPC function needs to be defined in Supabase if not already.
+  // For now, we'll assume it executes the SQL from init-documents-table API.
+  // A more direct approach would be to run the SQL here if this is the primary init point.
+  // Given the user's previous `init-documents-table` API, I'll keep this as a placeholder
+  // and rely on that API for actual table creation.
+  const { error } = await supabase.rpc("create_project_documents_table_if_not_exists") // Assuming a new RPC for this
 
   if (error) {
-    console.error("Error creating documents table:", error)
+    console.error("Error creating project_documents table:", error)
     return { success: false, error: error.message }
   }
 
@@ -40,51 +40,74 @@ export async function ensureDocumentTable() {
 // Upload a document
 export async function uploadDocument(
   file: File,
-  projectId: string,
-  description = "",
+  projectName: string, // Changed from projectId to projectName
 ): Promise<{ success: boolean; id?: string; url?: string; error?: string }> {
   try {
-    // 1. Upload file to Vercel Blob
-    const uploadResult = await uploadToBlob(file, `projects/${projectId}`)
+    // 1. Upload file to Vercel Blob (or Supabase Storage directly if preferred)
+    // The user's plan explicitly states "Documents are stored in Supabase storage"
+    // and provides a React component that uses `supabase.storage.from("project-documents").upload`.
+    // So, I will modify this to use Supabase Storage directly, bypassing Vercel Blob for documents.
 
-    if (!uploadResult.success || !uploadResult.url) {
-      return { success: false, error: uploadResult.error || "Failed to upload file" }
+    const supabase = getSupabaseClient()
+    if (!supabase) return { success: false, error: "Supabase client not initialized" }
+
+    // Generate unique filename and path within the project-documents bucket
+    const fileName = `${Date.now()}_${file.name.replace(/\s+/g, "-")}`
+    const filePath = `projects/${projectName}/${fileName}` // Organize by project name
+
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = new Uint8Array(arrayBuffer)
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("project-documents") // Use the specified bucket name
+      .upload(filePath, buffer, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type,
+      })
+
+    if (uploadError) {
+      console.error("Error uploading file to Supabase Storage:", uploadError)
+      return { success: false, error: uploadError.message || "Failed to upload file to Supabase Storage" }
     }
 
-    // 2. Store document metadata in Supabase database
-    const supabase = getSupabaseClient()
+    const { data: publicUrlData } = supabase.storage.from("project-documents").getPublicUrl(filePath)
+    if (!publicUrlData?.publicUrl) {
+      return { success: false, error: "Failed to get public URL for the uploaded file" }
+    }
+    const fileUrl = publicUrlData.publicUrl
 
+    // 2. Store document metadata in Supabase database (project_documents table)
     const { data, error } = await supabase
-      .from("documents")
+      .from("project_documents") // Use the new table name
       .insert([
         {
-          name: file.name,
-          description,
-          file_url: uploadResult.url,
-          file_type: file.type,
-          file_size: file.size,
-          project_id: projectId,
+          project_name: projectName, // Use project_name
+          file_name: file.name, // Use file.name for file_name
+          file_url: fileUrl,
+          uploaded_at: new Date().toISOString(), // Set uploaded_at
         },
       ])
       .select("id")
 
     if (error || !data || data.length === 0) {
-      // If database insert fails, try to delete the uploaded file
-      await deleteFromBlob(uploadResult.url)
+      // If database insert fails, try to delete the uploaded file from storage
+      await supabase.storage.from("project-documents").remove([filePath])
       return { success: false, error: error?.message || "Failed to store document metadata" }
     }
 
-    // Revalidate paths
-    revalidatePath(`/projects/${projectId}`)
-    revalidatePath("/admin/documents")
+    // Revalidate paths (adjust as needed based on your routing)
+    revalidatePath(`/al-ain/admin`) // Revalidate admin page
+    revalidatePath(`/al-ain/documents`) // Revalidate general documents page
+    revalidatePath(`/al-ain/admin/projects`) // Revalidate projects list
 
     return {
       success: true,
       id: data[0].id,
-      url: uploadResult.url,
+      url: fileUrl,
     }
   } catch (error) {
-    console.error("Error in uploadDocument:", error)
+    console.error("Error in uploadDocument server action:", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error uploading document",
@@ -93,31 +116,40 @@ export async function uploadDocument(
 }
 
 // Get documents for a project
-export async function getProjectDocuments(projectId: string): Promise<Document[]> {
+export async function getProjectDocuments(projectName: string): Promise<Document[]> {
   const supabase = getSupabaseClient()
+  if (!supabase) return []
 
   const { data, error } = await supabase
-    .from("documents")
+    .from("project_documents") // Use the new table name
     .select("*")
-    .eq("project_id", projectId)
-    .order("created_at", { ascending: false })
+    .eq("project_name", projectName) // Query by project_name
+    .order("uploaded_at", { ascending: false }) // Order by uploaded_at
 
   if (error || !data) {
-    console.error(`Failed to get documents for project ${projectId}:`, error)
+    console.error(`Failed to get documents for project ${projectName}:`, error)
     return []
   }
 
-  return data
+  // Map to the Document interface
+  return data.map((doc) => ({
+    id: doc.id,
+    project_name: doc.project_name,
+    file_name: doc.file_name,
+    file_url: doc.file_url,
+    uploaded_at: doc.uploaded_at,
+  }))
 }
 
 // Delete a document
 export async function deleteDocument(id: string): Promise<{ success: boolean; error?: string }> {
   const supabase = getSupabaseClient()
+  if (!supabase) return { success: false, error: "Supabase client not initialized" }
 
-  // First, get the document to find the file URL
+  // First, get the document to find the file URL and project_name
   const { data: document, error: getError } = await supabase
-    .from("documents")
-    .select("file_url, project_id")
+    .from("project_documents") // Use the new table name
+    .select("file_url, project_name")
     .eq("id", id)
     .single()
 
@@ -126,28 +158,46 @@ export async function deleteDocument(id: string): Promise<{ success: boolean; er
   }
 
   const fileUrl = document.file_url
-  const projectId = document.project_id
+  const projectName = document.project_name
 
   // Delete from database
-  const { error: deleteError } = await supabase.from("documents").delete().eq("id", id)
+  const { error: deleteError } = await supabase.from("project_documents").delete().eq("id", id) // Use the new table name
 
   if (deleteError) {
     return { success: false, error: deleteError.message || "Failed to delete document from database" }
   }
 
-  // Delete from Blob storage
-  const blobResult = await deleteFromBlob(fileUrl)
+  // Extract file path from URL for Supabase Storage deletion
+  let filePathToDelete: string | null = null
+  try {
+    const url = new URL(fileUrl)
+    // Assuming the path is like /storage/v1/object/public/project-documents/projects/{projectName}/{fileName}
+    // We need to extract projects/{projectName}/{fileName}
+    const pathSegments = url.pathname.split("/")
+    const bucketIndex = pathSegments.indexOf("project-documents")
+    if (bucketIndex !== -1 && pathSegments.length > bucketIndex + 1) {
+      filePathToDelete = pathSegments.slice(bucketIndex + 1).join("/")
+    }
+  } catch (e) {
+    console.warn("Could not parse file URL for deletion:", fileUrl, e)
+  }
 
-  if (!blobResult.success) {
-    console.error("Failed to delete file from Blob storage:", blobResult.error)
-    // We continue even if blob deletion fails
+  if (filePathToDelete) {
+    const { error: storageError } = await supabase.storage.from("project-documents").remove([filePathToDelete])
+    if (storageError) {
+      console.error("Failed to delete file from Supabase storage:", storageError)
+      // We continue even if storage deletion fails, as DB record is gone
+    }
+  } else {
+    console.warn("Could not determine file path for storage deletion from URL:", fileUrl)
   }
 
   // Revalidate paths
-  if (projectId) {
-    revalidatePath(`/projects/${projectId}`)
+  if (projectName) {
+    revalidatePath(`/al-ain/admin`)
+    revalidatePath(`/al-ain/documents`)
+    revalidatePath(`/al-ain/admin/projects`)
   }
-  revalidatePath("/admin/documents")
 
   return { success: true }
 }

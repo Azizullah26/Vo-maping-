@@ -1,33 +1,65 @@
 "use client"
 
-import { Sun } from "lucide-react"
+import type React from "react"
+import { useRef, useEffect } from "react"
+import * as ol from "ol"
+import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer"
+import { OSM, Vector as VectorSource } from "ol/source"
+import { Point } from "ol/geom"
+import { fromLonLat } from "ol/proj"
+import "ol/ol.css"
 
-export function MapWeather() {
-  // Get current date and time
-  const now = new Date()
-  const day = now.toLocaleDateString("en-US", { weekday: "short" })
-  const date = now.getDate()
-  const month = now.toLocaleDateString("en-US", { month: "short" })
-  const time = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
-
-  return (
-    <div className="flex flex-col items-start">
-      <div className="text-white/80 text-sm">
-        {day}
-        <span className="ml-2">
-          {date} {month}
-        </span>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-4xl font-bold text-white">33°C</span>
-        <div className="flex flex-col">
-          <div className="flex items-center gap-1">
-            <Sun className="h-4 w-4 text-yellow-400" />
-            <span className="text-white/80 text-xs">Clear sky</span>
-          </div>
-          <span className="text-white/60 text-xs">{time}</span>
-        </div>
-      </div>
-    </div>
-  )
+interface MapWeatherProps {
+  latitude: number
+  longitude: number
 }
+
+const MapWeather: React.FC<MapWeatherProps> = ({ latitude, longitude }) => {
+  const mapRef = useRef<HTMLDivElement>(null)
+  const map = useRef<ol.Map | null>(null)
+
+  useEffect(() => {
+    if (mapRef.current) {
+      const initialCoordinates = fromLonLat([longitude, latitude])
+
+      map.current = new ol.Map({
+        target: mapRef.current,
+        layers: [
+          new TileLayer({
+            source: new OSM(),
+          }),
+        ],
+        view: new ol.View({
+          center: initialCoordinates,
+          zoom: 10,
+        }),
+      })
+
+      // Add a marker
+      const marker = new ol.Feature({
+        geometry: new Point(initialCoordinates),
+      })
+
+      const vectorSource = new VectorSource({
+        features: [marker],
+      })
+
+      const markerLayer = new VectorLayer({
+        source: vectorSource,
+      })
+
+      map.current.addLayer(markerLayer)
+    }
+
+    return () => {
+      if (map.current) {
+        map.current.dispose()
+      }
+    }
+  }, [latitude, longitude])
+
+  return <div ref={mapRef} style={{ width: "100%", height: "400px" }}></div>
+}
+
+export { MapWeather }
+export default MapWeather

@@ -1,14 +1,6 @@
 "use server"
-import { deleteCache } from "@/lib/redis-client"
 import { revalidatePath } from "next/cache"
 import { createClient } from "@supabase/supabase-js"
-
-// Cache keys
-const PROJECT_LIST_CACHE_KEY = "project:list"
-const PROJECT_CACHE_PREFIX = "project:"
-
-// Cache expiration in seconds
-const CACHE_EXPIRATION = 60 * 5 // 5 minutes
 
 // Types
 export interface Project {
@@ -227,13 +219,6 @@ export async function createProject(
       return { success: false, error: error?.message || "Failed to create project" }
     }
 
-    // Invalidate cache
-    try {
-      await deleteCache(PROJECT_LIST_CACHE_KEY)
-    } catch (e) {
-      console.error("Error clearing cache:", e)
-    }
-
     // Revalidate paths
     try {
       revalidatePath("/projects")
@@ -285,14 +270,6 @@ export async function updateProject(
       return { success: false, error: error.message || "Failed to update project" }
     }
 
-    // Invalidate cache
-    try {
-      await deleteCache(PROJECT_LIST_CACHE_KEY)
-      await deleteCache(`${PROJECT_CACHE_PREFIX}${id}`)
-    } catch (e) {
-      console.error("Error clearing cache:", e)
-    }
-
     // Revalidate paths
     try {
       revalidatePath("/projects")
@@ -328,14 +305,6 @@ export async function deleteProject(id: string): Promise<{ success: boolean; err
 
     if (error) {
       return { success: false, error: error.message || "Failed to delete project" }
-    }
-
-    // Invalidate cache
-    try {
-      await deleteCache(PROJECT_LIST_CACHE_KEY)
-      await deleteCache(`${PROJECT_CACHE_PREFIX}${id}`)
-    } catch (e) {
-      console.error("Error clearing cache:", e)
     }
 
     // Revalidate paths

@@ -2,21 +2,14 @@
 
 import React from "react"
 import { useFrame } from "@react-three/fiber"
-import { useState, Suspense, useEffect, useRef } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import {
-  ArrowLeft,
-  CuboidIcon as Cube,
-  Download,
-  Maximize2,
-  RotateCcw,
-  Search,
-  AlertCircle,
-  ImageIcon,
-} from "lucide-react"
-import { Canvas } from "@react-three/fiber"
-import { OrbitControls, useGLTF, Environment, Html } from "@react-three/drei"
+import { ArrowLeft, CuboidIcon as Cube, Maximize2, RotateCcw, Search, AlertCircle, ImageIcon } from "lucide-react"
+import { useGLTF, Html } from "@react-three/drei"
 import type { Group } from "three"
+import dynamic from "next/dynamic"
+import { Button } from "@/components/ui/button"
+import { Suspense } from "react"
 
 // Custom Error Boundary component
 class ErrorBoundary extends React.Component<
@@ -89,9 +82,10 @@ const models = {
   "2d-view": [
     {
       id: 1,
-      name: "Detailed Floor Plan",
-      thumbnail: "https://templacity.com/wp-content/uploads/2025/03/2d-to-3d-floorplan-scaled.jpg",
-      url: "https://templacity.com/wp-content/uploads/2025/03/2d-to-3d-floorplan-scaled.jpg",
+      name: "RoomSketcher Floor Plan",
+      thumbnail:
+        "https://wpmedia.roomsketcher.com/content/uploads/2021/12/09125223/RoomSketcher-Sample-House-Plan-800x600-1-768x716.jpg",
+      url: "https://wpmedia.roomsketcher.com/content/uploads/2021/12/09125223/RoomSketcher-Sample-House-Plan-800x600-1-768x716.jpg",
       type: "image",
     },
     {
@@ -221,12 +215,27 @@ function ModelFallback() {
   )
 }
 
+// Dynamically import the 3D component to avoid SSR issues
+const AlAinTerrainViewer = dynamic(() => import("@/components/AlAinTerrainViewer"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-screen flex items-center justify-center bg-gray-900">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mb-4"></div>
+        <p className="text-white text-lg">Loading 3D Terrain...</p>
+      </div>
+    </div>
+  ),
+})
+
 export default function ThreeDPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("buildings")
   const [selectedModel, setSelectedModel] = useState<string | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [modelLoadError, setModelLoadError] = useState<string | null>(null)
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false)
+  const [imageRotation, setImageRotation] = useState(0)
 
   // Toggle fullscreen mode
   const toggleFullscreen = () => {
@@ -270,17 +279,45 @@ export default function ThreeDPage() {
   useEffect(() => {
     if (!selectedModel) {
       setActiveTab("2d-view")
-      setSelectedModel("https://templacity.com/wp-content/uploads/2025/03/2d-to-3d-floorplan-scaled.jpg")
+      setSelectedModel(
+        "https://wpmedia.roomsketcher.com/content/uploads/2021/12/09125223/RoomSketcher-Sample-House-Plan-800x600-1-768x716.jpg",
+      )
     }
+    // Reset rotation when model changes
+    setImageRotation(0)
   }, [selectedModel])
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white pt-24">
-      {/* Header */}
-      <div
-        className="bg-slate-800 p-4 flex items-center justify-between border-b border-cyan-500/30 mx-4 rounded-lg shadow-lg"
-        style={{ marginTop: "30px" }}
+    <div className="relative w-full h-screen bg-gray-900">
+      {/* Back Button */}
+      <div className="absolute top-4 left-4 z-50">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.back()}
+          className="text-white hover:bg-black/50 bg-black/30 backdrop-blur-sm"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Al Ain
+        </Button>
+      </div>
+
+      {/* 3D Terrain Viewer */}
+      <Suspense
+        fallback={
+          <div className="w-full h-screen flex items-center justify-center bg-gray-900">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mb-4"></div>
+              <p className="text-white text-lg">Loading 3D Terrain...</p>
+            </div>
+          </div>
+        }
       >
+        <AlAinTerrainViewer />
+      </Suspense>
+
+      {/* Header */}
+      <div className="bg-slate-800 p-3 sm:p-4 md:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 md:gap-0 border-b border-cyan-500/30 mx-2 sm:mx-4 md:mx-6 lg:mx-8 rounded-lg shadow-lg">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
@@ -290,13 +327,30 @@ export default function ThreeDPage() {
           </button>
           <h1 className="text-xl font-bold text-cyan-400">3D Models</h1>
         </div>
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search models..."
-            className="bg-slate-700 border border-slate-600 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-cyan-500 w-64"
-          />
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+        <div className="relative w-full sm:w-auto">
+          <div
+            className={`relative transition-all duration-300 ease-in-out ${isSearchExpanded ? "w-full sm:w-48 md:w-64 lg:w-72" : "w-10"}`}
+          >
+            <input
+              type="text"
+              placeholder={isSearchExpanded ? "Search models..." : ""}
+              className={`bg-slate-700 border border-slate-600 rounded-full py-2 text-sm focus:outline-none focus:border-cyan-500 transition-all duration-300 ease-in-out ${
+                isSearchExpanded ? "pl-10 pr-4 w-full opacity-100" : "pl-2 pr-2 w-10 opacity-0 cursor-pointer"
+              }`}
+              onClick={() => !isSearchExpanded && setIsSearchExpanded(true)}
+              onBlur={(e) => {
+                if (!e.target.value) {
+                  setIsSearchExpanded(false)
+                }
+              }}
+            />
+            <Search
+              className={`absolute top-2.5 h-4 w-4 text-slate-400 transition-all duration-300 cursor-pointer ${
+                isSearchExpanded ? "left-3" : "left-3"
+              }`}
+              onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+            />
+          </div>
         </div>
       </div>
 
@@ -311,73 +365,39 @@ export default function ThreeDPage() {
               {selectedModelData?.name || "Viewer"}
             </h2>
             <div className="flex gap-2">
-              <button className="p-1.5 rounded bg-slate-700 hover:bg-slate-600 transition-colors">
+              <button
+                className="p-1.5 rounded bg-slate-700 hover:bg-slate-600 transition-colors"
+                onClick={() => {
+                  if (isImageModel) {
+                    // For images, rotate by 90 degrees
+                    setImageRotation((prev) => prev + 90)
+                  } else {
+                    // For 3D models, reset camera position
+                    setSelectedModel(selectedModel)
+                  }
+                }}
+                title={isImageModel ? "Rotate Image" : "Reset Model"}
+              >
                 <RotateCcw className="h-4 w-4 text-cyan-400" />
               </button>
               <button
                 className="p-1.5 rounded bg-slate-700 hover:bg-slate-600 transition-colors"
                 onClick={toggleFullscreen}
+                title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
               >
                 <Maximize2 className="h-4 w-4 text-cyan-400" />
               </button>
-              {selectedModel && (
-                <button className="p-1.5 rounded bg-slate-700 hover:bg-slate-600 transition-colors">
-                  <Download className="h-4 w-4 text-cyan-400" />
-                </button>
-              )}
             </div>
           </div>
           <div className="h-[400px] relative">
-            {selectedModel ? (
-              isSketchfabModel ? (
-                <div className="w-full h-full">
-                  <iframe
-                    className="w-full h-full"
-                    allowFullScreen
-                    mozallowfullscreen="true"
-                    webkitallowfullscreen="true"
-                    allow="autoplay; fullscreen; xr-spatial-tracking"
-                    xr-spatial-tracking="true"
-                    execution-while-out-of-viewport="true"
-                    execution-while-not-rendered="true"
-                    web-share="true"
-                    src={selectedModel}
-                  ></iframe>
-                </div>
-              ) : isImageModel ? (
-                <div className="w-full h-full flex items-center justify-center bg-slate-900 overflow-auto">
-                  <img
-                    src={selectedModel || "/placeholder.svg"}
-                    alt={selectedModelData?.name || "2D View"}
-                    className="max-w-full max-h-full object-contain"
-                    style={{ cursor: "zoom-in" }}
-                    onClick={() => toggleFullscreen()}
-                  />
-                </div>
-              ) : (
-                <div className="w-full h-full">
-                  <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
-                    <ambientLight intensity={0.7} />
-                    <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} />
-                    <directionalLight position={[-5, 5, -5]} intensity={0.5} />
-                    <Suspense fallback={<ModelFallback />}>
-                      <ErrorBoundary fallback={<ModelFallback />}>
-                        <Model url={selectedModel} />
-                      </ErrorBoundary>
-                    </Suspense>
-                    <OrbitControls enableZoom={true} />
-                    <Environment preset="city" />
-                  </Canvas>
-                </div>
-              )
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-slate-800">
-                <div className="bg-slate-800/80 backdrop-blur-sm p-4 rounded-lg border border-cyan-500/30 text-center w-64">
-                  <Cube className="h-8 w-8 text-cyan-400 mx-auto mb-2" />
-                  <p className="text-white text-sm">Select a model or image from the library to view it here</p>
-                </div>
-              </div>
-            )}
+            <iframe
+              width="100%"
+              height="100%"
+              src="https://gallery.roomsketcher.com/360/?gid=23038496&play=0&logo=1&title=1&toolbar=1"
+              frameBorder="0"
+              allowFullScreen
+              className="w-full h-full"
+            ></iframe>
           </div>
         </div>
         {selectedModelData && (

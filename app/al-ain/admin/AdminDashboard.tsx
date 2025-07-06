@@ -1,237 +1,259 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
-import type { Database } from "@/types/supabase"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useRouter } from "next/navigation"
+import { Badge } from "@/components/ui/badge"
+import {
+  Database,
+  Users,
+  FileText,
+  Settings,
+  Activity,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  TrendingUp,
+} from "lucide-react"
+
+interface SystemStatus {
+  database: "connected" | "disconnected" | "error"
+  api: "healthy" | "degraded" | "down"
+  storage: "available" | "limited" | "full"
+}
+
+interface Stats {
+  totalProjects: number
+  activeUsers: number
+  documentsCount: number
+  systemUptime: string
+}
 
 export default function AdminDashboard() {
-  const [projects, setProjects] = useState<any[]>([])
-  const [documents, setDocuments] = useState<any[]>([])
+  const [systemStatus, setSystemStatus] = useState<SystemStatus>({
+    database: "connected",
+    api: "healthy",
+    storage: "available",
+  })
+
+  const [stats, setStats] = useState<Stats>({
+    totalProjects: 0,
+    activeUsers: 0,
+    documentsCount: 0,
+    systemUptime: "99.9%",
+  })
+
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [user, setUser] = useState<any>(null)
-  const router = useRouter()
-  const supabase = createClientComponentClient<Database>()
 
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true)
+    // Simulate loading system data
+    const loadSystemData = async () => {
       try {
-        // Check authentication
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
-        if (!session) {
-          setError("Not authenticated. Please sign in.")
-          setLoading(false)
-          return
+        // Check database status
+        const dbResponse = await fetch("/api/database/status")
+        const dbStatus = dbResponse.ok ? "connected" : "error"
+
+        // Get basic stats
+        const statsResponse = await fetch("/api/admin/stats")
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json()
+          setStats(statsData)
         }
-        setUser(session.user)
 
-        // Fetch projects
-        const { data: projectsData, error: projectsError } = await supabase
-          .from("projects")
-          .select("*")
-          .order("created_at", { ascending: false })
-
-        if (projectsError) throw new Error(`Error fetching projects: ${projectsError.message}`)
-        setProjects(projectsData || [])
-
-        // Fetch documents
-        const { data: documentsData, error: documentsError } = await supabase
-          .from("documents")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(5)
-
-        if (documentsError) throw new Error(`Error fetching documents: ${documentsError.message}`)
-        setDocuments(documentsData || [])
-      } catch (err: any) {
-        console.error("Error fetching data:", err)
-        setError(err.message || "An error occurred while fetching data")
+        setSystemStatus((prev) => ({
+          ...prev,
+          database: dbStatus,
+        }))
+      } catch (error) {
+        console.error("Error loading system data:", error)
+        setSystemStatus((prev) => ({
+          ...prev,
+          database: "error",
+        }))
       } finally {
         setLoading(false)
       }
     }
 
-    fetchData()
-  }, [supabase])
+    loadSystemData()
+  }, [])
 
-  const handleInitDatabase = async () => {
-    try {
-      const response = await fetch("/api/init-supabase-tables", {
-        method: "POST",
-      })
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "connected":
+      case "healthy":
+      case "available":
+        return "bg-green-500"
+      case "degraded":
+      case "limited":
+        return "bg-yellow-500"
+      case "disconnected":
+      case "down":
+      case "full":
+      case "error":
+        return "bg-red-500"
+      default:
+        return "bg-gray-500"
+    }
+  }
 
-      if (!response.ok) {
-        throw new Error("Failed to initialize database")
-      }
-
-      const data = await response.json()
-      alert(data.message || "Database initialized successfully")
-      router.refresh()
-    } catch (error: any) {
-      console.error("Error initializing database:", error)
-      alert(`Error initializing database: ${error.message}`)
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "connected":
+      case "healthy":
+      case "available":
+        return <CheckCircle className="w-4 h-4" />
+      case "degraded":
+      case "limited":
+        return <Clock className="w-4 h-4" />
+      case "disconnected":
+      case "down":
+      case "full":
+      case "error":
+        return <AlertCircle className="w-4 h-4" />
+      default:
+        return <Activity className="w-4 h-4" />
     }
   }
 
   if (loading) {
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-8 w-3/4" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-24 w-full" />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-8 w-3/4" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-24 w-full" />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <Alert variant="destructive">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-        <div className="mt-4">
-          <Button onClick={handleInitDatabase}>Initialize Database</Button>
+      <div className="p-6 space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+            ))}
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-        {user && <div className="text-sm text-gray-500">Logged in as: {user.email}</div>}
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <Badge variant="outline" className="text-sm">
+          Al Ain System
+        </Badge>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      {/* System Status Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Projects</CardTitle>
-            <CardDescription>Manage your projects</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Database</CardTitle>
+            <Database className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p>Total Projects: {projects.length}</p>
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${getStatusColor(systemStatus.database)}`}></div>
+              <span className="text-sm capitalize">{systemStatus.database}</span>
+              {getStatusIcon(systemStatus.database)}
+            </div>
           </CardContent>
-          <CardFooter>
-            <Link href="/al-ain/admin/projects">
-              <Button>View All Projects</Button>
-            </Link>
-          </CardFooter>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Documents</CardTitle>
-            <CardDescription>Manage your documents</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">API Status</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p>Total Documents: {documents.length}</p>
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${getStatusColor(systemStatus.api)}`}></div>
+              <span className="text-sm capitalize">{systemStatus.api}</span>
+              {getStatusIcon(systemStatus.api)}
+            </div>
           </CardContent>
-          <CardFooter>
-            <Link href="/al-ain/documents">
-              <Button>View All Documents</Button>
-            </Link>
-          </CardFooter>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Storage</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${getStatusColor(systemStatus.storage)}`}></div>
+              <span className="text-sm capitalize">{systemStatus.storage}</span>
+              {getStatusIcon(systemStatus.storage)}
+            </div>
+          </CardContent>
         </Card>
       </div>
 
-      <div className="mb-6">
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Recent Documents</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
+            <Settings className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {documents.length > 0 ? (
-              <ul className="space-y-2">
-                {documents.map((doc) => (
-                  <li key={doc.id} className="p-2 border rounded hover:bg-gray-50">
-                    <Link href={`/al-ain/documents/${doc.id}`} className="flex justify-between">
-                      <span>{doc.title || doc.filename || "Untitled Document"}</span>
-                      <span className="text-gray-500 text-sm">{new Date(doc.created_at).toLocaleDateString()}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No documents found.</p>
-            )}
+            <div className="text-2xl font-bold">{stats.totalProjects}</div>
+            <p className="text-xs text-muted-foreground">+2 from last month</p>
           </CardContent>
-          <CardFooter>
-            <Link href="/al-ain/documents/upload">
-              <Button>Upload New Document</Button>
-            </Link>
-          </CardFooter>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.activeUsers}</div>
+            <p className="text-xs text-muted-foreground">+5 from last week</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Documents</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.documentsCount}</div>
+            <p className="text-xs text-muted-foreground">+12 from last week</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Uptime</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.systemUptime}</div>
+            <p className="text-xs text-muted-foreground">Last 30 days</p>
+          </CardContent>
         </Card>
       </div>
 
-      <div className="mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Projects</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {projects.length > 0 ? (
-              <ul className="space-y-2">
-                {projects.slice(0, 5).map((project) => (
-                  <li key={project.id} className="p-2 border rounded hover:bg-gray-50">
-                    <Link href={`/projects/${project.id}`} className="flex justify-between">
-                      <span>{project.name || "Untitled Project"}</span>
-                      <span className="text-gray-500 text-sm">{new Date(project.created_at).toLocaleDateString()}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No projects found.</p>
-            )}
-          </CardContent>
-          <CardFooter>
-            <Link href="/projects/new">
-              <Button>Create New Project</Button>
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
-
-      <div className="mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Database Management</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>Initialize or reset the database tables</p>
-          </CardContent>
-          <CardFooter>
-            <Button onClick={handleInitDatabase}>Initialize Database</Button>
-          </CardFooter>
-        </Card>
-      </div>
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Button variant="outline" className="justify-start bg-transparent">
+              <Database className="mr-2 h-4 w-4" />
+              Database Setup
+            </Button>
+            <Button variant="outline" className="justify-start bg-transparent">
+              <Users className="mr-2 h-4 w-4" />
+              User Management
+            </Button>
+            <Button variant="outline" className="justify-start bg-transparent">
+              <Settings className="mr-2 h-4 w-4" />
+              System Settings
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

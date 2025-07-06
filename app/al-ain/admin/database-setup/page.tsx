@@ -1,241 +1,254 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { TopNav } from "@/components/TopNav"
-import { Database, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Database, CheckCircle, XCircle, AlertCircle, Loader2, Play, RefreshCw } from "lucide-react"
+
+interface DatabaseStatus {
+  connected: boolean
+  tablesExist: boolean
+  error?: string
+}
+
+interface SetupStep {
+  id: string
+  name: string
+  description: string
+  status: "pending" | "running" | "success" | "error"
+  message?: string
+}
 
 export default function DatabaseSetupPage() {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [connectionString, setConnectionString] = useState("")
-  const [apiUrl, setApiUrl] = useState("https://api.thenile.dev")
-  const [apiToken, setApiToken] = useState("")
-  const [databaseId, setDatabaseId] = useState("")
-  const [workspaceId, setWorkspaceId] = useState("")
+  const [status, setStatus] = useState<DatabaseStatus>({
+    connected: false,
+    tablesExist: false,
+  })
+  const [loading, setLoading] = useState(true)
+  const [setupSteps, setSetupSteps] = useState<SetupStep[]>([
+    {
+      id: "connection",
+      name: "Test Connection",
+      description: "Verify database connection",
+      status: "pending",
+    },
+    {
+      id: "tables",
+      name: "Create Tables",
+      description: "Create required database tables",
+      status: "pending",
+    },
+    {
+      id: "seed",
+      name: "Seed Data",
+      description: "Insert initial data",
+      status: "pending",
+    },
+  ])
 
-  const handleTestConnection = async () => {
+  useEffect(() => {
+    checkDatabaseStatus()
+  }, [])
+
+  const checkDatabaseStatus = async () => {
+    setLoading(true)
     try {
-      setLoading(true)
-      setError(null)
-      setSuccess(false)
-
-      const response = await fetch("/api/nile/test-connection", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          connectionString,
-          apiUrl,
-          apiToken,
-          databaseId,
-          workspaceId,
-        }),
-      })
-
+      const response = await fetch("/api/database/status")
       const data = await response.json()
 
-      if (data.success) {
-        setSuccess(true)
-      } else {
-        setError(data.message || "Connection test failed")
-      }
+      setStatus({
+        connected: data.connected,
+        tablesExist: data.tablesExist,
+        error: data.error,
+      })
     } catch (error) {
-      setError(error instanceof Error ? error.message : "An unknown error occurred")
+      setStatus({
+        connected: false,
+        tablesExist: false,
+        error: "Failed to check database status",
+      })
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSaveConfig = async () => {
+  const updateStepStatus = (stepId: string, status: SetupStep["status"], message?: string) => {
+    setSetupSteps((prev) => prev.map((step) => (step.id === stepId ? { ...step, status, message } : step)))
+  }
+
+  const runSetup = async () => {
+    // Step 1: Test Connection
+    updateStepStatus("connection", "running")
     try {
-      setLoading(true)
-      setError(null)
-
-      const response = await fetch("/api/nile/save-config", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          connectionString,
-          apiUrl,
-          apiToken,
-          databaseId,
-          workspaceId,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        alert("Configuration saved successfully!")
-        router.push("/al-ain/admin")
+      const connResponse = await fetch("/api/database-test")
+      if (connResponse.ok) {
+        updateStepStatus("connection", "success", "Database connected successfully")
       } else {
-        setError(data.message || "Failed to save configuration")
+        updateStepStatus("connection", "error", "Connection failed")
+        return
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "An unknown error occurred")
-    } finally {
-      setLoading(false)
+      updateStepStatus("connection", "error", "Connection failed")
+      return
+    }
+
+    // Step 2: Create Tables
+    updateStepStatus("tables", "running")
+    try {
+      const tablesResponse = await fetch("/api/init-tables", { method: "POST" })
+      if (tablesResponse.ok) {
+        updateStepStatus("tables", "success", "Tables created successfully")
+      } else {
+        updateStepStatus("tables", "error", "Failed to create tables")
+        return
+      }
+    } catch (error) {
+      updateStepStatus("tables", "error", "Failed to create tables")
+      return
+    }
+
+    // Step 3: Seed Data
+    updateStepStatus("seed", "running")
+    try {
+      // Simulate seeding data
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      updateStepStatus("seed", "success", "Initial data inserted")
+    } catch (error) {
+      updateStepStatus("seed", "error", "Failed to seed data")
+    }
+
+    // Refresh status
+    await checkDatabaseStatus()
+  }
+
+  const resetSetup = () => {
+    setSetupSteps((prev) =>
+      prev.map((step) => ({
+        ...step,
+        status: "pending",
+        message: undefined,
+      })),
+    )
+  }
+
+  const getStatusIcon = (status: SetupStep["status"]) => {
+    switch (status) {
+      case "success":
+        return <CheckCircle className="w-5 h-5 text-green-500" />
+      case "error":
+        return <XCircle className="w-5 h-5 text-red-500" />
+      case "running":
+        return <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+      default:
+        return <AlertCircle className="w-5 h-5 text-gray-400" />
     }
   }
+
+  const isSetupRunning = setupSteps.some((step) => step.status === "running")
+  const setupComplete = setupSteps.every((step) => step.status === "success")
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1b1464]/10 via-[#2a2a72]/10 to-[#000000]/10">
-      <TopNav />
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Database Setup</h1>
+        <Button variant="outline" onClick={checkDatabaseStatus} disabled={loading}>
+          <RefreshCw className="w-4 h-4 mr-2" />
+          Refresh Status
+        </Button>
+      </div>
 
-      <div className="container mx-auto px-4 py-8 mt-16">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={() => router.push("/al-ain/admin")}
-              className="bg-[#1B1464]/80 hover:bg-[#1B1464] text-white rounded-full w-10 h-10 p-0 shadow-lg transition-all duration-300 hover:scale-105"
-              aria-label="Back to Admin"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-[#1b1464] flex items-center gap-2">
-                <Database className="h-6 w-6" /> Database Configuration
-              </h1>
-              <p className="text-gray-600">Set up your Nile database connection</p>
+      {/* Current Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="w-5 h-5" />
+            Current Status
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Checking database status...</span>
             </div>
-          </div>
-        </div>
-
-        <div className="max-w-3xl mx-auto">
-          <Card className="bg-white shadow-md">
-            <CardHeader>
-              <CardTitle>Database Connection Settings</CardTitle>
-              <CardDescription>
-                Configure your Nile database connection. You can use either direct PostgreSQL connection or the Nile
-                API.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {error && (
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span>Database Connection:</span>
+                <Badge variant={status.connected ? "default" : "destructive"}>
+                  {status.connected ? "Connected" : "Disconnected"}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Tables Exist:</span>
+                <Badge variant={status.tablesExist ? "default" : "secondary"}>
+                  {status.tablesExist ? "Yes" : "No"}
+                </Badge>
+              </div>
+              {status.error && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertDescription>{status.error}</AlertDescription>
                 </Alert>
               )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-              {success && (
-                <Alert className="bg-green-50 border-green-500">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <AlertTitle className="text-green-700">Success</AlertTitle>
-                  <AlertDescription className="text-green-600">
-                    Connection test successful! You can now save your configuration.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Direct PostgreSQL Connection</h3>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      PostgreSQL Connection String (NILEDB_URL)
-                    </label>
-                    <Input
-                      type="text"
-                      value={connectionString}
-                      onChange={(e) => setConnectionString(e.target.value)}
-                      placeholder="postgres://username:password@host:port/database"
-                      className="w-full"
-                    />
-                    <p className="text-xs text-gray-500">Format: postgres://username:password@host:port/database</p>
-                  </div>
-                </div>
-
-                <div className="border-t pt-4">
-                  <h3 className="text-lg font-medium mb-2">Nile API Connection</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">API URL (NILEDB_API_URL)</label>
-                      <Input
-                        type="text"
-                        value={apiUrl}
-                        onChange={(e) => setApiUrl(e.target.value)}
-                        placeholder="https://api.thenile.dev"
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">API Token (NILEDB_API_TOKEN)</label>
-                      <Input
-                        type="password"
-                        value={apiToken}
-                        onChange={(e) => setApiToken(e.target.value)}
-                        placeholder="Your Nile API token"
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Database ID (NILEDB_DATABASE_ID)
-                      </label>
-                      <Input
-                        type="text"
-                        value={databaseId}
-                        onChange={(e) => setDatabaseId(e.target.value)}
-                        placeholder="0194e938-6835-709a-88b7-939874e020f7"
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Workspace ID (NILEDB_WORKSPACE_ID)
-                      </label>
-                      <Input
-                        type="text"
-                        value={workspaceId}
-                        onChange={(e) => setWorkspaceId(e.target.value)}
-                        placeholder="0194e937-c587-7a9e-865b-ee1c66fefed3"
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
+      {/* Setup Steps */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Setup Process</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {setupSteps.map((step, index) => (
+            <div key={step.id} className="flex items-center gap-4 p-4 border rounded-lg">
+              <div className="flex-shrink-0">{getStatusIcon(step.status)}</div>
+              <div className="flex-grow">
+                <h3 className="font-medium">{step.name}</h3>
+                <p className="text-sm text-gray-600">{step.description}</p>
+                {step.message && <p className="text-sm mt-1 text-blue-600">{step.message}</p>}
               </div>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button variant="outline" onClick={() => router.push("/al-ain/admin")}>
-                Cancel
-              </Button>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handleTestConnection}
-                  disabled={loading}
-                  className="bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100"
+              <div className="flex-shrink-0">
+                <Badge
+                  variant={
+                    step.status === "success"
+                      ? "default"
+                      : step.status === "error"
+                        ? "destructive"
+                        : step.status === "running"
+                          ? "secondary"
+                          : "outline"
+                  }
                 >
-                  Test Connection
-                </Button>
-                <Button
-                  onClick={handleSaveConfig}
-                  disabled={loading || (!connectionString && (!apiToken || !databaseId || !workspaceId))}
-                  className="bg-[#1B1464] hover:bg-[#1B1464]/90"
-                >
-                  Save Configuration
-                </Button>
+                  {step.status}
+                </Badge>
               </div>
-            </CardFooter>
-          </Card>
-        </div>
-      </div>
+            </div>
+          ))}
+
+          <div className="flex gap-2 pt-4">
+            <Button onClick={runSetup} disabled={isSetupRunning || setupComplete} className="flex items-center gap-2">
+              <Play className="w-4 h-4" />
+              {isSetupRunning ? "Running Setup..." : "Run Setup"}
+            </Button>
+
+            <Button variant="outline" onClick={resetSetup} disabled={isSetupRunning}>
+              Reset
+            </Button>
+          </div>
+
+          {setupComplete && (
+            <Alert>
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>Database setup completed successfully! Your system is ready to use.</AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

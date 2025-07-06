@@ -1,9 +1,10 @@
-export default function Loading() {
+export default function LiveLoading() {
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center">
-      <div className="w-16 h-16 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mb-4"></div>
-      <h2 className="text-xl font-bold text-cyan-400 mb-2">Loading Live Feeds</h2>
-      <p className="text-slate-400">Connecting to camera network...</p>
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mb-4"></div>
+        <p className="text-white text-lg">Loading Live Data...</p>
+      </div>
     </div>
   )
 }

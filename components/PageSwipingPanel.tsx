@@ -66,22 +66,22 @@ export function PageSwipingPanel({ isOpen, onClose }: PageSwipingPanelProps) {
           <div className="flex flex-col space-y-3 w-full max-w-sm mx-auto">
             <Button
               variant="outline"
-              size="lg"
-              className="flex items-center justify-start px-6 py-4 bg-black/50 border-gray-700 hover:bg-gray-800 hover:border-gray-600 hover:scale-102 transition-all"
+              size="sm"
+              className="flex items-center justify-center px-3 py-2 bg-black/50 border-gray-700 hover:bg-gray-800 hover:border-gray-600 hover:scale-102 transition-all rounded-xl"
               onClick={() => handleNavigation("/abu-dhabi")}
             >
-              <Landmark className="h-6 w-6 mr-4 text-red-500" />
-              <span className="text-white text-lg">Abu Dhabi</span>
+              <Landmark className="h-5 w-5 mr-3 text-red-500" />
+              <span className="text-white text-base">Abu Dhabi</span>
             </Button>
 
             <Button
               variant="outline"
-              size="lg"
-              className="flex items-center justify-start px-6 py-4 bg-black/50 border-gray-700 hover:bg-gray-800 hover:border-gray-600 hover:scale-102 transition-all"
+              size="sm"
+              className="flex items-center justify-center px-3 py-2 bg-black/50 border-gray-700 hover:bg-gray-800 hover:border-gray-600 hover:scale-102 transition-all rounded-xl"
               onClick={() => handleNavigation("/")}
             >
-              <Building className="h-6 w-6 mr-4 text-blue-500" />
-              <span className="text-white text-lg">Al Ain</span>
+              <Building className="h-5 w-5 mr-3 text-blue-500" />
+              <span className="text-white text-base">Al Ain</span>
             </Button>
           </div>
         </div>

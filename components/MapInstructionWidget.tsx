@@ -17,7 +17,7 @@ const MapInstructionWidget = () => {
   return (
     isVisible && (
       <div
-        className="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-black/70 backdrop-blur-sm text-white p-4 rounded-lg shadow-lg z-50 transition-opacity duration-500"
+        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/70 backdrop-blur-sm text-white p-4 rounded-lg shadow-lg z-50 transition-opacity duration-500"
         style={{ opacity: isVisible ? 1 : 0 }}
       >
         <div className="flex items-center justify-center gap-4">
@@ -35,6 +35,7 @@ const MapInstructionWidget = () => {
           </div>
         </div>
         <p className="text-center text-sm mt-2">Zoom and Move to select a location</p>
+        <p className="text-center text-sm mt-1">Double click to open project detail</p>
       </div>
     )
   )

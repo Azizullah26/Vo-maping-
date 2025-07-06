@@ -1,9 +1,7 @@
 import { createClient } from "@supabase/supabase-js"
-import { Pool } from "pg"
 
 // Create a singleton Supabase client
 let supabaseClient: ReturnType<typeof createClient> | null = null
-let pgPool: Pool | null = null
 
 /**
  * Get a Supabase client for database operations
@@ -31,76 +29,35 @@ export function getSupabaseClient() {
 }
 
 /**
- * Get a direct PostgreSQL connection pool
- * This is used as a fallback if Supabase RPC methods aren't available
- */
-export function getPgPool() {
-  if (!pgPool) {
-    const connectionString = process.env.DATABASE_URL
-
-    if (!connectionString) {
-      console.error("No DATABASE_URL found in environment variables")
-      return null
-    }
-
-    try {
-      pgPool = new Pool({
-        connectionString,
-        ssl: {
-          rejectUnauthorized: false,
-        },
-      })
-      console.log("PostgreSQL pool created successfully")
-    } catch (error) {
-      console.error("Error creating PostgreSQL pool:", error)
-      return null
-    }
-  }
-
-  return pgPool
-}
-
-/**
- * Execute a SQL query
+ * Execute a SQL query using Supabase RPC.
+ * This assumes you have an RPC function named 'execute_sql' in Supabase that can run arbitrary SQL.
  */
 export async function executeQuery<T = any>(
   query: string,
   params: any[] = [],
 ): Promise<{ success: boolean; data?: T; error?: string }> {
+  const supabase = getSupabaseClient()
+
+  if (!supabase) {
+    return {
+      success: false,
+      error: "Supabase client not available. Database connection not configured.",
+    }
+  }
+
   try {
-    // First try using Supabase RPC
-    const supabase = getSupabaseClient()
+    const { data, error } = await supabase.rpc("execute_sql", {
+      query_text: query,
+      query_params: params,
+    })
 
-    if (supabase) {
-      try {
-        const { data, error } = await supabase.rpc("execute_sql", {
-          query_text: query,
-          query_params: params,
-        })
-
-        if (!error) {
-          return { success: true, data: data as T }
-        }
-        // If RPC fails (e.g., function doesn't exist), fall back to direct connection
-        console.log("Supabase RPC failed, falling back to direct connection:", error.message)
-      } catch (rpcError) {
-        console.log("Supabase RPC error, falling back to direct connection:", rpcError)
-      }
+    if (error) {
+      console.error("Supabase RPC query error:", error)
+      return { success: false, error: error.message }
     }
-
-    // Fall back to direct PostgreSQL connection
-    const pool = getPgPool()
-    if (!pool) {
-      return {
-        success: false,
-        error: "Database connection not available",
-      }
-    }
-
-    const result = await pool.query(query, params)
-    return { success: true, data: result.rows as T }
+    return { success: true, data: data as T }
   } catch (error) {
-    console.error("Error executing query:", error)
+    console.error("Error executing query via Supabase RPC:", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown database error",
@@ -109,33 +66,21 @@ export async function executeQuery<T = any>(
 }
 
 /**
- * Test the database connection
+ * Test the database connection using Supabase.
  */
 export async function testConnection(): Promise<{ success: boolean; message: string }> {
   try {
-    // First try Supabase
     const supabase = getSupabaseClient()
-    if (supabase) {
-      try {
-        const { data, error } = await supabase.rpc("get_db_version")
-        if (!error) {
-          return { success: true, message: `Supabase connection successful: ${data}` }
-        }
-      } catch (e) {
-        console.log("Supabase connection test failed, trying direct connection")
-      }
+    if (!supabase) {
+      return { success: false, message: "Supabase client not available. Check environment variables." }
     }
 
-    // Fall back to direct connection
-    const result = await executeQuery("SELECT version() as version")
-
-    if (result.success && result.data) {
-      return {
-        success: true,
-        message: `Direct PostgreSQL connection successful: ${result.data[0]?.version || "Unknown version"}`,
-      }
+    // Use a simple RPC call to test connection, assuming 'get_db_version' exists
+    const { data, error } = await supabase.rpc("get_db_version")
+    if (!error) {
+      return { success: true, message: `Supabase connection successful: ${data}` }
     } else {
-      return { success: false, message: result.error || "Unknown error" }
+      return { success: false, message: `Supabase connection failed: ${error.message}` }
     }
   } catch (error) {
     return {
@@ -146,53 +91,49 @@ export async function testConnection(): Promise<{ success: boolean; message: str
 }
 
 /**
- * Get all documents
+ * Get all documents from Supabase.
  */
 export async function getAllDocuments() {
   const supabase = getSupabaseClient()
-  if (supabase) {
-    const { data, error } = await supabase.from("documents").select("*").order("created_at", { ascending: false })
-
-    if (!error) {
-      return { success: true, data }
-    }
+  if (!supabase) {
+    return { success: false, error: "Supabase client not available." }
   }
 
-  // Fall back to direct query
-  return executeQuery(`
-    SELECT * FROM documents
-    ORDER BY created_at DESC
-  `)
+  const { data, error } = await supabase.from("documents").select("*").order("created_at", { ascending: false })
+
+  if (!error) {
+    return { success: true, data }
+  } else {
+    console.error("Error fetching all documents from Supabase:", error)
+    return { success: false, error: error.message }
+  }
 }
 
 /**
- * Get documents for a specific project
+ * Get documents for a specific project from Supabase.
  */
 export async function getProjectDocuments(projectId: string) {
   const supabase = getSupabaseClient()
-  if (supabase) {
-    const { data, error } = await supabase
-      .from("documents")
-      .select("*")
-      .eq("project_id", projectId)
-      .order("created_at", { ascending: false })
-
-    if (!error) {
-      return { success: true, data }
-    }
+  if (!supabase) {
+    return { success: false, error: "Supabase client not available." }
   }
 
-  // Fall back to direct query
-  return executeQuery(
-    `SELECT * FROM documents
-     WHERE project_id = $1
-     ORDER BY created_at DESC`,
-    [projectId],
-  )
+  const { data, error } = await supabase
+    .from("documents")
+    .select("*")
+    .eq("project_id", projectId)
+    .order("created_at", { ascending: false })
+
+  if (!error) {
+    return { success: true, data }
+  } else {
+    console.error("Error fetching project documents from Supabase:", error)
+    return { success: false, error: error.message }
+  }
 }
 
 /**
- * Insert a document
+ * Insert a document into Supabase.
  */
 export async function insertDocument(document: {
   name: string
@@ -204,59 +145,44 @@ export async function insertDocument(document: {
   document_type: string
 }) {
   const supabase = getSupabaseClient()
-  if (supabase) {
-    const { data, error } = await supabase.from("documents").insert([document]).select("id")
-
-    if (!error) {
-      return { success: true, data }
-    }
+  if (!supabase) {
+    return { success: false, error: "Supabase client not available." }
   }
 
-  // Fall back to direct query
-  return executeQuery(
-    `INSERT INTO documents (name, type, size, file_path, project_id, project_name, document_type)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
-     RETURNING id`,
-    [
-      document.name,
-      document.type,
-      document.size,
-      document.file_path,
-      document.project_id,
-      document.project_name,
-      document.document_type,
-    ],
-  )
+  const { data, error } = await supabase.from("documents").insert([document]).select("id")
+
+  if (!error) {
+    return { success: true, data }
+  } else {
+    console.error("Error inserting document into Supabase:", error)
+    return { success: false, error: error.message }
+  }
 }
 
 /**
- * Delete a document
+ * Delete a document from Supabase.
  */
 export async function deleteDocument(id: string) {
   const supabase = getSupabaseClient()
-  if (supabase) {
-    const { error } = await supabase.from("documents").delete().eq("id", id)
-
-    if (!error) {
-      return { success: true }
-    }
+  if (!supabase) {
+    return { success: false, error: "Supabase client not available." }
   }
 
-  // Fall back to direct query
-  return executeQuery(
-    `DELETE FROM documents
-     WHERE id = $1`,
-    [id],
-  )
+  const { error } = await supabase.from("documents").delete().eq("id", id)
+
+  if (!error) {
+    return { success: true }
+  } else {
+    console.error("Error deleting document from Supabase:", error)
+    return { success: false, error: error.message }
+  }
 }
 
 /**
- * Close all database connections
+ * Close all database connections (not strictly necessary for Supabase client, but good practice).
  */
 export async function closeConnections() {
-  if (pgPool) {
-    await pgPool.end()
-    pgPool = null
-  }
+  // Supabase client manages its own connections, no explicit close needed here.
   supabaseClient = null
+  console.log("Supabase client instance reset.")
 }

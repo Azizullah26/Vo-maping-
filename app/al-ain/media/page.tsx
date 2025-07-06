@@ -1,210 +1,254 @@
 "use client"
 
-import { useState } from "react"
-import { ChevronLeft, Film, ImageIcon, Video, FileVideo, Search } from "lucide-react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
+import { ArrowLeft, Search, ImageIcon, Video, FileText, Download, Eye } from "lucide-react"
+
+interface MediaItem {
+  id: string
+  name: string
+  type: "image" | "video" | "document"
+  url: string
+  thumbnail?: string
+  size: number
+  uploadDate: string
+  project?: string
+  tags: string[]
+  description?: string
+}
+
+const mockMediaItems: MediaItem[] = [
+  {
+    id: "1",
+    name: "Al Ain Cultural Center - Exterior View",
+    type: "image",
+    url: "/placeholder.svg?height=400&width=600&text=Cultural+Center+Exterior",
+    thumbnail: "/placeholder.svg?height=200&width=300&text=Cultural+Center+Exterior",
+    size: 2048576, // 2MB
+    uploadDate: "2024-01-15",
+    project: "16-projects",
+    tags: ["architecture", "exterior", "cultural-center"],
+    description: "Exterior architectural view of the Al Ain Cultural Center showing modern design elements",
+  },
+  {
+    id: "2",
+    name: "Construction Progress Video - Week 12",
+    type: "video",
+    url: "/placeholder-video.mp4",
+    thumbnail: "/placeholder.svg?height=200&width=300&text=Construction+Video",
+    size: 15728640, // 15MB
+    uploadDate: "2024-01-12",
+    project: "7-projects",
+    tags: ["construction", "progress", "timelapse"],
+    description: "Weekly construction progress documentation",
+  },
+  {
+    id: "3",
+    name: "Project Specifications Document",
+    type: "document",
+    url: "/placeholder-document.pdf",
+    size: 1048576, // 1MB
+    uploadDate: "2024-01-10",
+    project: "2-projects",
+    tags: ["specifications", "technical", "planning"],
+    description: "Detailed project specifications and requirements",
+  },
+  {
+    id: "4",
+    name: "Al Ain Oasis Aerial Photography",
+    type: "image",
+    url: "/placeholder.svg?height=400&width=600&text=Oasis+Aerial",
+    thumbnail: "/placeholder.svg?height=200&width=300&text=Oasis+Aerial",
+    size: 3145728, // 3MB
+    uploadDate: "2024-01-08",
+    project: "1-project",
+    tags: ["aerial", "oasis", "landscape"],
+    description: "Drone photography of Al Ain Oasis showing the natural landscape",
+  },
+  {
+    id: "5",
+    name: "Police Station Interior Design",
+    type: "image",
+    url: "/placeholder.svg?height=400&width=600&text=Police+Interior",
+    thumbnail: "/placeholder.svg?height=200&width=300&text=Police+Interior",
+    size: 1572864, // 1.5MB
+    uploadDate: "2024-01-05",
+    project: "al-saad-police",
+    tags: ["interior", "police", "design"],
+    description: "Interior design concept for Al Saad Police Center",
+  },
+]
 
 export default function MediaPage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<"all" | "images" | "videos" | "3d">("all")
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>(mockMediaItems)
+  const [filteredItems, setFilteredItems] = useState<MediaItem[]>(mockMediaItems)
   const [searchTerm, setSearchTerm] = useState("")
+  const [typeFilter, setTypeFilter] = useState<string>("all")
+  const [projectFilter, setProjectFilter] = useState<string>("all")
+  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null)
 
-  // Sample media data
-  const mediaItems = [
-    {
-      id: 1,
-      type: "image",
-      title: "Al Ain Oasis Aerial View",
-      thumbnail: "/al-ain-oasis-cityscape.png",
-      date: "2023-12-15",
-      size: "4.2 MB",
-    },
-    {
-      id: 2,
-      type: "video",
-      title: "Al Ain City Traffic Timelapse",
-      thumbnail: "/al-ain-city-traffic.png",
-      date: "2023-11-28",
-      duration: "00:45",
-      size: "28.7 MB",
-    },
-    {
-      id: 3,
-      type: "image",
-      title: "Police Station Entrance",
-      thumbnail: "/al-ain-grand-entrance.png",
-      date: "2023-12-10",
-      size: "3.8 MB",
-    },
-    {
-      id: 4,
-      type: "video",
-      title: "Surveillance System Overview",
-      thumbnail: "/al-ain-street-surveillance.png",
-      date: "2023-12-05",
-      duration: "01:22",
-      size: "42.1 MB",
-    },
-    {
-      id: 5,
-      type: "image",
-      title: "Parking Lot Security",
-      thumbnail: "/al-ain-parking-lot-daytime.png",
-      date: "2023-11-20",
-      size: "2.9 MB",
-    },
-    {
-      id: 6,
-      type: "3d",
-      title: "Police Station 3D Model",
-      thumbnail: "/al-ain-grand-entrance.png",
-      date: "2023-12-01",
-      size: "15.6 MB",
-    },
-  ]
+  useEffect(() => {
+    let filtered = mediaItems
 
-  // Filter media based on active tab and search term
-  const filteredMedia = mediaItems.filter((item) => {
-    const matchesTab = activeTab === "all" || item.type === activeTab
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesTab && matchesSearch
-  })
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (item) =>
+          item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase())),
+      )
+    }
+
+    // Apply type filter
+    if (typeFilter !== "all") {
+      filtered = filtered.filter((item) => item.type === typeFilter)
+    }
+
+    // Apply project filter
+    if (projectFilter !== "all") {
+      filtered = filtered.filter((item) => item.project === projectFilter)
+    }
+
+    setFilteredItems(filtered)
+  }, [searchTerm, typeFilter, projectFilter, mediaItems])
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes"
+    const k = 1024
+    const sizes = ["Bytes", "KB", "MB", "GB"]
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+  }
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case "image":
+        return <ImageIcon className="w-4 h-4" />
+      case "video":
+        return <Video className="w-4 h-4" />
+      case "document":
+        return <FileText className="w-4 h-4" />
+      default:
+        return <FileText className="w-4 h-4" />
+    }
+  }
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case "image":
+        return "bg-green-100 text-green-800"
+      case "video":
+        return "bg-blue-100 text-blue-800"
+      case "document":
+        return "bg-purple-100 text-purple-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white pt-24">
-      {/* Header - positioned below map button and logo */}
-      <div
-        className="bg-slate-800 p-4 flex items-center justify-between border-b border-cyan-500/30 mx-4 rounded-lg shadow-lg"
-        style={{ marginTop: "30px" }}
-      >
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            className="p-2 rounded-full bg-slate-700 hover:bg-slate-600 transition-colors"
-          >
-            <ChevronLeft className="h-5 w-5 text-cyan-400" />
-          </button>
-          <h1 className="text-xl font-bold text-cyan-400 flex items-center gap-2">
-            <Film className="h-5 w-5" />
-            Media Library
-          </h1>
-        </div>
-
-        <div className="relative">
-          <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search media..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 pr-4 py-2 bg-slate-700 rounded-md border border-slate-600 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 text-sm"
-          />
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* Header */}
+      <div className="bg-gray-800 border-b border-gray-700">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={() => router.back()} className="text-white hover:bg-gray-700">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Al Ain
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold">Media Gallery</h1>
+              <p className="text-gray-400">Browse project media and documents</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-slate-800/50 p-4 flex gap-2 border-b border-slate-700">
-        <button
-          onClick={() => setActiveTab("all")}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === "all"
-              ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-              : "bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600"
-          }`}
-        >
-          All Media
-        </button>
-        <button
-          onClick={() => setActiveTab("images")}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
-            activeTab === "images"
-              ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-              : "bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600"
-          }`}
-        >
-          <ImageIcon className="h-4 w-4" /> Images
-        </button>
-        <button
-          onClick={() => setActiveTab("videos")}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
-            activeTab === "videos"
-              ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-              : "bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600"
-          }`}
-        >
-          <Video className="h-4 w-4" /> Videos
-        </button>
-        <button
-          onClick={() => setActiveTab("3d")}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
-            activeTab === "3d"
-              ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-              : "bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600"
-          }`}
-        >
-          <div className="h-4 w-4 border border-current rounded-sm flex items-center justify-center text-[8px]">3D</div>{" "}
-          3D Models
-        </button>
-      </div>
-
-      {/* Media Grid */}
-      <div className="p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredMedia.map((item) => (
-            <div
-              key={item.id}
-              className="bg-slate-800 rounded-lg overflow-hidden border border-slate-700 hover:border-cyan-500/50 transition-all hover:shadow-lg hover:shadow-cyan-900/20 group"
-            >
-              <div className="relative aspect-video bg-slate-900">
-                <div
-                  className="absolute inset-0 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${item.thumbnail})` }}
-                ></div>
-
-                {/* Overlay with type indicator */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-
-                {item.type === "video" && (
-                  <div className="absolute bottom-2 right-2 bg-slate-900/80 text-cyan-400 text-xs px-2 py-1 rounded flex items-center gap-1">
-                    <FileVideo className="h-3 w-3" />
-                    {item.duration}
-                  </div>
-                )}
-
-                {item.type === "3d" && (
-                  <div className="absolute bottom-2 right-2 bg-slate-900/80 text-cyan-400 text-xs px-2 py-1 rounded">
-                    3D Model
-                  </div>
-                )}
-
-                {/* Play button for videos */}
-                {item.type === "video" && (
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="h-12 w-12 rounded-full bg-cyan-500/20 border border-cyan-500/50 flex items-center justify-center">
-                      <div className="h-0 w-0 border-y-[8px] border-y-transparent border-l-[12px] border-l-cyan-400 ml-1"></div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="p-4">
-                <h3 className="text-sm font-medium text-white mb-1">{item.title}</h3>
-                <div className="flex justify-between text-xs text-slate-400">
-                  <span>{item.date}</span>
-                  <span>{item.size}</span>
+      <div className="container mx-auto px-4 py-6">
+        {/* Filters */}
+        <Card className="mb-6 bg-gray-800 border-gray-700">
+          <CardContent className="p-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search media..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  />
                 </div>
               </div>
+
+              {/* Type Filter */}
+              <div className="w-full md:w-48">
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                    <SelectValue placeholder="Filter by type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-700 border-gray-600">
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="image">Images</SelectItem>
+                    <SelectItem value="video">Videos</SelectItem>
+                    <SelectItem value="document">Documents</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Project Filter */}
+              <div className="w-full md:w-48">{/* Project filter implementation goes here */}</div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Media Items */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredItems.map((item) => (
+            <Card key={item.id} className="bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  {getTypeIcon(item.type)}
+                  {item.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-400">Uploaded on {item.uploadDate}</p>
+                    <p className="text-sm text-gray-400">Size: {formatFileSize(item.size)}</p>
+                    {item.project && <p className="text-sm text-gray-400">Project: {item.project}</p>}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {item.tags.map((tag) => (
+                      <Badge key={tag} className="bg-gray-700 text-white">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <Button variant="outline" className="bg-gray-700 border-gray-600 text-white">
+                    <Eye className="w-4 h-4 mr-2" />
+                    View
+                  </Button>
+                  <Button variant="outline" className="bg-gray-700 border-gray-600 text-white">
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
-
-        {filteredMedia.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-            <Search className="h-12 w-12 mb-4 opacity-20" />
-            <p className="text-lg font-medium">No media found</p>
-            <p className="text-sm">Try adjusting your search or filters</p>
-          </div>
-        )}
       </div>
     </div>
   )

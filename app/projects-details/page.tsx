@@ -217,28 +217,28 @@ export default function ProjectsDetailsPage() {
   return (
     <div className="min-h-screen bg-[#0a192f] p-4">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-center mb-8 relative">
+        <div className="flex items-center justify-center mb-4 sm:mb-8 relative">
           <button
             onClick={() => router.push("/")}
-            className="absolute left-0 p-2 rounded-full bg-black/30 hover:bg-black/50 text-white transition-all duration-300 border border-cyan-500/30 hover:border-cyan-400/70"
+            className="absolute left-0 p-1 sm:p-2 rounded-full bg-black/30 hover:bg-black/50 text-white transition-all duration-300 border border-cyan-500/30 hover:border-cyan-400/70"
             aria-label="Back to home"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="lucide lucide-chevron-left"
+              className="lucide lucide-chevron-left sm:w-5 sm:h-5"
             >
               <path d="m15 18-6-6 6-6" />
             </svg>
           </button>
-          <h1 className="text-3xl font-bold text-white text-center">RCC Projects Details</h1>
+          <h1 className="text-lg sm:text-2xl font-bold text-white text-center">تفاصيل مشاريع مركز التحكم الإقليمي</h1>
         </div>
 
         <div className="flex justify-around w-full mb-8">
@@ -351,22 +351,21 @@ export default function ProjectsDetailsPage() {
                   >
                     <Card className="relative w-full h-[85px] bg-transparent border border-cyan-500/30 hover:border-cyan-400/70 rounded-lg overflow-hidden group flex flex-col shadow-[0_0_8px_rgba(0,200,255,0.15)] transition-all duration-300">
                       <CardContent className="p-0 relative flex items-center flex-row-reverse bg-black/20 backdrop-blur-sm text-gray-300">
-                        <div className="flex flex-col w-[160px] h-[36px] items-center justify-center absolute top-6 left-0 group-hover:left-1/2 group-hover:-translate-x-1/2 transition-all duration-300 z-10">
-                          <div className="relative self-stretch h-[20px] mt-[-0.77px] [font-family:'Tajawal',Helvetica] font-bold text-white text-sm text-left tracking-[0] leading-normal [direction:rtl]">
-                            {project.projectNameAr}
+                        <div className="flex flex-col w-[120px] sm:w-[140px] md:w-[160px] lg:w-[180px] h-auto min-h-[36px] items-center justify-center absolute top-4 sm:top-6 left-0 group-hover:left-1/2 group-hover:-translate-x-1/2 transition-all duration-300 z-10 px-1">
+                          <div className="relative w-full h-auto min-h-[20px] mt-[-0.77px] [font-family:'Tajawal',Helvetica] font-bold text-white text-xs sm:text-sm md:text-base tracking-[0] leading-tight [direction:rtl] text-center flex items-center justify-center px-1 py-1">
+                            <span className="whitespace-nowrap max-w-full">{project.projectNameAr}</span>
                           </div>
-                          <div className="relative self-stretch [font-family:'Inter',Helvetica] font-bold text-white text-[12px] tracking-[0] leading-[normal]">
-                            {project.projectNameEn}
+                          <div className="relative w-full flex justify-center items-center mt-1">
                             {project.projectNameEn === "Active" && (
-                              <span className="ml-1.5 inline-flex items-center">
+                              <span className="inline-flex items-center">
                                 <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                                <span className="ml-1 text-[10px] text-green-400">active</span>
+                                <span className="ml-1 text-[10px] text-green-400">نشط</span>
                               </span>
                             )}
                             {project.projectNameEn === "Under Construction" && (
-                              <span className="ml-1.5 inline-flex items-center">
+                              <span className="inline-flex items-center">
                                 <span className="h-2 w-2 rounded-full bg-yellow-500 animate-pulse"></span>
-                                <span className="ml-1 text-[10px] text-yellow-400">construction</span>
+                                <span className="ml-1 text-[10px] text-yellow-400">قيد الإنشاء</span>
                               </span>
                             )}
                           </div>

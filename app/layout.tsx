@@ -4,7 +4,8 @@ import { Inter } from "next/font/google"
 import type React from "react"
 import { TopNav } from "@/components/TopNav"
 import Script from "next/script"
-import { AuthProvider } from "@/app/contexts/AuthContext"
+import { LoginAuthProvider } from "@/app/contexts/LoginAuthContext"
+import AuthGuard from "@/app/components/AuthGuard"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -35,7 +36,7 @@ export const metadata = {
     images: ["/abu-dhabi-police-logo.png"],
     creator: "@elraceprojects",
   },
-    generator: 'v0.dev'
+  generator: "v0.dev",
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -62,12 +63,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta property="og:type" content="website" />
       </head>
       <body className={`${inter.className} h-full m-0 p-0`}>
-        <AuthProvider>
-          <div className="relative">
-            <TopNav />
-            {children}
-          </div>
-        </AuthProvider>
+        <LoginAuthProvider>
+          <AuthGuard>
+            <div className="relative">
+              <TopNav />
+              {children}
+            </div>
+          </AuthGuard>
+        </LoginAuthProvider>
         <Script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js" strategy="afterInteractive" />
       </body>
     </html>

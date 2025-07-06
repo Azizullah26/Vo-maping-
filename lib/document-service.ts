@@ -1,4 +1,4 @@
-import { getSupabaseClient, getSupabaseAdmin } from "./supabase-client"
+import { getSupabaseClient, getSupabaseAdminClient } from "./supabase-client"
 import { v4 as uuidv4 } from "uuid"
 
 // Improved error handling with detailed logging
@@ -8,24 +8,48 @@ const handleError = (error: any, operation: string) => {
   return { success: false, error: message }
 }
 
-// Get all documents
-export async function getAllDocuments() {
-  try {
-    const supabase = getSupabaseClient()
-    const { data, error } = await supabase.from("documents").select("*").order("created_at", { ascending: false })
+// Update Document interface to match project_documents table
+export interface Document {
+  id: string
+  project_name: string
+  file_name: string
+  file_url: string
+  uploaded_at: string
+}
 
-    if (error) throw error
-    return { success: true, data }
-  } catch (error) {
-    return handleError(error, "getAllDocuments")
+// Get all documents
+export async function getAllDocuments(): Promise<Document[]> {
+  const supabase = getSupabaseAdminClient()
+  if (!supabase) {
+    console.error("Supabase admin client not initialized in getAllDocuments")
+    return []
   }
+
+  const { data, error } = await supabase
+    .from("project_documents") // Use the new table name
+    .select("*")
+    .order("uploaded_at", { ascending: false }) // Order by uploaded_at
+
+  if (error) {
+    console.error("Error fetching all documents from project_documents:", error)
+    return []
+  }
+
+  // Map to the Document interface
+  return data.map((doc) => ({
+    id: doc.id,
+    project_name: doc.project_name,
+    file_name: doc.file_name,
+    file_url: doc.file_url,
+    uploaded_at: doc.uploaded_at,
+  }))
 }
 
 // Get document by ID
 export async function getDocumentById(id: string) {
   try {
     const supabase = getSupabaseClient()
-    const { data, error } = await supabase.from("documents").select("*").eq("id", id).single()
+    const { data, error } = await supabase.from("project_documents").select("*").eq("id", id).single()
 
     if (error) throw error
     return { success: true, data }
@@ -39,10 +63,10 @@ export async function getDocumentsByProject(projectId: string) {
   try {
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
-      .from("documents")
+      .from("project_documents")
       .select("*")
       .eq("project_id", projectId)
-      .order("created_at", { ascending: false })
+      .order("uploaded_at", { ascending: false })
 
     if (error) throw error
     return { success: true, data }
@@ -62,21 +86,25 @@ export async function createDocument(document: {
   metadata?: Record<string, any>
 }) {
   try {
-    const supabase = getSupabaseAdmin()
+    const supabase = getSupabaseAdminClient()
+    if (!supabase) {
+      console.error("Supabase admin client not initialized in createDocument")
+      return { success: false, error: "Supabase admin client not initialized" }
+    }
+
     const { data, error } = await supabase
-      .from("documents")
+      .from("project_documents")
       .insert([
         {
           id: uuidv4(),
-          title: document.title,
-          description: document.description || "",
-          file_path: document.file_path,
+          project_name: document.title, // Assuming title is the project name
+          file_name: document.file_path.split("/").pop() || "", // Extract file name from path
+          file_url: document.file_path, // Assuming file_path is the URL
           project_id: document.project_id || null,
           file_type: document.file_type || "unknown",
           file_size: document.file_size || 0,
           metadata: document.metadata || {},
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          uploaded_at: new Date().toISOString(),
         },
       ])
       .select()
@@ -100,12 +128,17 @@ export async function updateDocument(
   }>,
 ) {
   try {
-    const supabase = getSupabaseAdmin()
+    const supabase = getSupabaseAdminClient()
+    if (!supabase) {
+      console.error("Supabase admin client not initialized in updateDocument")
+      return { success: false, error: "Supabase admin client not initialized" }
+    }
+
     const { data, error } = await supabase
-      .from("documents")
+      .from("project_documents")
       .update({
         ...updates,
-        updated_at: new Date().toISOString(),
+        uploaded_at: new Date().toISOString(),
       })
       .eq("id", id)
       .select()
@@ -120,8 +153,13 @@ export async function updateDocument(
 // Delete a document
 export async function deleteDocument(id: string) {
   try {
-    const supabase = getSupabaseAdmin()
-    const { error } = await supabase.from("documents").delete().eq("id", id)
+    const supabase = getSupabaseAdminClient()
+    if (!supabase) {
+      console.error("Supabase admin client not initialized in deleteDocument")
+      return { success: false, error: "Supabase admin client not initialized" }
+    }
+
+    const { error } = await supabase.from("project_documents").delete().eq("id", id)
 
     if (error) throw error
     return { success: true }
@@ -135,10 +173,10 @@ export async function searchDocuments(query: string) {
   try {
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
-      .from("documents")
+      .from("project_documents")
       .select("*")
-      .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
-      .order("created_at", { ascending: false })
+      .or(`project_name.ilike.%${query}%,file_name.ilike.%${query}%`)
+      .order("uploaded_at", { ascending: false })
 
     if (error) throw error
     return { success: true, data }
@@ -150,7 +188,12 @@ export async function searchDocuments(query: string) {
 // Upload a file to Supabase Storage
 export async function uploadFile(file: File, bucket = "documents", path = "") {
   try {
-    const supabase = getSupabaseAdmin()
+    const supabase = getSupabaseAdminClient()
+    if (!supabase) {
+      console.error("Supabase admin client not initialized in uploadFile")
+      return { success: false, error: "Supabase admin client not initialized" }
+    }
+
     const filePath = path ? `${path}/${file.name}` : file.name
 
     const { data, error } = await supabase.storage.from(bucket).upload(filePath, file, {
@@ -180,7 +223,12 @@ export async function uploadFile(file: File, bucket = "documents", path = "") {
 // Delete a file from Supabase Storage
 export async function deleteFile(path: string, bucket = "documents") {
   try {
-    const supabase = getSupabaseAdmin()
+    const supabase = getSupabaseAdminClient()
+    if (!supabase) {
+      console.error("Supabase admin client not initialized in deleteFile")
+      return { success: false, error: "Supabase admin client not initialized" }
+    }
+
     const { error } = await supabase.storage.from(bucket).remove([path])
 
     if (error) throw error

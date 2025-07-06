@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server"
 
 export async function GET() {
-  // Access the environment variable securely on the server
+  // For a production environment, it's best practice to store this token in an environment variable.
   const mapboxToken =
-    process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ||
-    process.env.NEXT_PUBLIC_MAPBOX_TOKEN ||
-    process.env.MAPBOX_ACCESS_TOKEN ||
-    process.env.MAPBOX_TOKEN
+    "pk.eyJ1IjoiYXppenVsbGFoMjYxMSIsImEiOiJjbWJzeDkxMDMwa3JhMmtzZHd0Ym9sZm44In0.V2TEaa53IsuNBxLXm4SXSg"
 
   if (!mapboxToken) {
     return NextResponse.json({ error: "Mapbox token not configured" }, { status: 500 })

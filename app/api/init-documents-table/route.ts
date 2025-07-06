@@ -1,179 +1,70 @@
 import { createClient } from "@supabase/supabase-js"
 import { NextResponse } from "next/server"
 
+// Initialize Supabase client with service role key
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error("Missing Supabase credentials for init-documents-table API")
+}
+
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    persistSession: false,
+  },
+})
+
 export async function POST() {
   try {
-    // Get Supabase credentials from environment variables
-    const supabaseUrl = process.env.SUPABASE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.SUPABASE_SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (!supabaseUrl || !supabaseKey) {
-      return NextResponse.json(
-        { success: false, message: "Missing Supabase credentials in environment variables" },
-        { status: 500 },
-      )
-    }
-
-    // Initialize Supabase client with service role key for admin privileges
-    const supabase = createClient(supabaseUrl, supabaseKey)
-
-    // Check if documents table exists
-    const { data: documentsExists, error: documentsError } = await supabase
-      .from("documents")
+    // Check if project_documents table exists
+    const { data: projectDocumentsExists, error: projectDocumentsError } = await supabaseAdmin
+      .from("project_documents")
       .select("id", { count: "exact", head: true })
       .limit(1)
 
-    if (documentsError) {
-      // If error contains "relation \"documents\" does not exist", the table doesn't exist
-      if (documentsError.message.includes("relation") && documentsError.message.includes("does not exist")) {
-        console.log("Documents table does not exist, will create it")
+    if (projectDocumentsError) {
+      // If error contains "relation \"project_documents\" does not exist", the table doesn't exist
+      if (
+        projectDocumentsError.message.includes("relation") &&
+        projectDocumentsError.message.includes("does not exist")
+      ) {
+        console.log("project_documents table does not exist, will create it")
       } else {
-        console.error("Error checking documents table:", documentsError)
+        console.error("Error checking project_documents table:", projectDocumentsError)
       }
     } else {
-      console.log("Documents table exists")
+      console.log("project_documents table exists")
       return NextResponse.json({
         success: true,
-        message: "Documents table already exists",
+        message: "project_documents table already exists",
       })
     }
 
-    // Create documents table
-    console.log("Creating documents table...")
+    // SQL to create the project_documents table
+    const createTableSql = `
+      CREATE TABLE IF NOT EXISTS project_documents (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        project_name TEXT NOT NULL,
+        file_name TEXT NOT NULL,
+        file_url TEXT NOT NULL,
+        uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+      );
+    `
 
-    // Try multiple approaches to create the table
+    // Execute the SQL to create the table
+    const { error } = await supabaseAdmin.rpc("execute_sql", { sql_query: createTableSql })
 
-    // Approach 1: Using _sql
-    try {
-      const { error: createDocumentsError } = await supabase
-        .from("_sql")
-        .select("*")
-        .execute(`
-        CREATE TABLE IF NOT EXISTS documents (
-          id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-          name TEXT,
-          file_name TEXT,
-          type TEXT,
-          file_type TEXT,
-          size BIGINT,
-          file_size BIGINT,
-          file_path TEXT,
-          file_url TEXT,
-          project_id TEXT NOT NULL,
-          project_name TEXT,
-          document_type TEXT,
-          description TEXT,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        );
-      `)
-
-      if (createDocumentsError) {
-        console.error("Error creating documents table with _sql:", createDocumentsError)
-        throw createDocumentsError
-      } else {
-        console.log("Documents table created successfully with _sql")
-        return NextResponse.json({
-          success: true,
-          message: "Documents table created successfully",
-        })
-      }
-    } catch (err) {
-      console.error("Error with _sql approach:", err)
-      // Continue to next approach
+    if (error) {
+      console.error("Error creating project_documents table:", error)
+      return NextResponse.json({ success: false, message: error.message }, { status: 500 })
     }
 
-    // Approach 2: Using rpc exec
-    try {
-      const { error: sqlError } = await supabase.rpc("exec", {
-        query: `
-          CREATE TABLE IF NOT EXISTS documents (
-            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-            name TEXT,
-            file_name TEXT,
-            type TEXT,
-            file_type TEXT,
-            size BIGINT,
-            file_size BIGINT,
-            file_path TEXT,
-            file_url TEXT,
-            project_id TEXT NOT NULL,
-            project_name TEXT,
-            document_type TEXT,
-            description TEXT,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-          );
-        `,
-      })
-
-      if (sqlError) {
-        console.error("Error creating documents table with rpc:", sqlError)
-        throw sqlError
-      } else {
-        console.log("Documents table created successfully with rpc")
-        return NextResponse.json({
-          success: true,
-          message: "Documents table created successfully",
-        })
-      }
-    } catch (err) {
-      console.error("Error with rpc approach:", err)
-      // Continue to next approach
-    }
-
-    // Approach 3: Using raw SQL query
-    try {
-      const { error: rawSqlError } = await supabase.auth.admin.executeRaw(`
-        CREATE TABLE IF NOT EXISTS documents (
-          id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-          name TEXT,
-          file_name TEXT,
-          type TEXT,
-          file_type TEXT,
-          size BIGINT,
-          file_size BIGINT,
-          file_path TEXT,
-          file_url TEXT,
-          project_id TEXT NOT NULL,
-          project_name TEXT,
-          document_type TEXT,
-          description TEXT,
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        );
-      `)
-
-      if (rawSqlError) {
-        console.error("Error creating documents table with raw SQL:", rawSqlError)
-        throw rawSqlError
-      } else {
-        console.log("Documents table created successfully with raw SQL")
-        return NextResponse.json({
-          success: true,
-          message: "Documents table created successfully",
-        })
-      }
-    } catch (err) {
-      console.error("Error with raw SQL approach:", err)
-      // All approaches failed
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Failed to create documents table after trying multiple approaches. Please create it manually in the Supabase dashboard.",
-          error: err instanceof Error ? err.message : String(err),
-        },
-        { status: 500 },
-      )
-    }
+    return NextResponse.json({ success: true, message: "project_documents table ensured." })
   } catch (error) {
-    console.error("Error initializing documents table:", error)
+    console.error("Error in init-documents-table API:", error)
     return NextResponse.json(
-      {
-        success: false,
-        message: `Error initializing documents table: ${error instanceof Error ? error.message : String(error)}`,
-      },
+      { success: false, message: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 },
     )
   }

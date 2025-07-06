@@ -1,18 +1,21 @@
 "use client"
 
 import type React from "react"
-import { cn } from "@/lib/utils"
 import mapboxgl from "mapbox-gl"
 import { useEffect } from "react"
 
 interface MapMarkerProps {
-  x: number
-  y: number
+  id: string
+  position: { top: number; left: number }
+  size?: { width: number; height: number }
+  onClick: () => void
+  onHover: (id: string | null) => void
+  hoveredLabel: string | null
+  children: React.ReactNode
+  className?: string
   isActive?: boolean
   name: string
-  size?: "small" | "medium" | "large"
   colorIndex: number
-  onClick?: () => void
   direction?: "default" | "left" | "right"
   coordinates?: [number, number]
 }
@@ -24,7 +27,7 @@ const colorCombinations = [
   ["#ffffff", "#000000"],
 ]
 
-// Add this function to determine if a marker is for Abu Dhabi
+// Replace the existing getMarkerPositionClasses function with this responsive version
 const getMarkerPositionClasses = (name: string) => {
   if (
     name.includes("Abu Dhabi") ||
@@ -34,9 +37,9 @@ const getMarkerPositionClasses = (name: string) => {
     name.includes("Other Cities") ||
     name.includes("Western Region")
   ) {
-    return "transform -translate-x-2/3 -translate-y-full -mt-4 -ml-4" // Adjusted for pointer
+    return "transform -translate-x-2/3 -translate-y-full -mt-2 sm:-mt-4 -ml-2 sm:-ml-4" // Responsive margins
   }
-  return "transform -translate-x-1/2 -translate-y-full -mt-1" // Adjusted for pointer
+  return "transform -translate-x-1/2 -translate-y-full -mt-1" // Responsive positioning
 }
 
 // Add keyframes for the animations
@@ -98,37 +101,20 @@ const animationKeyframes = `
 `
 
 const MapMarker: React.FC<MapMarkerProps> = ({
-  x,
-  y,
+  id,
+  position,
+  size = { width: 50, height: 50 },
+  onClick,
+  onHover,
+  hoveredLabel,
+  children,
+  className = "",
   isActive = false,
   name,
-  size = "medium",
   colorIndex,
-  onClick,
   direction = "default",
   coordinates,
 }) => {
-  const sizes = {
-    small: {
-      width: "w-12 sm:w-14", // Further reduced from w-14 sm:w-16
-      height: "h-4 sm:h-5", // Further reduced from h-5 sm:h-6
-      text: "text-[10px] sm:text-xs", // Smaller text size
-      offset: "translate-y-0",
-    },
-    medium: {
-      width: "w-14 sm:w-16", // Further reduced from w-16 sm:w-20
-      height: "h-5 sm:h-6", // Further reduced from h-6 sm:h-7
-      text: "text-[10px] sm:text-xs", // Smaller text size
-      offset: "translate-y-1 sm:translate-y-2", // Adjusted offset
-    },
-    large: {
-      width: "w-16 sm:w-20", // Further reduced from w-20 sm:w-24
-      height: "h-6 sm:h-7", // Further reduced from h-7 sm:h-8
-      text: "text-xs sm:text-sm", // Smaller text size
-      offset: "translate-y-2 sm:translate-y-4", // Adjusted offset
-    },
-  }
-
   const [color1, color2] = colorCombinations[colorIndex % colorCombinations.length]
 
   // Add the keyframes to the document
@@ -150,19 +136,36 @@ const MapMarker: React.FC<MapMarkerProps> = ({
     }
   }, [])
 
+  const getElementOpacity = (elementId?: string) => {
+    if (!hoveredLabel) return "opacity-100"
+    return hoveredLabel === elementId ? "opacity-100" : "opacity-30"
+  }
+
+  const getElementScale = (elementId?: string) => {
+    if (!hoveredLabel) return "scale-100"
+    return hoveredLabel === elementId ? "scale-110" : "scale-95"
+  }
+
   return (
-    <div
-      className={cn("absolute pointer-events-auto cursor-pointer z-10", isActive && "z-20")}
-      style={{
-        transform: `translate(${x}px, ${y}px)`,
-        position: "absolute", // Ensure absolute positioning
-        willChange: "transform", // Optimize for animations
-        transformOrigin: "center center", // Ensure proper scaling
-      }}
+    <button
       onClick={onClick}
+      onMouseEnter={() => onHover(id)}
+      onMouseLeave={() => onHover(null)}
+      className={`absolute transition-all duration-300 cursor-pointer hover:scale-110 hover:shadow-lg hover:shadow-blue-500/30 ${getElementOpacity(id)} ${getElementScale(id)} ${className}`}
+      style={{
+        width: `${size.width}px`,
+        height: `${size.height}px`,
+        top: `${position.top}px`,
+        left: `${position.left}px`,
+        transform: `translate(${position.left}px, ${position.top}px)`,
+        position: "absolute",
+        willChange: "transform",
+        transformOrigin: "center center",
+        zIndex: isActive ? "20" : "10",
+      }}
     >
       <div
-        className={`relative ${getMarkerPositionClasses(name)} ${sizes[size].offset}`}
+        className={`relative ${getMarkerPositionClasses(name)}`}
         style={{
           transform: "translateY(-30px)",
           animation: "bounce 1s both",
@@ -170,40 +173,40 @@ const MapMarker: React.FC<MapMarkerProps> = ({
       >
         <div
           className={`
-${sizes[size].width} ${sizes[size].height} rounded-lg
+rounded-lg
 transition-all duration-300 flex items-center justify-center
 relative overflow-visible
 ${isActive ? "scale-110" : "scale-100"}
-hover:scale-110 group
+group
 `}
           style={{
-            backgroundColor: "#ffffff",
-            color: "#000000",
+            backgroundColor: color1,
+            color: color2,
             transition: "all 0.3s ease",
             position: "relative",
             boxShadow: "0 0 10px rgba(255, 255, 255, 0.5)",
             border: "1px solid rgba(255, 255, 255, 0.3)",
           }}
           onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = "#000000"
-            e.currentTarget.style.color = "#ffffff"
+            e.currentTarget.style.backgroundColor = color2
+            e.currentTarget.style.color = color1
             const arrow = e.currentTarget.querySelector(".pointer-arrow")
-            if (arrow) arrow.style.borderTopColor = "#000000"
+            if (arrow) arrow.style.borderTopColor = color2
           }}
           onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = "#ffffff"
-            e.currentTarget.style.color = "#000000"
+            e.currentTarget.style.backgroundColor = color1
+            e.currentTarget.style.color = color2
             const arrow = e.currentTarget.querySelector(".pointer-arrow")
-            if (arrow) arrow.style.borderTopColor = "#ffffff"
+            if (arrow) arrow.style.borderTopColor = color1
           }}
         >
-          <span className={`${sizes[size].text} font-bold font-calvin truncate px-2 relative z-10`}>{name}</span>
+          <span className={`font-bold font-calvin truncate px-2 relative z-10`}>{name}</span>
           <div
             className="pointer-arrow absolute w-0 h-0 left-1/2 -bottom-2 -translate-x-1/2"
             style={{
               borderLeft: "8px solid transparent",
               borderRight: "8px solid transparent",
-              borderTop: "8px solid #ffffff",
+              borderTop: `8px solid ${color1}`,
               zIndex: 5,
               filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))",
             }}
@@ -310,7 +313,8 @@ hover:scale-110 group
           </>
         )}
       </div>
-    </div>
+      {children}
+    </button>
   )
 }
 

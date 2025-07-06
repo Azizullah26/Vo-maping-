@@ -1,15 +1,15 @@
+import { Suspense } from "react"
 import AdminWrapper from "./AdminWrapper"
-import { AuthProvider } from "@/app/contexts/AuthContext"
-
-export const metadata = {
-  title: "Al Ain Admin Dashboard",
-  description: "Admin dashboard for Al Ain projects",
-}
+import DemoBanner from "./demo-banner"
+import AdminLoading from "./loading"
 
 export default function AdminPage() {
   return (
-    <AuthProvider>
-      <AdminWrapper />
-    </AuthProvider>
+    <Suspense fallback={<AdminLoading />}>
+      <div className="min-h-screen bg-gray-50">
+        <DemoBanner />
+        <AdminWrapper />
+      </div>
+    </Suspense>
   )
 }

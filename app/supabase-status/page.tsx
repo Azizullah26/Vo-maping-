@@ -21,6 +21,9 @@ export default function SupabaseStatusPage() {
   const checkConnection = async () => {
     setLoading(true)
     try {
+      console.log("Checking Supabase connection...")
+      console.log("NEXT_PUBLIC_SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL)
+      console.log("NEXT_PUBLIC_SUPABASE_ANON_KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
       const supabase = createClientComponentClient()
 
       // Test connection with a simple query

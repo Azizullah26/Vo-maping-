@@ -4,13 +4,21 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
+import { ArrowRight, MapPin, Building2 } from "lucide-react"
 
 interface MarkerHoverWidgetProps {
   markerName: string | null
   isVisible: boolean
+  isClicked?: boolean
+  onClickStateChange?: (state: boolean) => void
 }
 
-export function MarkerHoverWidget({ markerName, isVisible }: MarkerHoverWidgetProps) {
+export function MarkerHoverWidget({
+  markerName,
+  isVisible,
+  isClicked = false,
+  onClickStateChange,
+}: MarkerHoverWidgetProps) {
   const router = useRouter()
   const [projectData, setProjectData] = useState<{
     name: string
@@ -86,65 +94,140 @@ export function MarkerHoverWidget({ markerName, isVisible }: MarkerHoverWidgetPr
     setProjectData(data)
   }, [markerName])
 
-  if (!isVisible || !projectData) return null
+  const handleNavigation = () => {
+    if (!projectData) return
 
-  // Generate a project ID based on the name
-  const projectId = projectData.englishName
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")
+    // Generate a project ID based on the name
+    const projectId = projectData.englishName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "")
+
+    // Navigate to the project dashboard
+    router.push(
+      `/dashboard/${projectId}?name=${encodeURIComponent(projectData.englishName)}&nameAr=${encodeURIComponent(projectData.name)}`,
+    )
+  }
+
+  if ((!isVisible && !isClicked) || !projectData) return null
 
   return (
     <div
       className={cn(
-        "fixed top-20 right-4 z-50 w-64 bg-gray-900/90 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg border border-gray-700 transition-all duration-300",
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none",
+        "fixed top-2 left-2 sm:top-4 sm:left-4 z-50 w-44 sm:w-48 md:w-56 bg-gray-900/95 backdrop-blur-md rounded-xl overflow-hidden shadow-2xl border transition-all duration-300",
+        isClicked ? "border-cyan-400 shadow-cyan-900/40" : "border-gray-700 hover:border-gray-600",
+        isVisible || isClicked
+          ? "opacity-100 translate-y-0 scale-100"
+          : "opacity-0 -translate-y-4 scale-95 pointer-events-none",
       )}
-      onClick={() => {
-        // Navigate to the project dashboard
-        router.push(
-          `/dashboard/${projectId}?name=${encodeURIComponent(projectData.englishName)}&nameAr=${encodeURIComponent(projectData.name)}`,
-        )
-      }}
     >
-      <div className="relative h-32 w-full">
+      {/* Header with navigation button */}
+      <div className="relative h-20 sm:h-24 md:h-36 w-full overflow-hidden">
         <Image
           src={projectData.image || "/placeholder.svg"}
           alt={projectData.englishName}
           fill
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, 256px"
+          className="object-cover transition-transform duration-300 hover:scale-105"
+          sizes="(max-width: 768px) 100vw, 288px"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
+
+        {/* Navigation button overlay */}
+        <button
+          onClick={handleNavigation}
+          className="absolute inset-0 w-full h-full group cursor-pointer transition-all duration-300 hover:bg-cyan-500/10"
+        >
+          {/* Hover indicator */}
+          <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="flex items-center space-x-2 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1 border border-cyan-400/30">
+              <MapPin className="w-3 h-3 text-cyan-400" />
+              <span className="text-xs text-cyan-300 font-medium">View Dashboard</span>
+            </div>
+          </div>
+        </button>
       </div>
 
-      <div className="p-3">
-        <h3 className="text-white font-medium text-lg">{projectData.englishName}</h3>
-        <p className="text-gray-300 text-sm">{projectData.name}</p>
-
-        <div className="flex justify-between items-center mt-2">
-          <div className="flex items-center">
-            <span className="text-gray-400 text-xs">{projectData.plots}</span>
-            <span className="mx-2 text-gray-500">•</span>
-            <span className="text-gray-400 text-xs">{projectData.type}</span>
+      {/* Content section */}
+      <div className="p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3">
+        {/* Interactive project name button */}
+        <button
+          onClick={handleNavigation}
+          className="w-full text-left group cursor-pointer transition-all duration-300 hover:bg-cyan-900/20 rounded-lg p-2 -m-2"
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-white font-semibold text-sm sm:text-base group-hover:text-cyan-300 transition-colors duration-300 truncate">
+                {projectData.englishName}
+              </h3>
+              <p className="text-gray-400 text-xs sm:text-sm mt-1 group-hover:text-gray-300 transition-colors duration-300 line-clamp-2">
+                {projectData.name}
+              </p>
+            </div>
+            <div className="ml-3 flex-shrink-0">
+              <div className="w-6 h-6 bg-cyan-500/20 rounded-full flex items-center justify-center group-hover:bg-cyan-500/30 transition-all duration-300">
+                <Building2 className="w-3 h-3 text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300" />
+              </div>
+            </div>
           </div>
+        </button>
 
-          <div
-            className={cn(
-              "text-xs font-medium px-2 py-0.5 rounded",
-              projectData.status === "Sold Out" ? "bg-red-900/50 text-red-300" : "bg-green-900/50 text-green-300",
-            )}
-          >
-            {projectData.status}
+        {/* Project details - now interactive buttons */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-1">
+              {/* Plots button */}
+              <button
+                onClick={handleNavigation}
+                className="text-gray-400 hover:text-cyan-300 text-xs transition-colors duration-300 hover:bg-cyan-900/20 px-2 py-1 rounded-md cursor-pointer"
+              >
+                {projectData.plots}
+              </button>
+              <span className="text-gray-500">•</span>
+              {/* Type button */}
+              <button
+                onClick={handleNavigation}
+                className="text-gray-400 hover:text-cyan-300 text-xs transition-colors duration-300 hover:bg-cyan-900/20 px-2 py-1 rounded-md cursor-pointer"
+              >
+                {projectData.type}
+              </button>
+            </div>
+
+            {/* Status button */}
+            <button
+              onClick={handleNavigation}
+              className={cn(
+                "text-xs font-medium px-3 py-1 rounded-full transition-all duration-300 cursor-pointer hover:scale-105",
+                projectData.status === "Sold Out"
+                  ? "bg-red-900/50 text-red-300 border border-red-700/30 hover:bg-red-900/70 hover:border-red-600/50"
+                  : "bg-green-900/50 text-green-300 border border-green-700/30 hover:bg-green-900/70 hover:border-green-600/50",
+              )}
+            >
+              {projectData.status}
+            </button>
           </div>
         </div>
+
+        {/* Interactive widget footer */}
+        <button
+          onClick={handleNavigation}
+          className="w-full mt-3 sm:mt-4 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 hover:from-cyan-600/30 hover:to-blue-600/30 border border-cyan-500/30 hover:border-cyan-400/50 rounded-lg p-2 sm:p-3 transition-all duration-300 group"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+              <span className="text-cyan-300 text-sm font-medium group-hover:text-cyan-200 transition-colors duration-300">
+                Open Project Dashboard
+              </span>
+            </div>
+            <ArrowRight className="w-4 h-4 text-cyan-400 group-hover:text-cyan-300 group-hover:translate-x-1 transition-all duration-300" />
+          </div>
+        </button>
       </div>
 
-      {/* Subtle call to action */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500"></div>
-
-      {/* Hover effect indicator */}
-      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-white/70 animate-pulse"></div>
+      {/* Futuristic accent lines */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
+      <div className="absolute top-0 left-0 w-px h-full bg-gradient-to-b from-transparent via-cyan-500/30 to-transparent"></div>
+      <div className="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-cyan-500/30 to-transparent"></div>
     </div>
   )
 }

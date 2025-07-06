@@ -1,34 +1,32 @@
 "use server"
 
-import { getNileServerSingleton } from "@/lib/nile"
-import { getPool } from "@/lib/nileDb"
+import { createClient } from "@/lib/supabase"
 
-export async function testNileConnection() {
+export async function testSupabaseConnection() {
   try {
-    // Test Nile SDK connection
-    const nile = await getNileServerSingleton()
-    const tenants = await nile.api("/v1/tenants", { method: "GET" })
+    const supabase = createClient()
 
-    // Test direct Postgres connection
-    const pool = await getPool()
-    const client = await pool.connect()
-    try {
-      const result = await client.query("SELECT NOW() as current_time")
+    // Test basic connection
+    const { data, error } = await supabase.from("projects").select("count").limit(1)
+
+    if (error) {
       return {
-        success: true,
-        message: "Successfully connected to Nile database",
-        time: result.rows[0].current_time,
-        tenants: tenants,
+        success: false,
+        error: error.message,
+        details: error,
       }
-    } finally {
-      client.release()
+    }
+
+    return {
+      success: true,
+      message: "Supabase connection successful",
+      data,
     }
   } catch (error) {
-    console.error("Error testing Nile connection:", error)
     return {
       success: false,
-      message: "Failed to connect to Nile database",
-      error: error instanceof Error ? error.message : String(error),
+      error: error instanceof Error ? error.message : "Unknown error",
+      details: error,
     }
   }
 }

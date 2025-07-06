@@ -92,12 +92,9 @@ export default function LivePage() {
   }, [isLoading])
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white pt-24">
+    <div className="min-h-screen bg-slate-900 text-white pt-0">
       {/* Header */}
-      <div
-        className="bg-slate-800 p-4 flex items-center justify-between border-b border-cyan-500/30 mx-4 rounded-lg shadow-lg"
-        style={{ marginTop: "30px" }}
-      >
+      <div className="bg-slate-800 p-4 flex items-center justify-between border-b border-cyan-500/30 mx-4 rounded-lg shadow-lg">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
@@ -136,21 +133,18 @@ export default function LivePage() {
             ) : (
               <>
                 {/* Video feed */}
-                <video className="w-full h-full object-cover" autoPlay muted loop playsInline>
-                  <source
-                    src={
-                      activeCamera === 5
-                        ? "https://assets.mixkit.co/videos/preview/mixkit-time-lapse-of-a-city-at-night-9559-large.mp4"
-                        : activeCamera === 6
-                          ? "https://assets.mixkit.co/videos/preview/mixkit-traffic-in-the-city-at-night-4330-large.mp4"
-                          : activeCamera === 7
-                            ? "https://assets.mixkit.co/videos/preview/mixkit-traffic-on-a-rainy-night-4331-large.mp4"
-                            : "https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-city-buildings-on-a-sunny-day-41693-large.mp4"
-                    }
-                    type="video/mp4"
-                  />
-                  Your browser does not support the video tag.
-                </video>
+                <iframe
+                  className="w-full h-full object-cover"
+                  src={
+                    activeCamera === 0
+                      ? "https://www.youtube.com/embed/1p_mn7C89A0?autoplay=1&mute=1&loop=1&playlist=1p_mn7C89A0&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1"
+                      : "https://www.youtube.com/embed/JNbj-TG7x50?autoplay=1&mute=1&loop=1&playlist=JNbj-TG7x50&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1"
+                  }
+                  title="Live Camera Feed"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
 
                 {/* Futuristic overlay elements */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 pointer-events-none"></div>

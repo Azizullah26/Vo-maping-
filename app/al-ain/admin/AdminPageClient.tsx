@@ -41,19 +41,23 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
+import type { Database as SupabaseDatabaseTypes } from "@/types/supabase" // Import Supabase types
 
-// Document type definition
+// Document type definition - UPDATED to match project_documents table
 interface Document {
   id: string
-  name: string
-  type: string
-  size: string
-  date: string
-  url: string
-  project: string
+  project_name: string
+  file_name: string
+  file_url: string
+  uploaded_at: string
+  // These fields are no longer stored in DB but might be derived or used for display
+  type?: string
+  size?: string
+  date?: string
+  project?: string // Alias for project_name for UI consistency
 }
 
-// Project type definition
+// Project type definition (remains the same)
 interface Project {
   id: string
   name: string
@@ -71,7 +75,7 @@ interface Project {
 export default function AdminPageClient() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("dashboard")
-  const [selectedProject, setSelectedProject] = useState("مركز شرطة الساد")
+  const [selectedProject, setSelectedProject] = useState("مركز شرطة الساد") // This is project name
   const [selectedDocType, setSelectedDocType] = useState("")
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
@@ -84,7 +88,6 @@ export default function AdminPageClient() {
   const [isDragging, setIsDragging] = useState(false)
   const [storageDocuments, setStorageDocuments] = useState<Document[]>([])
 
-  // Add state for project details sorting
   const [sortColumn, setSortColumn] = useState<keyof Project>("id")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
   const [projectFilter, setProjectFilter] = useState("")
@@ -163,103 +166,146 @@ export default function AdminPageClient() {
       try {
         setLoading(true)
 
-        // Initialize Supabase client
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
         const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+        console.log("AdminPageClient: Attempting to connect to Supabase.")
+        console.log("AdminPageClient: NEXT_PUBLIC_SUPABASE_URL =", supabaseUrl)
+        console.log(
+          "AdminPageClient: NEXT_PUBLIC_SUPABASE_ANON_KEY =",
+          supabaseAnonKey ? "****** (present)" : "MISSING",
+        )
+
         if (!supabaseUrl || !supabaseAnonKey) {
-          console.error("Missing Supabase credentials in environment variables")
-          throw new Error("Missing Supabase credentials")
+          const errorMessage =
+            "Missing Supabase credentials in environment variables. Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set in Vercel."
+          console.error(errorMessage)
+          setDbError(errorMessage)
+          setDemoMode(true)
+          setDemoDocuments()
+          showNotification("error", errorMessage)
+          return
         }
 
         console.log("Connecting to Supabase at:", supabaseUrl)
-        const supabase = createClient(supabaseUrl, supabaseAnonKey)
+        const supabase = createClient<SupabaseDatabaseTypes>(supabaseUrl, supabaseAnonKey)
 
-        // Test connection with a simple query
-        const { count, error: testError } = await supabase.from("documents").select("*", { count: "exact", head: true })
-
-        if (testError) {
-          console.error("Supabase connection test failed:", testError)
-          throw testError
+        if (!supabase) {
+          const errorMessage = "Supabase client could not be initialized. Check URL and API Key format."
+          console.error(errorMessage)
+          setDbError(errorMessage)
+          setDemoMode(true)
+          setDemoDocuments()
+          showNotification("error", errorMessage)
+          return
         }
 
-        console.log("Supabase connection successful, fetching projects")
+        // Test connection with a simple query on 'projects' table
+        try {
+          const { data: testData, error: testError } = await supabase.from("projects").select("id").limit(1)
 
-        // Fetch projects from Supabase
-        const { data: projectsData, error: projectsError } = await supabase
-          .from("projects")
-          .select("*")
-          .order("created_at", { ascending: false })
-
-        if (projectsError) {
-          console.error("Error fetching projects:", projectsError)
-          throw projectsError
+          if (testError) {
+            console.warn("Supabase connection test failed:", testError)
+            // Don't throw error, just fall back to demo mode
+            setDemoMode(true)
+            setDemoDocuments()
+            showNotification("info", "Database connection failed, using demo data")
+            return
+          }
+        } catch (connectionError) {
+          console.warn("Supabase connection error:", connectionError)
+          setDemoMode(true)
+          setDemoDocuments()
+          showNotification("info", "Unable to connect to database, using demo data")
+          return
         }
 
-        if (projectsData && projectsData.length > 0) {
-          console.log(`Found ${projectsData.length} projects in database`)
+        try {
+          console.log("Supabase connection successful, fetching projects")
 
-          // Format projects
-          const formattedProjects: Project[] = projectsData.map((proj) => ({
-            id: proj.id,
-            name: proj.name,
-            startDate: new Date(proj.start_date || proj.created_at).toISOString().split("T")[0],
-            endDate: new Date(proj.end_date || proj.updated_at || proj.created_at).toISOString().split("T")[0],
-            due: proj.due_days || "N/A",
-            status: (proj.status as Project["status"]) || "Active",
-            progress: proj.progress || 0,
-            amount: proj.budget || "AED 0",
-            manager: proj.manager || "Unassigned",
-            managerId: proj.manager_id || "",
-            location: proj.location || "Al Ain, UAE",
-          }))
-
-          // Replace static projectsData with fetched data
-          setProjectsData(formattedProjects)
-
-          // Fetch documents from Supabase
-          const { data: documentsData, error: documentsError } = await supabase
-            .from("documents")
+          // Fetch projects from Supabase
+          const { data: projectsData, error: projectsError } = await supabase
+            .from("projects")
             .select("*")
             .order("created_at", { ascending: false })
 
-          if (documentsError) {
-            console.error("Error fetching documents:", documentsError)
-            throw documentsError
+          if (projectsError) {
+            console.warn("Error fetching projects:", projectsError)
+            setDemoMode(true)
+            setDemoDocuments()
+            showNotification("info", "Could not fetch projects, using demo data")
+            return
           }
 
-          if (documentsData && documentsData.length > 0) {
-            console.log(`Found ${documentsData.length} documents in database`)
+          if (projectsData && projectsData.length > 0) {
+            console.log(`Found ${projectsData.length} projects in database`)
 
-            // Format documents
-            const formattedDocs: Document[] = documentsData.map((doc) => ({
-              id: doc.id,
-              name: doc.file_name || doc.name,
-              type: (doc.file_name || doc.name).split(".").pop()?.toUpperCase() || "FILE",
-              size: formatFileSize(doc.file_size || doc.size || 0),
-              date: new Date(doc.created_at).toLocaleDateString(),
-              url: doc.file_url,
-              project: doc.project_name,
+            const formattedProjects: Project[] = projectsData.map((proj) => ({
+              id: proj.id,
+              name: proj.name,
+              startDate: new Date(proj.start_date || proj.created_at).toISOString().split("T")[0],
+              endDate: new Date(proj.end_date || proj.updated_at || proj.created_at).toISOString().split("T")[0],
+              due: proj.due_days || "N/A",
+              status: (proj.status as Project["status"]) || "Active",
+              progress: proj.progress || 0,
+              amount: proj.budget || "AED 0",
+              manager: proj.manager || "Unassigned",
+              managerId: proj.manager_id || "",
+              location: proj.location || "Al Ain, UAE",
             }))
 
-            setDocuments(formattedDocs)
-            setDemoMode(false)
-            showNotification("success", "Connected to Supabase successfully")
+            setProjectsData(formattedProjects)
+
+            // Fetch documents from Supabase (from project_documents table)
+            const { data: documentsData, error: documentsError } = await supabase
+              .from("project_documents") // Use the new table name
+              .select("*")
+              .order("uploaded_at", { ascending: false }) // Order by uploaded_at
+
+            if (documentsError) {
+              console.error("Error fetching documents from project_documents:", documentsError)
+              throw documentsError
+            }
+
+            if (documentsData && documentsData.length > 0) {
+              console.log(`Found ${documentsData.length} documents in database`)
+
+              // Format documents to match the local Document interface
+              const formattedDocs: Document[] = documentsData.map((doc) => ({
+                id: doc.id,
+                project_name: doc.project_name,
+                file_name: doc.file_name,
+                file_url: doc.file_url,
+                uploaded_at: doc.uploaded_at,
+                type: doc.file_name.split(".").pop()?.toUpperCase() || "FILE", // Derive type
+                size: formatFileSize(0), // Size is not in new schema, set to 0 or fetch from storage if needed
+                date: new Date(doc.uploaded_at).toLocaleDateString(), // Use uploaded_at
+                project: doc.project_name, // Alias for UI
+              }))
+
+              setDocuments(formattedDocs)
+              setDemoMode(false)
+              showNotification("success", "Connected to Supabase successfully")
+            } else {
+              console.log("No documents found in project_documents table")
+              setDemoMode(false)
+              showNotification("info", "No documents found in database")
+            }
           } else {
-            // No documents found, but we still have projects
-            console.log("No documents found in database")
-            setDemoMode(false)
-            showNotification("info", "No documents found in database")
+            console.log("No projects found in database, using demo data")
+            setDemoMode(true)
+            setDemoDocuments()
+            showNotification("info", "No projects found in database, using demo data")
           }
-        } else {
-          // No projects found, use demo data but notify user
-          console.log("No projects found in database, using demo data")
+        } catch (fetchError) {
+          console.warn("Error during data fetch:", fetchError)
           setDemoMode(true)
           setDemoDocuments()
-          showNotification("info", "No projects found in database, using demo data")
+          showNotification("info", "Data fetch failed, using demo data")
+          return
         }
       } catch (err) {
-        console.error("Error fetching data:", err)
+        console.error("Error fetching data in AdminPageClient:", err)
         setDemoMode(true)
         setDemoDocuments()
         showNotification(
@@ -278,14 +324,13 @@ export default function AdminPageClient() {
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
     if (supabaseUrl && supabaseAnonKey) {
-      const supabase = createClient(supabaseUrl, supabaseAnonKey)
+      const supabase = createClient<SupabaseDatabaseTypes>(supabaseUrl, supabaseAnonKey)
 
       const subscription = supabase
         .channel("schema-db-changes")
-        .on("postgres_changes", { event: "*", schema: "public", table: "documents" }, (payload) => {
+        .on("postgres_changes", { event: "*", schema: "public", table: "project_documents" }, (payload) => {
           console.log("Document change received!", payload)
-          // Re-fetch documents when changes occur
-          fetchData()
+          fetchData() // Re-fetch documents when changes occur
         })
         .subscribe()
 
@@ -295,59 +340,71 @@ export default function AdminPageClient() {
     }
   }, [])
 
-  // Set demo documents
   const setDemoDocuments = () => {
     setDocuments([
       {
         id: "1",
-        name: "Project Overview.pdf",
+        project_name: "مركز شرطة الساد",
+        file_name: "Project Overview.pdf",
+        file_url:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+        uploaded_at: "2023-12-15T00:00:00Z",
         type: "PDF",
         size: "2.4 MB",
         date: "2023-12-15",
-        url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
         project: "مركز شرطة الساد",
       },
       {
         id: "2",
-        name: "Construction Blueprint.pdf",
+        project_name: "مركز شرطة الساد",
+        file_name: "Construction Blueprint.pdf",
+        file_url:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+        uploaded_at: "2023-12-10T00:00:00Z",
         type: "PDF",
         size: "5.7 MB",
         date: "2023-12-10",
-        url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
         project: "مركز شرطة الساد",
       },
       {
         id: "3",
-        name: "Site Photos.jpg",
+        project_name: "مركز شرطة الساد",
+        file_name: "Site Photos.jpg",
+        file_url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saad1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+        uploaded_at: "2023-11-28T00:00:00Z",
         type: "JPG",
         size: "12.8 MB",
         date: "2023-11-28",
-        url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saad1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
         project: "مركز شرطة الساد",
       },
       {
         id: "4",
-        name: "Budget Report.xlsx",
+        project_name: "مركز شرطة هيلي",
+        file_name: "Budget Report.xlsx",
+        file_url:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+        uploaded_at: "2023-12-05T00:00:00Z",
         type: "XLSX",
         size: "1.2 MB",
         date: "2023-12-05",
-        url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
         project: "مركز شرطة هيلي",
       },
       {
         id: "5",
-        name: "Project Timeline.docx",
+        project_name: "مركز شرطة هيلي",
+        file_name: "Project Timeline.docx",
+        file_url:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+        uploaded_at: "2023-11-20T00:00:00Z",
         type: "DOCX",
         size: "3.1 MB",
         date: "2023-11-20",
-        url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
         project: "مركز شرطة هيلي",
       },
     ])
     setLoading(false)
   }
 
-  // Format file size
   const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) return bytes + " B"
     else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB"
@@ -355,14 +412,12 @@ export default function AdminPageClient() {
     else return (bytes / (1024 * 1024 * 1024)).toFixed(1) + " GB"
   }
 
-  // Handle file selection
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setSelectedFile(e.target.files[0])
     }
   }
 
-  // Handle file drop
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
     setIsDragging(false)
@@ -372,7 +427,6 @@ export default function AdminPageClient() {
     }
   }
 
-  // Handle drag events
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
     setIsDragging(true)
@@ -382,24 +436,20 @@ export default function AdminPageClient() {
     setIsDragging(false)
   }
 
-  // Show notification
   const showNotification = (type: "success" | "error" | "info", message: string) => {
     setNotification({ type, message })
 
-    // Clear notification after 3 seconds
     setTimeout(() => {
       setNotification(null)
     }, 3000)
   }
 
-  // Handle document deletion
   const handleDeleteDocument = async (id: string) => {
     if (!confirm("Are you sure you want to delete this document?")) {
       return
     }
 
     try {
-      // Initialize Supabase client
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 
@@ -407,30 +457,29 @@ export default function AdminPageClient() {
         throw new Error("Missing Supabase credentials")
       }
 
-      const supabase = createClient(supabaseUrl, supabaseAnonKey)
+      const supabase = createClient<SupabaseDatabaseTypes>(supabaseUrl, supabaseAnonKey)
 
-      // Get the document to delete
       const docToDelete = documents.find((doc) => doc.id === id)
 
       if (!docToDelete) {
         throw new Error("Document not found")
       }
 
-      // Extract the file path from the URL if available
+      // Extract the file path from the URL for storage deletion
       let filePath = null
-      if (docToDelete.url) {
-        const urlParts = docToDelete.url.split("/")
-        if (urlParts.length >= 2) {
-          // Try to extract the path from the URL
-          const bucketParts = docToDelete.url.split("project-documents/")
-          if (bucketParts.length > 1) {
-            filePath = bucketParts[1]
-          }
+      try {
+        const url = new URL(docToDelete.file_url)
+        const pathSegments = url.pathname.split("/")
+        const bucketIndex = pathSegments.indexOf("project-documents")
+        if (bucketIndex !== -1 && pathSegments.length > bucketIndex + 1) {
+          filePath = pathSegments.slice(bucketIndex + 1).join("/")
         }
+      } catch (e) {
+        console.warn("Could not parse file URL for deletion:", docToDelete.file_url, e)
       }
 
       // Delete document from Supabase database
-      const { error: deleteError } = await supabase.from("documents").delete().eq("id", id)
+      const { error: deleteError } = await supabase.from("project_documents").delete().eq("id", id)
 
       if (deleteError) {
         throw deleteError
@@ -442,15 +491,12 @@ export default function AdminPageClient() {
 
         if (storageError) {
           console.error("Error deleting file from storage:", storageError)
-          // We continue even if storage deletion fails
         }
       }
 
-      // Update documents state
       setDocuments(documents.filter((doc) => doc.id !== id))
       showNotification("success", "Document deleted successfully")
 
-      // Dispatch custom event to notify other components
       const event = new CustomEvent("documentUpdate", {
         detail: documents.filter((doc) => doc.id !== id),
       })
@@ -461,23 +507,18 @@ export default function AdminPageClient() {
     }
   }
 
-  // Preview document
   const handlePreviewDocument = (document: Document) => {
     setPreviewDocument(document)
   }
 
-  // Download document
   const handleDownloadDocument = (document: Document) => {
-    window.open(document.url, "_blank")
+    window.open(document.file_url, "_blank") // Use file_url
   }
 
-  // Update the handleInitializeDatabase function to use Nile
-  // Update the handleInitializeDatabase function to use direct SQL
   const handleInitializeDatabase = async () => {
     try {
       showNotification("info", "Initializing database...")
 
-      // Always try to initialize the database, regardless of demo mode
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -485,7 +526,7 @@ export default function AdminPageClient() {
         throw new Error("Missing Supabase credentials")
       }
 
-      // Call the API endpoint to initialize the database
+      // Call the API endpoint to initialize the database (projects table)
       const response = await fetch("/api/init-supabase-tables", {
         method: "POST",
       })
@@ -504,7 +545,7 @@ export default function AdminPageClient() {
         throw new Error(responseData.message || "Failed to initialize database")
       }
 
-      // Also initialize the documents table with our updated endpoint
+      // Also initialize the project_documents table with our updated endpoint
       try {
         const docsResponse = await fetch("/api/init-documents-table", {
           method: "POST",
@@ -512,23 +553,19 @@ export default function AdminPageClient() {
 
         if (!docsResponse.ok) {
           const errorData = await docsResponse.json()
-          console.warn("Warning: Failed to initialize documents table:", errorData.message)
-          // Continue even if this fails
+          console.warn("Warning: Failed to initialize project_documents table:", errorData.message)
         } else {
           const docsData = await docsResponse.json()
-          console.log("Documents table initialization:", docsData.message)
+          console.log("project_documents table initialization:", docsData.message)
         }
       } catch (docError) {
-        console.warn("Warning: Error initializing documents table:", docError)
-        // Continue even if this fails
+        console.warn("Warning: Error initializing project_documents table:", docError)
       }
 
       showNotification("success", responseData.message || "Database initialized successfully!")
 
-      // Set demo mode to false since we've successfully initialized the database
       setDemoMode(false)
 
-      // Refresh the data after a short delay
       setTimeout(() => {
         window.location.reload()
       }, 2000)
@@ -544,30 +581,79 @@ export default function AdminPageClient() {
     }
   }
 
-  // Filter documents by project
-  const getFilteredDocuments = () => documents.filter((doc) => doc.project === selectedProject)
+  // Filter documents by project_name
+  const getFilteredDocuments = () => documents.filter((doc) => doc.project_name === selectedProject)
 
-  // Fetch documents directly from Supabase storage bucket by project ID
-  const fetchProjectDocumentsFromStorage = async (projectId: string) => {
+  // Fetch documents directly from Supabase storage bucket by project name
+  const fetchProjectDocumentsFromStorage = async (projectName: string) => {
     try {
       setLoading(true)
 
-      // Initialize Supabase client
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 
       if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error("Missing Supabase credentials")
+        console.warn("Supabase credentials missing, skipping storage fetch")
+        return []
       }
 
-      const supabase = createClient(supabaseUrl, supabaseAnonKey)
+      const supabase = createClient<SupabaseDatabaseTypes>(supabaseUrl, supabaseAnonKey)
+
+      // Test connection first
+      try {
+        const { data: testData, error: testError } = await supabase.from("projects").select("id").limit(1)
+
+        if (testError) {
+          console.warn("Supabase connection test failed:", testError)
+          return []
+        }
+      } catch (connectionError) {
+        console.warn("Supabase connection failed:", connectionError)
+        return []
+      }
 
       // List files in the project folder within the storage bucket
-      const { data: files, error } = await supabase.storage.from("project-documents").list(projectId)
+      const { data: files, error } = await supabase.storage.from("project-documents").list(`projects/${projectName}`)
 
       if (error) {
-        console.error("Error fetching files from storage:", error)
-        throw error
+        console.warn("Error fetching files from storage (bucket may not exist):", error)
+        // Try alternative path structure
+        const { data: altFiles, error: altError } = await supabase.storage.from("project-documents").list(projectName)
+
+        if (altError) {
+          console.warn("Alternative storage path also failed:", altError)
+          return []
+        }
+
+        if (!altFiles || altFiles.length === 0) {
+          return []
+        }
+
+        // Use alternative files
+        const storageDocuments: Document[] = await Promise.all(
+          altFiles.map(async (file) => {
+            const { data: publicUrlData } = supabase.storage
+              .from("project-documents")
+              .getPublicUrl(`${projectName}/${file.name}`)
+
+            const url = publicUrlData?.publicUrl || ""
+            const fileExtension = file.name.split(".").pop()?.toUpperCase() || "FILE"
+
+            return {
+              id: `storage-${file.id || Date.now()}-${Math.random()}`,
+              project_name: projectName,
+              file_name: file.name,
+              file_url: url,
+              uploaded_at: file.created_at || new Date().toISOString(),
+              type: fileExtension,
+              size: formatFileSize(file.metadata?.size || 0),
+              date: new Date(file.created_at || Date.now()).toLocaleDateString(),
+              project: projectName,
+            }
+          }),
+        )
+
+        return storageDocuments
       }
 
       if (!files || files.length === 0) {
@@ -577,31 +663,30 @@ export default function AdminPageClient() {
       // Map storage files to document format
       const storageDocuments: Document[] = await Promise.all(
         files.map(async (file) => {
-          // Get public URL for the file
           const { data: publicUrlData } = supabase.storage
             .from("project-documents")
-            .getPublicUrl(`${projectId}/${file.name}`)
+            .getPublicUrl(`projects/${projectName}/${file.name}`)
 
           const url = publicUrlData?.publicUrl || ""
-
-          // Extract file extension for type
           const fileExtension = file.name.split(".").pop()?.toUpperCase() || "FILE"
 
           return {
-            id: `storage-${file.id || Date.now()}`,
-            name: file.name,
+            id: `storage-${file.id || Date.now()}-${Math.random()}`,
+            project_name: projectName,
+            file_name: file.name,
+            file_url: url,
+            uploaded_at: file.created_at || new Date().toISOString(),
             type: fileExtension,
             size: formatFileSize(file.metadata?.size || 0),
             date: new Date(file.created_at || Date.now()).toLocaleDateString(),
-            url: url,
-            project: selectedProject,
+            project: projectName,
           }
         }),
       )
 
       return storageDocuments
     } catch (error) {
-      console.error("Error in fetchProjectDocumentsFromStorage:", error)
+      console.warn("Error in fetchProjectDocumentsFromStorage:", error)
       return []
     } finally {
       setLoading(false)
@@ -609,45 +694,45 @@ export default function AdminPageClient() {
   }
 
   // Helper function to check storage for documents
-  const checkStorageForDocuments = (supabase, projectId) => {
-    // List files in the project folder
-    supabase.storage
-      .from("project-documents")
-      .list(projectId)
-      .then(({ data: files, error }) => {
-        if (error) {
-          throw error
-        }
+  // const checkStorageForDocuments = (supabase, projectId) => {
+  //   // List files in the project folder
+  //   supabase.storage
+  //     .from("project-documents")
+  //     .list(projectId)
+  //     .then(({ data: files, error }) => {
+  //       if (error) {
+  //         throw error
+  //       }
 
-        if (!files || files.length === 0) {
-          return showNotification("info", "No documents found in storage for this project")
-        }
+  //       if (!files || files.length === 0) {
+  //         return showNotification("info", "No documents found in storage for this project")
+  //       }
 
-        // Map files to document format with direct public URLs
-        const docs = files.map((file) => {
-          const { data } = supabase.storage.from("project-documents").getPublicUrl(`${projectId}/${file.name}`)
+  //       // Map files to document format with direct public URLs
+  //       const docs = files.map((file) => {
+  //         const { data } = supabase.storage.from("project-documents").getPublicUrl(`${projectId}/${file.name}`)
 
-          const publicUrl = data?.publicUrl || ""
+  //         const publicUrl = data?.publicUrl || ""
 
-          return {
-            id: `storage-${file.id || Date.now()}`,
-            name: file.name,
-            type: file.name.split(".").pop()?.toUpperCase() || "FILE",
-            size: formatFileSize(file.metadata?.size || 0),
-            date: new Date(file.created_at || Date.now()).toLocaleDateString(),
-            url: publicUrl,
-            project: selectedProject,
-          }
-        })
+  //         return {
+  //           id: `storage-${file.id || Date.now()}`,
+  //           name: file.name,
+  //           type: file.name.split(".").pop()?.toUpperCase() || "FILE",
+  //           size: formatFileSize(file.metadata?.size || 0),
+  //           date: new Date(file.created_at || Date.now()).toLocaleDateString(),
+  //           url: publicUrl,
+  //           project: selectedProject,
+  //         }
+  //       })
 
-        setStorageDocuments(docs)
-        showNotification("success", `Found ${docs.length} document(s) in Supabase storage`)
-      })
-      .catch((error) => {
-        console.error("Error fetching from storage:", error)
-        showNotification("error", "Failed to fetch documents from storage")
-      })
-  }
+  //       setStorageDocuments(docs)
+  //       showNotification("success", `Found ${docs.length} document(s) in Supabase storage`)
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching from storage:", error)
+  //       showNotification("error", "Failed to fetch documents from storage")
+  //     })
+  // }
 
   // Render status badge with appropriate color
   const renderStatusBadge = (status: Project["status"]) => {
@@ -695,17 +780,13 @@ export default function AdminPageClient() {
     try {
       setLoading(true)
 
-      // Get the project ID from the selected project
-      const project = projectsData.find((p) => p.name === selectedProject)
-      const projectId = project?.id || "unknown"
+      // Use selectedProject directly as project_name
+      const projectName = selectedProject
 
       // Create form data for the API request
       const formData = new FormData()
       formData.append("file", selectedFile)
-      formData.append("projectId", projectId)
-      formData.append("projectName", selectedProject)
-      // Add an empty description to ensure the field exists
-      formData.append("description", "")
+      formData.append("projectName", projectName) // Use projectName
 
       // Send the file to our API endpoint
       const response = await fetch("/api/documents/upload", {
@@ -713,31 +794,30 @@ export default function AdminPageClient() {
         body: formData,
       })
 
-      // Check if the response is OK before trying to parse JSON
       if (!response.ok) {
         const errorText = await response.text()
         console.error("Error response:", errorText)
 
-        // If we're in demo mode, continue with mock data
         if (demoMode) {
           const fileExtension = selectedFile.name.split(".").pop()?.toUpperCase() || "FILE"
-          const newDocument = {
+          const newDocument: Document = {
             id: `demo-${Date.now()}`,
-            name: selectedFile.name,
-            type: fileExtension,
-            size: formatFileSize(selectedFile.size),
-            date: new Date().toLocaleDateString(),
-            url:
+            project_name: projectName,
+            file_name: selectedFile.name,
+            file_url:
               fileExtension === "JPG" || fileExtension === "PNG" || fileExtension === "JPEG" || fileExtension === "GIF"
                 ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saad1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg"
                 : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
-            project: selectedProject,
+            uploaded_at: new Date().toISOString(),
+            type: fileExtension,
+            size: formatFileSize(selectedFile.size),
+            date: new Date().toLocaleDateString(),
+            project: projectName,
           }
 
           setDocuments([newDocument, ...documents])
           showNotification("success", "Document uploaded successfully (Demo Mode)")
 
-          // Reset form after successful upload
           setSelectedFile(null)
           if (fileInputRef.current) {
             fileInputRef.current.value = ""
@@ -745,7 +825,6 @@ export default function AdminPageClient() {
           return
         }
 
-        // If the error is related to missing columns or tables, try to initialize the table
         if (
           errorText.includes("column") ||
           errorText.includes("schema") ||
@@ -757,7 +836,6 @@ export default function AdminPageClient() {
           try {
             showNotification("info", "Database schema issue detected. Attempting to initialize tables...")
 
-            // Try to initialize the documents table
             const initResponse = await fetch("/api/init-documents-table", {
               method: "POST",
             })
@@ -766,7 +844,6 @@ export default function AdminPageClient() {
               const initData = await initResponse.json()
               showNotification("info", initData.message || "Database schema updated. Retrying upload...")
 
-              // Retry the upload after initializing the table
               const retryResponse = await fetch("/api/documents/upload", {
                 method: "POST",
                 body: formData,
@@ -775,33 +852,30 @@ export default function AdminPageClient() {
               if (retryResponse.ok) {
                 const retryResult = await retryResponse.json()
 
-                // Create a new document object from the response
-                const newDocument = {
+                const newDocument: Document = {
                   id: retryResult.document.id,
-                  name: selectedFile.name,
+                  project_name: projectName,
+                  file_name: selectedFile.name,
+                  file_url: retryResult.document.file_url,
+                  uploaded_at: new Date().toISOString(),
                   type: selectedFile.name.split(".").pop()?.toUpperCase() || "FILE",
                   size: formatFileSize(selectedFile.size),
                   date: new Date().toLocaleDateString(),
-                  url: retryResult.document.file_url,
-                  project: selectedProject,
+                  project: projectName,
                 }
 
-                // Add the new document to the documents array
                 setDocuments([newDocument, ...documents])
                 showNotification("success", "Document uploaded successfully after schema update")
 
-                // Reset form after successful upload
                 setSelectedFile(null)
                 if (fileInputRef.current) {
                   fileInputRef.current.value = ""
                 }
                 return
               } else {
-                // If retry fails, fall back to demo mode
                 throw new Error("Upload retry failed after schema initialization")
               }
             } else {
-              // If initialization fails, fall back to demo mode
               const errorData = await initResponse.json()
               throw new Error(`Database initialization failed: ${errorData.message || "Unknown error"}`)
             }
@@ -809,22 +883,23 @@ export default function AdminPageClient() {
             console.error("Error initializing documents table:", initError)
             showNotification("warning", "Could not initialize database schema. Using demo mode instead.")
 
-            // Fall back to demo mode
             const fileExtension = selectedFile.name.split(".").pop()?.toUpperCase() || "FILE"
-            const newDocument = {
+            const newDocument: Document = {
               id: `demo-${Date.now()}`,
-              name: selectedFile.name,
-              type: fileExtension,
-              size: formatFileSize(selectedFile.size),
-              date: new Date().toLocaleDateString(),
-              url:
+              project_name: projectName,
+              file_name: selectedFile.name,
+              file_url:
                 fileExtension === "JPG" ||
                 fileExtension === "PNG" ||
                 fileExtension === "JPEG" ||
                 fileExtension === "GIF"
                   ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saad1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg"
                   : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
-              project: selectedProject,
+              uploaded_at: new Date().toISOString(),
+              type: fileExtension,
+              size: formatFileSize(selectedFile.size),
+              date: new Date().toLocaleDateString(),
+              project: projectName,
             }
 
             setDocuments([newDocument, ...documents])
@@ -841,28 +916,26 @@ export default function AdminPageClient() {
 
       const result = await response.json()
 
-      // Create a new document object from the response
-      const newDocument = {
+      const newDocument: Document = {
         id: result.document.id,
-        name: selectedFile.name,
+        project_name: projectName,
+        file_name: selectedFile.name,
+        file_url: result.document.file_url,
+        uploaded_at: new Date().toISOString(),
         type: selectedFile.name.split(".").pop()?.toUpperCase() || "FILE",
         size: formatFileSize(selectedFile.size),
         date: new Date().toLocaleDateString(),
-        url: result.document.file_url,
-        project: selectedProject,
+        project: projectName,
       }
 
-      // Add the new document to the documents array
       setDocuments([newDocument, ...documents])
       showNotification("success", "Document uploaded successfully")
 
-      // Dispatch custom event to notify other components about the document update
       const event = new CustomEvent("documentUpdate", {
         detail: [newDocument, ...documents],
       })
       window.dispatchEvent(event)
 
-      // Reset form after successful upload
       setSelectedFile(null)
       if (fileInputRef.current) {
         fileInputRef.current.value = ""
@@ -871,26 +944,26 @@ export default function AdminPageClient() {
       console.error("Error uploading document:", error)
       showNotification("error", error instanceof Error ? error.message : "Failed to upload document")
 
-      // If there's an error, switch to demo mode for this upload
       if (!demoMode) {
         const fileExtension = selectedFile.name.split(".").pop()?.toUpperCase() || "FILE"
-        const newDocument = {
+        const newDocument: Document = {
           id: `demo-${Date.now()}`,
-          name: selectedFile.name,
-          type: fileExtension,
-          size: formatFileSize(selectedFile.size),
-          date: new Date().toLocaleDateString(),
-          url:
+          project_name: selectedProject,
+          file_name: selectedFile.name,
+          file_url:
             fileExtension === "JPG" || fileExtension === "PNG" || fileExtension === "JPEG" || fileExtension === "GIF"
               ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saad1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg"
               : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+          uploaded_at: new Date().toISOString(),
+          type: fileExtension,
+          size: formatFileSize(selectedFile.size),
+          date: new Date().toLocaleDateString(),
           project: selectedProject,
         }
 
         setDocuments([newDocument, ...documents])
         showNotification("info", "Added document in demo mode due to database error")
 
-        // Reset form after upload
         setSelectedFile(null)
         if (fileInputRef.current) {
           fileInputRef.current.value = ""
@@ -901,31 +974,28 @@ export default function AdminPageClient() {
     }
   }
 
-  // Update filtered documents when selected project changes
   useEffect(() => {
     console.log("Selected project changed to:", selectedProject)
     console.log("Available documents:", documents)
-    const filtered = documents.filter((doc) => doc.project === selectedProject)
+    const filtered = documents.filter((doc) => doc.project_name === selectedProject)
     console.log("Filtered documents:", filtered)
   }, [selectedProject, documents])
 
-  // Fetch documents from storage when selected project changes
   useEffect(() => {
     const getProjectIdByName = (projectName: string) => {
-      // Special case for Al Ain Oasis Visitor Center
       if (projectName === "Al Ain Oasis Visitor Center") {
         return "fc89f369-c325-4475-a048-6420e9c08154"
       }
 
-      // For other projects, try to find the ID in projectsData
       const project = projectsData.find((p) => p.name === projectName)
       return project?.id || ""
     }
 
-    const projectId = getProjectIdByName(selectedProject)
+    const projectId = getProjectIdByName(selectedProject) // This is actually project name, not ID
 
-    if (projectId) {
-      fetchProjectDocumentsFromStorage(projectId)
+    if (selectedProject) {
+      // Use selectedProject (name) directly for storage path
+      fetchProjectDocumentsFromStorage(selectedProject) // Pass project name
         .then((docs) => {
           setStorageDocuments(docs)
           console.log(`Fetched ${docs.length} documents from storage for project ${selectedProject}`)
@@ -939,7 +1009,6 @@ export default function AdminPageClient() {
     }
   }, [selectedProject, projectsData])
 
-  // Combine database documents and storage documents
   const dbDocuments = getFilteredDocuments()
   const filteredDocuments = [...dbDocuments, ...storageDocuments]
 
@@ -948,8 +1017,6 @@ export default function AdminPageClient() {
 
   const handleSaveProject = async (project: Project) => {
     try {
-      // In a real implementation, you would call an API to update the project
-      // For demo purposes, we'll just update the local state
       const updatedProjects = projectsData.map((p) => (p.id === project.id ? { ...p, ...editedProject } : p))
       setProjectsData(updatedProjects as Project[])
       setIsEditing(false)
@@ -960,7 +1027,6 @@ export default function AdminPageClient() {
     }
   }
 
-  // Add PDF loading effect
   useEffect(() => {
     if (previewDocument && previewDocument.type === "PDF") {
       const loadingMessage = document.getElementById("pdf-loading-message")
@@ -968,7 +1034,6 @@ export default function AdminPageClient() {
         loadingMessage.classList.remove("opacity-0")
         loadingMessage.classList.add("opacity-100")
 
-        // Hide loading message after 3 seconds
         const timer = setTimeout(() => {
           loadingMessage.classList.remove("opacity-100")
           loadingMessage.classList.add("opacity-0")
@@ -983,25 +1048,19 @@ export default function AdminPageClient() {
     <div
       className="min-h-screen bg-gradient-to-br from-[#1b1464]/10 via-[#2a2a72]/10 to-[#000000]/10"
       onDragOver={(e) => {
-        // Prevent default to allow drop
         e.preventDefault()
-        // Add visual feedback for drag over if needed
         if (!isDragging) setIsDragging(true)
       }}
       onDragLeave={() => {
-        // Reset drag state when leaving the drop zone
         if (isDragging) setIsDragging(false)
       }}
       onDrop={async (e) => {
-        // Prevent default browser behavior
         e.preventDefault()
         setIsDragging(false)
 
-        // Check if files were dropped
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
           const file = e.dataTransfer.files[0]
 
-          // Check file type
           const allowedTypes = [
             "application/pdf",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -1014,37 +1073,34 @@ export default function AdminPageClient() {
             return
           }
 
-          // Set the file for upload
           setSelectedFile(file)
 
-          // Auto-upload if in dashboard view
           if (activeTab === "dashboard") {
             try {
               setLoading(true)
 
-              // In demo mode, simulate a successful upload
               const fileExtension = file.name.split(".").pop()?.toUpperCase() || "FILE"
-              const newDocument = {
+              const newDocument: Document = {
                 id: `demo-${Date.now()}`,
-                name: file.name,
-                type: fileExtension,
-                size: formatFileSize(file.size),
-                date: new Date().toLocaleDateString(),
-                url:
+                project_name: selectedProject || "Al Ain",
+                file_name: file.name,
+                file_url:
                   fileExtension === "JPG" ||
                   fileExtension === "PNG" ||
                   fileExtension === "JPEG" ||
                   fileExtension === "GIF"
                     ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saad1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg"
                     : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+                uploaded_at: new Date().toISOString(),
+                type: fileExtension,
+                size: formatFileSize(file.size),
+                date: new Date().toLocaleDateString(),
                 project: selectedProject || "Al Ain",
               }
 
-              // Add to documents array
               setDocuments([newDocument, ...documents])
               showNotification("success", "Document uploaded successfully (Demo Mode)")
 
-              // Reset selected file
               setSelectedFile(null)
             } catch (error) {
               console.error("Error uploading document:", error)
@@ -1056,7 +1112,6 @@ export default function AdminPageClient() {
         }
       }}
     >
-      {/* Drag overlay indicator */}
       {isDragging && (
         <div className="fixed inset-0 bg-[#1B1464]/20 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white p-8 rounded-xl shadow-2xl text-center">
@@ -1153,7 +1208,6 @@ export default function AdminPageClient() {
           </div>
         </div>
 
-        {/* Notification */}
         {notification && (
           <div className="fixed top-24 right-4 z-50 w-96 transition-all duration-300 ease-in-out">
             <Alert
@@ -1206,7 +1260,6 @@ export default function AdminPageClient() {
         )}
 
         <div className="grid grid-cols-12 gap-6">
-          {/* Sidebar */}
           <div className="col-span-12 md:col-span-3 lg:col-span-2">
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
               <div className="p-4 bg-[#1B1464] text-white">
@@ -1301,11 +1354,9 @@ export default function AdminPageClient() {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="col-span-12 md:col-span-9 lg:col-span-10">
             {activeTab === "dashboard" && (
               <div className="space-y-6">
-                {/* Stats Cards */}
                 <div className="flex flex-nowrap overflow-x-auto gap-6 pb-4">
                   <Card className="bg-white shadow-md hover:shadow-lg transition-shadow">
                     <CardContent className="p-6">
@@ -1391,7 +1442,6 @@ export default function AdminPageClient() {
                   </Card>
                 </div>
 
-                {/* Recent Activity */}
                 <Card className="bg-white shadow-md">
                   <CardHeader>
                     <CardTitle>Recent Activity</CardTitle>
@@ -2104,7 +2154,6 @@ export default function AdminPageClient() {
                               variant="outline"
                               className="mt-2"
                               onClick={() => {
-                                // Set a default project if available
                                 if (projectsData.length > 0) {
                                   setSelectedProject(projectsData[0].name)
                                 }
@@ -2233,7 +2282,7 @@ export default function AdminPageClient() {
                                             <div className="h-8 w-8 bg-[#1B1464]/10 rounded flex items-center justify-center text-[#1B1464]">
                                               <FileText className="h-4 w-4" />
                                             </div>
-                                            <span className="font-medium">{doc.name}</span>
+                                            <span className="font-medium">{doc.file_name}</span> {/* Use file_name */}
                                           </div>
                                         </td>
                                         <td className="py-3 px-4">{doc.type}</td>
@@ -2296,7 +2345,7 @@ export default function AdminPageClient() {
                         <CheckCircle2 className="h-4 w-4 text-green-700" />
                         <AlertTitle className="text-green-700">Database Initialized</AlertTitle>
                         <AlertDescription className="text-green-600">
-                          The Nile database has been successfully initialized.
+                          The Supabase database has been successfully initialized.
                         </AlertDescription>
                       </Alert>
                     ) : (
@@ -2304,7 +2353,7 @@ export default function AdminPageClient() {
                         <AlertCircle className="h-4 w-4 text-yellow-700" />
                         <AlertTitle className="text-yellow-700">Database Not Initialized</AlertTitle>
                         <AlertDescription className="text-yellow-600">
-                          The Nile database has not been initialized. Please initialize to enable database features.
+                          The Supabase database has not been initialized. Please initialize to enable database features.
                         </AlertDescription>
                       </Alert>
                     )}
@@ -2374,10 +2423,9 @@ export default function AdminPageClient() {
               {previewDocument && (
                 <>
                   {previewDocument.type === "PDF" ? (
-                    // PDF Viewer
                     <div className="w-full h-full relative">
                       <iframe
-                        src={`${previewDocument.url}#toolbar=1&navpanes=1&view=FitH`}
+                        src={`${previewDocument.file_url}#toolbar=1&navpanes=1&view=FitH`}
                         width="100%"
                         height="100%"
                         className="border rounded"
@@ -2388,7 +2436,6 @@ export default function AdminPageClient() {
                         loading="lazy"
                         onError={(e) => {
                           console.error("PDF failed to load:", e)
-                          // Show fallback message when iframe fails to load
                           const container = e.currentTarget.parentElement
                           if (container) {
                             const fallback = document.createElement("div")
@@ -2396,7 +2443,7 @@ export default function AdminPageClient() {
                             fallback.innerHTML = `
         <p class="text-red-600 mb-2">Unable to display PDF directly due to browser security restrictions.</p>
         <p class="mb-4">Please use the download button below to view the document.</p>
-        <a href="${previewDocument.url}" target="_blank" rel="noopener noreferrer" 
+        <a href="${previewDocument.file_url}" target="_blank" rel="noopener noreferrer"
            class="px-4 py-2 bg-[#1B1464] text-white rounded hover:bg-[#1B1464]/90">
           Open PDF in new tab
         </a>
@@ -2407,7 +2454,7 @@ export default function AdminPageClient() {
                       ></iframe>
                       <div className="mt-4 flex justify-center">
                         <Button
-                          onClick={() => window.open(previewDocument.url, "_blank")}
+                          onClick={() => window.open(previewDocument.file_url, "_blank")}
                           className="bg-[#1B1464] hover:bg-[#1B1464]/90"
                         >
                           <Download className="h-4 w-4 mr-2" /> Download PDF
@@ -2426,7 +2473,7 @@ export default function AdminPageClient() {
                           <div className="bg-white p-4 rounded shadow-lg">
                             Your browser does not support embedded PDFs.
                             <a
-                              href={previewDocument.url}
+                              href={previewDocument.file_url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-600 hover:underline ml-1"
@@ -2441,18 +2488,21 @@ export default function AdminPageClient() {
                     previewDocument.type === "JPEG" ||
                     previewDocument.type === "PNG" ||
                     previewDocument.type === "GIF" ? (
-                    // Image Viewer
                     <div className="flex flex-col h-full">
                       <div className="bg-gray-100 p-2 mb-4 rounded flex justify-between items-center">
-                        <span className="text-sm font-medium">{previewDocument.name}</span>
-                        <Button size="sm" variant="outline" onClick={() => window.open(previewDocument.url, "_blank")}>
+                        <span className="text-sm font-medium">{previewDocument.file_name}</span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => window.open(previewDocument.file_url, "_blank")}
+                        >
                           <Download className="h-4 w-4 mr-2" /> Download
                         </Button>
                       </div>
                       <div className="flex items-center justify-center bg-gray-50 rounded h-full">
                         <img
-                          src={previewDocument.url || "/placeholder.svg"}
-                          alt={previewDocument.name}
+                          src={previewDocument.file_url || "/placeholder.svg"}
+                          alt={previewDocument.file_name}
                           className="max-w-full max-h-[calc(80vh-120px)] object-contain"
                           onError={(e) => {
                             e.currentTarget.src =
@@ -2466,16 +2516,15 @@ export default function AdminPageClient() {
                     previewDocument.type === "DOC" ||
                     previewDocument.type === "XLSX" ||
                     previewDocument.type === "XLS" ? (
-                    // Document Viewer (with download option since browsers can't display these directly)
                     <div className="flex flex-col items-center justify-center h-full">
                       <div className="text-center max-w-md">
                         <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium mb-2">{previewDocument.name}</h3>
+                        <h3 className="text-lg font-medium mb-2">{previewDocument.file_name}</h3>
                         <p className="text-gray-500 mb-6">
                           This document type ({previewDocument.type}) cannot be previewed directly in the browser.
                         </p>
                         <Button
-                          onClick={() => window.open(previewDocument.url, "_blank")}
+                          onClick={() => window.open(previewDocument.file_url, "_blank")}
                           className="bg-[#1B1464] hover:bg-[#1B1464]/90"
                         >
                           <Download className="h-4 w-4 mr-2" /> Download Document
@@ -2483,16 +2532,15 @@ export default function AdminPageClient() {
                       </div>
                     </div>
                   ) : (
-                    // Fallback for other file types
                     <div className="flex flex-col items-center justify-center h-full">
                       <div className="text-center max-w-md">
                         <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-lg font-medium mb-2">{previewDocument.name}</h3>
+                        <h3 className="text-lg font-medium mb-2">{previewDocument.file_name}</h3>
                         <p className="text-gray-500 mb-6">
                           Preview not available for this file type ({previewDocument.type}).
                         </p>
                         <Button
-                          onClick={() => window.open(previewDocument.url, "_blank")}
+                          onClick={() => window.open(previewDocument.file_url, "_blank")}
                           className="bg-[#1B1464] hover:bg-[#1B1464]/90"
                         >
                           <Download className="h-4 w-4 mr-2" /> Download File

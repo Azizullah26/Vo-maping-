@@ -10,16 +10,7 @@ export function useMapboxToken() {
   useEffect(() => {
     async function fetchToken() {
       try {
-        // First try to get token from environment variable
-        const envToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN
-
-        if (envToken) {
-          setToken(envToken)
-          setLoading(false)
-          return
-        }
-
-        // If not available in env, try to fetch from API
+        // Fetch token from API only (no direct env access)
         const response = await fetch("/api/mapbox-token")
 
         if (!response.ok) {
