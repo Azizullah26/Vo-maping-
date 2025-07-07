@@ -5,7 +5,9 @@
 /* Import Calvin font */
 @font-face {
   font-family: "Calvin";
-  src: url("/fonts/Calvin.woff2") format("woff2"), url("/fonts/Calvin.woff") format("woff");
+  src:
+    url("/fonts/Calvin.woff2") format("woff2"),
+    url("/fonts/Calvin.woff") format("woff");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -13,7 +15,9 @@
 
 @font-face {
   font-family: "Calvin";
-  src: url("/fonts/Calvin-Bold.woff2") format("woff2"), url("/fonts/Calvin-Bold.woff") format("woff");
+  src:
+    url("/fonts/Calvin-Bold.woff2") format("woff2"),
+    url("/fonts/Calvin-Bold.woff") format("woff");
   font-weight: bold;
   font-style: normal;
   font-display: swap;
@@ -250,6 +254,16 @@
   .animate-birds {
     animation: flyHorizontal 15s linear infinite;
     will-change: transform;
+  }
+
+  .animate-float-particle {
+    animation: floatParticle 15s ease-in-out infinite;
+    opacity: 0.6;
+  }
+
+  .animate-network-line {
+    animation: networkLine 20s linear infinite;
+    opacity: 0.3;
   }
 
   .video-marker {
@@ -708,7 +722,9 @@
   text-align: center;
   width: max-content;
   opacity: 0;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .logo-container .logo-text-arabic {
@@ -926,8 +942,12 @@ Add these styles to ensure dropdowns appear above other elements
   border-radius: 50%;
   padding: 2px;
   background: linear-gradient(45deg, #e31e24, #1b1464);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   animation: rotate 4s linear infinite;
@@ -939,7 +959,11 @@ Add these styles to ensure dropdowns appear above other elements
   position: absolute;
   inset: -4px;
   border-radius: 50%;
-  background: radial-gradient(circle at center, rgba(227, 30, 36, 0.3), transparent 70%);
+  background: radial-gradient(
+    circle at center,
+    rgba(227, 30, 36, 0.3),
+    transparent 70%
+  );
   z-index: 1;
   animation: pulse 2s ease-in-out infinite;
 }
