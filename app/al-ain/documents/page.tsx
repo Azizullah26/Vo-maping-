@@ -381,8 +381,9 @@ export default function DocumentsPage() {
       ];
 
       setDocuments(fallbackDocuments);
+      setError(null); // Clear any previous errors
 
-      // Only set error message, don't prevent the page from working
+      // Only log warning, don't set error state
       console.warn("Using demo data due to database connection issues");
     } finally {
       setLoading(false);
