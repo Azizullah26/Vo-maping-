@@ -264,38 +264,40 @@ export default function MediaPage() {
         </Card>
 
         {/* Media Items */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           {filteredItems.map((item) => (
             <Card
               key={item.id}
               className="bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 border-cyan-400 border-2 shadow-lg shadow-cyan-400/20 hover:shadow-xl hover:shadow-cyan-400/30 transition-all duration-300"
             >
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text font-bold">
-                  {getTypeIcon(item.type)}
-                  {item.name}
+              <CardHeader className="pb-2 sm:pb-4">
+                <CardTitle className="flex items-start sm:items-center gap-2 text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text font-bold text-sm sm:text-base leading-tight">
+                  <span className="flex-shrink-0 mt-1 sm:mt-0">
+                    {getTypeIcon(item.type)}
+                  </span>
+                  <span className="break-words">{item.name}</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-cyan-300">
+              <CardContent className="p-3 sm:p-4 pt-0">
+                <div className="flex flex-col gap-3 sm:gap-4">
+                  <div className="space-y-1">
+                    <p className="text-xs sm:text-sm text-cyan-300">
                       Uploaded on {item.uploadDate}
                     </p>
-                    <p className="text-sm text-cyan-300">
+                    <p className="text-xs sm:text-sm text-cyan-300">
                       Size: {formatFileSize(item.size)}
                     </p>
                     {item.project && (
-                      <p className="text-sm text-purple-300">
+                      <p className="text-xs sm:text-sm text-purple-300">
                         Project: {item.project}
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
                     {item.tags.map((tag) => (
                       <Badge
                         key={tag}
-                        className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white border border-cyan-400 shadow-md shadow-cyan-400/30 hover:from-cyan-400 hover:to-blue-400 transition-all duration-300"
+                        className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white border border-cyan-400 shadow-md shadow-cyan-400/30 hover:from-cyan-400 hover:to-blue-400 transition-all duration-300 text-xs px-2 py-1"
                       >
                         {tag}
                       </Badge>
