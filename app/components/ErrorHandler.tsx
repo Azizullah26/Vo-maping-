@@ -115,6 +115,7 @@ export default function ErrorHandler() {
       window.removeEventListener("error", handleError, true);
       window.removeEventListener("unhandledrejection", handleRejection, true);
       console.error = originalConsoleError;
+      window.fetch = originalFetch;
     };
   }, []);
 
