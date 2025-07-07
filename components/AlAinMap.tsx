@@ -882,10 +882,6 @@ export default function AlAinMap({
           } else if (HIDDEN_AT_START.includes(name)) {
             const shouldShow = currentZoom >= 8;
             element.style.display = shouldShow ? "block" : "none";
-            // Also control label visibility for "مركز شرطة رماح"
-            if (name === "مركز شرطة رماح" && label) {
-              label.style.display = shouldShow ? "block" : "none";
-            }
           }
         });
 
@@ -1217,7 +1213,7 @@ export default function AlAinMap({
       case "مركز شرطة الجيمي":
       case "مركز شرطة المقام":
         return "bottom-left-aligned";
-      case "إدارة المرور والترخيص":
+      case "إدارة المرور والترخ��ص":
         return "bottom-right-aligned";
       default:
         return "right-aligned";
