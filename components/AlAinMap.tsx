@@ -235,8 +235,6 @@ const PROJECT_NUMBERS: { [key: string]: string } = {
   "فرع الضبط المروري (الخزنة)": "1",
   "مركز شرطة القوع (فلل صحة)": "1",
   "ساحة حجز المركبات - الساد": "1",
-  "مركز شرطة رماح": "1",
-  "مركز شرطة رماح (الاعلام الامني)": "1",
   "مركز شرطة سويحان": "1",
   "مركز شرطة الهير": "1",
   "مركز شرطة الوقن": "1",
@@ -275,7 +273,7 @@ const HOVERABLE_MARKERS = [
   "ساحة حجز المركبات - الساد",
   "مركز شرطة الوقن",
   "مركز شرطة الجيمي",
-  "مركز شرطة ��لقوع (فلل صحة)",
+  "مركز شرطة القوع (فلل صحة)",
   "نقطة ثبات الروضة",
   "فرع الضبط المروري (الخزنة)",
   "مبنى إدارات (التربية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
@@ -485,7 +483,7 @@ export default function AlAinMap({
         "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
       "إدارة التأهيل الشرطي - الفوعة":
         "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
-      "مركز شرطة هيلي":
+      "��ركز شرطة هيلي":
         "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
       "1 Project":
         "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg",
@@ -1210,7 +1208,7 @@ export default function AlAinMap({
       case "فلل فلج هزاع":
       case "قسم التفتيش الأمني K9":
         return "bottom-aligned";
-      case "نادي ضبا�� الشرطة":
+      case "نادي ضباط الشرطة":
       case "قسم موسيقى شرطة أبوظبي":
       case "مديرية شرطة العين":
       case "ساحة حجز المركبات -asad":
