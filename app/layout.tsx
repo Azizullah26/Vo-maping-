@@ -44,29 +44,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Suppress Mapbox AbortErrors which are not critical
-  if (typeof window !== "undefined") {
-    window.addEventListener("error", (e) => {
-      if (
-        e.error?.name === "AbortError" &&
-        e.error?.message?.includes("signal is aborted")
-      ) {
-        e.preventDefault();
-        return false;
-      }
-    });
-
-    window.addEventListener("unhandledrejection", (e) => {
-      if (
-        e.reason?.name === "AbortError" &&
-        e.reason?.message?.includes("signal is aborted")
-      ) {
-        e.preventDefault();
-        return false;
-      }
-    });
-  }
-
   return (
     <html lang="en" className="h-full">
       <head>
