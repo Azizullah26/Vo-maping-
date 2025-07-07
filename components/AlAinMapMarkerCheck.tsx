@@ -29,21 +29,23 @@ export function validatePoliceMarkers() {
     "نادي ضباط الشرطة",
     "فرع النقل والمشاغل",
     "مبنى إدارات الشرطة",
-    "مركز شرطة رماح",
     "مركز شرطة زاخر",
     "مركز شرطة الوقن",
     "فلل للادرات الشرطية عشارج",
     "مركز شرطة المقام",
-  ]
+  ];
 
-  console.log("Total police locations in JSON:", policeLocationsFromJSON.length)
+  console.log(
+    "Total police locations in JSON:",
+    policeLocationsFromJSON.length,
+  );
 
   // Check for missing markers that should be visible
   const missingMarkers = policeLocationsFromJSON.filter((name) => {
     // Check if marker would be excluded by current logic
-    return name !== "مبنى إدارات شرطة" // This one is excluded in code
-  })
+    return name !== "مبنى إدارات شرطة"; // This one is excluded in code
+  });
 
-  console.log("Markers that should be created:", missingMarkers.length)
-  return missingMarkers
+  console.log("Markers that should be created:", missingMarkers.length);
+  return missingMarkers;
 }
