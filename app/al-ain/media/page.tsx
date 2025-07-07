@@ -176,25 +176,25 @@ export default function MediaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-900 text-white pb-20 md:pb-6">
       {/* Header */}
       <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-purple-900 border-b border-cyan-400 shadow-lg shadow-cyan-400/20">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => router.back()}
-              className="text-cyan-100 hover:bg-cyan-600/20 border border-cyan-400 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300"
+              className="text-cyan-100 hover:bg-cyan-600/20 border border-cyan-400 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300 w-full sm:w-auto justify-center sm:justify-start"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Al Ain
             </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text">
+            <div className="w-full sm:w-auto">
+              <h1 className="text-xl sm:text-2xl font-bold text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-center sm:text-left">
                 Media Gallery
               </h1>
-              <p className="text-cyan-300">
+              <p className="text-cyan-300 text-sm sm:text-base text-center sm:text-left">
                 Browse project media and documents
               </p>
             </div>
@@ -202,7 +202,7 @@ export default function MediaPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Filters */}
         <Card className="mb-6 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 border-cyan-400 border-2 shadow-lg shadow-cyan-400/20">
           <CardContent className="p-4">
