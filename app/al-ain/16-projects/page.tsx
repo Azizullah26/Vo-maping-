@@ -359,48 +359,56 @@ export default function SixteenProjectsPage() {
             </div>
 
             {/* Desktop Side Panel */}
-            <div className="hidden md:block w-96 bg-gray-800 border-l border-gray-700 overflow-y-auto">
+            <div className="hidden md:block w-96 bg-gradient-to-b from-slate-900 via-blue-900/90 to-purple-900/90 border-l-2 border-cyan-400/50 overflow-y-auto backdrop-blur-md">
               <div className="p-6">
-                <Card className="bg-gray-700 border-gray-600">
+                <Card className="bg-gradient-to-br from-slate-800/80 to-blue-900/80 border-2 border-cyan-400/30 shadow-xl shadow-cyan-400/20 backdrop-blur-sm">
                   <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
+                    <CardTitle className="text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text flex items-center gap-2 font-bold">
                       <span>{categoryIcons[selectedProject.category]}</span>
                       {selectedProject.name}
                     </CardTitle>
-                    <p className="text-gray-300">{selectedProject.nameAr}</p>
+                    <p className="text-cyan-300">{selectedProject.nameAr}</p>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
+                      <Clock className="w-4 h-4 text-cyan-400" />
                       <span
-                        className={`px-2 py-1 rounded text-xs text-white ${statusColors[selectedProject.status]}`}
+                        className={`px-3 py-1 rounded-full text-xs text-white border transition-all duration-300 ${
+                          selectedProject.status === "completed"
+                            ? "bg-green-500/80 border-green-400 shadow-green-400/30"
+                            : selectedProject.status === "in-progress"
+                              ? "bg-yellow-500/80 border-yellow-400 shadow-yellow-400/30"
+                              : "bg-gray-500/80 border-gray-400 shadow-gray-400/30"
+                        } shadow-lg`}
                       >
                         {statusLabels[selectedProject.status]}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Building className="w-4 h-4" />
-                      <span className="capitalize">
+                      <Building className="w-4 h-4 text-purple-400" />
+                      <span className="capitalize text-cyan-100">
                         {selectedProject.category}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      <span className="text-sm text-gray-300">
+                      <MapPin className="w-4 h-4 text-blue-400" />
+                      <span className="text-sm text-cyan-200">
                         Position:{" "}
                         {selectedProject.percentageCoordinates[0].toFixed(1)}%,{" "}
                         {selectedProject.percentageCoordinates[1].toFixed(1)}%
                       </span>
                     </div>
 
-                    <p className="text-gray-300">
-                      {selectedProject.description}
-                    </p>
+                    <div className="bg-slate-800/50 rounded-lg p-3 border border-cyan-400/20">
+                      <p className="text-cyan-200 leading-relaxed">
+                        {selectedProject.description}
+                      </p>
+                    </div>
 
                     <Button
-                      className="w-full mt-4"
+                      className="w-full mt-4 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 border border-cyan-400 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300 text-white font-medium"
                       onClick={() => {
                         router.push(
                           `/dashboard/${selectedProject.id}?name=${encodeURIComponent(selectedProject.name)}&nameAr=${encodeURIComponent(selectedProject.nameAr)}`,
