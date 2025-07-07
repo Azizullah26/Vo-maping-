@@ -267,37 +267,70 @@ export default function MediaPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-400">
+                    <p
+                      className={`text-sm ${
+                        item.name === "Al Ain Cultural Center - Exterior View"
+                          ? "text-cyan-300"
+                          : "text-gray-400"
+                      }`}
+                    >
                       Uploaded on {item.uploadDate}
                     </p>
-                    <p className="text-sm text-gray-400">
+                    <p
+                      className={`text-sm ${
+                        item.name === "Al Ain Cultural Center - Exterior View"
+                          ? "text-cyan-300"
+                          : "text-gray-400"
+                      }`}
+                    >
                       Size: {formatFileSize(item.size)}
                     </p>
                     {item.project && (
-                      <p className="text-sm text-gray-400">
+                      <p
+                        className={`text-sm ${
+                          item.name === "Al Ain Cultural Center - Exterior View"
+                            ? "text-purple-300"
+                            : "text-gray-400"
+                        }`}
+                      >
                         Project: {item.project}
                       </p>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
                     {item.tags.map((tag) => (
-                      <Badge key={tag} className="bg-gray-700 text-white">
+                      <Badge
+                        key={tag}
+                        className={
+                          item.name === "Al Ain Cultural Center - Exterior View"
+                            ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white border border-cyan-400 shadow-md shadow-cyan-400/30"
+                            : "bg-gray-700 text-white"
+                        }
+                      >
                         {tag}
                       </Badge>
                     ))}
                   </div>
                 </div>
-                <div className="mt-4">
+                <div className="mt-4 flex gap-2">
                   <Button
                     variant="outline"
-                    className="bg-gray-700 border-gray-600 text-white"
+                    className={
+                      item.name === "Al Ain Cultural Center - Exterior View"
+                        ? "bg-gradient-to-r from-cyan-600 to-blue-600 border-cyan-400 text-white hover:from-cyan-500 hover:to-blue-500 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300"
+                        : "bg-gray-700 border-gray-600 text-white"
+                    }
                   >
                     <Eye className="w-4 h-4 mr-2" />
                     View
                   </Button>
                   <Button
                     variant="outline"
-                    className="bg-gray-700 border-gray-600 text-white"
+                    className={
+                      item.name === "Al Ain Cultural Center - Exterior View"
+                        ? "bg-gradient-to-r from-purple-600 to-blue-600 border-purple-400 text-white hover:from-purple-500 hover:to-blue-500 hover:shadow-lg hover:shadow-purple-400/30 transition-all duration-300"
+                        : "bg-gray-700 border-gray-600 text-white"
+                    }
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Download
