@@ -114,6 +114,25 @@ export default function SixteenProjectsPage() {
             onLoad={handleImageLoad}
           />
 
+          {/* Futuristic Color Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-transparent to-purple-900/20 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/30 via-transparent to-slate-900/10 pointer-events-none" />
+
+          {/* Animated Grid Pattern */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none">
+            <div
+              className="w-full h-full"
+              style={{
+                backgroundImage: `
+                  linear-gradient(rgba(34, 211, 238, 0.3) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(34, 211, 238, 0.3) 1px, transparent 1px)
+                `,
+                backgroundSize: "50px 50px",
+                animation: "gridMove 20s linear infinite",
+              }}
+            />
+          </div>
+
           {/* Project Markers */}
           {imageLoaded &&
             projects16.map((project, index) => {
