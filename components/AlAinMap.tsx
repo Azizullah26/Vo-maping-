@@ -278,8 +278,6 @@ const HOVERABLE_MARKERS = [
   "فرع الضبط المروري (الخزنة)",
   "مبنى إدارات (التربية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
   "1 Project",
-  "مركز شرطة رماح (الاعلام الامني)",
-  "مركز شرطة رماح",
   "مركز شرطة سويحان",
   "مركز شرطة الهير",
 ];
@@ -483,7 +481,7 @@ export default function AlAinMap({
         "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
       "إدارة التأهيل الشرطي - الفوعة":
         "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
-      "��ركز شرطة هيلي":
+      "مركز شرطة هيلي":
         "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
       "1 Project":
         "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg",
