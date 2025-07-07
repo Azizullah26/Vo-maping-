@@ -268,20 +268,10 @@ export default function MediaPage() {
           {filteredItems.map((item) => (
             <Card
               key={item.id}
-              className={
-                item.name === "Al Ain Cultural Center - Exterior View"
-                  ? "bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 border-cyan-400 border-2 shadow-lg shadow-cyan-400/20"
-                  : "bg-gray-800 border-gray-700"
-              }
+              className="bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 border-cyan-400 border-2 shadow-lg shadow-cyan-400/20 hover:shadow-xl hover:shadow-cyan-400/30 transition-all duration-300"
             >
               <CardHeader>
-                <CardTitle
-                  className={`flex items-center gap-2 ${
-                    item.name === "Al Ain Cultural Center - Exterior View"
-                      ? "text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text font-bold"
-                      : ""
-                  }`}
-                >
+                <CardTitle className="flex items-center gap-2 text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text font-bold">
                   {getTypeIcon(item.type)}
                   {item.name}
                 </CardTitle>
