@@ -305,22 +305,14 @@ export default function MediaPage() {
                 <div className="mt-4 flex gap-2">
                   <Button
                     variant="outline"
-                    className={
-                      item.name === "Al Ain Cultural Center - Exterior View"
-                        ? "bg-gradient-to-r from-cyan-600 to-blue-600 border-cyan-400 text-white hover:from-cyan-500 hover:to-blue-500 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300"
-                        : "bg-gray-700 border-gray-600 text-white"
-                    }
+                    className="bg-gradient-to-r from-cyan-600 to-blue-600 border-cyan-400 text-white hover:from-cyan-500 hover:to-blue-500 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300"
                   >
                     <Eye className="w-4 h-4 mr-2" />
                     View
                   </Button>
                   <Button
                     variant="outline"
-                    className={
-                      item.name === "Al Ain Cultural Center - Exterior View"
-                        ? "bg-gradient-to-r from-purple-600 to-blue-600 border-purple-400 text-white hover:from-purple-500 hover:to-blue-500 hover:shadow-lg hover:shadow-purple-400/30 transition-all duration-300"
-                        : "bg-gray-700 border-gray-600 text-white"
-                    }
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 border-purple-400 text-white hover:from-purple-500 hover:to-blue-500 hover:shadow-lg hover:shadow-purple-400/30 transition-all duration-300"
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Download
