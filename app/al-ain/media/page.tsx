@@ -304,17 +304,17 @@ export default function MediaPage() {
                     ))}
                   </div>
                 </div>
-                <div className="mt-4 flex gap-2">
+                <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2">
                   <Button
                     variant="outline"
-                    className="bg-gradient-to-r from-cyan-600 to-blue-600 border-cyan-400 text-white hover:from-cyan-500 hover:to-blue-500 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300"
+                    className="flex-1 h-9 sm:h-8 bg-gradient-to-r from-cyan-600 to-blue-600 border-cyan-400 text-white hover:from-cyan-500 hover:to-blue-500 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300 text-sm"
                   >
                     <Eye className="w-4 h-4 mr-2" />
                     View
                   </Button>
                   <Button
                     variant="outline"
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 border-purple-400 text-white hover:from-purple-500 hover:to-blue-500 hover:shadow-lg hover:shadow-purple-400/30 transition-all duration-300"
+                    className="flex-1 h-9 sm:h-8 bg-gradient-to-r from-purple-600 to-blue-600 border-purple-400 text-white hover:from-purple-500 hover:to-blue-500 hover:shadow-lg hover:shadow-purple-400/30 transition-all duration-300 text-sm"
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Download
