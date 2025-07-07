@@ -290,48 +290,54 @@ export default function SixteenProjectsPage() {
         {selectedProject && (
           <>
             {/* Mobile Bottom Sheet */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-gray-800 border-t border-gray-700 rounded-t-2xl max-h-[50vh] overflow-y-auto">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-slate-900 via-blue-900/90 to-purple-900/90 border-t-2 border-cyan-400/50 rounded-t-2xl max-h-[50vh] overflow-y-auto backdrop-blur-md">
               <div className="p-4">
                 {/* Handle bar */}
-                <div className="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4"></div>
+                <div className="w-12 h-1 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full mx-auto mb-4 shadow-lg shadow-cyan-400/30"></div>
 
-                <Card className="bg-gray-700 border-gray-600">
+                <Card className="bg-gradient-to-br from-slate-800/80 to-blue-900/80 border-2 border-cyan-400/30 shadow-lg shadow-cyan-400/20 backdrop-blur-sm">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-white flex items-center gap-2 text-lg">
+                    <CardTitle className="text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text flex items-center gap-2 text-lg font-bold">
                       <span>{categoryIcons[selectedProject.category]}</span>
                       {selectedProject.name}
                     </CardTitle>
-                    <p className="text-gray-300 text-sm">
+                    <p className="text-cyan-300 text-sm">
                       {selectedProject.nameAr}
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
+                      <Clock className="w-4 h-4 text-cyan-400" />
                       <span
-                        className={`px-2 py-1 rounded text-xs text-white ${statusColors[selectedProject.status]}`}
+                        className={`px-3 py-1 rounded-full text-xs text-white border transition-all duration-300 ${
+                          selectedProject.status === "completed"
+                            ? "bg-green-500/80 border-green-400 shadow-green-400/30"
+                            : selectedProject.status === "in-progress"
+                              ? "bg-yellow-500/80 border-yellow-400 shadow-yellow-400/30"
+                              : "bg-gray-500/80 border-gray-400 shadow-gray-400/30"
+                        } shadow-lg`}
                       >
                         {statusLabels[selectedProject.status]}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Building className="w-4 h-4" />
-                      <span className="capitalize text-sm">
+                      <Building className="w-4 h-4 text-purple-400" />
+                      <span className="capitalize text-sm text-cyan-100">
                         {selectedProject.category}
                       </span>
                     </div>
 
-                    <p className="text-gray-300 text-sm">
+                    <p className="text-cyan-200 text-sm leading-relaxed">
                       {selectedProject.description}
                     </p>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 pt-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setSelectedProject(null)}
-                        className="flex-1"
+                        className="flex-1 bg-gradient-to-r from-slate-700 to-gray-800 border-slate-500 text-cyan-100 hover:from-slate-600 hover:to-gray-700 hover:shadow-lg hover:shadow-slate-400/30 transition-all duration-300"
                       >
                         Close
                       </Button>
@@ -342,7 +348,7 @@ export default function SixteenProjectsPage() {
                             `/dashboard/${selectedProject.id}?name=${encodeURIComponent(selectedProject.name)}&nameAr=${encodeURIComponent(selectedProject.nameAr)}`,
                           );
                         }}
-                        className="flex-1"
+                        className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 border-cyan-400 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300"
                       >
                         View Details
                       </Button>
