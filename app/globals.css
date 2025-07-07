@@ -1235,3 +1235,57 @@ Add these styles to ensure dropdowns appear above other elements
     display: inline;
   }
 }
+
+/* Enhanced animations for 16 projects markers */
+@keyframes gridMove {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(50px, 50px);
+  }
+}
+
+@keyframes markerPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes markerGlow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 15px rgba(59, 130, 246, 0.4),
+      0 0 30px rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 25px rgba(59, 130, 246, 0.6),
+      0 0 50px rgba(59, 130, 246, 0.4);
+  }
+}
+
+@keyframes markerFloat {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.marker-enhanced {
+  animation: markerFloat 3s ease-in-out infinite;
+}
+
+.marker-enhanced:hover {
+  animation: markerPulse 1s ease-in-out infinite;
+}
