@@ -178,21 +178,23 @@ export default function MediaPage() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Header */}
-      <div className="bg-gray-800 border-b border-gray-700">
+      <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-purple-900 border-b border-cyan-400 shadow-lg shadow-cyan-400/20">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => router.back()}
-              className="text-white hover:bg-gray-700"
+              className="text-cyan-100 hover:bg-cyan-600/20 border border-cyan-400 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Al Ain
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">Media Gallery</h1>
-              <p className="text-gray-400">
+              <h1 className="text-2xl font-bold text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text">
+                Media Gallery
+              </h1>
+              <p className="text-cyan-300">
                 Browse project media and documents
               </p>
             </div>
