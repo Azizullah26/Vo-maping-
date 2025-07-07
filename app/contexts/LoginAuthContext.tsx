@@ -115,7 +115,7 @@ export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
 
   return (
     <LoginAuthContext.Provider
-      value={{ isAuthenticated, login, logout, isLoading }}
+      value={{ isAuthenticated, login, logout, isLoading, error }}
     >
       {children}
     </LoginAuthContext.Provider>
