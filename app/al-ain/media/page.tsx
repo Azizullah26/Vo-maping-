@@ -204,18 +204,18 @@ export default function MediaPage() {
 
       <div className="container mx-auto px-4 py-6">
         {/* Filters */}
-        <Card className="mb-6 bg-gray-800 border-gray-700">
+        <Card className="mb-6 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 border-cyan-400 border-2 shadow-lg shadow-cyan-400/20">
           <CardContent className="p-4">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Search */}
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-cyan-400" />
                   <Input
                     placeholder="Search media..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    className="pl-10 bg-gradient-to-r from-slate-800 to-blue-900 border-cyan-400 text-cyan-100 placeholder-cyan-300 focus:border-cyan-300 focus:ring-cyan-300 transition-all duration-300"
                   />
                 </div>
               </div>
@@ -223,14 +223,34 @@ export default function MediaPage() {
               {/* Type Filter */}
               <div className="w-full md:w-48">
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                  <SelectTrigger className="bg-gradient-to-r from-slate-800 to-blue-900 border-cyan-400 text-cyan-100 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300">
                     <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
-                  <SelectContent className="bg-gray-700 border-gray-600">
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="image">Images</SelectItem>
-                    <SelectItem value="video">Videos</SelectItem>
-                    <SelectItem value="document">Documents</SelectItem>
+                  <SelectContent className="bg-gradient-to-br from-slate-900 to-blue-900 border-cyan-400">
+                    <SelectItem
+                      value="all"
+                      className="text-cyan-100 hover:bg-cyan-600/20"
+                    >
+                      All Types
+                    </SelectItem>
+                    <SelectItem
+                      value="image"
+                      className="text-cyan-100 hover:bg-cyan-600/20"
+                    >
+                      Images
+                    </SelectItem>
+                    <SelectItem
+                      value="video"
+                      className="text-cyan-100 hover:bg-cyan-600/20"
+                    >
+                      Videos
+                    </SelectItem>
+                    <SelectItem
+                      value="document"
+                      className="text-cyan-100 hover:bg-cyan-600/20"
+                    >
+                      Documents
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
