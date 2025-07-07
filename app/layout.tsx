@@ -6,6 +6,7 @@ import { TopNav } from "@/components/TopNav";
 import Script from "next/script";
 import { LoginAuthProvider } from "@/app/contexts/LoginAuthContext";
 import AuthGuard from "@/app/components/AuthGuard";
+import ErrorHandler from "@/app/components/ErrorHandler";
 
 const inter = Inter({ subsets: ["latin"] });
 
