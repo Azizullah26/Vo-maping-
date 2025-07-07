@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Upload, FileText, Trash2, Eye, Download } from "lucide-react";
+import AdminErrorHandler from "@/app/components/AdminErrorHandler";
 
 interface Document {
   id: string;
