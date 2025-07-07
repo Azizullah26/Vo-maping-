@@ -83,6 +83,7 @@ export default function RootLayout({
         <meta property="og:type" content="website" />
       </head>
       <body className={`${inter.className} h-full m-0 p-0`}>
+        <ErrorHandler />
         <LoginAuthProvider>
           <AuthGuard>
             <div className="relative">
