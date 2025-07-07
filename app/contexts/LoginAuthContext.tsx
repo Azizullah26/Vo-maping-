@@ -32,6 +32,7 @@ interface LoginAuthProviderProps {
 export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   // Check authentication status on mount
