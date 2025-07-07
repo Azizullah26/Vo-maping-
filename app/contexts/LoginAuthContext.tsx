@@ -71,6 +71,7 @@ export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
   ): Promise<boolean> => {
     try {
       setIsLoading(true);
+      setError(null);
 
       // Simulate API call delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -90,9 +91,11 @@ export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
         return true;
       }
 
+      setError("Invalid username or password");
       return false;
     } catch (error) {
       console.error("Login error:", error);
+      setError("An error occurred during login. Please try again.");
       return false;
     } finally {
       setIsLoading(false);
