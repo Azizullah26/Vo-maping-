@@ -200,7 +200,7 @@ const HIDDEN_AT_START = [
   "مركز شرطة المربعة",
   "مديرية شرطة العين",
   "فرع النقل والمشاغل",
-  "نادي ضباط الشرطة",
+  "نادي ض��اط الشرطة",
   "مركز شرطة زاخر",
   "فلل فلج هزاع",
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
@@ -258,7 +258,7 @@ const HOVERABLE_MARKERS = [
   "ساحة حجز المركبات فلج هزاع",
   "إدارة المرور والترخيص",
   "قسم الدوريات الخاصة",
-  "إدارة الدوريات الخاصة",
+  "إدارة الدوريات ا��خاصة",
   "المعهد المروري",
   "سكن أفراد المرور",
   "قسم هندسة المرور",
@@ -1087,24 +1087,6 @@ export default function AlAinMap({
       const circleElement = document.createElement("div");
       circleElement.className = "marker-circle";
       markerElement.appendChild(circleElement);
-
-      if (name === "مركز شرطة رماح") {
-        // Add vector icon
-        const vectorIcon = document.createElement("img");
-        vectorIcon.src = "/vector-42.svg";
-        vectorIcon.className =
-          "absolute inset-0 w-full h-full object-contain pointer-events-none";
-        vectorIcon.style.zIndex = "1";
-        circleElement.appendChild(vectorIcon);
-
-        // Add label below the marker
-        const labelElement = document.createElement("div");
-        labelElement.className =
-          "absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-white/90 backdrop-blur-sm rounded text-xs font-medium text-black whitespace-nowrap border border-white/30";
-        labelElement.textContent = "مركز شرطة رماح";
-        labelElement.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.1)";
-        markerElement.appendChild(labelElement);
-      }
 
       if (PROJECT_NUMBERS[name]) {
         const numberElement = document.createElement("div");
