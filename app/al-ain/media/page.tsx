@@ -204,50 +204,50 @@ export default function MediaPage() {
 
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Filters */}
-        <Card className="mb-6 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 border-cyan-400 border-2 shadow-lg shadow-cyan-400/20">
-          <CardContent className="p-4">
-            <div className="flex flex-col md:flex-row gap-4">
+        <Card className="mb-4 sm:mb-6 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 border-cyan-400 border-2 shadow-lg shadow-cyan-400/20">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col gap-3 sm:gap-4">
               {/* Search */}
-              <div className="flex-1">
+              <div className="w-full">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-cyan-400" />
                   <Input
                     placeholder="Search media..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-gradient-to-r from-slate-800 to-blue-900 border-cyan-400 text-cyan-100 placeholder-cyan-300 focus:border-cyan-300 focus:ring-cyan-300 transition-all duration-300"
+                    className="pl-10 h-10 sm:h-9 bg-gradient-to-r from-slate-800 to-blue-900 border-cyan-400 text-cyan-100 placeholder-cyan-300 focus:border-cyan-300 focus:ring-cyan-300 transition-all duration-300 text-base sm:text-sm"
                   />
                 </div>
               </div>
 
               {/* Type Filter */}
-              <div className="w-full md:w-48">
+              <div className="w-full sm:w-48">
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="bg-gradient-to-r from-slate-800 to-blue-900 border-cyan-400 text-cyan-100 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300">
+                  <SelectTrigger className="h-10 sm:h-9 bg-gradient-to-r from-slate-800 to-blue-900 border-cyan-400 text-cyan-100 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300 text-base sm:text-sm">
                     <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
                   <SelectContent className="bg-gradient-to-br from-slate-900 to-blue-900 border-cyan-400">
                     <SelectItem
                       value="all"
-                      className="text-cyan-100 hover:bg-cyan-600/20"
+                      className="text-cyan-100 hover:bg-cyan-600/20 text-base sm:text-sm"
                     >
                       All Types
                     </SelectItem>
                     <SelectItem
                       value="image"
-                      className="text-cyan-100 hover:bg-cyan-600/20"
+                      className="text-cyan-100 hover:bg-cyan-600/20 text-base sm:text-sm"
                     >
                       Images
                     </SelectItem>
                     <SelectItem
                       value="video"
-                      className="text-cyan-100 hover:bg-cyan-600/20"
+                      className="text-cyan-100 hover:bg-cyan-600/20 text-base sm:text-sm"
                     >
                       Videos
                     </SelectItem>
                     <SelectItem
                       value="document"
-                      className="text-cyan-100 hover:bg-cyan-600/20"
+                      className="text-cyan-100 hover:bg-cyan-600/20 text-base sm:text-sm"
                     >
                       Documents
                     </SelectItem>
