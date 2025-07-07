@@ -279,32 +279,14 @@ export default function MediaPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p
-                      className={`text-sm ${
-                        item.name === "Al Ain Cultural Center - Exterior View"
-                          ? "text-cyan-300"
-                          : "text-gray-400"
-                      }`}
-                    >
+                    <p className="text-sm text-cyan-300">
                       Uploaded on {item.uploadDate}
                     </p>
-                    <p
-                      className={`text-sm ${
-                        item.name === "Al Ain Cultural Center - Exterior View"
-                          ? "text-cyan-300"
-                          : "text-gray-400"
-                      }`}
-                    >
+                    <p className="text-sm text-cyan-300">
                       Size: {formatFileSize(item.size)}
                     </p>
                     {item.project && (
-                      <p
-                        className={`text-sm ${
-                          item.name === "Al Ain Cultural Center - Exterior View"
-                            ? "text-purple-300"
-                            : "text-gray-400"
-                        }`}
-                      >
+                      <p className="text-sm text-purple-300">
                         Project: {item.project}
                       </p>
                     )}
@@ -313,11 +295,7 @@ export default function MediaPage() {
                     {item.tags.map((tag) => (
                       <Badge
                         key={tag}
-                        className={
-                          item.name === "Al Ain Cultural Center - Exterior View"
-                            ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white border border-cyan-400 shadow-md shadow-cyan-400/30"
-                            : "bg-gray-700 text-white"
-                        }
+                        className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white border border-cyan-400 shadow-md shadow-cyan-400/30 hover:from-cyan-400 hover:to-blue-400 transition-all duration-300"
                       >
                         {tag}
                       </Badge>
