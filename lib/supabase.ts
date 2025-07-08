@@ -12,4 +12,8 @@ export const createClient = () => {
 }
 
 const supabase = createClient()
+
+// Add the missing named export
+export { supabase }
+
 export default supabase

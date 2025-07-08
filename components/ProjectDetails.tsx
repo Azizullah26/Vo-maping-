@@ -1,245 +1,326 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import type { Project } from "@/app/actions/project-actions"
-import { type Document, deleteDocument } from "@/app/actions/document-actions"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { MapPin, Calendar, FileText, Trash2, Upload, Loader2, AlertCircle, CheckCircle } from "lucide-react"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { uploadDocument } from "@/app/actions/document-actions"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { getProject, type Project } from "@/app/actions/supabase-project-actions"
+import { getDocumentsByProject } from "@/lib/db"
+import { MapPin, Calendar, Activity, FileText, Download, Eye } from "lucide-react"
 
-interface ProjectDetailsProps {
-  project: Project
-  documents: Document[]
+interface Document {
+  id: string
+  title: string
+  description?: string
+  url: string
+  createdAt: string
+  projectId?: string
 }
 
-export default function ProjectDetails({ project, documents }: ProjectDetailsProps) {
-  const router = useRouter()
-  const [file, setFile] = useState<File | null>(null)
-  const [description, setDescription] = useState("")
-  const [isUploading, setIsUploading] = useState(false)
+interface ProjectDetailsProps {
+  projectId: string
+}
+
+export default function ProjectDetails({ projectId }: ProjectDetailsProps) {
+  const [project, setProject] = useState<Project | null>(null)
+  const [documents, setDocuments] = useState<Document[]>([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
-  const [isDeleting, setIsDeleting] = useState<string | null>(null)
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0])
+  useEffect(() => {
+    const loadProjectData = async () => {
+      try {
+        setLoading(true)
+
+        // Load project details
+        const projectResult = await getProject(projectId)
+        if (projectResult.success && projectResult.data) {
+          setProject(projectResult.data)
+        } else {
+          setError(projectResult.error || "Failed to load project")
+          return
+        }
+
+        // Load project documents
+        const documentsData = await getDocumentsByProject(projectId)
+        setDocuments(documentsData)
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "Unknown error")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (projectId) {
+      loadProjectData()
+    }
+  }, [projectId])
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "bg-green-500 hover:bg-green-600"
+      case "completed":
+        return "bg-blue-500 hover:bg-blue-600"
+      case "planned":
+        return "bg-yellow-500 hover:bg-yellow-600"
+      default:
+        return "bg-gray-500 hover:bg-gray-600"
     }
   }
 
-  const handleUpload = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!file) {
-      setError("Please select a file to upload")
-      return
-    }
-
-    setIsUploading(true)
-    setError(null)
-    setSuccess(null)
-
-    try {
-      const result = await uploadDocument(file, project.id, description)
-
-      if (!result.success) {
-        throw new Error(result.error || "Failed to upload document")
-      }
-
-      setSuccess("Document uploaded successfully!")
-      setFile(null)
-      setDescription("")
-
-      // Reset file input
-      const fileInput = document.getElementById("file-upload") as HTMLInputElement
-      if (fileInput) fileInput.value = ""
-
-      // Refresh the page to show the new document
-      router.refresh()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An unknown error occurred")
-    } finally {
-      setIsUploading(false)
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "active":
+        return <Activity className="h-4 w-4" />
+      case "completed":
+        return <Calendar className="h-4 w-4" />
+      case "planned":
+        return <MapPin className="h-4 w-4" />
+      default:
+        return null
     }
   }
 
-  const handleDeleteDocument = async (documentId: string) => {
-    if (!confirm("Are you sure you want to delete this document?")) {
-      return
-    }
+  const handleDocumentView = (url: string) => {
+    window.open(url, "_blank")
+  }
 
-    setIsDeleting(documentId)
+  const handleDocumentDownload = (url: string, title: string) => {
+    const link = document.createElement("a")
+    link.href = url
+    link.download = title
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
-    try {
-      const result = await deleteDocument(documentId)
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
+        <div className="text-white text-xl">Loading project details...</div>
+      </div>
+    )
+  }
 
-      if (!result.success) {
-        throw new Error(result.error || "Failed to delete document")
-      }
-
-      // Refresh the page to update the document list
-      router.refresh()
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "An unknown error occurred")
-    } finally {
-      setIsDeleting(null)
-    }
+  if (error || !project) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 p-4">
+        <div className="container mx-auto max-w-4xl">
+          <Alert className="border-red-500 bg-red-500/10">
+            <AlertDescription className="text-red-400">{error || "Project not found"}</AlertDescription>
+          </Alert>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-8">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-[#1b1464]">{project.name}</CardTitle>
-          <CardDescription>{project.description}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <div className="flex items-center text-gray-700 mb-2">
-                <MapPin className="h-5 w-5 mr-2" />
-                <span>{project.location}</span>
-              </div>
-              <div className="flex items-center text-gray-700">
-                <Calendar className="h-5 w-5 mr-2" />
-                <span>Created: {new Date(project.created_at).toLocaleDateString()}</span>
-              </div>
-            </div>
-            <div>
-              <div className="text-gray-700 mb-2">
-                <span className="font-medium">Coordinates:</span> {project.coordinates[0]}, {project.coordinates[1]}
-              </div>
-              {project.updated_at && (
-                <div className="text-gray-700">
-                  <span className="font-medium">Last Updated:</span> {new Date(project.updated_at).toLocaleDateString()}
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 p-4">
+      <div className="container mx-auto max-w-6xl">
+        {/* Project Header */}
+        <Card className="bg-gray-800 border-gray-700 mb-8">
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <div>
+                <CardTitle className="text-2xl text-white mb-2">{project.name}</CardTitle>
+                {project.description && <p className="text-gray-300 mb-4">{project.description}</p>}
+                <div className="flex items-center gap-4">
+                  <Badge className={`${getStatusColor(project.status)} text-white flex items-center gap-1`}>
+                    {getStatusIcon(project.status)}
+                    {project.status}
+                  </Badge>
+                  {project.location && (
+                    <div className="flex items-center gap-1 text-gray-400">
+                      <MapPin className="h-4 w-4" />
+                      <span>{project.location}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1 text-gray-400">
+                    <Calendar className="h-4 w-4" />
+                    <span>Created {new Date(project.created_at).toLocaleDateString()}</span>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardHeader>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Project Documents</CardTitle>
-          <CardDescription>Upload and manage documents related to this project</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <form onSubmit={handleUpload} className="space-y-4 border-b pb-6">
-              <h3 className="font-medium">Upload New Document</h3>
+        {/* Project Content */}
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="bg-gray-800 border-gray-700">
+            <TabsTrigger value="overview" className="text-white">
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="text-white">
+              Documents ({documents.length})
+            </TabsTrigger>
+            <TabsTrigger value="timeline" className="text-white">
+              Timeline
+            </TabsTrigger>
+          </TabsList>
 
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
+          <TabsContent value="overview">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Project Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="text-gray-400 text-sm">Project Name</label>
+                    <p className="text-white">{project.name}</p>
+                  </div>
+                  {project.description && (
+                    <div>
+                      <label className="text-gray-400 text-sm">Description</label>
+                      <p className="text-white">{project.description}</p>
+                    </div>
+                  )}
+                  {project.location && (
+                    <div>
+                      <label className="text-gray-400 text-sm">Location</label>
+                      <p className="text-white">{project.location}</p>
+                    </div>
+                  )}
+                  <div>
+                    <label className="text-gray-400 text-sm">Status</label>
+                    <div className="mt-1">
+                      <Badge className={`${getStatusColor(project.status)} text-white flex items-center gap-1 w-fit`}>
+                        {getStatusIcon(project.status)}
+                        {project.status}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-              {success && (
-                <Alert className="bg-green-50 border-green-500">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <AlertTitle className="text-green-700">Success</AlertTitle>
-                  <AlertDescription className="text-green-600">{success}</AlertDescription>
-                </Alert>
-              )}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Project Statistics</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Total Documents</span>
+                    <span className="text-white font-semibold">{documents.length}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Created Date</span>
+                    <span className="text-white font-semibold">
+                      {new Date(project.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Last Updated</span>
+                    <span className="text-white font-semibold">
+                      {new Date(project.updated_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
-              <div>
-                <Label htmlFor="file-upload">Document File</Label>
-                <Input id="file-upload" type="file" onChange={handleFileChange} className="mt-1" />
-              </div>
-
-              <div>
-                <Label htmlFor="description">Description (Optional)</Label>
-                <Input
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Enter document description"
-                  className="mt-1"
-                />
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isUploading || !file}
-                className="bg-[#1B1464] hover:bg-[#1B1464]/90 text-white"
-              >
-                {isUploading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Uploading...
-                  </>
+          <TabsContent value="documents">
+            <Card className="bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-white">Project Documents</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {documents.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-400 mb-4">No documents found for this project</p>
+                    <Button className="bg-blue-600 hover:bg-blue-700">Upload Document</Button>
+                  </div>
                 ) : (
-                  <>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload Document
-                  </>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {documents.map((document) => (
+                      <Card key={document.id} className="bg-gray-700 border-gray-600">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            <FileText className="h-8 w-8 text-blue-400 flex-shrink-0 mt-1" />
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-white truncate">{document.title}</h3>
+                              {document.description && (
+                                <p className="text-gray-300 text-sm mt-1 line-clamp-2">{document.description}</p>
+                              )}
+                              <p className="text-gray-400 text-xs mt-2">
+                                {new Date(document.createdAt).toLocaleDateString()}
+                              </p>
+                              <div className="flex gap-2 mt-3">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDocumentView(document.url)}
+                                  className="border-gray-600 text-gray-300 hover:bg-gray-600"
+                                >
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  View
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDocumentDownload(document.url, document.title)}
+                                  className="border-gray-600 text-gray-300 hover:bg-gray-600"
+                                >
+                                  <Download className="h-3 w-3 mr-1" />
+                                  Download
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 )}
-              </Button>
-            </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-            <div>
-              <h3 className="font-medium mb-4">Document List</h3>
-
-              {documents.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 rounded-lg">
-                  <FileText className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                  <p className="text-gray-500">No documents uploaded yet</p>
-                </div>
-              ) : (
+          <TabsContent value="timeline">
+            <Card className="bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-white">Project Timeline</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-4">
-                  {documents.map((doc) => (
-                    <div key={doc.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center">
-                        <FileText className="h-5 w-5 text-[#1b1464] mr-3" />
-                        <div>
-                          <h4 className="font-medium">{doc.name}</h4>
-                          {doc.description && <p className="text-sm text-gray-600">{doc.description}</p>}
-                          <p className="text-xs text-gray-500 mt-1">
-                            Uploaded: {new Date(doc.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
+                  <div className="flex items-center gap-4 p-4 bg-gray-700 rounded-lg">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <div>
+                      <p className="text-white font-medium">Project Created</p>
+                      <p className="text-gray-400 text-sm">{new Date(project.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+
+                  {project.updated_at !== project.created_at && (
+                    <div className="flex items-center gap-4 p-4 bg-gray-700 rounded-lg">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <div>
+                        <p className="text-white font-medium">Project Updated</p>
+                        <p className="text-gray-400 text-sm">{new Date(project.updated_at).toLocaleDateString()}</p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <a
-                          href={doc.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                        >
-                          View
-                        </a>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteDocument(doc.id)}
-                          disabled={isDeleting === doc.id}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        >
-                          {isDeleting === doc.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
-                        </Button>
+                    </div>
+                  )}
+
+                  {documents.map((document) => (
+                    <div key={document.id} className="flex items-center gap-4 p-4 bg-gray-700 rounded-lg">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <div>
+                        <p className="text-white font-medium">Document Added: {document.title}</p>
+                        <p className="text-gray-400 text-sm">{new Date(document.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   )
 }
