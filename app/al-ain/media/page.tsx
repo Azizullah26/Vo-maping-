@@ -56,7 +56,8 @@ const mockMediaItems: MediaItem[] = [
     name: "Construction Progress Video - Week 12",
     type: "video",
     url: "/placeholder-video.mp4",
-    thumbnail: "/placeholder.svg?height=200&width=300&text=Construction+Video",
+    thumbnail:
+      "https://images.pexels.com/photos/6473973/pexels-photo-6473973.jpeg?auto=compress&cs=tinysrgb&w=300&h=200",
     size: 15728640, // 15MB
     uploadDate: "2024-01-12",
     project: "7-projects",
@@ -68,6 +69,8 @@ const mockMediaItems: MediaItem[] = [
     name: "Project Specifications Document",
     type: "document",
     url: "/placeholder-document.pdf",
+    thumbnail:
+      "https://images.pexels.com/photos/32886453/pexels-photo-32886453.jpeg?auto=compress&cs=tinysrgb&w=300&h=200",
     size: 1048576, // 1MB
     uploadDate: "2024-01-10",
     project: "2-projects",
@@ -78,8 +81,9 @@ const mockMediaItems: MediaItem[] = [
     id: "4",
     name: "Al Ain Oasis Aerial Photography",
     type: "image",
-    url: "/placeholder.svg?height=400&width=600&text=Oasis+Aerial",
-    thumbnail: "/placeholder.svg?height=200&width=300&text=Oasis+Aerial",
+    url: "https://images.pexels.com/photos/27251844/pexels-photo-27251844.png",
+    thumbnail:
+      "https://images.pexels.com/photos/27251844/pexels-photo-27251844.png?auto=compress&cs=tinysrgb&w=300&h=200",
     size: 3145728, // 3MB
     uploadDate: "2024-01-08",
     project: "1-project",
@@ -91,8 +95,9 @@ const mockMediaItems: MediaItem[] = [
     id: "5",
     name: "Police Station Interior Design",
     type: "image",
-    url: "/placeholder.svg?height=400&width=600&text=Police+Interior",
-    thumbnail: "/placeholder.svg?height=200&width=300&text=Police+Interior",
+    url: "https://images.pexels.com/photos/32898130/pexels-photo-32898130.jpeg",
+    thumbnail:
+      "https://images.pexels.com/photos/32898130/pexels-photo-32898130.jpeg?auto=compress&cs=tinysrgb&w=300&h=200",
     size: 1572864, // 1.5MB
     uploadDate: "2024-01-05",
     project: "al-saad-police",
@@ -280,7 +285,7 @@ export default function MediaPage() {
               </CardHeader>
               <CardContent className="p-3 sm:p-4 pt-0">
                 {/* Thumbnail */}
-                {item.type === "image" && item.thumbnail && (
+                {item.thumbnail && (
                   <div className="mb-3 sm:mb-4">
                     <div className="relative w-full h-32 sm:h-40 rounded-lg overflow-hidden border border-cyan-400/30">
                       <img
