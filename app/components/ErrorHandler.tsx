@@ -4,30 +4,31 @@ import { useEffect } from "react";
 
 export default function ErrorHandler() {
   useEffect(() => {
-    // Suppress Mapbox AbortErrors which are not critical
+    // More aggressive Mapbox error suppression
     const handleError = (e: ErrorEvent) => {
-      // Check for AbortError with various message patterns
-      if (
-        e.error?.name === "AbortError" &&
-        (e.error?.message?.includes("signal is aborted") ||
-          e.error?.message?.includes("aborted") ||
-          e.error?.stack?.includes("mapbox-gl.js"))
-      ) {
-        console.debug("Suppressed Mapbox AbortError:", e.error.message);
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
+      // Check for any AbortError that might be from Mapbox
+      if (e.error?.name === "AbortError") {
+        const stack = e.error?.stack || "";
+        const message = e.error?.message || "";
 
-      // Also catch generic AbortErrors that might be from Mapbox
-      if (
-        e.error?.name === "AbortError" &&
-        e.error?.stack?.includes("mapbox")
-      ) {
-        console.debug("Suppressed Mapbox-related AbortError:", e.error.message);
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
+        // Suppress if it contains any Mapbox-related patterns
+        if (
+          message.includes("signal is aborted") ||
+          message.includes("aborted without reason") ||
+          stack.includes("mapbox-gl.js") ||
+          stack.includes("mapbox") ||
+          stack.includes("api.mapbox.com") ||
+          stack.includes("abortTile") ||
+          stack.includes("_removeTile") ||
+          stack.includes("updateSources") ||
+          stack.includes("Map._render")
+        ) {
+          console.debug("Suppressed Mapbox AbortError:", message);
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          return false;
+        }
       }
     };
 
