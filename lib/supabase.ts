@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js"
+import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 
 // Environment variables validation
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -13,17 +13,22 @@ if (!supabaseAnonKey) {
   throw new Error("Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable")
 }
 
-// Create Supabase client for client-side operations
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-  },
-})
+// Create client function (named export)
+export const createClient = () => {
+  return createSupabaseClient(supabaseUrl!, supabaseAnonKey!, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  })
+}
+
+// Create Supabase client instance
+const supabase = createClient()
 
 // Create Supabase client for server-side operations (admin)
 export const supabaseAdmin = supabaseServiceKey
-  ? createClient(supabaseUrl, supabaseServiceKey, {
+  ? createSupabaseClient(supabaseUrl!, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
@@ -56,5 +61,8 @@ export function isSupabaseConfigured(): boolean {
   return !!(supabaseUrl && supabaseAnonKey)
 }
 
-// Export types for TypeScript
-export type { Database } from "../types/supabase"
+// Named export
+export { supabase }
+
+// Default export
+export default supabase
