@@ -216,7 +216,7 @@ const HIDDEN_AT_START = [
   "المتابعة الشرطية والرعاية اللاحقة",
   "ادارة المهام الخاصة العين",
   "مبنى التحريات والمخدرات",
-  "إدار�� الأسلحة والمتفجرات",
+  "إدار��� الأسلحة والمتفجرات",
   "مركز شرطة فلج هزاع",
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
@@ -276,7 +276,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة القوع (فلل صحة)",
   "نقطة ثبات الروضة",
   "فرع الضبط المروري (الخزنة)",
-  "مبنى إدارات (التربية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
+  "مبنى إدارات (التربية ��لرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
   "1 Project",
   "مركز شرطة سويحان",
   "مركز شرطة الهير",
@@ -918,43 +918,42 @@ export default function AlAinMap({
           clearTimeout(debounceTimerRef.current);
         }
 
-        // Proper cleanup to prevent AbortError
+        // Safer cleanup to prevent AbortError
         if (map.current) {
-          // Remove all event listeners first
-          map.current.off();
+          try {
+            // Remove all event listeners first
+            map.current.off();
 
-          // Stop any ongoing map operations
-          map.current.stop();
+            // Stop any ongoing operations
+            map.current.stop();
 
-          // Clear all sources and layers to prevent tile loading issues
-          const style = map.current.getStyle();
-          if (style && style.layers) {
-            style.layers.forEach((layer) => {
+            // Set a minimal style to clear existing sources without triggering aborts
+            map.current.setStyle({
+              version: 8,
+              sources: {},
+              layers: [],
+            });
+
+            // Small delay to allow style to clear, then remove
+            setTimeout(() => {
               try {
-                if (map.current && map.current.getLayer(layer.id)) {
-                  map.current.removeLayer(layer.id);
+                if (map.current) {
+                  map.current.remove();
+                  map.current = null;
                 }
               } catch (e) {
-                // Ignore errors when removing layers
+                console.warn("Map already removed or error during removal:", e);
               }
-            });
+            }, 50);
+          } catch (e) {
+            // If setStyle fails, try immediate removal
+            try {
+              map.current.remove();
+              map.current = null;
+            } catch (removeError) {
+              console.warn("Error during map removal:", removeError);
+            }
           }
-
-          if (style && style.sources) {
-            Object.keys(style.sources).forEach((sourceId) => {
-              try {
-                if (map.current && map.current.getSource(sourceId)) {
-                  map.current.removeSource(sourceId);
-                }
-              } catch (e) {
-                // Ignore errors when removing sources
-              }
-            });
-          }
-
-          // Finally remove the map
-          map.current.remove();
-          map.current = null;
         }
 
         document
