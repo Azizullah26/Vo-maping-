@@ -242,7 +242,7 @@ const PROJECT_NUMBERS: { [key: string]: string } = {
 
 const HOVERABLE_MARKERS = [
   "قسم موسيقى شرطة أبوظبي",
-  "إدارة التأهيل الشرطي - الفوعة",
+  "إدارة التأهيل الشرطي - الف��عة",
   "مركز شرطة هيلي",
   "ميدان الشرطة بدع بنت سعود",
   "متحف شرطة المربعة",
@@ -269,7 +269,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة فلج هزاع",
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
-  "مركز شرطة الساد",
+  "م��كز شرطة الساد",
   "ساحة حجز المركبات - الساد",
   "مركز شرطة الوقن",
   "مركز شرطة الجيمي",
@@ -501,7 +501,7 @@ export default function AlAinMap({
         "Police Rehabilitation Department - Al Foua",
       "مركز شرطة هيلي": "Hili Police Station",
       "1 Project": "Al Ain Development Project",
-      "مركز شرطة الوقن": "Al Wagan Police Station",
+      "مركز شرطة ال��قن": "Al Wagan Police Station",
     };
     return nameMap[name] || "Police Facility";
   }
@@ -592,10 +592,10 @@ export default function AlAinMap({
 
       // Calculate zoom to fit all markers and boundaries within viewport
       if (width <= 480) {
-        // Mobile: Calculate zoom based on screen dimensions and map bounds
+        // Mobile: Calculate zoom based on screen dimensions and expanded map bounds
         const mapBounds = {
-          lng: 56.147585702153094 - 54.34922496616619, // ~1.8 degrees
-          lat: 24.98337183507047 - 23.273700903075678, // ~1.7 degrees
+          lng: 56.6 - 53.8, // ~2.8 degrees (expanded)
+          lat: 25.5 - 22.8, // ~2.7 degrees (expanded)
         };
 
         // Account for mobile screen aspect ratio and margins
