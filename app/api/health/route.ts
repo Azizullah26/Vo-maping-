@@ -37,24 +37,10 @@ async function checkDatabase() {
 
 async function checkExternalServices() {
   const services = {
-    mapbox: await checkMapboxService(),
     supabase: await checkSupabaseService(),
   }
 
   return services
-}
-
-async function checkMapboxService() {
-  try {
-    // Check if Mapbox token is configured without exposing it
-    const hasMapboxToken = !!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
-    if (!hasMapboxToken) {
-      return { status: "not_configured", message: "Mapbox token not configured" }
-    }
-    return { status: "configured", message: "Mapbox token is configured" }
-  } catch (error) {
-    return { status: "error", message: "Mapbox service check failed" }
-  }
 }
 
 async function checkSupabaseService() {

@@ -1,68 +1,46 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js"
+import type { Database } from "@/types/supabase"
 
 // Environment variables validation
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-if (!supabaseUrl) {
-  throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL environment variable")
-}
-
-if (!supabaseAnonKey) {
-  throw new Error("Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable")
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Missing Supabase environment variables")
 }
 
 // Create client function (named export)
-export const createClient = () => {
-  return createSupabaseClient(supabaseUrl!, supabaseAnonKey!, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-    },
-  })
+export function createClient() {
+  return createSupabaseClient<Database>(supabaseUrl!, supabaseAnonKey!)
 }
 
-// Create Supabase client instance
-const supabase = createClient()
+// Main client instance
+export const supabase = createSupabaseClient<Database>(supabaseUrl!, supabaseAnonKey!)
 
-// Create Supabase client for server-side operations (admin)
-export const supabaseAdmin = supabaseServiceKey
-  ? createSupabaseClient(supabaseUrl!, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    })
+// Admin client for server-side operations
+export const supabaseAdmin = supabaseServiceRoleKey
+  ? createSupabaseClient<Database>(supabaseUrl!, supabaseServiceRoleKey!)
   : null
 
-// Database connection test
+// Test connection function
 export async function testSupabaseConnection() {
   try {
     const { data, error } = await supabase.from("projects").select("count").limit(1)
-
-    if (error) {
-      console.error("Supabase connection test failed:", error)
-      return { success: false, error: error.message }
-    }
-
-    return { success: true, data }
+    if (error) throw error
+    return { success: true, message: "Connection successful" }
   } catch (error) {
-    console.error("Supabase connection test error:", error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      message: error instanceof Error ? error.message : "Connection failed",
     }
   }
 }
 
-// Helper function to check if Supabase is properly configured
+// Check if Supabase is properly configured
 export function isSupabaseConfigured(): boolean {
   return !!(supabaseUrl && supabaseAnonKey)
 }
-
-// Named export
-export { supabase }
 
 // Default export
 export default supabase

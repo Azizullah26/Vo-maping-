@@ -1,140 +1,61 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { User, Session } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
-
-export interface AuthState {
-  user: User | null
-  session: Session | null
-  loading: boolean
-  error: string | null
-}
+import type { User, Session } from "@supabase/supabase-js"
 
 export function useSupabaseAuth() {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    session: null,
-    loading: true,
-    error: null,
-  })
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Get initial session
-    const getInitialSession = async () => {
-      try {
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession()
-
-        if (error) {
-          setAuthState((prev) => ({ ...prev, error: error.message, loading: false }))
-          return
-        }
-
-        setAuthState({
-          user: session?.user || null,
-          session,
-          loading: false,
-          error: null,
-        })
-      } catch (error) {
-        setAuthState((prev) => ({
-          ...prev,
-          error: error instanceof Error ? error.message : "Unknown error",
-          loading: false,
-        }))
-      }
-    }
-
-    getInitialSession()
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setAuthState({
-        user: session?.user || null,
-        session,
-        loading: false,
-        error: null,
-      })
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
     })
 
-    return () => {
-      subscription.unsubscribe()
-    }
+    return () => subscription.unsubscribe()
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    try {
-      setAuthState((prev) => ({ ...prev, loading: true, error: null }))
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (error) {
-        setAuthState((prev) => ({ ...prev, error: error.message, loading: false }))
-        return { success: false, error: error.message }
-      }
-
-      return { success: true, data }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error"
-      setAuthState((prev) => ({ ...prev, error: errorMessage, loading: false }))
-      return { success: false, error: errorMessage }
-    }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    return { data, error }
   }
 
   const signUp = async (email: string, password: string) => {
-    try {
-      setAuthState((prev) => ({ ...prev, loading: true, error: null }))
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      })
-
-      if (error) {
-        setAuthState((prev) => ({ ...prev, error: error.message, loading: false }))
-        return { success: false, error: error.message }
-      }
-
-      return { success: true, data }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error"
-      setAuthState((prev) => ({ ...prev, error: errorMessage, loading: false }))
-      return { success: false, error: errorMessage }
-    }
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    })
+    return { data, error }
   }
 
   const signOut = async () => {
-    try {
-      setAuthState((prev) => ({ ...prev, loading: true, error: null }))
-
-      const { error } = await supabase.auth.signOut()
-
-      if (error) {
-        setAuthState((prev) => ({ ...prev, error: error.message, loading: false }))
-        return { success: false, error: error.message }
-      }
-
-      return { success: true }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error"
-      setAuthState((prev) => ({ ...prev, error: errorMessage, loading: false }))
-      return { success: false, error: errorMessage }
-    }
+    const { error } = await supabase.auth.signOut()
+    return { error }
   }
 
   return {
-    ...authState,
+    user,
+    session,
+    loading,
     signIn,
     signUp,
     signOut,
-    isAuthenticated: !!authState.user,
   }
 }
