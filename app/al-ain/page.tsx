@@ -33,7 +33,7 @@ export default function AlAin() {
         id: 1,
         x: -20,
         y: Math.random() * 15 + 5, // Top 20% of screen
-        size: Math.random() * 80 + 60,
+        size: Math.random() * 60 + 40, // Smaller clouds on mobile
         opacity: Math.random() * 0.4 + 0.3,
         speed: Math.random() * 0.3 + 0.2,
         zone: "top" as const,
@@ -42,7 +42,7 @@ export default function AlAin() {
         id: 2,
         x: -50,
         y: Math.random() * 15 + 10,
-        size: Math.random() * 100 + 80,
+        size: Math.random() * 80 + 60, // Smaller clouds on mobile
         opacity: Math.random() * 0.3 + 0.2,
         speed: Math.random() * 0.25 + 0.15,
         zone: "top" as const,
@@ -52,7 +52,7 @@ export default function AlAin() {
         id: 3,
         x: -30,
         y: Math.random() * 15 + 75, // Bottom 25% of screen
-        size: Math.random() * 90 + 70,
+        size: Math.random() * 70 + 50, // Smaller clouds on mobile
         opacity: Math.random() * 0.35 + 0.25,
         speed: Math.random() * 0.2 + 0.1,
         zone: "bottom" as const,
@@ -61,7 +61,7 @@ export default function AlAin() {
         id: 4,
         x: -60,
         y: Math.random() * 10 + 80,
-        size: Math.random() * 110 + 90,
+        size: Math.random() * 90 + 70, // Smaller clouds on mobile
         opacity: Math.random() * 0.3 + 0.2,
         speed: Math.random() * 0.15 + 0.08,
         zone: "bottom" as const,
@@ -126,11 +126,21 @@ export default function AlAin() {
             src="/cloud-7.png"
             alt="Cloud"
             style={{
-              width: `${cloud.size}px`,
+              width: `${cloud.size * 0.7}px`, // Smaller clouds on mobile
               height: "auto",
               filter: "brightness(1.1) contrast(0.9)",
             }}
-            className="drop-shadow-sm"
+            className="drop-shadow-sm sm:hidden"
+          />
+          <img
+            src="/cloud-7.png"
+            alt="Cloud"
+            style={{
+              width: `${cloud.size}px`, // Original size on larger screens
+              height: "auto",
+              filter: "brightness(1.1) contrast(0.9)",
+            }}
+            className="drop-shadow-sm hidden sm:block"
           />
         </div>
       ))}
@@ -138,7 +148,7 @@ export default function AlAin() {
       {/* Main Content Container */}
       <div className="relative z-10 flex h-full w-full items-center justify-center">
         {/* Video Container */}
-        <div className="relative h-[calc(min(45vh,50vw))] w-[calc(min(45vh,50vw))] sm:h-[calc(min(60vh,70vw))] sm:w-[calc(min(60vh,70vw))] overflow-hidden rounded-3xl shadow-2xl">
+        <div className="relative h-[calc(min(35vh,40vw))] w-[calc(min(35vh,40vw))] sm:h-[calc(min(60vh,70vw))] sm:w-[calc(min(60vh,70vw))] overflow-hidden rounded-2xl sm:rounded-3xl shadow-2xl">
           <video
             ref={videoRef}
             src="/al-ain.mp4"
