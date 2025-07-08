@@ -203,7 +203,7 @@ const HIDDEN_AT_START = [
   "نادي ض��اط الشرطة",
   "مركز شرطة زاخر",
   "فلل فلج هزاع",
-  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتم��ية - قسم تأجير المركبات - قسم الاستقطاب)",
+  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبا�� - قسم الاستقطاب)",
   "قسم التفتيش الأمني K9",
   "الضبط المروري والمراسم",
   "ساحة حجز المركبات فلج هزاع",
@@ -594,8 +594,8 @@ export default function AlAinMap({
     const getInitialZoom = () => {
       if (typeof window === "undefined") return 0.02;
       const width = window.innerWidth;
-      if (width <= 480) return 0.15; // More zoomed out for mobile
-      if (width >= 481 && width <= 768) return 0.2; // More zoomed out for tablet
+      if (width <= 480) return 0.08; // Much more zoomed out for mobile
+      if (width >= 481 && width <= 768) return 0.12; // Much more zoomed out for tablet
       return 6.0; // Zoomed out more for desktops
     };
 
