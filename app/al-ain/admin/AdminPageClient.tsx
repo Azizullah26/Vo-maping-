@@ -1,427 +1,488 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Loader2, Plus, Eye, Edit, Trash2, AlertCircle, CheckCircle, Clock, Play } from "lucide-react"
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
+import { useProjectsRealtime } from "@/hooks/useSupabaseRealtime"
+import { getProjects, getProjectStats, deleteProject, type Project } from "@/app/actions/supabase-project-actions"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
-import { useSupabaseRealtime } from "@/hooks/useSupabaseRealtime"
-import {
-  createProject,
-  updateProject,
-  deleteProject,
-  getProjects,
-  type Project,
-} from "@/app/actions/supabase-project-actions"
-import { getAllDocuments } from "@/lib/db"
-import { Plus, Edit, Trash2, FileText, Users, Database, Activity } from "lucide-react"
 
-interface Document {
-  id: string
-  title: string
-  description?: string
-  url: string
-  createdAt: string
-  projectId?: string
+interface ProjectStats {
+  total: number
+  planned: number
+  active: number
+  completed: number
 }
 
 export default function AdminPageClient() {
-  const { user, loading: authLoading, signOut } = useSupabaseAuth()
   const [projects, setProjects] = useState<Project[]>([])
-  const [documents, setDocuments] = useState<Document[]>([])
+  const [stats, setStats] = useState<ProjectStats>({ total: 0, planned: 0, active: 0, completed: 0 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
-  // Real-time subscription for projects
-  useSupabaseRealtime({
-    table: "projects",
-    onInsert: (payload) => {
-      setProjects((prev) => [payload.new, ...prev])
-    },
-    onUpdate: (payload) => {
-      setProjects((prev) => prev.map((p) => (p.id === payload.new.id ? payload.new : p)))
-    },
-    onDelete: (payload) => {
-      setProjects((prev) => prev.filter((p) => p.id !== payload.old.id))
-    },
+  const { user, loading: authLoading, signOut } = useSupabaseAuth()
+
+  // Set up realtime updates for projects
+  useProjectsRealtime((project) => {
+    // Refresh data when projects change
+    loadProjects()
+    loadStats()
   })
 
-  // Load initial data
+  const loadProjects = async () => {
+    try {
+      const result = await getProjects()
+      if (result.success && result.data) {
+        setProjects(result.data)
+        setError(null)
+      } else {
+        setError(result.error || "Failed to load projects")
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Unknown error")
+    }
+  }
+
+  const loadStats = async () => {
+    try {
+      const result = await getProjectStats()
+      if (result.success && result.data) {
+        setStats(result.data)
+      }
+    } catch (error) {
+      console.error("Error loading stats:", error)
+    }
+  }
+
+  const handleDeleteProject = async (project: Project) => {
+    try {
+      const result = await deleteProject(project.id)
+      if (result.success) {
+        setProjects((prev) => prev.filter((p) => p.id !== project.id))
+        setIsDeleteDialogOpen(false)
+        setSelectedProject(null)
+      } else {
+        setError(result.error || "Failed to delete project")
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Unknown error")
+    }
+  }
+
   useEffect(() => {
     const loadData = async () => {
-      try {
-        setLoading(true)
-
-        // Load projects
-        const projectsResult = await getProjects()
-        if (projectsResult.success && projectsResult.data) {
-          setProjects(projectsResult.data)
-        } else {
-          setError(projectsResult.error || "Failed to load projects")
-        }
-
-        // Load documents
-        const documentsData = await getAllDocuments()
-        setDocuments(documentsData)
-      } catch (error) {
-        setError(error instanceof Error ? error.message : "Unknown error")
-      } finally {
-        setLoading(false)
-      }
+      setLoading(true)
+      await Promise.all([loadProjects(), loadStats()])
+      setLoading(false)
     }
 
     loadData()
   }, [])
 
-  const handleCreateProject = async (formData: FormData) => {
-    const result = await createProject(formData)
-    if (result.success) {
-      setIsCreateDialogOpen(false)
-    } else {
-      setError(result.error || "Failed to create project")
-    }
-  }
-
-  const handleUpdateProject = async (formData: FormData) => {
-    if (!selectedProject) return
-
-    const result = await updateProject(selectedProject.id, formData)
-    if (result.success) {
-      setIsEditDialogOpen(false)
-      setSelectedProject(null)
-    } else {
-      setError(result.error || "Failed to update project")
-    }
-  }
-
-  const handleDeleteProject = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this project?")) return
-
-    const result = await deleteProject(id)
-    if (!result.success) {
-      setError(result.error || "Failed to delete project")
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "planned":
+        return <Clock className="h-4 w-4" />
+      case "active":
+        return <Play className="h-4 w-4" />
+      case "completed":
+        return <CheckCircle className="h-4 w-4" />
+      default:
+        return <AlertCircle className="h-4 w-4" />
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active":
-        return "bg-green-500"
-      case "completed":
-        return "bg-blue-500"
       case "planned":
-        return "bg-yellow-500"
+        return "bg-yellow-100 text-yellow-800"
+      case "active":
+        return "bg-blue-100 text-blue-800"
+      case "completed":
+        return "bg-green-100 text-green-800"
       default:
-        return "bg-gray-500"
+        return "bg-gray-100 text-gray-800"
     }
   }
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading...</span>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Authentication Required</CardTitle>
+            <CardDescription>Please sign in to access the admin panel</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => (window.location.href = "/login")} className="w-full">
+              Sign In
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 p-4">
-      <div className="container mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
-            <p className="text-gray-300">Manage projects and documents for ELRACE UAE</p>
-          </div>
-          <div className="flex items-center gap-4">
-            {user && <div className="text-white text-sm">Welcome, {user.email}</div>}
-            <Button onClick={signOut} variant="outline">
-              Sign Out
-            </Button>
-          </div>
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Manage projects and system settings</p>
         </div>
-
-        {error && (
-          <Alert className="mb-6 border-red-500 bg-red-500/10">
-            <AlertDescription className="text-red-400">{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gray-800 border-gray-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Total Projects</p>
-                  <p className="text-2xl font-bold text-white">{projects.length}</p>
-                </div>
-                <Database className="h-8 w-8 text-blue-400" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gray-800 border-gray-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Active Projects</p>
-                  <p className="text-2xl font-bold text-white">
-                    {projects.filter((p) => p.status === "active").length}
-                  </p>
-                </div>
-                <Activity className="h-8 w-8 text-green-400" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gray-800 border-gray-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Documents</p>
-                  <p className="text-2xl font-bold text-white">{documents.length}</p>
-                </div>
-                <FileText className="h-8 w-8 text-purple-400" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gray-800 border-gray-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Completed</p>
-                  <p className="text-2xl font-bold text-white">
-                    {projects.filter((p) => p.status === "completed").length}
-                  </p>
-                </div>
-                <Users className="h-8 w-8 text-yellow-400" />
-              </div>
-            </CardContent>
-          </Card>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-muted-foreground">Welcome, {user.email}</span>
+          <Button variant="outline" onClick={signOut}>
+            Sign Out
+          </Button>
         </div>
+      </div>
 
-        {/* Main Content */}
-        <Tabs defaultValue="projects" className="space-y-6">
-          <TabsList className="bg-gray-800 border-gray-700">
-            <TabsTrigger value="projects" className="text-white">
-              Projects
-            </TabsTrigger>
-            <TabsTrigger value="documents" className="text-white">
-              Documents
-            </TabsTrigger>
-          </TabsList>
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-          <TabsContent value="projects">
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-white">Projects Management</CardTitle>
-                  <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="bg-blue-600 hover:bg-blue-700">
-                        <Plus className="h-4 w-4 mr-2" />
-                        New Project
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.total}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Planned</CardTitle>
+            <Clock className="h-4 w-4 text-yellow-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.planned}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active</CardTitle>
+            <Play className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.active}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.completed}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content */}
+      <Tabs defaultValue="projects" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="projects">Projects</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="projects" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Projects</h2>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Project
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create New Project</DialogTitle>
+                  <DialogDescription>Add a new project to the system</DialogDescription>
+                </DialogHeader>
+                <ProjectForm onClose={() => setIsCreateDialogOpen(false)} onSuccess={loadProjects} />
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {projects.map((project) => (
+              <Card key={project.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-lg">{project.name}</CardTitle>
+                    <Badge className={getStatusColor(project.status)}>
+                      <div className="flex items-center gap-1">
+                        {getStatusIcon(project.status)}
+                        {project.status}
+                      </div>
+                    </Badge>
+                  </div>
+                  {project.description && <CardDescription>{project.description}</CardDescription>}
+                </CardHeader>
+                <CardContent>
+                  {project.location && <p className="text-sm text-muted-foreground mb-2">📍 {project.location}</p>}
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">
+                      Created: {new Date(project.created_at).toLocaleDateString()}
+                    </span>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline">
+                        <Eye className="h-4 w-4" />
                       </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-gray-800 border-gray-700">
-                      <DialogHeader>
-                        <DialogTitle className="text-white">Create New Project</DialogTitle>
-                      </DialogHeader>
-                      <form action={handleCreateProject} className="space-y-4">
-                        <div>
-                          <Label htmlFor="name" className="text-white">
-                            Project Name
-                          </Label>
-                          <Input id="name" name="name" required className="bg-gray-700 border-gray-600 text-white" />
-                        </div>
-                        <div>
-                          <Label htmlFor="description" className="text-white">
-                            Description
-                          </Label>
-                          <Textarea
-                            id="description"
-                            name="description"
-                            className="bg-gray-700 border-gray-600 text-white"
+                      <Dialog
+                        open={isEditDialogOpen && selectedProject?.id === project.id}
+                        onOpenChange={(open) => {
+                          setIsEditDialogOpen(open)
+                          if (!open) setSelectedProject(null)
+                        }}
+                      >
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline" onClick={() => setSelectedProject(project)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Edit Project</DialogTitle>
+                            <DialogDescription>Update project information</DialogDescription>
+                          </DialogHeader>
+                          <ProjectForm
+                            project={selectedProject}
+                            onClose={() => {
+                              setIsEditDialogOpen(false)
+                              setSelectedProject(null)
+                            }}
+                            onSuccess={loadProjects}
                           />
-                        </div>
-                        <div>
-                          <Label htmlFor="location" className="text-white">
-                            Location
-                          </Label>
-                          <Input id="location" name="location" className="bg-gray-700 border-gray-600 text-white" />
-                        </div>
-                        <div>
-                          <Label htmlFor="status" className="text-white">
-                            Status
-                          </Label>
-                          <Select name="status" defaultValue="planned">
-                            <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="planned">Planned</SelectItem>
-                              <SelectItem value="active">Active</SelectItem>
-                              <SelectItem value="completed">Completed</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-                          Create Project
-                        </Button>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {projects.map((project) => (
-                    <Card key={project.id} className="bg-gray-700 border-gray-600">
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold text-white truncate">{project.name}</h3>
-                          <Badge className={`${getStatusColor(project.status)} text-white`}>{project.status}</Badge>
-                        </div>
-                        {project.description && (
-                          <p className="text-gray-300 text-sm mb-2 line-clamp-2">{project.description}</p>
-                        )}
-                        {project.location && <p className="text-gray-400 text-xs mb-3">{project.location}</p>}
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-400 text-xs">
-                            {new Date(project.created_at).toLocaleDateString()}
-                          </span>
-                          <div className="flex gap-2">
+                        </DialogContent>
+                      </Dialog>
+                      <Dialog
+                        open={isDeleteDialogOpen && selectedProject?.id === project.id}
+                        onOpenChange={(open) => {
+                          setIsDeleteDialogOpen(open)
+                          if (!open) setSelectedProject(null)
+                        }}
+                      >
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="destructive" onClick={() => setSelectedProject(project)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Delete Project</DialogTitle>
+                            <DialogDescription>
+                              Are you sure you want to delete "{selectedProject?.name}"? This action cannot be undone.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="flex justify-end gap-2">
                             <Button
-                              size="sm"
                               variant="outline"
                               onClick={() => {
-                                setSelectedProject(project)
-                                setIsEditDialogOpen(true)
+                                setIsDeleteDialogOpen(false)
+                                setSelectedProject(null)
                               }}
                             >
-                              <Edit className="h-3 w-3" />
+                              Cancel
                             </Button>
-                            <Button size="sm" variant="destructive" onClick={() => handleDeleteProject(project.id)}>
-                              <Trash2 className="h-3 w-3" />
+                            <Button
+                              variant="destructive"
+                              onClick={() => selectedProject && handleDeleteProject(selectedProject)}
+                            >
+                              Delete
                             </Button>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
 
-          <TabsContent value="documents">
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white">Documents Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {documents.map((document) => (
-                    <Card key={document.id} className="bg-gray-700 border-gray-600">
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          <FileText className="h-8 w-8 text-blue-400 flex-shrink-0 mt-1" />
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-white truncate">{document.title}</h3>
-                            {document.description && (
-                              <p className="text-gray-300 text-sm mt-1 line-clamp-2">{document.description}</p>
-                            )}
-                            <p className="text-gray-400 text-xs mt-2">
-                              {new Date(document.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        <TabsContent value="documents">
+          <Card>
+            <CardHeader>
+              <CardTitle>Document Management</CardTitle>
+              <CardDescription>Manage project documents and files</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Document management features coming soon...</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-        {/* Edit Project Dialog */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="bg-gray-800 border-gray-700">
-            <DialogHeader>
-              <DialogTitle className="text-white">Edit Project</DialogTitle>
-            </DialogHeader>
-            {selectedProject && (
-              <form action={handleUpdateProject} className="space-y-4">
-                <div>
-                  <Label htmlFor="edit-name" className="text-white">
-                    Project Name
-                  </Label>
-                  <Input
-                    id="edit-name"
-                    name="name"
-                    defaultValue={selectedProject.name}
-                    required
-                    className="bg-gray-700 border-gray-600 text-white"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="edit-description" className="text-white">
-                    Description
-                  </Label>
-                  <Textarea
-                    id="edit-description"
-                    name="description"
-                    defaultValue={selectedProject.description || ""}
-                    className="bg-gray-700 border-gray-600 text-white"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="edit-location" className="text-white">
-                    Location
-                  </Label>
-                  <Input
-                    id="edit-location"
-                    name="location"
-                    defaultValue={selectedProject.location || ""}
-                    className="bg-gray-700 border-gray-600 text-white"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="edit-status" className="text-white">
-                    Status
-                  </Label>
-                  <Select name="status" defaultValue={selectedProject.status}>
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="planned">Planned</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-                  Update Project
-                </Button>
-              </form>
-            )}
-          </DialogContent>
-        </Dialog>
-      </div>
+        <TabsContent value="settings">
+          <Card>
+            <CardHeader>
+              <CardTitle>System Settings</CardTitle>
+              <CardDescription>Configure system preferences and settings</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Settings panel coming soon...</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
+  )
+}
+
+// Project Form Component
+function ProjectForm({
+  project,
+  onClose,
+  onSuccess,
+}: {
+  project?: Project | null
+  onClose: () => void
+  onSuccess: () => void
+}) {
+  const [formData, setFormData] = useState({
+    name: project?.name || "",
+    description: project?.description || "",
+    location: project?.location || "",
+    status: project?.status || ("planned" as const),
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    try {
+      // Import the actions dynamically to avoid issues
+      const { createProject, updateProject } = await import("@/app/actions/supabase-project-actions")
+
+      let result
+      if (project) {
+        result = await updateProject({ id: project.id, ...formData })
+      } else {
+        result = await createProject(formData)
+      }
+
+      if (result.success) {
+        onSuccess()
+        onClose()
+      } else {
+        setError(result.error || "Failed to save project")
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Unknown error")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="space-y-2">
+        <Label htmlFor="name">Project Name</Label>
+        <Input
+          id="name"
+          value={formData.name}
+          onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+          rows={3}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="location">Location</Label>
+        <Input
+          id="location"
+          value={formData.location}
+          onChange={(e) => setFormData((prev) => ({ ...prev, location: e.target.value }))}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="status">Status</Label>
+        <Select
+          value={formData.status}
+          onValueChange={(value: any) => setFormData((prev) => ({ ...prev, status: value }))}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="planned">Planned</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={loading}>
+          {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+          {project ? "Update" : "Create"} Project
+        </Button>
+      </div>
+    </form>
   )
 }

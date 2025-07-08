@@ -1,22 +1,27 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Loader2, FileText, Download, Eye, Upload, AlertCircle, CheckCircle, Clock, Play } from "lucide-react"
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
+import { useDocumentsRealtime } from "@/hooks/useSupabaseRealtime"
 import { getProject, type Project } from "@/app/actions/supabase-project-actions"
-import { getDocumentsByProject } from "@/lib/db"
-import { MapPin, Calendar, Activity, FileText, Download, Eye } from "lucide-react"
 
 interface Document {
   id: string
-  title: string
-  description?: string
-  url: string
-  createdAt: string
-  projectId?: string
+  name: string
+  file_url: string
+  file_type: string
+  file_size: number
+  project_id: string
+  created_at: string
+  updated_at: string
 }
 
 interface ProjectDetailsProps {
@@ -28,299 +33,333 @@ export default function ProjectDetails({ projectId }: ProjectDetailsProps) {
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
 
-  useEffect(() => {
-    const loadProjectData = async () => {
-      try {
-        setLoading(true)
+  const { user } = useSupabaseAuth()
 
-        // Load project details
-        const projectResult = await getProject(projectId)
-        if (projectResult.success && projectResult.data) {
-          setProject(projectResult.data)
-        } else {
-          setError(projectResult.error || "Failed to load project")
-          return
-        }
+  // Set up realtime updates for documents
+  useDocumentsRealtime(projectId, (document) => {
+    loadDocuments()
+  })
 
-        // Load project documents
-        const documentsData = await getDocumentsByProject(projectId)
-        setDocuments(documentsData)
-      } catch (error) {
-        setError(error instanceof Error ? error.message : "Unknown error")
-      } finally {
-        setLoading(false)
+  const loadProject = async () => {
+    try {
+      const result = await getProject(projectId)
+      if (result.success && result.data) {
+        setProject(result.data)
+        setError(null)
+      } else {
+        setError(result.error || "Failed to load project")
       }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Unknown error")
     }
+  }
 
-    if (projectId) {
-      loadProjectData()
+  const loadDocuments = async () => {
+    try {
+      // This would be implemented with Supabase document queries
+      // For now, we'll use mock data
+      setDocuments([])
+    } catch (error) {
+      console.error("Error loading documents:", error)
     }
-  }, [projectId])
+  }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-500 hover:bg-green-600"
-      case "completed":
-        return "bg-blue-500 hover:bg-blue-600"
-      case "planned":
-        return "bg-yellow-500 hover:bg-yellow-600"
-      default:
-        return "bg-gray-500 hover:bg-gray-600"
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file || !project) return
+
+    setUploading(true)
+    try {
+      // This would implement file upload to Supabase Storage
+      // For now, we'll show a placeholder
+      console.log("Uploading file:", file.name)
+
+      // Simulate upload delay
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+
+      // Refresh documents after upload
+      await loadDocuments()
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Upload failed")
+    } finally {
+      setUploading(false)
     }
   }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "active":
-        return <Activity className="h-4 w-4" />
-      case "completed":
-        return <Calendar className="h-4 w-4" />
       case "planned":
-        return <MapPin className="h-4 w-4" />
+        return <Clock className="h-4 w-4" />
+      case "active":
+        return <Play className="h-4 w-4" />
+      case "completed":
+        return <CheckCircle className="h-4 w-4" />
       default:
-        return null
+        return <AlertCircle className="h-4 w-4" />
     }
   }
 
-  const handleDocumentView = (url: string) => {
-    window.open(url, "_blank")
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "planned":
+        return "bg-yellow-100 text-yellow-800"
+      case "active":
+        return "bg-blue-100 text-blue-800"
+      case "completed":
+        return "bg-green-100 text-green-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
   }
 
-  const handleDocumentDownload = (url: string, title: string) => {
-    const link = document.createElement("a")
-    link.href = url
-    link.download = title
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes"
+    const k = 1024
+    const sizes = ["Bytes", "KB", "MB", "GB"]
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true)
+      await Promise.all([loadProject(), loadDocuments()])
+      setLoading(false)
+    }
+
+    loadData()
+  }, [projectId])
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading project details...</div>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading project details...</span>
       </div>
     )
   }
 
-  if (error || !project) {
+  if (!project) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 p-4">
-        <div className="container mx-auto max-w-4xl">
-          <Alert className="border-red-500 bg-red-500/10">
-            <AlertDescription className="text-red-400">{error || "Project not found"}</AlertDescription>
-          </Alert>
-        </div>
+      <div className="container mx-auto p-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>Project not found</AlertDescription>
+        </Alert>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 p-4">
-      <div className="container mx-auto max-w-6xl">
-        {/* Project Header */}
-        <Card className="bg-gray-800 border-gray-700 mb-8">
-          <CardHeader>
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="text-2xl text-white mb-2">{project.name}</CardTitle>
-                {project.description && <p className="text-gray-300 mb-4">{project.description}</p>}
-                <div className="flex items-center gap-4">
-                  <Badge className={`${getStatusColor(project.status)} text-white flex items-center gap-1`}>
-                    {getStatusIcon(project.status)}
-                    {project.status}
-                  </Badge>
-                  {project.location && (
-                    <div className="flex items-center gap-1 text-gray-400">
-                      <MapPin className="h-4 w-4" />
-                      <span>{project.location}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-1 text-gray-400">
-                    <Calendar className="h-4 w-4" />
-                    <span>Created {new Date(project.created_at).toLocaleDateString()}</span>
-                  </div>
-                </div>
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Project Header */}
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold">{project.name}</h1>
+          <div className="flex items-center gap-2 mt-2">
+            <Badge className={getStatusColor(project.status)}>
+              <div className="flex items-center gap-1">
+                {getStatusIcon(project.status)}
+                {project.status}
               </div>
-            </div>
+            </Badge>
+            {project.location && <span className="text-muted-foreground">📍 {project.location}</span>}
+          </div>
+        </div>
+        <div className="text-right text-sm text-muted-foreground">
+          <p>Created: {new Date(project.created_at).toLocaleDateString()}</p>
+          <p>Updated: {new Date(project.updated_at).toLocaleDateString()}</p>
+        </div>
+      </div>
+
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Project Description */}
+      {project.description && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Description</CardTitle>
           </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">{project.description}</p>
+          </CardContent>
         </Card>
+      )}
 
-        {/* Project Content */}
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="bg-gray-800 border-gray-700">
-            <TabsTrigger value="overview" className="text-white">
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="documents" className="text-white">
-              Documents ({documents.length})
-            </TabsTrigger>
-            <TabsTrigger value="timeline" className="text-white">
-              Timeline
-            </TabsTrigger>
-          </TabsList>
+      {/* Tabs */}
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="timeline">Timeline</TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="overview">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-gray-800 border-gray-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Project Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-gray-400 text-sm">Project Name</label>
-                    <p className="text-white">{project.name}</p>
-                  </div>
-                  {project.description && (
-                    <div>
-                      <label className="text-gray-400 text-sm">Description</label>
-                      <p className="text-white">{project.description}</p>
-                    </div>
-                  )}
-                  {project.location && (
-                    <div>
-                      <label className="text-gray-400 text-sm">Location</label>
-                      <p className="text-white">{project.location}</p>
-                    </div>
-                  )}
-                  <div>
-                    <label className="text-gray-400 text-sm">Status</label>
-                    <div className="mt-1">
-                      <Badge className={`${getStatusColor(project.status)} text-white flex items-center gap-1 w-fit`}>
-                        {getStatusIcon(project.status)}
-                        {project.status}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gray-800 border-gray-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Project Statistics</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Total Documents</span>
-                    <span className="text-white font-semibold">{documents.length}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Created Date</span>
-                    <span className="text-white font-semibold">
-                      {new Date(project.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Last Updated</span>
-                    <span className="text-white font-semibold">
-                      {new Date(project.updated_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="documents">
-            <Card className="bg-gray-800 border-gray-700">
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-white">Project Documents</CardTitle>
+                <CardTitle>Project Information</CardTitle>
               </CardHeader>
-              <CardContent>
-                {documents.length === 0 ? (
-                  <div className="text-center py-8">
-                    <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-400 mb-4">No documents found for this project</p>
-                    <Button className="bg-blue-600 hover:bg-blue-700">Upload Document</Button>
+              <CardContent className="space-y-4">
+                <div>
+                  <h4 className="font-medium">Status</h4>
+                  <Badge className={getStatusColor(project.status)}>
+                    <div className="flex items-center gap-1">
+                      {getStatusIcon(project.status)}
+                      {project.status}
+                    </div>
+                  </Badge>
+                </div>
+                {project.location && (
+                  <div>
+                    <h4 className="font-medium">Location</h4>
+                    <p className="text-muted-foreground">{project.location}</p>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {documents.map((document) => (
-                      <Card key={document.id} className="bg-gray-700 border-gray-600">
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-3">
-                            <FileText className="h-8 w-8 text-blue-400 flex-shrink-0 mt-1" />
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-white truncate">{document.title}</h3>
-                              {document.description && (
-                                <p className="text-gray-300 text-sm mt-1 line-clamp-2">{document.description}</p>
-                              )}
-                              <p className="text-gray-400 text-xs mt-2">
-                                {new Date(document.createdAt).toLocaleDateString()}
-                              </p>
-                              <div className="flex gap-2 mt-3">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleDocumentView(document.url)}
-                                  className="border-gray-600 text-gray-300 hover:bg-gray-600"
-                                >
-                                  <Eye className="h-3 w-3 mr-1" />
-                                  View
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleDocumentDownload(document.url, document.title)}
-                                  className="border-gray-600 text-gray-300 hover:bg-gray-600"
-                                >
-                                  <Download className="h-3 w-3 mr-1" />
-                                  Download
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                )}
+                {project.coordinates && (
+                  <div>
+                    <h4 className="font-medium">Coordinates</h4>
+                    <p className="text-muted-foreground">
+                      {project.coordinates[0]}, {project.coordinates[1]}
+                    </p>
                   </div>
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="timeline">
-            <Card className="bg-gray-800 border-gray-700">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-white">Project Timeline</CardTitle>
+                <CardTitle>Statistics</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4 p-4 bg-gray-700 rounded-lg">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <div>
-                      <p className="text-white font-medium">Project Created</p>
-                      <p className="text-gray-400 text-sm">{new Date(project.created_at).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-
-                  {project.updated_at !== project.created_at && (
-                    <div className="flex items-center gap-4 p-4 bg-gray-700 rounded-lg">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <div>
-                        <p className="text-white font-medium">Project Updated</p>
-                        <p className="text-gray-400 text-sm">{new Date(project.updated_at).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {documents.map((document) => (
-                    <div key={document.id} className="flex items-center gap-4 p-4 bg-gray-700 rounded-lg">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                      <div>
-                        <p className="text-white font-medium">Document Added: {document.title}</p>
-                        <p className="text-gray-400 text-sm">{new Date(document.createdAt).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                  ))}
+              <CardContent className="space-y-4">
+                <div>
+                  <h4 className="font-medium">Documents</h4>
+                  <p className="text-2xl font-bold">{documents.length}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium">Created</h4>
+                  <p className="text-muted-foreground">{new Date(project.created_at).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium">Last Updated</h4>
+                  <p className="text-muted-foreground">{new Date(project.updated_at).toLocaleDateString()}</p>
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="documents" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Documents</h2>
+            {user && (
+              <div>
+                <input
+                  type="file"
+                  id="file-upload"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png"
+                />
+                <Button onClick={() => document.getElementById("file-upload")?.click()} disabled={uploading}>
+                  {uploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload Document
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {documents.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">
+                  No documents uploaded yet. Upload your first document to get started.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {documents.map((document) => (
+                <Card key={document.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      {document.name}
+                    </CardTitle>
+                    <CardDescription>
+                      {document.file_type} • {formatFileSize(document.file_size)}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                      <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                        <Download className="h-4 w-4 mr-1" />
+                        Download
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Uploaded: {new Date(document.created_at).toLocaleDateString()}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="timeline" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Project Timeline</CardTitle>
+              <CardDescription>Track project milestones and updates</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                  <div>
+                    <p className="font-medium">Project Created</p>
+                    <p className="text-sm text-muted-foreground">{new Date(project.created_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                {project.updated_at !== project.created_at && (
+                  <div className="flex items-start gap-4">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                    <div>
+                      <p className="font-medium">Project Updated</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(project.updated_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

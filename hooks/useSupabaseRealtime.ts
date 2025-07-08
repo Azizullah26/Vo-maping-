@@ -13,56 +13,84 @@ export interface RealtimeOptions {
 }
 
 export function useSupabaseRealtime(options: RealtimeOptions) {
-  const [channel, setChannel] = useState<RealtimeChannel | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [channel, setChannel] = useState<RealtimeChannel | null>(null)
 
   const { table, filter, onInsert, onUpdate, onDelete } = options
 
   const subscribe = useCallback(() => {
     try {
-      const channelName = `realtime:${table}${filter ? `:${filter}` : ""}`
+      // Create channel name
+      const channelName = filter ? `${table}:${filter}` : table
+
+      // Create new channel
       const newChannel = supabase.channel(channelName)
 
-      if (onInsert) {
-        newChannel.on("postgres_changes", { event: "INSERT", schema: "public", table }, onInsert)
-      }
+      // Set up table listeners
+      const channelBuilder = newChannel.on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: table,
+          ...(filter && { filter }),
+        },
+        (payload) => {
+          console.log("Realtime payload:", payload)
 
-      if (onUpdate) {
-        newChannel.on("postgres_changes", { event: "UPDATE", schema: "public", table }, onUpdate)
-      }
+          switch (payload.eventType) {
+            case "INSERT":
+              onInsert?.(payload)
+              break
+            case "UPDATE":
+              onUpdate?.(payload)
+              break
+            case "DELETE":
+              onDelete?.(payload)
+              break
+          }
+        },
+      )
 
-      if (onDelete) {
-        newChannel.on("postgres_changes", { event: "DELETE", schema: "public", table }, onDelete)
-      }
+      // Subscribe to channel
+      channelBuilder.subscribe((status) => {
+        console.log("Realtime subscription status:", status)
 
-      newChannel.subscribe((status) => {
         if (status === "SUBSCRIBED") {
           setIsConnected(true)
           setError(null)
         } else if (status === "CHANNEL_ERROR") {
           setIsConnected(false)
           setError("Failed to connect to realtime channel")
+        } else if (status === "TIMED_OUT") {
+          setIsConnected(false)
+          setError("Realtime connection timed out")
         }
       })
 
       setChannel(newChannel)
     } catch (error) {
+      console.error("Error setting up realtime subscription:", error)
       setError(error instanceof Error ? error.message : "Unknown error")
     }
   }, [table, filter, onInsert, onUpdate, onDelete])
 
   const unsubscribe = useCallback(() => {
     if (channel) {
-      channel.unsubscribe()
+      supabase.removeChannel(channel)
       setChannel(null)
       setIsConnected(false)
+      setError(null)
     }
   }, [channel])
 
   useEffect(() => {
     subscribe()
-    return () => unsubscribe()
+
+    return () => {
+      unsubscribe()
+    }
   }, [subscribe, unsubscribe])
 
   return {
@@ -71,4 +99,43 @@ export function useSupabaseRealtime(options: RealtimeOptions) {
     subscribe,
     unsubscribe,
   }
+}
+
+// Hook for projects realtime updates
+export function useProjectsRealtime(onProjectChange?: (project: any) => void) {
+  return useSupabaseRealtime({
+    table: "projects",
+    onInsert: (payload) => {
+      console.log("New project created:", payload.new)
+      onProjectChange?.(payload.new)
+    },
+    onUpdate: (payload) => {
+      console.log("Project updated:", payload.new)
+      onProjectChange?.(payload.new)
+    },
+    onDelete: (payload) => {
+      console.log("Project deleted:", payload.old)
+      onProjectChange?.(payload.old)
+    },
+  })
+}
+
+// Hook for documents realtime updates
+export function useDocumentsRealtime(projectId?: string, onDocumentChange?: (document: any) => void) {
+  return useSupabaseRealtime({
+    table: "documents",
+    filter: projectId ? `project_id=eq.${projectId}` : undefined,
+    onInsert: (payload) => {
+      console.log("New document created:", payload.new)
+      onDocumentChange?.(payload.new)
+    },
+    onUpdate: (payload) => {
+      console.log("Document updated:", payload.new)
+      onDocumentChange?.(payload.new)
+    },
+    onDelete: (payload) => {
+      console.log("Document deleted:", payload.old)
+      onDocumentChange?.(payload.old)
+    },
+  })
 }

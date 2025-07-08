@@ -34,7 +34,7 @@ export function useSupabaseAuth() {
         }
 
         setAuthState({
-          user: session?.user ?? null,
+          user: session?.user || null,
           session,
           loading: false,
           error: null,
@@ -55,14 +55,16 @@ export function useSupabaseAuth() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setAuthState({
-        user: session?.user ?? null,
+        user: session?.user || null,
         session,
         loading: false,
         error: null,
       })
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   const signIn = async (email: string, password: string) => {
@@ -133,5 +135,6 @@ export function useSupabaseAuth() {
     signIn,
     signUp,
     signOut,
+    isAuthenticated: !!authState.user,
   }
 }

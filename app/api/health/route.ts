@@ -46,7 +46,9 @@ async function checkExternalServices() {
 
 async function checkMapboxService() {
   try {
-    if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
+    // Check if Mapbox token is configured without exposing it
+    const hasMapboxToken = !!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
+    if (!hasMapboxToken) {
       return { status: "not_configured", message: "Mapbox token not configured" }
     }
     return { status: "configured", message: "Mapbox token is configured" }
@@ -57,7 +59,10 @@ async function checkMapboxService() {
 
 async function checkSupabaseService() {
   try {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    const hasSupabaseUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
+    const hasSupabaseKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!hasSupabaseUrl || !hasSupabaseKey) {
       return { status: "not_configured", message: "Supabase not configured" }
     }
     return { status: "configured", message: "Supabase is configured" }
