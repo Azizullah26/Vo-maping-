@@ -1,39 +1,39 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js"
-import type { Database } from "@/types/supabase"
 
-// Environment variables validation
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing Supabase environment variables")
-}
-
-// Create client function (named export)
+// Create client function
 export function createClient() {
-  return createSupabaseClient<Database>(supabaseUrl!, supabaseAnonKey!)
+  return createSupabaseClient(supabaseUrl, supabaseAnonKey)
 }
 
 // Main client instance
-export const supabase = createSupabaseClient<Database>(supabaseUrl!, supabaseAnonKey!)
+export const supabase = createClient()
 
 // Admin client for server-side operations
-export const supabaseAdmin = supabaseServiceRoleKey
-  ? createSupabaseClient<Database>(supabaseUrl!, supabaseServiceRoleKey!)
+export const supabaseAdmin = supabaseServiceKey
+  ? createSupabaseClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
   : null
 
 // Test connection function
 export async function testSupabaseConnection() {
   try {
     const { data, error } = await supabase.from("projects").select("count").limit(1)
-    if (error) throw error
-    return { success: true, message: "Connection successful" }
-  } catch (error) {
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Connection failed",
+    if (error) {
+      console.error("Supabase connection test failed:", error)
+      return { success: false, error: error.message }
     }
+    return { success: true, data }
+  } catch (error) {
+    console.error("Supabase connection test error:", error)
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 

@@ -24,6 +24,13 @@ export interface CreateProjectData {
   coordinates?: [number, number]
 }
 
+export interface ProjectStats {
+  total: number
+  planned: number
+  active: number
+  completed: number
+}
+
 export async function getProjects(): Promise<{ data: Project[] | null; error: string | null }> {
   try {
     const { data, error } = await supabase.from("projects").select("*").order("created_at", { ascending: false })
@@ -150,5 +157,28 @@ export async function searchProjects(query: string): Promise<{ data: Project[] |
   } catch (error) {
     console.error("Unexpected error searching projects:", error)
     return { data: null, error: "Failed to search projects" }
+  }
+}
+
+export async function getProjectStats(): Promise<{ data: ProjectStats | null; error: string | null }> {
+  try {
+    const { data, error } = await supabase.from("projects").select("status")
+
+    if (error) {
+      console.error("Error fetching project stats:", error)
+      return { data: null, error: error.message }
+    }
+
+    const stats: ProjectStats = {
+      total: data?.length || 0,
+      planned: data?.filter((p) => p.status === "planned").length || 0,
+      active: data?.filter((p) => p.status === "active").length || 0,
+      completed: data?.filter((p) => p.status === "completed").length || 0,
+    }
+
+    return { data: stats, error: null }
+  } catch (error) {
+    console.error("Unexpected error fetching project stats:", error)
+    return { data: null, error: "Failed to fetch project stats" }
   }
 }

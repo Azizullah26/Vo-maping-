@@ -72,3 +72,81 @@ export function useSupabaseRealtime<T>(table: string, initialData: T[] = []) {
 
   return { data, loading, error }
 }
+
+// Hook for projects realtime updates
+export function useProjectsRealtime(onProjectChange?: (project: any) => void) {
+  const [isConnected, setIsConnected] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("projects_realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "projects",
+        },
+        (payload) => {
+          console.log("Project change:", payload)
+          onProjectChange?.(payload)
+        },
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          setIsConnected(true)
+          setError(null)
+        } else if (status === "CHANNEL_ERROR") {
+          setIsConnected(false)
+          setError("Failed to connect to projects realtime")
+        }
+      })
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [onProjectChange])
+
+  return { isConnected, error }
+}
+
+// Hook for documents realtime updates
+export function useDocumentsRealtime(projectId?: string, onDocumentChange?: (document: any) => void) {
+  const [isConnected, setIsConnected] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const channelName = projectId ? `documents_${projectId}` : "documents_all"
+
+    const channelBuilder = supabase.channel(channelName).on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "documents",
+        ...(projectId && { filter: `project_id=eq.${projectId}` }),
+      },
+      (payload) => {
+        console.log("Document change:", payload)
+        onDocumentChange?.(payload)
+      },
+    )
+
+    const channel = channelBuilder.subscribe((status) => {
+      if (status === "SUBSCRIBED") {
+        setIsConnected(true)
+        setError(null)
+      } else if (status === "CHANNEL_ERROR") {
+        setIsConnected(false)
+        setError("Failed to connect to documents realtime")
+      }
+    })
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [projectId, onDocumentChange])
+
+  return { isConnected, error }
+}
