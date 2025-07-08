@@ -576,8 +576,8 @@ export default function AlAinMap({
       if (typeof window === "undefined") return [centerLng, centerLat];
 
       // Always use bounded center to ensure all markers and coordinates are visible
-      const boundedCenterLng = (54.34922496616619 + 56.147585702153094) / 2; // Average of left and right
-      const boundedCenterLat = (23.273700903075678 + 24.98337183507047) / 2; // Average of bottom and top
+      const boundedCenterLng = (53.8 + 56.6) / 2; // Average of expanded left and right boundaries
+      const boundedCenterLat = (22.8 + 25.5) / 2; // Average of expanded bottom and top boundaries
       return [boundedCenterLng, boundedCenterLat];
     };
 
@@ -615,10 +615,10 @@ export default function AlAinMap({
       }
 
       if (width >= 481 && width <= 768) {
-        // Tablet: Similar calculation with different margins
+        // Tablet: Similar calculation with expanded bounds and different margins
         const mapBounds = {
-          lng: 56.147585702153094 - 54.34922496616619,
-          lat: 24.98337183507047 - 23.273700903075678,
+          lng: 56.6 - 53.8, // Expanded longitude range
+          lat: 25.5 - 22.8, // Expanded latitude range
         };
 
         const margin = 0.15; // 15% margin for tablets
@@ -649,8 +649,8 @@ export default function AlAinMap({
         pitch: 0,
         bearing: 0,
         maxBounds: [
-          [54.34922496616619, 23.273700903075678], // [left longitude, bottom latitude]
-          [56.147585702153094, 24.98337183507047], // [right longitude, top latitude]
+          [53.8, 22.8], // [left longitude, bottom latitude] - expanded west and south
+          [56.6, 25.5], // [right longitude, top latitude] - expanded east and north
         ],
         minZoom: 0.1, // Increase minZoom to prevent zooming out too far beyond boundaries
         maxZoom: 16,
