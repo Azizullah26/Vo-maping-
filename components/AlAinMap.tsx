@@ -571,20 +571,14 @@ export default function AlAinMap({
     const centerLng = baseCenterLng + lngOffset;
     const centerLat = baseCenterLat - latOffset;
 
-    // Calculate the center of the bounded area for web devices
+    // Calculate the center of the bounded area for all devices to show all markers
     const getInitialCenter = () => {
       if (typeof window === "undefined") return [centerLng, centerLat];
-      const width = window.innerWidth;
 
-      if (width > 768) {
-        // For web/desktop, center on the bounded area
-        const boundedCenterLng = (54.34922496616619 + 56.147585702153094) / 2; // Average of left and right
-        const boundedCenterLat = (23.273700903075678 + 24.98337183507047) / 2; // Average of bottom and top
-        return [boundedCenterLng, boundedCenterLat];
-      }
-
-      // For mobile/tablet, keep the original center
-      return [centerLng, centerLat];
+      // Always use bounded center to ensure all markers and coordinates are visible
+      const boundedCenterLng = (54.34922496616619 + 56.147585702153094) / 2; // Average of left and right
+      const boundedCenterLat = (23.273700903075678 + 24.98337183507047) / 2; // Average of bottom and top
+      return [boundedCenterLng, boundedCenterLat];
     };
 
     const initialCenter = getInitialCenter();
@@ -594,9 +588,54 @@ export default function AlAinMap({
     const getInitialZoom = () => {
       if (typeof window === "undefined") return 0.02;
       const width = window.innerWidth;
-      if (width <= 480) return 0.04; // 50% more zoomed out for mobile
-      if (width >= 481 && width <= 768) return 0.06; // 50% more zoomed out for tablet
-      return 6.0; // Zoomed out more for desktops
+      const height = window.innerHeight;
+
+      // Calculate zoom to fit all markers and boundaries within viewport
+      if (width <= 480) {
+        // Mobile: Calculate zoom based on screen dimensions and map bounds
+        const mapBounds = {
+          lng: 56.147585702153094 - 54.34922496616619, // ~1.8 degrees
+          lat: 24.98337183507047 - 23.273700903075678, // ~1.7 degrees
+        };
+
+        // Account for mobile screen aspect ratio and margins
+        const margin = 0.2; // 20% margin for UI elements
+        const effectiveWidth = width * (1 - margin);
+        const effectiveHeight = height * (1 - margin);
+
+        // Calculate zoom that fits the bounds (empirically derived formula)
+        const zoomForWidth = Math.log2(
+          effectiveWidth / (mapBounds.lng * 40000),
+        );
+        const zoomForHeight = Math.log2(
+          effectiveHeight / (mapBounds.lat * 40000),
+        );
+
+        return Math.max(0.02, Math.min(zoomForWidth, zoomForHeight) * 0.8);
+      }
+
+      if (width >= 481 && width <= 768) {
+        // Tablet: Similar calculation with different margins
+        const mapBounds = {
+          lng: 56.147585702153094 - 54.34922496616619,
+          lat: 24.98337183507047 - 23.273700903075678,
+        };
+
+        const margin = 0.15; // 15% margin for tablets
+        const effectiveWidth = width * (1 - margin);
+        const effectiveHeight = height * (1 - margin);
+
+        const zoomForWidth = Math.log2(
+          effectiveWidth / (mapBounds.lng * 40000),
+        );
+        const zoomForHeight = Math.log2(
+          effectiveHeight / (mapBounds.lat * 40000),
+        );
+
+        return Math.max(0.05, Math.min(zoomForWidth, zoomForHeight) * 0.9);
+      }
+
+      return 6.0; // Desktop unchanged
     };
 
     initialZoomRef.current = getInitialZoom();
