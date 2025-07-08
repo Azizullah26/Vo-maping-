@@ -1,6 +1,7 @@
-// Nile client configuration
-const nileUrl = process.env.NILEDB_URL || process.env.NEXT_PUBLIC_NILEDB_URL
-const nileApiToken = process.env.NILEDB_API_TOKEN || process.env.NEXT_PUBLIC_NILEDB_API_TOKEN
+// Nile client configuration - server-side only
+// Note: This should only be used in server components or API routes
+const nileUrl = process.env.NILEDB_URL
+const nileApiToken = process.env.NILEDB_API_TOKEN
 
 // Create a basic Nile client (placeholder implementation)
 // This would be replaced with actual Nile SDK when available
