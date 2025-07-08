@@ -203,7 +203,7 @@ const HIDDEN_AT_START = [
   "نادي ض��اط الشرطة",
   "مركز شرطة زاخر",
   "فلل فلج هزاع",
-  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبا�� - قسم الاستقطاب)",
+  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
   "قسم التفتيش الأمني K9",
   "الضبط المروري والمراسم",
   "ساحة حجز المركبات فلج هزاع",
@@ -594,8 +594,8 @@ export default function AlAinMap({
     const getInitialZoom = () => {
       if (typeof window === "undefined") return 0.02;
       const width = window.innerWidth;
-      if (width <= 480) return 0.08; // Much more zoomed out for mobile
-      if (width >= 481 && width <= 768) return 0.12; // Much more zoomed out for tablet
+      if (width <= 480) return 0.04; // 50% more zoomed out for mobile
+      if (width >= 481 && width <= 768) return 0.06; // 50% more zoomed out for tablet
       return 6.0; // Zoomed out more for desktops
     };
 
@@ -1221,7 +1221,7 @@ export default function AlAinMap({
       case "فلل فلج هزاع":
       case "قسم التفتيش الأمني K9":
         return "bottom-aligned";
-      case "نادي ضباط الشرطة":
+      case "ن��دي ضباط الشرطة":
       case "قسم موسيقى شرطة أبوظبي":
       case "مديرية شرطة العين":
       case "ساحة حجز المركبات -asad":
