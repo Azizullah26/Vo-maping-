@@ -35,7 +35,7 @@ let supabaseServerClient: ReturnType<typeof createClient> | null = null
  * Get the Supabase client for server-side operations.
  * Uses SUPABASE_SERVICE_ROLE_KEY for elevated privileges.
  */
-function getSupabaseServerClient() {
+export function getSupabaseServerClient() {
   if (!supabaseServerClient) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY

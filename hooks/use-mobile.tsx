@@ -22,3 +22,6 @@ export function useMobile() {
 }
 
 export default useMobile
+
+// Add this export alias at the end of the file
+export const useIsMobile = useMobile
