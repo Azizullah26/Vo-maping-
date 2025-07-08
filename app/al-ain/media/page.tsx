@@ -41,9 +41,9 @@ const mockMediaItems: MediaItem[] = [
     id: "1",
     name: "Al Ain Cultural Center - Exterior View",
     type: "image",
-    url: "/placeholder.svg?height=400&width=600&text=Cultural+Center+Exterior",
+    url: "https://images.pexels.com/photos/32826199/pexels-photo-32826199.jpeg",
     thumbnail:
-      "/placeholder.svg?height=200&width=300&text=Cultural+Center+Exterior",
+      "https://images.pexels.com/photos/32826199/pexels-photo-32826199.jpeg?auto=compress&cs=tinysrgb&w=300&h=200",
     size: 2048576, // 2MB
     uploadDate: "2024-01-15",
     project: "16-projects",
@@ -279,6 +279,25 @@ export default function MediaPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-3 sm:p-4 pt-0">
+                {/* Thumbnail */}
+                {item.type === "image" && item.thumbnail && (
+                  <div className="mb-3 sm:mb-4">
+                    <div className="relative w-full h-32 sm:h-40 rounded-lg overflow-hidden border border-cyan-400/30">
+                      <img
+                        src={item.thumbnail}
+                        alt={item.name}
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src =
+                            "/placeholder.svg?height=200&width=300&text=Image+Not+Found";
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-3 sm:gap-4">
                   <div className="space-y-1">
                     <p className="text-xs sm:text-sm text-cyan-300">
