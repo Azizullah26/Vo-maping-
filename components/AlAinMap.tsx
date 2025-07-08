@@ -216,7 +216,7 @@ const HIDDEN_AT_START = [
   "المتابعة الشرطية والرعاية اللاحقة",
   "ادارة المهام الخاصة العين",
   "مبنى التحريات والمخدرات",
-  "إدار�� الأسلحة والمتفجرات",
+  "إدار��� الأسلحة والمتفجرات",
   "مركز شرطة فلج هزاع",
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
@@ -264,7 +264,7 @@ const HOVERABLE_MARKERS = [
   "قسم هندسة المرور",
   "المتابعة الشرطية والرعاية اللاحقة",
   "ادارة المهام الخاصة العين",
-  "مبنى التحريات والمخدرات",
+  "مبنى التحر��ات والمخدرات",
   "إدارة الأسلحة والمتفجرات",
   "مركز شرطة فلج هزاع",
   "فلل للادرات الشرطية عشارج",
@@ -276,7 +276,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة القوع (فلل صحة)",
   "نقطة ثبات الروضة",
   "فرع الضبط المروري (الخزنة)",
-  "مبنى إدارات (التربية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
+  "مبنى إدارات (التربية ��لرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
   "1 Project",
   "مركز شرطة سويحان",
   "مركز شرطة الهير",
@@ -571,20 +571,14 @@ export default function AlAinMap({
     const centerLng = baseCenterLng + lngOffset;
     const centerLat = baseCenterLat - latOffset;
 
-    // Calculate the center of the bounded area for web devices
+    // Calculate the center of the bounded area for all devices to show all markers
     const getInitialCenter = () => {
       if (typeof window === "undefined") return [centerLng, centerLat];
-      const width = window.innerWidth;
 
-      if (width > 768) {
-        // For web/desktop, center on the bounded area
-        const boundedCenterLng = (54.34922496616619 + 56.147585702153094) / 2; // Average of left and right
-        const boundedCenterLat = (23.273700903075678 + 24.98337183507047) / 2; // Average of bottom and top
-        return [boundedCenterLng, boundedCenterLat];
-      }
-
-      // For mobile/tablet, keep the original center
-      return [centerLng, centerLat];
+      // Always use bounded center to ensure all markers and coordinates are visible
+      const boundedCenterLng = (53.8 + 56.6) / 2 - 0.3; // Move center to the left by 0.3 degrees
+      const boundedCenterLat = (22.8 + 25.5) / 2; // Keep latitude unchanged
+      return [boundedCenterLng, boundedCenterLat];
     };
 
     const initialCenter = getInitialCenter();
@@ -594,9 +588,54 @@ export default function AlAinMap({
     const getInitialZoom = () => {
       if (typeof window === "undefined") return 0.02;
       const width = window.innerWidth;
-      if (width <= 480) return 0.3; // Zoomed out more for mobile
-      if (width >= 481 && width <= 768) return 0.25; // Zoomed out more for tablet
-      return 6.0; // Zoomed out more for desktops
+      const height = window.innerHeight;
+
+      // Calculate zoom to fit all markers and boundaries within viewport
+      if (width <= 480) {
+        // Mobile: Calculate zoom based on screen dimensions and expanded map bounds
+        const mapBounds = {
+          lng: 56.6 - 53.8, // ~2.8 degrees (expanded)
+          lat: 25.5 - 22.8, // ~2.7 degrees (expanded)
+        };
+
+        // Account for mobile screen aspect ratio and margins
+        const margin = 0.2; // 20% margin for UI elements
+        const effectiveWidth = width * (1 - margin);
+        const effectiveHeight = height * (1 - margin);
+
+        // Calculate zoom that fits the bounds (empirically derived formula)
+        const zoomForWidth = Math.log2(
+          effectiveWidth / (mapBounds.lng * 40000),
+        );
+        const zoomForHeight = Math.log2(
+          effectiveHeight / (mapBounds.lat * 40000),
+        );
+
+        return Math.max(0.02, Math.min(zoomForWidth, zoomForHeight) * 0.8);
+      }
+
+      if (width >= 481 && width <= 768) {
+        // Tablet: Similar calculation with expanded bounds and different margins
+        const mapBounds = {
+          lng: 56.6 - 53.8, // Expanded longitude range
+          lat: 25.5 - 22.8, // Expanded latitude range
+        };
+
+        const margin = 0.15; // 15% margin for tablets
+        const effectiveWidth = width * (1 - margin);
+        const effectiveHeight = height * (1 - margin);
+
+        const zoomForWidth = Math.log2(
+          effectiveWidth / (mapBounds.lng * 40000),
+        );
+        const zoomForHeight = Math.log2(
+          effectiveHeight / (mapBounds.lat * 40000),
+        );
+
+        return Math.max(0.05, Math.min(zoomForWidth, zoomForHeight) * 0.9);
+      }
+
+      return 6.0; // Desktop unchanged
     };
 
     initialZoomRef.current = getInitialZoom();
@@ -610,8 +649,8 @@ export default function AlAinMap({
         pitch: 0,
         bearing: 0,
         maxBounds: [
-          [54.34922496616619, 23.273700903075678], // [left longitude, bottom latitude]
-          [56.147585702153094, 24.98337183507047], // [right longitude, top latitude]
+          [53.8, 22.8], // [left longitude, bottom latitude] - expanded west and south
+          [56.6, 25.5], // [right longitude, top latitude] - expanded east and north
         ],
         minZoom: 0.1, // Increase minZoom to prevent zooming out too far beyond boundaries
         maxZoom: 16,
@@ -917,7 +956,45 @@ export default function AlAinMap({
         if (debounceTimerRef.current) {
           clearTimeout(debounceTimerRef.current);
         }
-        map.current?.remove();
+
+        // Safer cleanup to prevent AbortError
+        if (map.current) {
+          try {
+            // Remove all event listeners first
+            map.current.off();
+
+            // Stop any ongoing operations
+            map.current.stop();
+
+            // Set a minimal style to clear existing sources without triggering aborts
+            map.current.setStyle({
+              version: 8,
+              sources: {},
+              layers: [],
+            });
+
+            // Small delay to allow style to clear, then remove
+            setTimeout(() => {
+              try {
+                if (map.current) {
+                  map.current.remove();
+                  map.current = null;
+                }
+              } catch (e) {
+                console.warn("Map already removed or error during removal:", e);
+              }
+            }, 50);
+          } catch (e) {
+            // If setStyle fails, try immediate removal
+            try {
+              map.current.remove();
+              map.current = null;
+            } catch (removeError) {
+              console.warn("Error during map removal:", removeError);
+            }
+          }
+        }
+
         document
           .querySelectorAll("style[data-marker-style]")
           .forEach((el) => el.remove());
@@ -1178,12 +1255,12 @@ export default function AlAinMap({
       case "المتابعة الشرطية والرعاية اللاحقة":
         return "left-aligned";
       case "مركز شرطةasad":
-      case "مركز شرطة الهير":
+      case "مركز ��رطة الهير":
       case "1 Project":
       case "فلل فلج هزاع":
       case "قسم التفتيش الأمني K9":
         return "bottom-aligned";
-      case "نادي ضباط الشرطة":
+      case "ن��دي ضباط الشرطة":
       case "قسم موسيقى شرطة أبوظبي":
       case "مديرية شرطة العين":
       case "ساحة حجز المركبات -asad":

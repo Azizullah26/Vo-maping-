@@ -41,9 +41,9 @@ const mockMediaItems: MediaItem[] = [
     id: "1",
     name: "Al Ain Cultural Center - Exterior View",
     type: "image",
-    url: "/placeholder.svg?height=400&width=600&text=Cultural+Center+Exterior",
+    url: "https://images.pexels.com/photos/32826199/pexels-photo-32826199.jpeg",
     thumbnail:
-      "/placeholder.svg?height=200&width=300&text=Cultural+Center+Exterior",
+      "https://images.pexels.com/photos/32826199/pexels-photo-32826199.jpeg?auto=compress&cs=tinysrgb&w=300&h=200",
     size: 2048576, // 2MB
     uploadDate: "2024-01-15",
     project: "16-projects",
@@ -56,7 +56,8 @@ const mockMediaItems: MediaItem[] = [
     name: "Construction Progress Video - Week 12",
     type: "video",
     url: "/placeholder-video.mp4",
-    thumbnail: "/placeholder.svg?height=200&width=300&text=Construction+Video",
+    thumbnail:
+      "https://images.pexels.com/photos/6473973/pexels-photo-6473973.jpeg?auto=compress&cs=tinysrgb&w=300&h=200",
     size: 15728640, // 15MB
     uploadDate: "2024-01-12",
     project: "7-projects",
@@ -68,6 +69,8 @@ const mockMediaItems: MediaItem[] = [
     name: "Project Specifications Document",
     type: "document",
     url: "/placeholder-document.pdf",
+    thumbnail:
+      "https://images.pexels.com/photos/32886453/pexels-photo-32886453.jpeg?auto=compress&cs=tinysrgb&w=300&h=200",
     size: 1048576, // 1MB
     uploadDate: "2024-01-10",
     project: "2-projects",
@@ -78,8 +81,9 @@ const mockMediaItems: MediaItem[] = [
     id: "4",
     name: "Al Ain Oasis Aerial Photography",
     type: "image",
-    url: "/placeholder.svg?height=400&width=600&text=Oasis+Aerial",
-    thumbnail: "/placeholder.svg?height=200&width=300&text=Oasis+Aerial",
+    url: "https://images.pexels.com/photos/27251844/pexels-photo-27251844.png",
+    thumbnail:
+      "https://images.pexels.com/photos/27251844/pexels-photo-27251844.png?auto=compress&cs=tinysrgb&w=300&h=200",
     size: 3145728, // 3MB
     uploadDate: "2024-01-08",
     project: "1-project",
@@ -91,8 +95,9 @@ const mockMediaItems: MediaItem[] = [
     id: "5",
     name: "Police Station Interior Design",
     type: "image",
-    url: "/placeholder.svg?height=400&width=600&text=Police+Interior",
-    thumbnail: "/placeholder.svg?height=200&width=300&text=Police+Interior",
+    url: "https://images.pexels.com/photos/32898130/pexels-photo-32898130.jpeg",
+    thumbnail:
+      "https://images.pexels.com/photos/32898130/pexels-photo-32898130.jpeg?auto=compress&cs=tinysrgb&w=300&h=200",
     size: 1572864, // 1.5MB
     uploadDate: "2024-01-05",
     project: "al-saad-police",
@@ -279,6 +284,25 @@ export default function MediaPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-3 sm:p-4 pt-0">
+                {/* Thumbnail */}
+                {item.thumbnail && (
+                  <div className="mb-3 sm:mb-4">
+                    <div className="relative w-full h-32 sm:h-40 rounded-lg overflow-hidden border border-cyan-400/30">
+                      <img
+                        src={item.thumbnail}
+                        alt={item.name}
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src =
+                            "/placeholder.svg?height=200&width=300&text=Image+Not+Found";
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-3 sm:gap-4">
                   <div className="space-y-1">
                     <p className="text-xs sm:text-sm text-cyan-300">

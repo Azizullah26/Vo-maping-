@@ -1,21 +1,29 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react";
 
 export default function AlAin() {
   // Ref for the video element
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // State to track if the video is playing
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // State to track if the video is muted
-  const [isMuted, setIsMuted] = useState(true)
+  const [isMuted, setIsMuted] = useState(true);
 
   // Add clouds animation state
   const [clouds, setClouds] = useState<
-    Array<{ id: number; x: number; y: number; size: number; opacity: number; speed: number; zone: "top" | "bottom" }>
-  >([])
+    Array<{
+      id: number;
+      x: number;
+      y: number;
+      size: number;
+      opacity: number;
+      speed: number;
+      zone: "top" | "bottom";
+    }>
+  >([]);
 
   // Initialize clouds
   useEffect(() => {
@@ -25,7 +33,7 @@ export default function AlAin() {
         id: 1,
         x: -20,
         y: Math.random() * 15 + 5, // Top 20% of screen
-        size: Math.random() * 80 + 60,
+        size: Math.random() * 60 + 40, // Smaller clouds on mobile
         opacity: Math.random() * 0.4 + 0.3,
         speed: Math.random() * 0.3 + 0.2,
         zone: "top" as const,
@@ -34,7 +42,7 @@ export default function AlAin() {
         id: 2,
         x: -50,
         y: Math.random() * 15 + 10,
-        size: Math.random() * 100 + 80,
+        size: Math.random() * 80 + 60, // Smaller clouds on mobile
         opacity: Math.random() * 0.3 + 0.2,
         speed: Math.random() * 0.25 + 0.15,
         zone: "top" as const,
@@ -44,7 +52,7 @@ export default function AlAin() {
         id: 3,
         x: -30,
         y: Math.random() * 15 + 75, // Bottom 25% of screen
-        size: Math.random() * 90 + 70,
+        size: Math.random() * 70 + 50, // Smaller clouds on mobile
         opacity: Math.random() * 0.35 + 0.25,
         speed: Math.random() * 0.2 + 0.1,
         zone: "bottom" as const,
@@ -53,14 +61,14 @@ export default function AlAin() {
         id: 4,
         x: -60,
         y: Math.random() * 10 + 80,
-        size: Math.random() * 110 + 90,
+        size: Math.random() * 90 + 70, // Smaller clouds on mobile
         opacity: Math.random() * 0.3 + 0.2,
         speed: Math.random() * 0.15 + 0.08,
         zone: "bottom" as const,
       },
-    ]
-    setClouds(initialClouds)
-  }, [])
+    ];
+    setClouds(initialClouds);
+  }, []);
 
   // Animate clouds with smooth movement
   useEffect(() => {
@@ -70,31 +78,31 @@ export default function AlAin() {
           ...cloud,
           x: cloud.x >= 120 ? -30 : cloud.x + cloud.speed,
         })),
-      )
-    }, 16) // ~60fps for smooth animation
+      );
+    }, 16); // ~60fps for smooth animation
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => clearInterval(interval);
+  }, []);
 
   // Function to toggle video playback
   const togglePlay = () => {
     if (videoRef.current) {
       if (isPlaying) {
-        videoRef.current.pause()
+        videoRef.current.pause();
       } else {
-        videoRef.current.play()
+        videoRef.current.play();
       }
-      setIsPlaying(!isPlaying)
+      setIsPlaying(!isPlaying);
     }
-  }
+  };
 
   // Function to toggle mute
   const toggleMute = () => {
     if (videoRef.current) {
-      videoRef.current.muted = !isMuted
-      setIsMuted(!isMuted)
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
     }
-  }
+  };
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
@@ -118,11 +126,21 @@ export default function AlAin() {
             src="/cloud-7.png"
             alt="Cloud"
             style={{
-              width: `${cloud.size}px`,
+              width: `${cloud.size * 0.7}px`, // Smaller clouds on mobile
               height: "auto",
               filter: "brightness(1.1) contrast(0.9)",
             }}
-            className="drop-shadow-sm"
+            className="drop-shadow-sm sm:hidden"
+          />
+          <img
+            src="/cloud-7.png"
+            alt="Cloud"
+            style={{
+              width: `${cloud.size}px`, // Original size on larger screens
+              height: "auto",
+              filter: "brightness(1.1) contrast(0.9)",
+            }}
+            className="drop-shadow-sm hidden sm:block"
           />
         </div>
       ))}
@@ -130,13 +148,19 @@ export default function AlAin() {
       {/* Main Content Container */}
       <div className="relative z-10 flex h-full w-full items-center justify-center">
         {/* Video Container */}
-        <div className="relative h-[calc(min(60vh,70vw))] w-[calc(min(60vh,70vw))] overflow-hidden rounded-3xl shadow-2xl">
-          <video ref={videoRef} src="/al-ain.mp4" loop muted={isMuted} className="h-full w-full object-cover" />
+        <div className="relative h-[calc(min(35vh,40vw))] w-[calc(min(35vh,40vw))] sm:h-[calc(min(60vh,70vw))] sm:w-[calc(min(60vh,70vw))] overflow-hidden rounded-2xl sm:rounded-3xl shadow-2xl">
+          <video
+            ref={videoRef}
+            src="/al-ain.mp4"
+            loop
+            muted={isMuted}
+            className="h-full w-full object-cover"
+          />
 
           {/* Play/Pause Button */}
           <button
             onClick={togglePlay}
-            className="absolute bottom-4 left-4 rounded-full bg-white/50 p-2 text-black backdrop-blur-md"
+            className="absolute bottom-2 left-2 sm:bottom-4 sm:left-4 rounded-full bg-white/50 p-1 sm:p-2 text-xs sm:text-sm text-black backdrop-blur-md"
           >
             {isPlaying ? "Pause" : "Play"}
           </button>
@@ -144,12 +168,12 @@ export default function AlAin() {
           {/* Mute/Unmute Button */}
           <button
             onClick={toggleMute}
-            className="absolute bottom-4 right-4 rounded-full bg-white/50 p-2 text-black backdrop-blur-md"
+            className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 rounded-full bg-white/50 p-1 sm:p-2 text-xs sm:text-sm text-black backdrop-blur-md"
           >
             {isMuted ? "Unmute" : "Mute"}
           </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
