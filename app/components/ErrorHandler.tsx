@@ -79,14 +79,23 @@ export default function ErrorHandler() {
     console.error = (...args) => {
       const message = args.join(" ");
       if (
-        (message.includes("AbortError") &&
-          (message.includes("mapbox") ||
-            message.includes("signal is aborted"))) ||
+        message.includes("AbortError") ||
+        message.includes("signal is aborted") ||
+        message.includes("aborted without reason") ||
+        message.includes("mapbox-gl.js") ||
+        message.includes("api.mapbox.com") ||
+        message.includes("abortTile") ||
+        message.includes("_removeTile") ||
+        message.includes("updateSources") ||
+        message.includes("Map._render") ||
         (message.includes("Failed to fetch") && message.includes("supabase")) ||
         (message.includes("TypeError: Failed to fetch") &&
           message.includes("fullstory"))
       ) {
-        console.debug("Suppressed console.error for network error:", message);
+        console.debug(
+          "Suppressed console.error:",
+          message.substring(0, 100) + "...",
+        );
         return;
       }
       originalConsoleError.apply(console, args);
