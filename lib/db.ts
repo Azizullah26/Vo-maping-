@@ -29,27 +29,36 @@ const DEMO_DOCUMENTS = [
 ]
 
 // Supabase client instance (singleton for server-side)
-let supabaseServerClient: ReturnType<typeof createClient> | null = null
+const supabaseServerClient: ReturnType<typeof createClient> | null = null
 
 /**
  * Get the Supabase client for server-side operations.
  * Uses SUPABASE_SERVICE_ROLE_KEY for elevated privileges.
  */
-export function getSupabaseServerClient() {
-  if (!supabaseServerClient) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+export const getSupabaseServerClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-    if (!supabaseUrl || !supabaseServiceRoleKey) {
-      console.error("Missing Supabase URL or Service Role Key environment variables for server client.")
-      return null
-    }
-
-    supabaseServerClient = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: { persistSession: false }, // Server-side client, no session persistence needed
-    })
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error("Missing Supabase server environment variables")
   }
-  return supabaseServerClient
+
+  return createClient(supabaseUrl, supabaseServiceKey)
+}
+
+/**
+ * Get the Supabase client for client-side operations.
+ * Uses NEXT_PUBLIC_SUPABASE_ANON_KEY for public access.
+ */
+export const getSupabaseClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Missing Supabase client environment variables")
+  }
+
+  return createClient(supabaseUrl, supabaseAnonKey)
 }
 
 /**

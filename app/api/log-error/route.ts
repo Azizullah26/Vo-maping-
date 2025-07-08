@@ -1,30 +1,34 @@
 import { type NextRequest, NextResponse } from "next/server"
 
+interface ErrorReport {
+  type: "build" | "runtime" | "deployment"
+  message: string
+  stack?: string
+  timestamp: string
+  context?: Record<string, any>
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const errorData = await request.json()
+    const errorReport: ErrorReport = await request.json()
 
-    // Log to console in development
-    if (process.env.NODE_ENV === "development") {
-      console.error("Client Error:", errorData)
-    }
-
-    // In production, you would send this to your logging service
-    // For now, we'll just log to console and could extend to send to external services
-    console.error("Production Error Log:", {
-      timestamp: new Date().toISOString(),
-      ...errorData,
+    // Log to console (in production, you'd send to external service)
+    console.error("[ERROR COLLECTOR]", {
+      type: errorReport.type,
+      message: errorReport.message,
+      timestamp: errorReport.timestamp,
+      stack: errorReport.stack,
+      context: errorReport.context,
     })
 
-    // You could integrate with services like:
-    // - Sentry
-    // - LogRocket
-    // - Datadog
-    // - Custom logging endpoint
+    // In production, send to external logging service like Sentry, LogRocket, etc.
+    if (process.env.NODE_ENV === "production") {
+      // Example: await sendToExternalService(errorReport)
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Failed to log error:", error)
-    return NextResponse.json({ success: false }, { status: 500 })
+    return NextResponse.json({ error: "Failed to log error" }, { status: 500 })
   }
 }

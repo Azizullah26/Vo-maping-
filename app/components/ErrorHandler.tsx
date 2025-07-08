@@ -1,60 +1,28 @@
 "use client"
 
 import { useEffect } from "react"
+import { errorCollector } from "@/lib/error-collector"
 
 export default function ErrorHandler() {
   useEffect(() => {
-    // Global error handler for unhandled promise rejections
+    // Handle unhandled promise rejections
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       console.error("Unhandled promise rejection:", event.reason)
-
-      // Send error to logging service in production
-      if (process.env.NODE_ENV === "production") {
-        try {
-          fetch("/api/log-error", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type: "unhandled_rejection",
-              error: event.reason?.toString() || "Unknown error",
-              stack: event.reason?.stack,
-              timestamp: new Date().toISOString(),
-              url: window.location.href,
-              userAgent: navigator.userAgent,
-            }),
-          }).catch((err) => console.error("Failed to log error:", err))
-        } catch (err) {
-          console.error("Error logging failed:", err)
-        }
-      }
+      errorCollector.collectError(
+        event.reason instanceof Error ? event.reason : new Error(String(event.reason)),
+        "runtime",
+        { type: "unhandledRejection" },
+      )
     }
 
-    // Global error handler for JavaScript errors
+    // Handle JavaScript errors
     const handleError = (event: ErrorEvent) => {
-      console.error("Global error:", event.error)
-
-      if (process.env.NODE_ENV === "production") {
-        try {
-          fetch("/api/log-error", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type: "javascript_error",
-              message: event.message,
-              filename: event.filename,
-              lineno: event.lineno,
-              colno: event.colno,
-              error: event.error?.toString(),
-              stack: event.error?.stack,
-              timestamp: new Date().toISOString(),
-              url: window.location.href,
-              userAgent: navigator.userAgent,
-            }),
-          }).catch((err) => console.error("Failed to log error:", err))
-        } catch (err) {
-          console.error("Error logging failed:", err)
-        }
-      }
+      console.error("JavaScript error:", event.error)
+      errorCollector.collectError(event.error || new Error(event.message), "runtime", {
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+      })
     }
 
     // Add event listeners

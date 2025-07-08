@@ -1,309 +1,318 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Settings, Database, Key, Save, RefreshCw, CheckCircle, AlertCircle } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { CheckCircle, XCircle } from "lucide-react"
 
-interface ConfigSection {
-  id: string
-  title: string
-  description: string
-  icon: React.ReactNode
-  fields: ConfigField[]
+interface ConfigState {
+  supabaseUrl: string
+  supabaseAnonKey: string
+  supabaseServiceKey: string
+  mapboxToken: string
+  nileUrl: string
+  nileApiToken: string
 }
 
-interface ConfigField {
-  key: string
-  label: string
-  type: "text" | "password" | "textarea" | "url"
-  value: string
-  placeholder?: string
-  required?: boolean
+interface TestResult {
+  success: boolean
+  message: string
+  details?: any
 }
 
 export default function SetupPage() {
-  const [saving, setSaving] = useState(false)
-  const [testingConnection, setTestingConnection] = useState(false)
-  const [connectionStatus, setConnectionStatus] = useState<"success" | "error" | null>(null)
+  const [config, setConfig] = useState<ConfigState>({
+    supabaseUrl: "",
+    supabaseAnonKey: "",
+    supabaseServiceKey: "",
+    mapboxToken: "",
+    nileUrl: "",
+    nileApiToken: "",
+  })
 
-  const [config, setConfig] = useState<ConfigSection[]>([
-    {
-      id: "database",
-      title: "Database Configuration",
-      description: "Configure your database connection settings",
-      icon: <Database className="w-5 h-5" />,
-      fields: [
-        {
-          key: "DATABASE_URL",
-          label: "Database URL",
-          type: "password",
-          value: "",
-          placeholder: "postgresql://user:password@host:port/database",
-          required: true,
-        },
-        {
-          key: "DB_HOST",
-          label: "Database Host",
-          type: "text",
-          value: "",
-          placeholder: "localhost",
-        },
-        {
-          key: "DB_PORT",
-          label: "Database Port",
-          type: "text",
-          value: "5432",
-          placeholder: "5432",
-        },
-        {
-          key: "DB_NAME",
-          label: "Database Name",
-          type: "text",
-          value: "",
-          placeholder: "alain_db",
-        },
-      ],
-    },
-    {
-      id: "api",
-      title: "API Configuration",
-      description: "Configure external API keys and endpoints",
-      icon: <Key className="w-5 h-5" />,
-      fields: [
-        {
-          key: "MAPBOX_ACCESS_TOKEN",
-          label: "Mapbox Access Token",
-          type: "password",
-          value: "",
-          placeholder: "pk.ey...",
-          required: true,
-        },
-        {
-          key: "SUPABASE_URL",
-          label: "Supabase URL",
-          type: "url",
-          value: "",
-          placeholder: "https://your-project.supabase.co",
-        },
-        {
-          key: "SUPABASE_ANON_KEY",
-          label: "Supabase Anonymous Key",
-          type: "password",
-          value: "",
-          placeholder: "eyJ...",
-        },
-      ],
-    },
-    {
-      id: "system",
-      title: "System Settings",
-      description: "General system configuration",
-      icon: <Settings className="w-5 h-5" />,
-      fields: [
-        {
-          key: "APP_NAME",
-          label: "Application Name",
-          type: "text",
-          value: "Al Ain Interactive Map",
-          placeholder: "Al Ain Interactive Map",
-        },
-        {
-          key: "APP_DESCRIPTION",
-          label: "Application Description",
-          type: "textarea",
-          value: "Interactive mapping system for Al Ain city projects and locations",
-          placeholder: "Describe your application...",
-        },
-        {
-          key: "BASE_URL",
-          label: "Base URL",
-          type: "url",
-          value: "",
-          placeholder: "https://your-domain.com",
-        },
-      ],
-    },
-  ])
+  const [testResults, setTestResults] = useState<Record<string, TestResult>>({})
+  const [isLoading, setIsLoading] = useState(false)
 
-  const updateField = (sectionId: string, fieldKey: string, value: string) => {
-    setConfig((prev) =>
-      prev.map((section) =>
-        section.id === sectionId
-          ? {
-              ...section,
-              fields: section.fields.map((field) => (field.key === fieldKey ? { ...field, value } : field)),
-            }
-          : section,
-      ),
-    )
+  const handleInputChange = (key: keyof ConfigState, value: string) => {
+    setConfig((prev) => ({ ...prev, [key]: value }))
   }
 
-  const testDatabaseConnection = async () => {
-    setTestingConnection(true)
-    setConnectionStatus(null)
-
+  const testSupabaseConnection = async () => {
+    setIsLoading(true)
     try {
-      const response = await fetch("/api/database-test", {
+      const response = await fetch("/api/supabase-connection-test", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          databaseUrl: config.find((s) => s.id === "database")?.fields.find((f) => f.key === "DATABASE_URL")?.value,
+          url: config.supabaseUrl,
+          anonKey: config.supabaseAnonKey,
+          serviceKey: config.supabaseServiceKey,
         }),
       })
 
-      if (response.ok) {
-        setConnectionStatus("success")
-      } else {
-        setConnectionStatus("error")
-      }
+      const result = await response.json()
+      setTestResults((prev) => ({ ...prev, supabase: result }))
     } catch (error) {
-      setConnectionStatus("error")
-    } finally {
-      setTestingConnection(false)
+      setTestResults((prev) => ({
+        ...prev,
+        supabase: {
+          success: false,
+          message: "Connection test failed",
+          details: error,
+        },
+      }))
     }
+    setIsLoading(false)
+  }
+
+  const testNileConnection = async () => {
+    setIsLoading(true)
+    try {
+      const response = await fetch("/api/nile/test-connection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: config.nileUrl,
+          apiToken: config.nileApiToken,
+        }),
+      })
+
+      const result = await response.json()
+      setTestResults((prev) => ({ ...prev, nile: result }))
+    } catch (error) {
+      setTestResults((prev) => ({
+        ...prev,
+        nile: {
+          success: false,
+          message: "Connection test failed",
+          details: error,
+        },
+      }))
+    }
+    setIsLoading(false)
+  }
+
+  const testMapboxToken = async () => {
+    setIsLoading(true)
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/test.json?access_token=${config.mapboxToken}`,
+      )
+      const result = response.ok
+
+      setTestResults((prev) => ({
+        ...prev,
+        mapbox: {
+          success: result,
+          message: result ? "Mapbox token is valid" : "Invalid Mapbox token",
+        },
+      }))
+    } catch (error) {
+      setTestResults((prev) => ({
+        ...prev,
+        mapbox: {
+          success: false,
+          message: "Mapbox token test failed",
+          details: error,
+        },
+      }))
+    }
+    setIsLoading(false)
   }
 
   const saveConfiguration = async () => {
-    setSaving(true)
-
+    setIsLoading(true)
     try {
-      // Prepare configuration data
-      const configData = {}
-      config.forEach((section) => {
-        section.fields.forEach((field) => {
-          configData[field.key] = field.value
-        })
-      })
-
-      const response = await fetch("/api/admin/config", {
+      const response = await fetch("/api/nile/save-config", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(configData),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(config),
       })
 
       if (response.ok) {
-        // Show success message
         alert("Configuration saved successfully!")
       } else {
-        throw new Error("Failed to save configuration")
+        alert("Failed to save configuration")
       }
     } catch (error) {
-      alert("Error saving configuration: " + error.message)
-    } finally {
-      setSaving(false)
+      alert("Error saving configuration")
     }
+    setIsLoading(false)
+  }
+
+  const renderTestResult = (key: string) => {
+    const result = testResults[key]
+    if (!result) return null
+
+    return (
+      <Alert className={`mt-2 ${result.success ? "border-green-500" : "border-red-500"}`}>
+        <div className="flex items-center gap-2">
+          {result.success ? (
+            <CheckCircle className="h-4 w-4 text-green-500" />
+          ) : (
+            <XCircle className="h-4 w-4 text-red-500" />
+          )}
+          <AlertDescription>{result.message}</AlertDescription>
+        </div>
+      </Alert>
+    )
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">System Setup</h1>
-          <p className="text-gray-600">Configure your Al Ain system settings</p>
-        </div>
-        <Button onClick={saveConfiguration} disabled={saving} className="flex items-center gap-2">
-          <Save className="w-4 h-4" />
-          {saving ? "Saving..." : "Save Configuration"}
-        </Button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 p-4">
+      <div className="container mx-auto max-w-4xl">
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white text-2xl">System Configuration</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="supabase" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 bg-gray-700">
+                <TabsTrigger value="supabase" className="text-white">
+                  Supabase
+                </TabsTrigger>
+                <TabsTrigger value="mapbox" className="text-white">
+                  Mapbox
+                </TabsTrigger>
+                <TabsTrigger value="nile" className="text-white">
+                  Nile
+                </TabsTrigger>
+              </TabsList>
 
-      {/* Configuration Sections */}
-      <div className="space-y-6">
-        {config.map((section) => (
-          <Card key={section.id}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {section.icon}
-                {section.title}
-              </CardTitle>
-              <p className="text-sm text-gray-600">{section.description}</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {section.fields.map((field) => (
-                  <div key={field.key} className={field.type === "textarea" ? "md:col-span-2" : ""}>
-                    <Label htmlFor={field.key}>
-                      {field.label}
-                      {field.required && <span className="text-red-500 ml-1">*</span>}
+              <TabsContent value="supabase" className="space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="supabaseUrl" className="text-white">
+                      Supabase URL
                     </Label>
-                    {field.type === "textarea" ? (
-                      <Textarea
-                        id={field.key}
-                        value={field.value}
-                        onChange={(e) => updateField(section.id, field.key, e.target.value)}
-                        placeholder={field.placeholder}
-                        rows={3}
-                      />
-                    ) : (
-                      <Input
-                        id={field.key}
-                        type={field.type}
-                        value={field.value}
-                        onChange={(e) => updateField(section.id, field.key, e.target.value)}
-                        placeholder={field.placeholder}
-                      />
-                    )}
+                    <Input
+                      id="supabaseUrl"
+                      type="url"
+                      placeholder="https://your-project.supabase.co"
+                      value={config.supabaseUrl}
+                      onChange={(e) => handleInputChange("supabaseUrl", e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
                   </div>
-                ))}
-              </div>
 
-              {/* Database Connection Test */}
-              {section.id === "database" && (
-                <div className="pt-4 border-t">
-                  <div className="flex items-center gap-4">
-                    <Button
-                      variant="outline"
-                      onClick={testDatabaseConnection}
-                      disabled={testingConnection}
-                      className="flex items-center gap-2 bg-transparent"
-                    >
-                      <RefreshCw className={`w-4 h-4 ${testingConnection ? "animate-spin" : ""}`} />
-                      {testingConnection ? "Testing..." : "Test Connection"}
-                    </Button>
-
-                    {connectionStatus && (
-                      <Alert
-                        className={`flex-1 ${connectionStatus === "success" ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}
-                      >
-                        {connectionStatus === "success" ? (
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <AlertCircle className="h-4 w-4 text-red-600" />
-                        )}
-                        <AlertDescription
-                          className={connectionStatus === "success" ? "text-green-800" : "text-red-800"}
-                        >
-                          {connectionStatus === "success"
-                            ? "Database connection successful!"
-                            : "Database connection failed. Please check your settings."}
-                        </AlertDescription>
-                      </Alert>
-                    )}
+                  <div>
+                    <Label htmlFor="supabaseAnonKey" className="text-white">
+                      Supabase Anon Key
+                    </Label>
+                    <Input
+                      id="supabaseAnonKey"
+                      type="password"
+                      placeholder="Enter your Supabase anon key"
+                      value={config.supabaseAnonKey}
+                      onChange={(e) => handleInputChange("supabaseAnonKey", e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
                   </div>
+
+                  <div>
+                    <Label htmlFor="supabaseServiceKey" className="text-white">
+                      Supabase Service Key
+                    </Label>
+                    <Input
+                      id="supabaseServiceKey"
+                      type="password"
+                      placeholder="Enter your Supabase service key"
+                      value={config.supabaseServiceKey}
+                      onChange={(e) => handleInputChange("supabaseServiceKey", e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+
+                  <Button
+                    onClick={testSupabaseConnection}
+                    disabled={isLoading}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Test Supabase Connection
+                  </Button>
+
+                  {renderTestResult("supabase")}
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </TabsContent>
 
-      {/* Save Button */}
-      <div className="flex justify-end">
-        <Button onClick={saveConfiguration} disabled={saving} size="lg" className="flex items-center gap-2">
-          <Save className="w-4 h-4" />
-          {saving ? "Saving Configuration..." : "Save All Settings"}
-        </Button>
+              <TabsContent value="mapbox" className="space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="mapboxToken" className="text-white">
+                      Mapbox Access Token
+                    </Label>
+                    <Input
+                      id="mapboxToken"
+                      type="password"
+                      placeholder="Enter your Mapbox access token"
+                      value={config.mapboxToken}
+                      onChange={(e) => handleInputChange("mapboxToken", e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+
+                  <Button onClick={testMapboxToken} disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
+                    Test Mapbox Token
+                  </Button>
+
+                  {renderTestResult("mapbox")}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="nile" className="space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="nileUrl" className="text-white">
+                      Nile Database URL
+                    </Label>
+                    <Input
+                      id="nileUrl"
+                      type="url"
+                      placeholder="Enter your Nile database URL"
+                      value={config.nileUrl}
+                      onChange={(e) => handleInputChange("nileUrl", e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="nileApiToken" className="text-white">
+                      Nile API Token
+                    </Label>
+                    <Input
+                      id="nileApiToken"
+                      type="password"
+                      placeholder="Enter your Nile API token"
+                      value={config.nileApiToken}
+                      onChange={(e) => handleInputChange("nileApiToken", e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white"
+                    />
+                  </div>
+
+                  <Button onClick={testNileConnection} disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
+                    Test Nile Connection
+                  </Button>
+
+                  {renderTestResult("nile")}
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            <div className="mt-6 pt-6 border-t border-gray-600">
+              <Button
+                onClick={saveConfiguration}
+                disabled={isLoading}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                Save Configuration
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

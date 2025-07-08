@@ -1,42 +1,62 @@
-// Nile client configuration - server-side only
-// Note: This should only be used in server components or API routes
-const nileUrl = process.env.NILEDB_URL
-const nileApiToken = process.env.NILEDB_API_TOKEN
+// Nile client for server-side operations only
+// This file should only be used on the server side
 
-// Create a basic Nile client (placeholder implementation)
-// This would be replaced with actual Nile SDK when available
-export const nileClient = {
-  url: nileUrl,
-  token: nileApiToken,
-
-  // Placeholder methods - replace with actual Nile SDK methods
-  async query(sql: string, params?: any[]) {
-    try {
-      // This is a placeholder - implement actual Nile query logic
-      console.log("Nile query:", sql, params)
-      return { data: [], error: null }
-    } catch (error) {
-      return { data: null, error: error instanceof Error ? error.message : "Unknown error" }
-    }
-  },
-
-  async connect() {
-    try {
-      // Placeholder connection logic
-      if (!nileUrl || !nileApiToken) {
-        throw new Error("Nile configuration missing")
-      }
-      return { success: true, message: "Connected to Nile" }
-    } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : "Connection failed" }
-    }
-  },
-
-  async disconnect() {
-    // Placeholder disconnect logic
-    return { success: true, message: "Disconnected from Nile" }
-  },
+interface NileConfig {
+  url?: string
+  apiToken?: string
 }
 
-// Export as default as well
+class NileClient {
+  private config: NileConfig
+
+  constructor() {
+    // Only use server-side environment variables (no NEXT_PUBLIC_ prefix)
+    this.config = {
+      url: process.env.NILEDB_URL,
+      apiToken: process.env.NILEDB_API_TOKEN,
+    }
+  }
+
+  async query(sql: string, params?: any[]) {
+    if (!this.config.url || !this.config.apiToken) {
+      throw new Error(
+        "Nile configuration is missing. Please set NILEDB_URL and NILEDB_API_TOKEN environment variables.",
+      )
+    }
+
+    try {
+      const response = await fetch(`${this.config.url}/api/sql`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.config.apiToken}`,
+        },
+        body: JSON.stringify({ sql, params }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Nile query failed: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error("Nile query error:", error)
+      throw error
+    }
+  }
+
+  async testConnection() {
+    try {
+      const result = await this.query("SELECT 1 as test")
+      return { success: true, result }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      }
+    }
+  }
+}
+
+export const nileClient = new NileClient()
 export default nileClient

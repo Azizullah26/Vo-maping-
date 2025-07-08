@@ -6,22 +6,21 @@ export function useMobile() {
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
-    if (typeof window === "undefined") return
-
-    const checkIsMobile = () => {
+    const checkDevice = () => {
       setIsMobile(window.innerWidth < 768)
     }
 
-    checkIsMobile()
-    window.addEventListener("resize", checkIsMobile)
+    checkDevice()
+    window.addEventListener("resize", checkDevice)
 
-    return () => window.removeEventListener("resize", checkIsMobile)
+    return () => {
+      window.removeEventListener("resize", checkDevice)
+    }
   }, [])
 
   return isMobile
 }
 
-export default useMobile
-
-// Add this export alias at the end of the file
+// Export alias for compatibility
 export const useIsMobile = useMobile
+export default useMobile
