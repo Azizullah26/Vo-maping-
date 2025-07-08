@@ -917,7 +917,46 @@ export default function AlAinMap({
         if (debounceTimerRef.current) {
           clearTimeout(debounceTimerRef.current);
         }
-        map.current?.remove();
+
+        // Proper cleanup to prevent AbortError
+        if (map.current) {
+          // Remove all event listeners first
+          map.current.off();
+
+          // Stop any ongoing map operations
+          map.current.stop();
+
+          // Clear all sources and layers to prevent tile loading issues
+          const style = map.current.getStyle();
+          if (style && style.layers) {
+            style.layers.forEach((layer) => {
+              try {
+                if (map.current && map.current.getLayer(layer.id)) {
+                  map.current.removeLayer(layer.id);
+                }
+              } catch (e) {
+                // Ignore errors when removing layers
+              }
+            });
+          }
+
+          if (style && style.sources) {
+            Object.keys(style.sources).forEach((sourceId) => {
+              try {
+                if (map.current && map.current.getSource(sourceId)) {
+                  map.current.removeSource(sourceId);
+                }
+              } catch (e) {
+                // Ignore errors when removing sources
+              }
+            });
+          }
+
+          // Finally remove the map
+          map.current.remove();
+          map.current = null;
+        }
+
         document
           .querySelectorAll("style[data-marker-style]")
           .forEach((el) => el.remove());
@@ -1178,7 +1217,7 @@ export default function AlAinMap({
       case "المتابعة الشرطية والرعاية اللاحقة":
         return "left-aligned";
       case "مركز شرطةasad":
-      case "مركز شرطة الهير":
+      case "مركز ��رطة الهير":
       case "1 Project":
       case "فلل فلج هزاع":
       case "قسم التفتيش الأمني K9":
