@@ -34,32 +34,43 @@ export default function ErrorHandler() {
 
     const handleRejection = (e: PromiseRejectionEvent) => {
       // Handle promise rejections from AbortErrors
-      if (
-        e.reason?.name === "AbortError" &&
-        (e.reason?.message?.includes("signal is aborted") ||
-          e.reason?.message?.includes("aborted") ||
-          e.reason?.stack?.includes("mapbox-gl.js"))
-      ) {
-        console.debug(
-          "Suppressed Mapbox AbortError Promise rejection:",
-          e.reason.message,
-        );
-        e.preventDefault();
-        return false;
+      if (e.reason?.name === "AbortError") {
+        const stack = e.reason?.stack || "";
+        const message = e.reason?.message || "";
+
+        // Suppress any AbortError that might be from Mapbox
+        if (
+          message.includes("signal is aborted") ||
+          message.includes("aborted without reason") ||
+          stack.includes("mapbox-gl.js") ||
+          stack.includes("mapbox") ||
+          stack.includes("api.mapbox.com") ||
+          stack.includes("abortTile") ||
+          stack.includes("_removeTile") ||
+          stack.includes("updateSources") ||
+          stack.includes("Map._render")
+        ) {
+          console.debug(
+            "Suppressed Mapbox AbortError Promise rejection:",
+            message,
+          );
+          e.preventDefault();
+          return false;
+        }
       }
 
       // Handle string-based rejection messages
-      if (
-        typeof e.reason === "string" &&
-        e.reason.includes("AbortError") &&
-        e.reason.includes("mapbox")
-      ) {
-        console.debug(
-          "Suppressed Mapbox AbortError string rejection:",
-          e.reason,
-        );
-        e.preventDefault();
-        return false;
+      if (typeof e.reason === "string") {
+        if (
+          e.reason.includes("AbortError") ||
+          e.reason.includes("mapbox") ||
+          e.reason.includes("signal is aborted") ||
+          e.reason.includes("abortTile")
+        ) {
+          console.debug("Suppressed Mapbox error string rejection:", e.reason);
+          e.preventDefault();
+          return false;
+        }
       }
     };
 
