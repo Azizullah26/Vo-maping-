@@ -242,7 +242,7 @@ const PROJECT_NUMBERS: { [key: string]: string } = {
 
 const HOVERABLE_MARKERS = [
   "قسم موسيقى شرطة أبوظبي",
-  "إدارة التأهيل الشرطي - الف��عة",
+  "إدارة التأهيل الشرطي - الفوعة",
   "مركز شرطة هيلي",
   "ميدان الشرطة بدع بنت سعود",
   "متحف شرطة المربعة",
@@ -264,12 +264,12 @@ const HOVERABLE_MARKERS = [
   "قسم هندسة المرور",
   "المتابعة الشرطية والرعاية اللاحقة",
   "ادارة المهام الخاصة العين",
-  "مبنى التحريات والمخدرات",
+  "مبنى التحر��ات والمخدرات",
   "إدارة الأسلحة والمتفجرات",
   "مركز شرطة فلج هزاع",
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
-  "م��كز شرطة الساد",
+  "مركز شرطة الساد",
   "ساحة حجز المركبات - الساد",
   "مركز شرطة الوقن",
   "مركز شرطة الجيمي",
@@ -501,7 +501,7 @@ export default function AlAinMap({
         "Police Rehabilitation Department - Al Foua",
       "مركز شرطة هيلي": "Hili Police Station",
       "1 Project": "Al Ain Development Project",
-      "مركز شرطة ال��قن": "Al Wagan Police Station",
+      "مركز شرطة الوقن": "Al Wagan Police Station",
     };
     return nameMap[name] || "Police Facility";
   }
@@ -576,8 +576,8 @@ export default function AlAinMap({
       if (typeof window === "undefined") return [centerLng, centerLat];
 
       // Always use bounded center to ensure all markers and coordinates are visible
-      const boundedCenterLng = (53.8 + 56.6) / 2; // Average of expanded left and right boundaries
-      const boundedCenterLat = (22.8 + 25.5) / 2; // Average of expanded bottom and top boundaries
+      const boundedCenterLng = (53.8 + 56.6) / 2 - 0.3; // Move center to the left by 0.3 degrees
+      const boundedCenterLat = (22.8 + 25.5) / 2; // Keep latitude unchanged
       return [boundedCenterLng, boundedCenterLat];
     };
 
