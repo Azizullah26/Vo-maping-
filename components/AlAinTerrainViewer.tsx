@@ -75,9 +75,8 @@ export default function AlAinTerrainViewer({ onError, onClose }: AlAinTerrainVie
 
         const Cesium = (window as any).Cesium
 
-        // Initialize Cesium ion access token
+        // Initialize Cesium ion access token with hardcoded fallback
         Cesium.Ion.defaultAccessToken =
-          process.env.NEXT_PUBLIC_CESIUM_ACCESS_TOKEN ||
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3OTczZjU2OC1iMGYzLTQyZDItOTA2YS04NWE1MzhlM2NmZjEiLCJpZCI6Mjc3MzUwLCJpYXQiOjE3NDA3NDI1MDR9.AK1fWEGfj9fl0nMFrwy8DagqDiqk1HahP-26nzxutpM"
 
         // Initialize the Cesium Viewer
