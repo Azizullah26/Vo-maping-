@@ -47,8 +47,6 @@ const nextConfig = {
   experimental: {
     // Updated experimental features for Next.js 15.2.4
   },
-  // Moved from experimental.serverComponentsExternalPackages
-  serverExternalPackages: [],
 }
 
 module.exports = nextConfig
