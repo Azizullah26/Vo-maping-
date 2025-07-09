@@ -12,7 +12,7 @@ interface AuthState {
 }
 
 export function useSupabaseAuth() {
-  const [state, setState] = useState<AuthState>({
+  const [authState, setAuthState] = useState<AuthState>({
     user: null,
     session: null,
     loading: true,
@@ -30,14 +30,14 @@ export function useSupabaseAuth() {
 
         if (error) throw error
 
-        setState({
+        setAuthState({
           user: session?.user ?? null,
           session,
           loading: false,
           error: null,
         })
       } catch (error) {
-        setState({
+        setAuthState({
           user: null,
           session: null,
           loading: false,
@@ -52,7 +52,7 @@ export function useSupabaseAuth() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setState({
+      setAuthState({
         user: session?.user ?? null,
         session,
         loading: false,
@@ -63,9 +63,10 @@ export function useSupabaseAuth() {
     return () => subscription.unsubscribe()
   }, [])
 
+  // Sign in with email and password
   const signIn = async (email: string, password: string) => {
     try {
-      setState((prev) => ({ ...prev, loading: true, error: null }))
+      setAuthState((prev) => ({ ...prev, loading: true, error: null }))
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -77,14 +78,15 @@ export function useSupabaseAuth() {
       return { success: true, data }
     } catch (error) {
       const errorMessage = error instanceof AuthError ? error.message : "Sign in failed"
-      setState((prev) => ({ ...prev, loading: false, error: errorMessage }))
+      setAuthState((prev) => ({ ...prev, loading: false, error: errorMessage }))
       return { success: false, error: errorMessage }
     }
   }
 
+  // Sign up with email and password
   const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
     try {
-      setState((prev) => ({ ...prev, loading: true, error: null }))
+      setAuthState((prev) => ({ ...prev, loading: true, error: null }))
 
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -99,14 +101,15 @@ export function useSupabaseAuth() {
       return { success: true, data }
     } catch (error) {
       const errorMessage = error instanceof AuthError ? error.message : "Sign up failed"
-      setState((prev) => ({ ...prev, loading: false, error: errorMessage }))
+      setAuthState((prev) => ({ ...prev, loading: false, error: errorMessage }))
       return { success: false, error: errorMessage }
     }
   }
 
+  // Sign out
   const signOut = async () => {
     try {
-      setState((prev) => ({ ...prev, loading: true, error: null }))
+      setAuthState((prev) => ({ ...prev, loading: true, error: null }))
 
       const { error } = await supabase.auth.signOut()
 
@@ -115,14 +118,17 @@ export function useSupabaseAuth() {
       return { success: true }
     } catch (error) {
       const errorMessage = error instanceof AuthError ? error.message : "Sign out failed"
-      setState((prev) => ({ ...prev, loading: false, error: errorMessage }))
+      setAuthState((prev) => ({ ...prev, loading: false, error: errorMessage }))
       return { success: false, error: errorMessage }
     }
   }
 
+  // Reset password
   const resetPassword = async (email: string) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email)
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
 
       if (error) throw error
 
@@ -133,6 +139,7 @@ export function useSupabaseAuth() {
     }
   }
 
+  // Update user profile
   const updateProfile = async (updates: Record<string, any>) => {
     try {
       const { error } = await supabase.auth.updateUser({
@@ -149,7 +156,7 @@ export function useSupabaseAuth() {
   }
 
   return {
-    ...state,
+    ...authState,
     signIn,
     signUp,
     signOut,

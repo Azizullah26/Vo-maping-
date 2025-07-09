@@ -1,6 +1,6 @@
 "use server"
 
-import { supabase, supabaseAdmin } from "@/lib/supabase"
+import { supabaseAdmin } from "@/lib/supabase"
 import { revalidatePath } from "next/cache"
 
 export interface Project {
@@ -9,9 +9,9 @@ export interface Project {
   name_ar?: string
   description?: string
   description_ar?: string
+  location: string
+  location_ar?: string
   status: "planned" | "active" | "completed" | "on_hold"
-  location?: string
-  coordinates?: { lat: number; lng: number }
   start_date?: string
   end_date?: string
   budget?: number
@@ -31,7 +31,7 @@ export interface ProjectStats {
 // Get project statistics
 export async function getProjectStats(): Promise<ProjectStats> {
   try {
-    const { data: projects, error } = await supabase.from("projects").select("status")
+    const { data: projects, error } = await supabaseAdmin.from("projects").select("status")
 
     if (error) throw error
 
@@ -59,7 +59,7 @@ export async function getProjectStats(): Promise<ProjectStats> {
 // Get all projects
 export async function getProjects(): Promise<Project[]> {
   try {
-    const { data, error } = await supabase.from("projects").select("*").order("created_at", { ascending: false })
+    const { data, error } = await supabaseAdmin.from("projects").select("*").order("created_at", { ascending: false })
 
     if (error) throw error
     return data || []
@@ -72,7 +72,7 @@ export async function getProjects(): Promise<Project[]> {
 // Get project by ID
 export async function getProject(id: string): Promise<Project | null> {
   try {
-    const { data, error } = await supabase.from("projects").select("*").eq("id", id).single()
+    const { data, error } = await supabaseAdmin.from("projects").select("*").eq("id", id).single()
 
     if (error) throw error
     return data
@@ -85,30 +85,15 @@ export async function getProject(id: string): Promise<Project | null> {
 // Create new project
 export async function createProject(projectData: Omit<Project, "id" | "created_at" | "updated_at">) {
   try {
-    const { data, error } = await supabaseAdmin
-      .from("projects")
-      .insert([
-        {
-          ...projectData,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      ])
-      .select()
-      .single()
+    const { data, error } = await supabaseAdmin.from("projects").insert([projectData]).select().single()
 
     if (error) throw error
 
-    revalidatePath("/al-ain/admin")
-    revalidatePath("/projects")
-
+    revalidatePath("/al-ain/admin/projects")
     return { success: true, data }
   } catch (error) {
     console.error("Error creating project:", error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to create project",
-    }
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
@@ -117,27 +102,18 @@ export async function updateProject(id: string, updates: Partial<Project>) {
   try {
     const { data, error } = await supabaseAdmin
       .from("projects")
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
+      .update({ ...updates, updated_at: new Date().toISOString() })
       .eq("id", id)
       .select()
       .single()
 
     if (error) throw error
 
-    revalidatePath("/al-ain/admin")
-    revalidatePath("/projects")
-    revalidatePath(`/projects/${id}`)
-
+    revalidatePath("/al-ain/admin/projects")
     return { success: true, data }
   } catch (error) {
     console.error("Error updating project:", error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to update project",
-    }
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
@@ -148,26 +124,21 @@ export async function deleteProject(id: string) {
 
     if (error) throw error
 
-    revalidatePath("/al-ain/admin")
-    revalidatePath("/projects")
-
+    revalidatePath("/al-ain/admin/projects")
     return { success: true }
   } catch (error) {
     console.error("Error deleting project:", error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to delete project",
-    }
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
 // Search projects
 export async function searchProjects(query: string): Promise<Project[]> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("projects")
       .select("*")
-      .or(`name.ilike.%${query}%,name_ar.ilike.%${query}%,description.ilike.%${query}%,description_ar.ilike.%${query}%`)
+      .or(`name.ilike.%${query}%,name_ar.ilike.%${query}%,description.ilike.%${query}%,location.ilike.%${query}%`)
       .order("created_at", { ascending: false })
 
     if (error) throw error
@@ -178,10 +149,10 @@ export async function searchProjects(query: string): Promise<Project[]> {
   }
 }
 
-// Filter projects by status
-export async function getProjectsByStatus(status: Project["status"]): Promise<Project[]> {
+// Get projects by status
+export async function getProjectsByStatus(status: string): Promise<Project[]> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("projects")
       .select("*")
       .eq("status", status)
