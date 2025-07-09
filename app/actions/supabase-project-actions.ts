@@ -27,7 +27,6 @@ export interface ProjectStats {
   on_hold: number
 }
 
-// Get all projects
 export async function getProjects(): Promise<{ data: Project[] | null; error: string | null }> {
   try {
     const { data, error } = await supabase.from("projects").select("*").order("created_at", { ascending: false })
@@ -47,7 +46,6 @@ export async function getProjects(): Promise<{ data: Project[] | null; error: st
   }
 }
 
-// Get project by ID
 export async function getProject(id: string): Promise<{ data: Project | null; error: string | null }> {
   try {
     const { data, error } = await supabase.from("projects").select("*").eq("id", id).single()
@@ -67,7 +65,6 @@ export async function getProject(id: string): Promise<{ data: Project | null; er
   }
 }
 
-// Create new project
 export async function createProject(
   projectData: Omit<Project, "id" | "created_at" | "updated_at">,
 ): Promise<{ data: Project | null; error: string | null }> {
@@ -101,7 +98,6 @@ export async function createProject(
   }
 }
 
-// Update project
 export async function updateProject(
   id: string,
   updates: Partial<Omit<Project, "id" | "created_at">>,
@@ -134,7 +130,6 @@ export async function updateProject(
   }
 }
 
-// Delete project
 export async function deleteProject(id: string): Promise<{ success: boolean; error: string | null }> {
   try {
     const client = supabaseAdmin || supabase
@@ -156,7 +151,6 @@ export async function deleteProject(id: string): Promise<{ success: boolean; err
   }
 }
 
-// Get project statistics
 export async function getProjectStats(): Promise<{ data: ProjectStats | null; error: string | null }> {
   try {
     const { data: projects, error } = await supabase.from("projects").select("status")
@@ -184,7 +178,6 @@ export async function getProjectStats(): Promise<{ data: ProjectStats | null; er
   }
 }
 
-// Search projects
 export async function searchProjects(query: string): Promise<{ data: Project[] | null; error: string | null }> {
   try {
     const { data, error } = await supabase
@@ -208,7 +201,6 @@ export async function searchProjects(query: string): Promise<{ data: Project[] |
   }
 }
 
-// Get projects by status
 export async function getProjectsByStatus(
   status: Project["status"],
 ): Promise<{ data: Project[] | null; error: string | null }> {

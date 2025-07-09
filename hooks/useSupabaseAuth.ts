@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { User, Session } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
+import type { User, Session } from "@supabase/supabase-js"
 
 interface AuthState {
   user: User | null
@@ -12,7 +12,7 @@ interface AuthState {
 }
 
 export function useSupabaseAuth() {
-  const [authState, setAuthState] = useState<AuthState>({
+  const [state, setState] = useState<AuthState>({
     user: null,
     session: null,
     loading: true,
@@ -29,20 +29,18 @@ export function useSupabaseAuth() {
         } = await supabase.auth.getSession()
 
         if (error) {
-          console.error("Error getting session:", error)
-          setAuthState((prev) => ({ ...prev, error: error.message, loading: false }))
+          setState((prev) => ({ ...prev, error: error.message, loading: false }))
           return
         }
 
-        setAuthState({
-          user: session?.user ?? null,
+        setState((prev) => ({
+          ...prev,
           session,
+          user: session?.user ?? null,
           loading: false,
-          error: null,
-        })
+        }))
       } catch (error) {
-        console.error("Unexpected error getting session:", error)
-        setAuthState((prev) => ({
+        setState((prev) => ({
           ...prev,
           error: error instanceof Error ? error.message : "Failed to get session",
           loading: false,
@@ -56,14 +54,15 @@ export function useSupabaseAuth() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session?.user?.email)
+      console.log("Auth state changed:", event, session)
 
-      setAuthState({
-        user: session?.user ?? null,
+      setState((prev) => ({
+        ...prev,
         session,
+        user: session?.user ?? null,
         loading: false,
         error: null,
-      })
+      }))
     })
 
     return () => {
@@ -73,7 +72,7 @@ export function useSupabaseAuth() {
 
   const signIn = async (email: string, password: string) => {
     try {
-      setAuthState((prev) => ({ ...prev, loading: true, error: null }))
+      setState((prev) => ({ ...prev, loading: true, error: null }))
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -81,21 +80,28 @@ export function useSupabaseAuth() {
       })
 
       if (error) {
-        setAuthState((prev) => ({ ...prev, error: error.message, loading: false }))
+        setState((prev) => ({ ...prev, error: error.message, loading: false }))
         return { success: false, error: error.message }
       }
+
+      setState((prev) => ({
+        ...prev,
+        session: data.session,
+        user: data.user,
+        loading: false,
+      }))
 
       return { success: true, data }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Sign in failed"
-      setAuthState((prev) => ({ ...prev, error: errorMessage, loading: false }))
+      setState((prev) => ({ ...prev, error: errorMessage, loading: false }))
       return { success: false, error: errorMessage }
     }
   }
 
   const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
     try {
-      setAuthState((prev) => ({ ...prev, loading: true, error: null }))
+      setState((prev) => ({ ...prev, loading: true, error: null }))
 
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -106,33 +112,47 @@ export function useSupabaseAuth() {
       })
 
       if (error) {
-        setAuthState((prev) => ({ ...prev, error: error.message, loading: false }))
+        setState((prev) => ({ ...prev, error: error.message, loading: false }))
         return { success: false, error: error.message }
       }
+
+      setState((prev) => ({
+        ...prev,
+        session: data.session,
+        user: data.user,
+        loading: false,
+      }))
 
       return { success: true, data }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Sign up failed"
-      setAuthState((prev) => ({ ...prev, error: errorMessage, loading: false }))
+      setState((prev) => ({ ...prev, error: errorMessage, loading: false }))
       return { success: false, error: errorMessage }
     }
   }
 
   const signOut = async () => {
     try {
-      setAuthState((prev) => ({ ...prev, loading: true, error: null }))
+      setState((prev) => ({ ...prev, loading: true, error: null }))
 
       const { error } = await supabase.auth.signOut()
 
       if (error) {
-        setAuthState((prev) => ({ ...prev, error: error.message, loading: false }))
+        setState((prev) => ({ ...prev, error: error.message, loading: false }))
         return { success: false, error: error.message }
       }
+
+      setState((prev) => ({
+        ...prev,
+        session: null,
+        user: null,
+        loading: false,
+      }))
 
       return { success: true }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Sign out failed"
-      setAuthState((prev) => ({ ...prev, error: errorMessage, loading: false }))
+      setState((prev) => ({ ...prev, error: errorMessage, loading: false }))
       return { success: false, error: errorMessage }
     }
   }
@@ -149,39 +169,47 @@ export function useSupabaseAuth() {
 
       return { success: true }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Password reset failed"
-      return { success: false, error: errorMessage }
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Password reset failed",
+      }
     }
   }
 
-  const updateProfile = async (updates: { email?: string; password?: string; data?: Record<string, any> }) => {
+  const updateProfile = async (updates: Record<string, any>) => {
     try {
-      setAuthState((prev) => ({ ...prev, loading: true, error: null }))
+      setState((prev) => ({ ...prev, loading: true, error: null }))
 
-      const { data, error } = await supabase.auth.updateUser(updates)
+      const { data, error } = await supabase.auth.updateUser({
+        data: updates,
+      })
 
       if (error) {
-        setAuthState((prev) => ({ ...prev, error: error.message, loading: false }))
+        setState((prev) => ({ ...prev, error: error.message, loading: false }))
         return { success: false, error: error.message }
       }
+
+      setState((prev) => ({
+        ...prev,
+        user: data.user,
+        loading: false,
+      }))
 
       return { success: true, data }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Profile update failed"
-      setAuthState((prev) => ({ ...prev, error: errorMessage, loading: false }))
+      setState((prev) => ({ ...prev, error: errorMessage, loading: false }))
       return { success: false, error: errorMessage }
     }
   }
 
   return {
-    ...authState,
+    ...state,
     signIn,
     signUp,
     signOut,
     resetPassword,
     updateProfile,
-    isAuthenticated: !!authState.user,
+    isAuthenticated: !!state.user,
   }
 }
-
-export default useSupabaseAuth

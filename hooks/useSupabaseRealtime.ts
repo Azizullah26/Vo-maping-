@@ -11,7 +11,6 @@ interface RealtimeState<T> {
   connected: boolean
 }
 
-// Generic realtime hook
 export function useSupabaseRealtime<T extends Record<string, any>>(table: string, initialData: T[] = []) {
   const [state, setState] = useState<RealtimeState<T>>({
     data: initialData,
@@ -44,7 +43,6 @@ export function useSupabaseRealtime<T extends Record<string, any>>(table: string
   }, [])
 
   useEffect(() => {
-    // Fetch initial data
     const fetchInitialData = async () => {
       try {
         const { data, error } = await supabase.from(table).select("*").order("created_at", { ascending: false })
@@ -66,7 +64,6 @@ export function useSupabaseRealtime<T extends Record<string, any>>(table: string
 
     fetchInitialData()
 
-    // Set up realtime subscription
     const realtimeChannel = supabase
       .channel(`${table}_changes`)
       .on(
@@ -138,16 +135,12 @@ export function useSupabaseRealtime<T extends Record<string, any>>(table: string
   }
 }
 
-// Projects realtime hook
 export function useProjectsRealtime() {
   return useSupabaseRealtime("projects")
 }
 
-// Documents realtime hook
 export function useDocumentsRealtime(projectId?: string) {
   const baseResult = useSupabaseRealtime("documents")
-
-  // Filter documents by project if projectId is provided
   const filteredData = projectId ? baseResult.data.filter((doc: any) => doc.project_id === projectId) : baseResult.data
 
   return {

@@ -1,20 +1,14 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 
-// Get environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-// Validate required environment variables
-if (!supabaseUrl) {
-  throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL environment variable")
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("Missing Supabase environment variables")
 }
 
-if (!supabaseAnonKey) {
-  throw new Error("Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable")
-}
-
-// Create client function
+// Create client function (named export)
 export function createClient() {
   return createSupabaseClient(supabaseUrl, supabaseAnonKey, {
     auth: {

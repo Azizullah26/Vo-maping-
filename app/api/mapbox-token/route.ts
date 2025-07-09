@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server"
 
-// Server-side route to provide Mapbox token securely
 export async function GET() {
   try {
-    // Use the provided Mapbox token
     const mapboxToken =
       "pk.eyJ1IjoiYXppenVsbGFoMjYxMSIsImEiOiJjbWJzeDkxMDMwa3JhMmtzZHd0Ym9sZm44In0.V2TEaa53IsuNBxLXm4SXSg"
 
