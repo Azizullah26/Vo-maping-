@@ -8,9 +8,10 @@ export interface Project {
   name: string
   name_ar?: string
   description?: string
+  description_ar?: string
   status: "planned" | "active" | "completed" | "on_hold"
   location?: string
-  coordinates?: [number, number]
+  coordinates?: { lat: number; lng: number }
   start_date?: string
   end_date?: string
   budget?: number
@@ -27,50 +28,64 @@ export interface ProjectStats {
   on_hold: number
 }
 
-export async function getProjects(): Promise<{ data: Project[] | null; error: string | null }> {
+// Get project statistics
+export async function getProjectStats(): Promise<ProjectStats> {
+  try {
+    const { data: projects, error } = await supabase.from("projects").select("status")
+
+    if (error) throw error
+
+    const stats = {
+      total: projects?.length || 0,
+      active: projects?.filter((p) => p.status === "active").length || 0,
+      completed: projects?.filter((p) => p.status === "completed").length || 0,
+      planned: projects?.filter((p) => p.status === "planned").length || 0,
+      on_hold: projects?.filter((p) => p.status === "on_hold").length || 0,
+    }
+
+    return stats
+  } catch (error) {
+    console.error("Error fetching project stats:", error)
+    return {
+      total: 0,
+      active: 0,
+      completed: 0,
+      planned: 0,
+      on_hold: 0,
+    }
+  }
+}
+
+// Get all projects
+export async function getProjects(): Promise<Project[]> {
   try {
     const { data, error } = await supabase.from("projects").select("*").order("created_at", { ascending: false })
 
-    if (error) {
-      console.error("Error fetching projects:", error)
-      return { data: null, error: error.message }
-    }
-
-    return { data, error: null }
+    if (error) throw error
+    return data || []
   } catch (error) {
-    console.error("Unexpected error fetching projects:", error)
-    return {
-      data: null,
-      error: error instanceof Error ? error.message : "Failed to fetch projects",
-    }
+    console.error("Error fetching projects:", error)
+    return []
   }
 }
 
-export async function getProject(id: string): Promise<{ data: Project | null; error: string | null }> {
+// Get project by ID
+export async function getProject(id: string): Promise<Project | null> {
   try {
     const { data, error } = await supabase.from("projects").select("*").eq("id", id).single()
 
-    if (error) {
-      console.error("Error fetching project:", error)
-      return { data: null, error: error.message }
-    }
-
-    return { data, error: null }
+    if (error) throw error
+    return data
   } catch (error) {
-    console.error("Unexpected error fetching project:", error)
-    return {
-      data: null,
-      error: error instanceof Error ? error.message : "Failed to fetch project",
-    }
+    console.error("Error fetching project:", error)
+    return null
   }
 }
 
-export async function createProject(
-  projectData: Omit<Project, "id" | "created_at" | "updated_at">,
-): Promise<{ data: Project | null; error: string | null }> {
+// Create new project
+export async function createProject(projectData: Omit<Project, "id" | "created_at" | "updated_at">) {
   try {
-    const client = supabaseAdmin || supabase
-    const { data, error } = await client
+    const { data, error } = await supabaseAdmin
       .from("projects")
       .insert([
         {
@@ -82,29 +97,25 @@ export async function createProject(
       .select()
       .single()
 
-    if (error) {
-      console.error("Error creating project:", error)
-      return { data: null, error: error.message }
-    }
+    if (error) throw error
 
-    revalidatePath("/al-ain/admin/projects")
-    return { data, error: null }
+    revalidatePath("/al-ain/admin")
+    revalidatePath("/projects")
+
+    return { success: true, data }
   } catch (error) {
-    console.error("Unexpected error creating project:", error)
+    console.error("Error creating project:", error)
     return {
-      data: null,
+      success: false,
       error: error instanceof Error ? error.message : "Failed to create project",
     }
   }
 }
 
-export async function updateProject(
-  id: string,
-  updates: Partial<Omit<Project, "id" | "created_at">>,
-): Promise<{ data: Project | null; error: string | null }> {
+// Update project
+export async function updateProject(id: string, updates: Partial<Project>) {
   try {
-    const client = supabaseAdmin || supabase
-    const { data, error } = await client
+    const { data, error } = await supabaseAdmin
       .from("projects")
       .update({
         ...updates,
@@ -114,36 +125,35 @@ export async function updateProject(
       .select()
       .single()
 
-    if (error) {
-      console.error("Error updating project:", error)
-      return { data: null, error: error.message }
-    }
+    if (error) throw error
 
-    revalidatePath("/al-ain/admin/projects")
-    return { data, error: null }
+    revalidatePath("/al-ain/admin")
+    revalidatePath("/projects")
+    revalidatePath(`/projects/${id}`)
+
+    return { success: true, data }
   } catch (error) {
-    console.error("Unexpected error updating project:", error)
+    console.error("Error updating project:", error)
     return {
-      data: null,
+      success: false,
       error: error instanceof Error ? error.message : "Failed to update project",
     }
   }
 }
 
-export async function deleteProject(id: string): Promise<{ success: boolean; error: string | null }> {
+// Delete project
+export async function deleteProject(id: string) {
   try {
-    const client = supabaseAdmin || supabase
-    const { error } = await client.from("projects").delete().eq("id", id)
+    const { error } = await supabaseAdmin.from("projects").delete().eq("id", id)
 
-    if (error) {
-      console.error("Error deleting project:", error)
-      return { success: false, error: error.message }
-    }
+    if (error) throw error
 
-    revalidatePath("/al-ain/admin/projects")
-    return { success: true, error: null }
+    revalidatePath("/al-ain/admin")
+    revalidatePath("/projects")
+
+    return { success: true }
   } catch (error) {
-    console.error("Unexpected error deleting project:", error)
+    console.error("Error deleting project:", error)
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to delete project",
@@ -151,59 +161,25 @@ export async function deleteProject(id: string): Promise<{ success: boolean; err
   }
 }
 
-export async function getProjectStats(): Promise<{ data: ProjectStats | null; error: string | null }> {
-  try {
-    const { data: projects, error } = await supabase.from("projects").select("status")
-
-    if (error) {
-      console.error("Error fetching project stats:", error)
-      return { data: null, error: error.message }
-    }
-
-    const stats: ProjectStats = {
-      total: projects.length,
-      active: projects.filter((p) => p.status === "active").length,
-      completed: projects.filter((p) => p.status === "completed").length,
-      planned: projects.filter((p) => p.status === "planned").length,
-      on_hold: projects.filter((p) => p.status === "on_hold").length,
-    }
-
-    return { data: stats, error: null }
-  } catch (error) {
-    console.error("Unexpected error fetching project stats:", error)
-    return {
-      data: null,
-      error: error instanceof Error ? error.message : "Failed to fetch project statistics",
-    }
-  }
-}
-
-export async function searchProjects(query: string): Promise<{ data: Project[] | null; error: string | null }> {
+// Search projects
+export async function searchProjects(query: string): Promise<Project[]> {
   try {
     const { data, error } = await supabase
       .from("projects")
       .select("*")
-      .or(`name.ilike.%${query}%,name_ar.ilike.%${query}%,description.ilike.%${query}%,location.ilike.%${query}%`)
+      .or(`name.ilike.%${query}%,name_ar.ilike.%${query}%,description.ilike.%${query}%,description_ar.ilike.%${query}%`)
       .order("created_at", { ascending: false })
 
-    if (error) {
-      console.error("Error searching projects:", error)
-      return { data: null, error: error.message }
-    }
-
-    return { data, error: null }
+    if (error) throw error
+    return data || []
   } catch (error) {
-    console.error("Unexpected error searching projects:", error)
-    return {
-      data: null,
-      error: error instanceof Error ? error.message : "Failed to search projects",
-    }
+    console.error("Error searching projects:", error)
+    return []
   }
 }
 
-export async function getProjectsByStatus(
-  status: Project["status"],
-): Promise<{ data: Project[] | null; error: string | null }> {
+// Filter projects by status
+export async function getProjectsByStatus(status: Project["status"]): Promise<Project[]> {
   try {
     const { data, error } = await supabase
       .from("projects")
@@ -211,17 +187,10 @@ export async function getProjectsByStatus(
       .eq("status", status)
       .order("created_at", { ascending: false })
 
-    if (error) {
-      console.error("Error fetching projects by status:", error)
-      return { data: null, error: error.message }
-    }
-
-    return { data, error: null }
+    if (error) throw error
+    return data || []
   } catch (error) {
-    console.error("Unexpected error fetching projects by status:", error)
-    return {
-      data: null,
-      error: error instanceof Error ? error.message : "Failed to fetch projects by status",
-    }
+    console.error("Error fetching projects by status:", error)
+    return []
   }
 }

@@ -2,51 +2,37 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing Supabase environment variables")
-}
-
-// Create client function (named export)
+// Create client function
 export function createClient() {
-  return createSupabaseClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-    },
-  })
+  return createSupabaseClient(supabaseUrl, supabaseAnonKey)
 }
 
 // Main client instance
-export const supabase = createClient()
+export const supabase = createSupabaseClient(supabaseUrl, supabaseAnonKey)
 
 // Admin client for server-side operations
-export const supabaseAdmin = supabaseServiceRoleKey
-  ? createSupabaseClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    })
-  : null
+export const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+})
 
 // Test connection function
 export async function testSupabaseConnection() {
   try {
-    const { data, error } = await supabase.from("projects").select("count").limit(1)
+    const { data, error } = await supabase.from("projects").select("count", { count: "exact", head: true })
     if (error) throw error
     return { success: true, message: "Connection successful" }
   } catch (error) {
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Connection failed",
-    }
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
-// Check if Supabase is properly configured
-export function isSupabaseConfigured(): boolean {
+// Check if Supabase is configured
+export function isSupabaseConfigured() {
   return !!(supabaseUrl && supabaseAnonKey)
 }
 

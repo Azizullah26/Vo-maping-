@@ -6,44 +6,44 @@ export async function GET() {
       status: "healthy",
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || "development",
-      version: "1.0.0",
       services: {
-        database: await checkDatabase(),
-        supabase: await checkSupabase(),
+        database: "checking...",
+        supabase: "checking...",
       },
+    }
+
+    // Check database connection
+    try {
+      if (process.env.DATABASE_URL || process.env.POSTGRES_URL) {
+        health.services.database = "connected"
+      } else {
+        health.services.database = "not configured"
+      }
+    } catch (error) {
+      health.services.database = "error"
+    }
+
+    // Check Supabase connection
+    try {
+      if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        health.services.supabase = "configured"
+      } else {
+        health.services.supabase = "not configured"
+      }
+    } catch (error) {
+      health.services.supabase = "error"
     }
 
     return NextResponse.json(health)
   } catch (error) {
+    console.error("Health check error:", error)
     return NextResponse.json(
       {
         status: "unhealthy",
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: "Health check failed",
         timestamp: new Date().toISOString(),
       },
       { status: 500 },
     )
-  }
-}
-
-async function checkDatabase() {
-  try {
-    return { status: "connected", message: "Database is accessible" }
-  } catch (error) {
-    return { status: "error", message: "Database connection failed" }
-  }
-}
-
-async function checkSupabase() {
-  try {
-    const hasSupabaseUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
-    const hasSupabaseKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (!hasSupabaseUrl || !hasSupabaseKey) {
-      return { status: "not_configured", message: "Supabase not configured" }
-    }
-    return { status: "configured", message: "Supabase is configured" }
-  } catch (error) {
-    return { status: "error", message: "Supabase service check failed" }
   }
 }
