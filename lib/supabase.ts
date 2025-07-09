@@ -4,12 +4,12 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-// Client-side Supabase client
-export const createClient = () => {
+// Create client function
+export function createClient() {
   return createSupabaseClient(supabaseUrl, supabaseAnonKey)
 }
 
-// Main Supabase client instance
+// Main client instance
 export const supabase = createSupabaseClient(supabaseUrl, supabaseAnonKey)
 
 // Admin client for server-side operations
@@ -24,10 +24,9 @@ export const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceKe
 export async function testSupabaseConnection() {
   try {
     const { data, error } = await supabase.from("projects").select("count").limit(1)
-    if (error) throw error
-    return { success: true, message: "Connection successful" }
+    return { success: !error, error }
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
+    return { success: false, error }
   }
 }
 

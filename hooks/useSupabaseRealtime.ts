@@ -11,8 +11,7 @@ interface RealtimeState<T> {
   connected: boolean
 }
 
-// Generic realtime hook
-export function useSupabaseRealtime<T>(table: string, filter?: { column: string; value: any }) {
+export function useSupabaseRealtime<T = any>(table: string, filter?: { column: string; value: any }) {
   const [state, setState] = useState<RealtimeState<T>>({
     data: [],
     loading: true,
@@ -34,7 +33,10 @@ export function useSupabaseRealtime<T>(table: string, filter?: { column: string;
 
         const { data, error } = await query
 
-        if (error) throw error
+        if (error) {
+          setState((prev) => ({ ...prev, error: error.message, loading: false }))
+          return
+        }
 
         setState((prev) => ({
           ...prev,
@@ -52,7 +54,7 @@ export function useSupabaseRealtime<T>(table: string, filter?: { column: string;
               event: "*",
               schema: "public",
               table: table,
-              filter: filter ? `${filter.column}=eq.${filter.value}` : undefined,
+              ...(filter && { filter: `${filter.column}=eq.${filter.value}` }),
             },
             (payload) => {
               setState((prev) => {
@@ -63,20 +65,16 @@ export function useSupabaseRealtime<T>(table: string, filter?: { column: string;
                     newData.push(payload.new as T)
                     break
                   case "UPDATE":
-                    const updateIndex = newData.findIndex((item: any) => item.id === payload.new.id)
-                    if (updateIndex !== -1) {
-                      newData[updateIndex] = payload.new as T
-                    }
+                    newData = newData.map((item) =>
+                      (item as any).id === (payload.new as any).id ? (payload.new as T) : item,
+                    )
                     break
                   case "DELETE":
-                    newData = newData.filter((item: any) => item.id !== payload.old.id)
+                    newData = newData.filter((item) => (item as any).id !== (payload.old as any).id)
                     break
                 }
 
-                return {
-                  ...prev,
-                  data: newData,
-                }
+                return { ...prev, data: newData }
               })
             },
           )
@@ -89,8 +87,8 @@ export function useSupabaseRealtime<T>(table: string, filter?: { column: string;
       } catch (error) {
         setState((prev) => ({
           ...prev,
+          error: error instanceof Error ? error.message : "Unknown error",
           loading: false,
-          error: error instanceof Error ? error.message : "Failed to setup realtime",
         }))
       }
     }
@@ -107,13 +105,10 @@ export function useSupabaseRealtime<T>(table: string, filter?: { column: string;
   return state
 }
 
-// Projects realtime hook
 export function useProjectsRealtime() {
-  return useSupabaseRealtime<any>("projects")
+  return useSupabaseRealtime("projects")
 }
 
-// Documents realtime hook
 export function useDocumentsRealtime(projectId?: string) {
-  const filter = projectId ? { column: "project_id", value: projectId } : undefined
-  return useSupabaseRealtime<any>("documents", filter)
+  return useSupabaseRealtime("documents", projectId ? { column: "project_id", value: projectId } : undefined)
 }

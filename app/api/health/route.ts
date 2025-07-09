@@ -7,6 +7,7 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       services: {
         database: "operational",
+        supabase: "operational",
         api: "operational",
       },
     }
