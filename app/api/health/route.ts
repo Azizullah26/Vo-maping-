@@ -2,66 +2,38 @@ import { NextResponse } from "next/server"
 
 export async function GET() {
   try {
-    const health = {
-      status: "healthy",
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV,
-      version: process.env.npm_package_version || "1.0.0",
-      services: {
-        database: await checkDatabase(),
-        external: await checkExternalServices(),
+    // Check basic environment variables without exposing sensitive data
+    const checks = {
+      supabase: {
+        url: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        anon_key: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        service_role: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
       },
+      database: {
+        url: !!process.env.DATABASE_URL,
+        postgres: !!process.env.POSTGRES_URL,
+      },
+      demo_mode: process.env.NEXT_PUBLIC_DEMO_MODE === "true",
+      static_mode: process.env.NEXT_PUBLIC_STATIC_MODE === "true",
     }
 
-    return NextResponse.json(health)
+    const allConfigured = Object.values(checks.supabase).every(Boolean) && Object.values(checks.database).some(Boolean)
+
+    return NextResponse.json({
+      status: allConfigured ? "healthy" : "warning",
+      timestamp: new Date().toISOString(),
+      checks,
+      message: allConfigured ? "All systems operational" : "Some configurations missing",
+    })
   } catch (error) {
+    console.error("Health check error:", error)
     return NextResponse.json(
       {
-        status: "unhealthy",
-        error: error instanceof Error ? error.message : "Unknown error",
+        status: "error",
         timestamp: new Date().toISOString(),
+        message: "Health check failed",
       },
       { status: 500 },
     )
-  }
-}
-
-async function checkDatabase() {
-  try {
-    // Simple database connectivity check
-    return { status: "connected", message: "Database is accessible" }
-  } catch (error) {
-    return { status: "error", message: "Database connection failed" }
-  }
-}
-
-async function checkExternalServices() {
-  const services = {
-    mapbox: await checkMapboxService(),
-    supabase: await checkSupabaseService(),
-  }
-
-  return services
-}
-
-async function checkMapboxService() {
-  try {
-    if (!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN) {
-      return { status: "not_configured", message: "Mapbox token not configured" }
-    }
-    return { status: "configured", message: "Mapbox token is configured" }
-  } catch (error) {
-    return { status: "error", message: "Mapbox service check failed" }
-  }
-}
-
-async function checkSupabaseService() {
-  try {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      return { status: "not_configured", message: "Supabase not configured" }
-    }
-    return { status: "configured", message: "Supabase is configured" }
-  } catch (error) {
-    return { status: "error", message: "Supabase service check failed" }
   }
 }
