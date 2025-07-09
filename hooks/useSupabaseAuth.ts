@@ -27,11 +27,7 @@ export function useSupabaseAuth() {
           data: { session },
           error,
         } = await supabase.auth.getSession()
-
-        if (error) {
-          setAuthState((prev) => ({ ...prev, error: error.message, loading: false }))
-          return
-        }
+        if (error) throw error
 
         setAuthState({
           user: session?.user ?? null,
@@ -42,8 +38,8 @@ export function useSupabaseAuth() {
       } catch (error) {
         setAuthState((prev) => ({
           ...prev,
-          error: error instanceof Error ? error.message : "Unknown error",
           loading: false,
+          error: error instanceof Error ? error.message : "Failed to get session",
         }))
       }
     }
@@ -74,15 +70,12 @@ export function useSupabaseAuth() {
         password,
       })
 
-      if (error) {
-        setAuthState((prev) => ({ ...prev, error: error.message, loading: false }))
-        return { success: false, error: error.message }
-      }
+      if (error) throw error
 
       return { success: true, data }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Sign in failed"
-      setAuthState((prev) => ({ ...prev, error: errorMessage, loading: false }))
+      setAuthState((prev) => ({ ...prev, loading: false, error: errorMessage }))
       return { success: false, error: errorMessage }
     }
   }
@@ -99,15 +92,12 @@ export function useSupabaseAuth() {
         },
       })
 
-      if (error) {
-        setAuthState((prev) => ({ ...prev, error: error.message, loading: false }))
-        return { success: false, error: error.message }
-      }
+      if (error) throw error
 
       return { success: true, data }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Sign up failed"
-      setAuthState((prev) => ({ ...prev, error: errorMessage, loading: false }))
+      setAuthState((prev) => ({ ...prev, loading: false, error: errorMessage }))
       return { success: false, error: errorMessage }
     }
   }
@@ -117,16 +107,12 @@ export function useSupabaseAuth() {
       setAuthState((prev) => ({ ...prev, loading: true, error: null }))
 
       const { error } = await supabase.auth.signOut()
-
-      if (error) {
-        setAuthState((prev) => ({ ...prev, error: error.message, loading: false }))
-        return { success: false, error: error.message }
-      }
+      if (error) throw error
 
       return { success: true }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Sign out failed"
-      setAuthState((prev) => ({ ...prev, error: errorMessage, loading: false }))
+      setAuthState((prev) => ({ ...prev, loading: false, error: errorMessage }))
       return { success: false, error: errorMessage }
     }
   }
@@ -134,10 +120,7 @@ export function useSupabaseAuth() {
   const resetPassword = async (email: string) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email)
-
-      if (error) {
-        return { success: false, error: error.message }
-      }
+      if (error) throw error
 
       return { success: true }
     } catch (error) {
@@ -151,10 +134,7 @@ export function useSupabaseAuth() {
       const { error } = await supabase.auth.updateUser({
         data: updates,
       })
-
-      if (error) {
-        return { success: false, error: error.message }
-      }
+      if (error) throw error
 
       return { success: true }
     } catch (error) {
@@ -170,5 +150,6 @@ export function useSupabaseAuth() {
     signOut,
     resetPassword,
     updateProfile,
+    isAuthenticated: !!authState.user,
   }
 }

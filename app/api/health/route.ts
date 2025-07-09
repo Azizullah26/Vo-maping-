@@ -2,24 +2,36 @@ import { NextResponse } from "next/server"
 
 export async function GET() {
   try {
-    const health = {
-      status: "healthy",
-      timestamp: new Date().toISOString(),
-      services: {
-        database: "operational",
-        supabase: "operational",
-        api: "operational",
+    // Check basic environment variables without exposing sensitive data
+    const checks = {
+      supabase: {
+        url: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        anon_key: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        service_role: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
       },
+      database: {
+        url: !!process.env.DATABASE_URL,
+        postgres: !!process.env.POSTGRES_URL,
+      },
+      demo_mode: process.env.NEXT_PUBLIC_DEMO_MODE === "true",
+      static_mode: process.env.NEXT_PUBLIC_STATIC_MODE === "true",
     }
 
-    return NextResponse.json(health)
+    const allConfigured = Object.values(checks.supabase).every(Boolean) && Object.values(checks.database).some(Boolean)
+
+    return NextResponse.json({
+      status: allConfigured ? "healthy" : "warning",
+      timestamp: new Date().toISOString(),
+      checks,
+      message: allConfigured ? "All systems operational" : "Some configurations missing",
+    })
   } catch (error) {
-    console.error("Health check failed:", error)
+    console.error("Health check error:", error)
     return NextResponse.json(
       {
-        status: "unhealthy",
+        status: "error",
         timestamp: new Date().toISOString(),
-        error: "Health check failed",
+        message: "Health check failed",
       },
       { status: 500 },
     )

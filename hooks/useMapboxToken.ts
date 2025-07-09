@@ -21,7 +21,7 @@ export function useMapboxToken() {
         const response = await fetch("/api/mapbox-token")
 
         if (!response.ok) {
-          throw new Error("Failed to fetch Mapbox token")
+          throw new Error(`HTTP error! status: ${response.status}`)
         }
 
         const data = await response.json()
@@ -39,7 +39,7 @@ export function useMapboxToken() {
         setState({
           token: null,
           loading: false,
-          error: error instanceof Error ? error.message : "Unknown error",
+          error: error instanceof Error ? error.message : "Failed to fetch Mapbox token",
         })
       }
     }

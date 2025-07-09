@@ -2,7 +2,7 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 // Create client function
 export function createClient() {
@@ -13,7 +13,7 @@ export function createClient() {
 export const supabase = createSupabaseClient(supabaseUrl, supabaseAnonKey)
 
 // Admin client for server-side operations
-export const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceKey, {
+export const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceRoleKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false,
@@ -23,10 +23,11 @@ export const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceKe
 // Test connection function
 export async function testSupabaseConnection() {
   try {
-    const { data, error } = await supabase.from("projects").select("count").limit(1)
-    return { success: !error, error }
+    const { data, error } = await supabase.from("projects").select("count", { count: "exact", head: true })
+    if (error) throw error
+    return { success: true, message: "Connection successful" }
   } catch (error) {
-    return { success: false, error }
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
