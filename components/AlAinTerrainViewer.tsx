@@ -20,26 +20,69 @@ export default function AlAinTerrainViewer({ onError, onClose }: AlAinTerrainVie
   useEffect(() => {
     if (!viewerContainer.current) return
 
-    let Cesium: any = null
     let cleanup: (() => void) | null = null
 
     const loadCesium = async () => {
       try {
-        // Dynamically import Cesium
-        const cesiumModule = await import("cesium")
-        Cesium = cesiumModule
+        // Load Cesium via CDN instead of dynamic import
+        const loadScript = (src: string): Promise<void> => {
+          return new Promise((resolve, reject) => {
+            if (document.querySelector(`script[src="${src}"]`)) {
+              resolve()
+              return
+            }
 
-        // Import Cesium CSS
-        await import("cesium/Build/Cesium/Widgets/widgets.css")
+            const script = document.createElement("script")
+            script.src = src
+            script.onload = () => resolve()
+            script.onerror = () => reject(new Error(`Failed to load script: ${src}`))
+            document.head.appendChild(script)
+          })
+        }
 
-        // Initialize Cesium ion access token with the new token
+        const loadCSS = (href: string): Promise<void> => {
+          return new Promise((resolve, reject) => {
+            if (document.querySelector(`link[href="${href}"]`)) {
+              resolve()
+              return
+            }
+
+            const link = document.createElement("link")
+            link.rel = "stylesheet"
+            link.href = href
+            link.onload = () => resolve()
+            link.onerror = () => reject(new Error(`Failed to load CSS: ${href}`))
+            document.head.appendChild(link)
+          })
+        }
+
+        // Load Cesium CSS
+        await loadCSS("https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Widgets/widgets.css")
+
+        // Load Cesium JS
+        await loadScript("https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Cesium.js")
+
+        // Wait for Cesium to be available
+        let attempts = 0
+        while (!(window as any).Cesium && attempts < 50) {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+          attempts++
+        }
+
+        if (!(window as any).Cesium) {
+          throw new Error("Cesium failed to load")
+        }
+
+        const Cesium = (window as any).Cesium
+
+        // Initialize Cesium ion access token
         Cesium.Ion.defaultAccessToken =
+          process.env.NEXT_PUBLIC_CESIUM_ACCESS_TOKEN ||
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3OTczZjU2OC1iMGYzLTQyZDItOTA2YS04NWE1MzhlM2NmZjEiLCJpZCI6Mjc3MzUwLCJpYXQiOjE3NDA3NDI1MDR9.AK1fWEGfj9fl0nMFrwy8DagqDiqk1HahP-26nzxutpM"
 
-        // Initialize the Cesium Viewer with a basic terrain provider
+        // Initialize the Cesium Viewer
         viewerRef.current = new Cesium.Viewer(viewerContainer.current, {
-          terrainProvider: new Cesium.EllipsoidTerrainProvider(),
-          imageryProvider: new Cesium.IonImageryProvider({ assetId: 3 }),
+          terrainProvider: await Cesium.createWorldTerrainAsync(),
           baseLayerPicker: false,
           timeline: false,
           animation: false,
@@ -73,43 +116,20 @@ export default function AlAinTerrainViewer({ onError, onClose }: AlAinTerrainVie
           duration: 3,
         })
 
-        // Load 3D Tileset - Check if Cesium.Cesium3DTileset is available
-        if (typeof Cesium.Cesium3DTileset === "function") {
-          try {
-            const tileset = viewerRef.current.scene.primitives.add(
-              new Cesium.Cesium3DTileset({
-                url: Cesium.IonResource.fromAssetId(2275207),
-              }),
-            )
-
-            // Check if tileset.readyPromise exists before using it
-            if (tileset.readyPromise && typeof tileset.readyPromise.then === "function") {
-              tileset.readyPromise
-                .then(() => {
-                  console.log("3D Tileset loaded successfully")
-                  setCesiumLoaded(true)
-                  setIsLoading(false)
-                })
-                .catch((error: any) => {
-                  console.error("Error loading 3D Tileset:", error)
-                  onError?.(new Error("Failed to load 3D Tileset"))
-                })
-            } else {
-              console.warn("tileset.readyPromise is not available in this Cesium version")
-              setCesiumLoaded(true)
-              setIsLoading(false)
-            }
-          } catch (tilesetError) {
-            console.error("Error creating tileset:", tilesetError)
-            // Continue without the tileset
-            setCesiumLoaded(true)
-            setIsLoading(false)
+        // Try to load 3D Tileset if available
+        try {
+          if (Cesium.Cesium3DTileset) {
+            const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(2275207)
+            viewerRef.current.scene.primitives.add(tileset)
+            console.log("3D Tileset loaded successfully")
           }
-        } else {
-          console.warn("Cesium.Cesium3DTileset is not available in this Cesium version")
-          setCesiumLoaded(true)
-          setIsLoading(false)
+        } catch (tilesetError) {
+          console.warn("Could not load 3D Tileset:", tilesetError)
+          // Continue without the tileset
         }
+
+        setCesiumLoaded(true)
+        setIsLoading(false)
 
         // Setup cleanup function
         cleanup = () => {
@@ -127,6 +147,7 @@ export default function AlAinTerrainViewer({ onError, onClose }: AlAinTerrainVie
         const error = err instanceof Error ? err : new Error("Failed to initialize terrain viewer")
         setError(error)
         onError?.(error)
+        setIsLoading(false)
       }
     }
 
@@ -160,10 +181,10 @@ export default function AlAinTerrainViewer({ onError, onClose }: AlAinTerrainVie
   }
 
   const handleRotate = () => {
-    if (!viewerRef.current || !cesiumLoaded) return
+    if (!viewerRef.current || !cesiumLoaded || !(window as any).Cesium) return
 
     try {
-      const Cesium = require("cesium")
+      const Cesium = (window as any).Cesium
       const currentHeading = viewerRef.current.camera.heading
       viewerRef.current.camera.setView({
         orientation: {
@@ -178,10 +199,10 @@ export default function AlAinTerrainViewer({ onError, onClose }: AlAinTerrainVie
   }
 
   const handleHome = () => {
-    if (!viewerRef.current || !cesiumLoaded) return
+    if (!viewerRef.current || !cesiumLoaded || !(window as any).Cesium) return
 
     try {
-      const Cesium = require("cesium")
+      const Cesium = (window as any).Cesium
       viewerRef.current.camera.flyTo({
         destination: Cesium.Cartesian3.fromDegrees(55.74523, 24.21089, 5000.0),
         orientation: {
@@ -238,6 +259,7 @@ export default function AlAinTerrainViewer({ onError, onClose }: AlAinTerrainVie
             <div className="text-center">
               <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
               <p className="text-lg font-semibold text-gray-700">Loading 3D terrain...</p>
+              <p className="text-sm text-gray-500 mt-2">This may take a moment</p>
             </div>
           </div>
         )}
@@ -251,6 +273,7 @@ export default function AlAinTerrainViewer({ onError, onClose }: AlAinTerrainVie
           className="bg-white/90 hover:bg-white shadow-md w-10 h-10"
           onClick={handleHome}
           title="Reset view"
+          disabled={!cesiumLoaded}
         >
           <Home className="h-4 w-4" />
         </Button>
@@ -260,6 +283,7 @@ export default function AlAinTerrainViewer({ onError, onClose }: AlAinTerrainVie
           className="bg-white/90 hover:bg-white shadow-md w-10 h-10"
           onClick={handleZoomIn}
           title="Zoom in"
+          disabled={!cesiumLoaded}
         >
           <ZoomIn className="h-4 w-4" />
         </Button>
@@ -269,6 +293,7 @@ export default function AlAinTerrainViewer({ onError, onClose }: AlAinTerrainVie
           className="bg-white/90 hover:bg-white shadow-md w-10 h-10"
           onClick={handleZoomOut}
           title="Zoom out"
+          disabled={!cesiumLoaded}
         >
           <ZoomOut className="h-4 w-4" />
         </Button>
@@ -278,6 +303,7 @@ export default function AlAinTerrainViewer({ onError, onClose }: AlAinTerrainVie
           className="bg-white/90 hover:bg-white shadow-md w-10 h-10"
           onClick={handleRotate}
           title="Rotate view"
+          disabled={!cesiumLoaded}
         >
           <RotateCw className="h-4 w-4" />
         </Button>
@@ -287,6 +313,7 @@ export default function AlAinTerrainViewer({ onError, onClose }: AlAinTerrainVie
           className="bg-white/90 hover:bg-white shadow-md w-10 h-10"
           onClick={toggleFullscreen}
           title="Toggle fullscreen"
+          disabled={!cesiumLoaded}
         >
           <Maximize2 className="h-4 w-4" />
         </Button>
