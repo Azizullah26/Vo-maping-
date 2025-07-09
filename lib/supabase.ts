@@ -1,32 +1,40 @@
-import { createClient } from "@supabase/supabase-js"
+import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Create client function
+export function createClient() {
+  return createSupabaseClient(supabaseUrl, supabaseAnonKey)
+}
 
-export { createClient }
+// Main client instance
+export const supabase = createSupabaseClient(supabaseUrl, supabaseAnonKey)
 
-// Server-side client with service role key
-export const supabaseAdmin = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+// Admin client for server-side operations
+export const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseServiceRoleKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+})
 
 // Test connection function
 export async function testSupabaseConnection() {
   try {
-    const { data, error } = await supabase.from("_health").select("*").limit(1)
+    const { data, error } = await supabase.from("projects").select("count", { count: "exact", head: true })
     if (error) throw error
     return { success: true, message: "Connection successful" }
   } catch (error) {
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Connection failed",
-    }
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
 // Check if Supabase is configured
 export function isSupabaseConfigured() {
-  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  return !!(supabaseUrl && supabaseAnonKey)
 }
 
+// Default export
 export default supabase
