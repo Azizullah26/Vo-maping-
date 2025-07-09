@@ -2,38 +2,51 @@
 
 import { useState, useEffect } from "react"
 
+interface MapboxTokenState {
+  token: string | null
+  loading: boolean
+  error: string | null
+}
+
 export function useMapboxToken() {
-  const [token, setToken] = useState<string>("")
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string | null>(null)
+  const [state, setState] = useState<MapboxTokenState>({
+    token: null,
+    loading: true,
+    error: null,
+  })
 
   useEffect(() => {
-    async function fetchToken() {
+    const fetchToken = async () => {
       try {
-        // Fetch token from API only (no direct env access)
         const response = await fetch("/api/mapbox-token")
 
         if (!response.ok) {
-          throw new Error(`Failed to fetch Mapbox token: ${response.status}`)
+          throw new Error("Failed to fetch Mapbox token")
         }
 
         const data = await response.json()
 
-        if (!data.token) {
-          throw new Error("No token returned from API")
+        if (data.error) {
+          throw new Error(data.error)
         }
 
-        setToken(data.token)
-      } catch (err) {
-        console.error("Error fetching Mapbox token:", err)
-        setError(err instanceof Error ? err.message : String(err))
-      } finally {
-        setLoading(false)
+        setState({
+          token: data.token,
+          loading: false,
+          error: null,
+        })
+      } catch (error) {
+        console.error("Error fetching Mapbox token:", error)
+        setState({
+          token: null,
+          loading: false,
+          error: error instanceof Error ? error.message : "Failed to fetch token",
+        })
       }
     }
 
     fetchToken()
   }, [])
 
-  return { token, loading, error }
+  return state
 }

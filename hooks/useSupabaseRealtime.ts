@@ -1,152 +1,159 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
-import type { RealtimeChannel } from "@supabase/supabase-js"
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js"
 
-export function useSupabaseRealtime<T>(table: string, initialData: T[] = []) {
-  const [data, setData] = useState<T[]>(initialData)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+interface RealtimeState<T> {
+  data: T[]
+  loading: boolean
+  error: string | null
+  connected: boolean
+}
+
+// Generic realtime hook
+export function useSupabaseRealtime<T extends Record<string, any>>(table: string, initialData: T[] = []) {
+  const [state, setState] = useState<RealtimeState<T>>({
+    data: initialData,
+    loading: true,
+    error: null,
+    connected: false,
+  })
+
+  const [channel, setChannel] = useState<RealtimeChannel | null>(null)
+
+  const handleInsert = useCallback((payload: RealtimePostgresChangesPayload<T>) => {
+    setState((prev) => ({
+      ...prev,
+      data: [payload.new as T, ...prev.data],
+    }))
+  }, [])
+
+  const handleUpdate = useCallback((payload: RealtimePostgresChangesPayload<T>) => {
+    setState((prev) => ({
+      ...prev,
+      data: prev.data.map((item) => (item.id === payload.new.id ? (payload.new as T) : item)),
+    }))
+  }, [])
+
+  const handleDelete = useCallback((payload: RealtimePostgresChangesPayload<T>) => {
+    setState((prev) => ({
+      ...prev,
+      data: prev.data.filter((item) => item.id !== payload.old.id),
+    }))
+  }, [])
 
   useEffect(() => {
-    let channel: RealtimeChannel
-
-    const setupRealtime = async () => {
+    // Fetch initial data
+    const fetchInitialData = async () => {
       try {
-        setLoading(true)
+        const { data, error } = await supabase.from(table).select("*").order("created_at", { ascending: false })
 
-        // Fetch initial data
-        const { data: initialData, error: fetchError } = await supabase
-          .from(table)
-          .select("*")
-          .order("created_at", { ascending: false })
-
-        if (fetchError) {
-          setError(fetchError.message)
+        if (error) {
+          setState((prev) => ({ ...prev, error: error.message, loading: false }))
           return
         }
 
-        setData(initialData as T[])
-
-        // Set up real-time subscription
-        channel = supabase
-          .channel(`${table}_changes`)
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: table,
-            },
-            (payload) => {
-              console.log("Real-time change received:", payload)
-
-              if (payload.eventType === "INSERT") {
-                setData((current) => [payload.new as T, ...current])
-              } else if (payload.eventType === "UPDATE") {
-                setData((current) =>
-                  current.map((item) => ((item as any).id === (payload.new as any).id ? (payload.new as T) : item)),
-                )
-              } else if (payload.eventType === "DELETE") {
-                setData((current) => current.filter((item) => (item as any).id !== (payload.old as any).id))
-              }
-            },
-          )
-          .subscribe()
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error")
-      } finally {
-        setLoading(false)
+        setState((prev) => ({ ...prev, data: data || [], loading: false }))
+      } catch (error) {
+        setState((prev) => ({
+          ...prev,
+          error: error instanceof Error ? error.message : "Failed to fetch data",
+          loading: false,
+        }))
       }
     }
 
-    setupRealtime()
+    fetchInitialData()
 
-    return () => {
-      if (channel) {
-        supabase.removeChannel(channel)
-      }
-    }
-  }, [table])
-
-  return { data, loading, error }
-}
-
-// Hook for projects realtime updates
-export function useProjectsRealtime(onProjectChange?: (project: any) => void) {
-  const [isConnected, setIsConnected] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const channel = supabase
-      .channel("projects_realtime")
+    // Set up realtime subscription
+    const realtimeChannel = supabase
+      .channel(`${table}_changes`)
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
-          table: "projects",
+          table: table,
         },
-        (payload) => {
-          console.log("Project change:", payload)
-          onProjectChange?.(payload)
+        handleInsert,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: table,
         },
+        handleUpdate,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: table,
+        },
+        handleDelete,
       )
       .subscribe((status) => {
-        if (status === "SUBSCRIBED") {
-          setIsConnected(true)
-          setError(null)
-        } else if (status === "CHANNEL_ERROR") {
-          setIsConnected(false)
-          setError("Failed to connect to projects realtime")
-        }
+        console.log(`Realtime subscription status for ${table}:`, status)
+        setState((prev) => ({ ...prev, connected: status === "SUBSCRIBED" }))
       })
 
+    setChannel(realtimeChannel)
+
     return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [onProjectChange])
-
-  return { isConnected, error }
-}
-
-// Hook for documents realtime updates
-export function useDocumentsRealtime(projectId?: string, onDocumentChange?: (document: any) => void) {
-  const [isConnected, setIsConnected] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const channelName = projectId ? `documents_${projectId}` : "documents_all"
-
-    const channelBuilder = supabase.channel(channelName).on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "documents",
-        ...(projectId && { filter: `project_id=eq.${projectId}` }),
-      },
-      (payload) => {
-        console.log("Document change:", payload)
-        onDocumentChange?.(payload)
-      },
-    )
-
-    const channel = channelBuilder.subscribe((status) => {
-      if (status === "SUBSCRIBED") {
-        setIsConnected(true)
-        setError(null)
-      } else if (status === "CHANNEL_ERROR") {
-        setIsConnected(false)
-        setError("Failed to connect to documents realtime")
+      if (realtimeChannel) {
+        supabase.removeChannel(realtimeChannel)
       }
-    })
-
-    return () => {
-      supabase.removeChannel(channel)
     }
-  }, [projectId, onDocumentChange])
+  }, [table, handleInsert, handleUpdate, handleDelete])
 
-  return { isConnected, error }
+  const refresh = useCallback(async () => {
+    setState((prev) => ({ ...prev, loading: true }))
+
+    try {
+      const { data, error } = await supabase.from(table).select("*").order("created_at", { ascending: false })
+
+      if (error) {
+        setState((prev) => ({ ...prev, error: error.message, loading: false }))
+        return
+      }
+
+      setState((prev) => ({ ...prev, data: data || [], loading: false, error: null }))
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        error: error instanceof Error ? error.message : "Failed to refresh data",
+        loading: false,
+      }))
+    }
+  }, [table])
+
+  return {
+    ...state,
+    refresh,
+    channel,
+  }
 }
+
+// Projects realtime hook
+export function useProjectsRealtime() {
+  return useSupabaseRealtime("projects")
+}
+
+// Documents realtime hook
+export function useDocumentsRealtime(projectId?: string) {
+  const baseResult = useSupabaseRealtime("documents")
+
+  // Filter documents by project if projectId is provided
+  const filteredData = projectId ? baseResult.data.filter((doc: any) => doc.project_id === projectId) : baseResult.data
+
+  return {
+    ...baseResult,
+    data: filteredData,
+  }
+}
+
+export default useSupabaseRealtime
