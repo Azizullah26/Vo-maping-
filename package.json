@@ -39,7 +39,7 @@
     "@radix-ui/react-toggle": "latest",
     "@radix-ui/react-toggle-group": "latest",
     "@radix-ui/react-tooltip": "latest",
-    "@react-three/drei": "latest",
+    "@react-three/drei": "^9.98.0",
     "@react-three/fiber": "latest",
     "@supabase/auth-helpers-nextjs": "latest",
     "@supabase/supabase-js": "latest",
