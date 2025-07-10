@@ -70,9 +70,7 @@ export async function checkDatabaseConnection(): Promise<boolean> {
       return false
     }
 
-    // Perform a simple query to check connection (e.g., check if 'documents' table exists or count rows)
-    // Using a simple select from 'documents' table. If it doesn't exist, it will throw an error.
-    // For a more robust check, you might use a custom RPC function like 'get_db_version' if available.
+    // Perform a simple query to check connection
     const { error } = await supabase.from("documents").select("id").limit(1)
 
     if (error && error.code !== "42P01") {
@@ -90,8 +88,6 @@ export async function checkDatabaseConnection(): Promise<boolean> {
 
 /**
  * Initialize the database (e.g., create tables if they don't exist).
- * This function assumes the necessary SQL scripts are run via Supabase migrations or initial setup.
- * For this example, we'll just check connection.
  */
 export async function initializeDatabase(): Promise<{ success: boolean; message: string }> {
   const isConnected = await checkDatabaseConnection()
@@ -107,8 +103,6 @@ export async function initializeDatabase(): Promise<{ success: boolean; message:
 
 /**
  * Execute a generic database query using Supabase RPC.
- * This assumes you have an RPC function named 'execute_sql' in Supabase that can run arbitrary SQL.
- * If not, direct table operations should be used instead of this generic function.
  */
 export async function executeQuery(
   query: string,

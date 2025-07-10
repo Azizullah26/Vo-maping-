@@ -15,6 +15,7 @@ export async function GET() {
       },
       demo_mode: process.env.NEXT_PUBLIC_DEMO_MODE === "true",
       static_mode: process.env.NEXT_PUBLIC_STATIC_MODE === "true",
+      build_env: process.env.NODE_ENV,
     }
 
     const allConfigured = Object.values(checks.supabase).every(Boolean) && Object.values(checks.database).some(Boolean)
@@ -23,7 +24,7 @@ export async function GET() {
       status: allConfigured ? "healthy" : "warning",
       timestamp: new Date().toISOString(),
       checks,
-      message: allConfigured ? "All systems operational" : "Some configurations missing",
+      message: allConfigured ? "All systems operational" : "Running in demo mode - some features may be limited",
     })
   } catch (error) {
     console.error("Health check error:", error)
