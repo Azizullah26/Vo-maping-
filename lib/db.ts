@@ -28,19 +28,17 @@ const DEMO_DOCUMENTS = [
   },
 ]
 
-// Supabase client instance (singleton for server-side)
-const supabaseServerClient: ReturnType<typeof createClient> | null = null
-
 /**
  * Get the Supabase client for server-side operations.
  * Uses SUPABASE_SERVICE_ROLE_KEY for elevated privileges.
  */
 export const getSupabaseServerClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error("Missing Supabase server environment variables")
+    console.warn("Missing Supabase server environment variables")
+    return null
   }
 
   return createClient(supabaseUrl, supabaseServiceKey)
@@ -51,11 +49,12 @@ export const getSupabaseServerClient = () => {
  * Uses NEXT_PUBLIC_SUPABASE_ANON_KEY for public access.
  */
 export const getSupabaseClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Missing Supabase client environment variables")
+    console.warn("Missing Supabase client environment variables")
+    return null
   }
 
   return createClient(supabaseUrl, supabaseAnonKey)

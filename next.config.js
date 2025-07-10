@@ -16,6 +16,11 @@ const nextConfig = {
     ],
     unoptimized: true,
   },
+  // Environment variables for build time
+  env: {
+    NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE || "true",
+    NEXT_PUBLIC_STATIC_MODE: process.env.NEXT_PUBLIC_STATIC_MODE || "true",
+  },
   // Simplified webpack configuration that doesn't require additional dependencies
   webpack: (config, { isServer }) => {
     if (!isServer) {
