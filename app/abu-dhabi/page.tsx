@@ -49,7 +49,7 @@ export const Map = (): JSX.Element => {
   };
 
   const handleResetZoom = () => {
-    setZoomLevel(0.3); // Reset to space-like view
+    setZoomLevel(0.4); // Reset to 40% zoom fixed view
     // Reset to initial centered position
     if (mapContainerRef.current) {
       const viewportWidth = window.innerWidth;
