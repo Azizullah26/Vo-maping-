@@ -272,7 +272,7 @@ export const Map = (): JSX.Element => {
 
   return (
     <div
-      className="w-full h-screen overflow-auto relative flex items-center justify-center"
+      className="w-full h-screen overflow-auto relative"
       style={{
         background:
           zoomLevel < 0.5
@@ -950,7 +950,7 @@ export const Map = (): JSX.Element => {
               <Button
                 onClick={() =>
                   router.push(
-                    `/dashboard/abu-dhabi-clinics-al-shamkha?name=${encodeURIComponent("Clinics - Al Shamkha")}&nameAr=${encodeURIComponent("عيادات - ��لشامخة")}`,
+                    `/dashboard/abu-dhabi-clinics-al-shamkha?name=${encodeURIComponent("Clinics - Al Shamkha")}&nameAr=${encodeURIComponent("عيادات - ����شامخة")}`,
                   )
                 }
                 onMouseEnter={() => handleLabelHover("clinics-al-shamkha")}
@@ -1686,7 +1686,7 @@ export const Map = (): JSX.Element => {
                     <div className="text-white text-xs opacity-80 mt-1">
                       Zoom: {Math.round(zoomLevel * 100)}% |{" "}
                       {zoomLevel < 0.5
-                        ? "🛰️ Space View"
+                        ? "����️ Space View"
                         : zoomLevel < 1
                           ? "✈️ Aerial View"
                           : "🏙️ City View"}
