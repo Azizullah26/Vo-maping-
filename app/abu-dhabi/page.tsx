@@ -232,7 +232,15 @@ export const Map = (): JSX.Element => {
   };
 
   return (
-    <div className="w-full h-screen overflow-auto bg-black relative">
+    <div
+      className="w-full h-screen overflow-auto relative"
+      style={{
+        background:
+          zoomLevel < 0.5
+            ? "radial-gradient(ellipse at center, #0f1419 0%, #000000 70%), url(\"data:image/svg+xml,%3csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3e%3cdefs%3e%3cpattern id='star' x='0' y='0' width='60' height='60' patternUnits='userSpaceOnUse'%3e%3ccircle cx='5' cy='5' r='0.5' fill='%23ffffff' opacity='0.8'/%3e%3ccircle cx='25' cy='15' r='0.3' fill='%23ffffff' opacity='0.6'/%3e%3ccircle cx='45' cy='8' r='0.4' fill='%23ffffff' opacity='0.7'/%3e%3ccircle cx='15' cy='35' r='0.2' fill='%23ffffff' opacity='0.5'/%3e%3ccircle cx='55' cy='45' r='0.6' fill='%23ffffff' opacity='0.9'/%3e%3ccircle cx='35' cy='50' r='0.3' fill='%23ffffff' opacity='0.6'/%3e%3c/pattern%3e%3c/defs%3e%3crect width='60' height='60' fill='url(%23star)'/%3e%3c/svg%3e\")"
+            : "#000000",
+      }}
+    >
       <div
         ref={mapContainerRef}
         className="relative w-[2370px] h-[2370px] bg-cover bg-center min-w-[2370px] overflow-visible"
@@ -692,7 +700,7 @@ export const Map = (): JSX.Element => {
             <Button
               onClick={() =>
                 router.push(
-                  `/dashboard/abu-dhabi-clinics-al-bateen?name=${encodeURIComponent("Clinics - Al Bateen")}&nameAr=${encodeURIComponent("عيادا�� - البطين")}`,
+                  `/dashboard/abu-dhabi-clinics-al-bateen?name=${encodeURIComponent("Clinics - Al Bateen")}&nameAr=${encodeURIComponent("عيادات - البطين")}`,
                 )
               }
               onMouseEnter={() => handleLabelHover("clinics-al-bateen")}
@@ -1205,7 +1213,7 @@ export const Map = (): JSX.Element => {
           <Button
             onClick={() =>
               router.push(
-                `/dashboard/abu-dhabi-urgent-point-al-aliah?name=${encodeURIComponent("Urgent Point - Al Aliah")}&nameAr=${encodeURIComponent("نقطة عاجلة - العالية")}`,
+                `/dashboard/abu-dhabi-urgent-point-al-aliah?name=${encodeURIComponent("Urgent Point - Al Aliah")}&nameAr=${encodeURIComponent("نقطة عاجل�� - العالية")}`,
               )
             }
             onMouseEnter={() => handleLabelHover("urgent-point-al-aliah")}
@@ -1271,7 +1279,7 @@ export const Map = (): JSX.Element => {
           <Button
             onClick={() =>
               router.push(
-                `/dashboard/abu-dhabi-urgent-point-rabdan-1?name=${encodeURIComponent("Urgent Point - Rabdan 1")}&nameAr=${encodeURIComponent("نقطة ع��جلة - ربدان 1")}`,
+                `/dashboard/abu-dhabi-urgent-point-rabdan-1?name=${encodeURIComponent("Urgent Point - Rabdan 1")}&nameAr=${encodeURIComponent("نقطة عاجلة - ربدان 1")}`,
               )
             }
             onMouseEnter={() => handleLabelHover("urgent-point-rabdan-1")}
@@ -1603,7 +1611,7 @@ export const Map = (): JSX.Element => {
           <Button
             onClick={() =>
               router.push(
-                `/dashboard/abu-dhabi-al-mushrif-children?name=${encodeURIComponent("Al Mushrif Children Speciality Centre")}&nameAr=${encodeURIComponent("مركز المشرف التخصص�� للأطفال")}`,
+                `/dashboard/abu-dhabi-al-mushrif-children?name=${encodeURIComponent("Al Mushrif Children Speciality Centre")}&nameAr=${encodeURIComponent("مركز المشرف التخصص�� لل��طفال")}`,
               )
             }
             onMouseEnter={() => handleLabelHover("al-mushrif-children")}
