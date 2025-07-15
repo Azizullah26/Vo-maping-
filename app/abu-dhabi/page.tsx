@@ -272,7 +272,7 @@ export const Map = (): JSX.Element => {
 
   return (
     <div
-      className="w-full h-screen overflow-auto relative"
+      className="w-full h-screen overflow-auto relative flex items-center justify-center"
       style={{
         background:
           zoomLevel < 0.5
