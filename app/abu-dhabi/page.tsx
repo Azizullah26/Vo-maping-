@@ -1701,7 +1701,7 @@ export const Map = (): JSX.Element => {
                     onClick={handleResetZoom}
                     className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
                   >
-                    Space View (0)
+                    Fixed View (0)
                   </button>
                   <button
                     onClick={handleZoomIn}
