@@ -273,7 +273,7 @@ export const Map = (): JSX.Element => {
     >
       <div
         ref={mapContainerRef}
-        className="relative w-[2370px] h-[2370px] bg-cover bg-center min-w-[2370px] overflow-visible"
+        className="relative w-[2370px] h-[2370px] bg-cover bg-center min-w-[2370px] overflow-visible mx-auto"
         style={{
           backgroundImage: "url('/images/abu-dhabi-satellite-map.jpg')",
           backgroundSize: "2370px 2370px",
