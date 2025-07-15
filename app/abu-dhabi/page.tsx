@@ -14,9 +14,9 @@ export const Map = (): JSX.Element => {
   const [slidersPosition, setSlidersPosition] = useState("center");
   const router = useRouter();
 
-  const [zoomLevel, setZoomLevel] = useState(0.3); // Start with space-like view
+  const [zoomLevel, setZoomLevel] = useState(0.4); // Start with 40% zoom fixed on full screen
   const [mapTransform, setMapTransform] = useState({
-    scale: 0.3,
+    scale: 0.4,
     translateX: 0,
     translateY: 0,
   });
