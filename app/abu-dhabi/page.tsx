@@ -1287,7 +1287,7 @@ export const Map = (): JSX.Element => {
           <Button
             onClick={() =>
               router.push(
-                `/dashboard/abu-dhabi-urgent-point-shahkbout?name=${encodeURIComponent("Urgent Point - Shahkbout")}&nameAr=${encodeURIComponent("نقطة عاجلة - الشهامة")}`,
+                `/dashboard/abu-dhabi-urgent-point-shahkbout?name=${encodeURIComponent("Urgent Point - Shahkbout")}&nameAr=${encodeURIComponent("نقطة عاجلة - الش��امة")}`,
               )
             }
             onMouseEnter={() => handleLabelHover("urgent-point-shahkbout")}
@@ -1667,40 +1667,53 @@ export const Map = (): JSX.Element => {
         <div className="fixed inset-0 pointer-events-none z-40">
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
             <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 shadow-2xl border border-white/20">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setShowSliders(false)}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
-                >
-                  Hide Controls
-                </button>
-                <div className="text-white text-sm">
-                  Abu Dhabi Interactive Map - Use mouse wheel to zoom | Zoom:{" "}
-                  {Math.round(zoomLevel * 100)}% |{" "}
-                  {zoomLevel < 0.5
-                    ? "🛰️ Space View"
-                    : zoomLevel < 1
-                      ? "✈️ Aerial View"
-                      : "🏙️ City View"}
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-white text-sm">
+                      Abu Dhabi Interactive Map - Mouse wheel to zoom | Keys: F
+                      (fullscreen), +/- (zoom), 0 (reset)
+                    </div>
+                    <div className="text-white text-xs opacity-80 mt-1">
+                      Zoom: {Math.round(zoomLevel * 100)}% |{" "}
+                      {zoomLevel < 0.5
+                        ? "🛰️ Space View"
+                        : zoomLevel < 1
+                          ? "✈️ Aerial View"
+                          : "🏙️ City View"}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowSliders(false)}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+                  >
+                    Hide Controls
+                  </button>
                 </div>
-                <div className="flex gap-2 mt-2">
+                <div className="flex gap-2">
                   <button
                     onClick={handleZoomOut}
                     className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
                   >
-                    Zoom Out
+                    Zoom Out (-)
                   </button>
                   <button
                     onClick={handleResetZoom}
                     className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
                   >
-                    Space View
+                    Space View (0)
                   </button>
                   <button
                     onClick={handleZoomIn}
                     className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
                   >
-                    Zoom In
+                    Zoom In (+)
+                  </button>
+                  <button
+                    onClick={toggleFullscreen}
+                    className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm transition-colors"
+                  >
+                    {isFullscreen ? "Exit" : "Fullscreen"} (F)
                   </button>
                 </div>
               </div>
