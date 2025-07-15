@@ -67,6 +67,35 @@ export const Map = (): JSX.Element => {
     }
   };
 
+  // Fullscreen functionality
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === "f" || event.key === "F") {
+        toggleFullscreen();
+      } else if (event.key === "+" || event.key === "=") {
+        handleZoomIn();
+      } else if (event.key === "-") {
+        handleZoomOut();
+      } else if (event.key === "0") {
+        handleResetZoom();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [toggleFullscreen]);
+
   useEffect(() => {
     // Center the map when component loads - show space-like view
     if (mapContainerRef.current) {
