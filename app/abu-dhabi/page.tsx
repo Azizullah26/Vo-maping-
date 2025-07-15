@@ -1,80 +1,113 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { useRef } from "react"
-import type { JSX } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { useRef } from "react";
+import type { JSX } from "react";
+import { useRouter } from "next/navigation";
 
 export const Map = (): JSX.Element => {
-  const [hoveredLabel, setHoveredLabel] = useState<string | null>(null)
-  const mapContainerRef = useRef<HTMLDivElement>(null)
-  const [showSliders, setShowSliders] = useState(true)
-  const [slidersPosition, setSlidersPosition] = useState("center")
-  const router = useRouter()
+  const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const [showSliders, setShowSliders] = useState(true);
+  const [slidersPosition, setSlidersPosition] = useState("center");
+  const router = useRouter();
 
-  const [zoomLevel, setZoomLevel] = useState(1)
-  const [mapTransform, setMapTransform] = useState({ scale: 1, translateX: 0, translateY: 0 })
+  const [zoomLevel, setZoomLevel] = useState(0.3); // Start with space-like view
+  const [mapTransform, setMapTransform] = useState({
+    scale: 0.3,
+    translateX: 0,
+    translateY: 0,
+  });
+  const [isZooming, setIsZooming] = useState(false);
+
+  // Smooth zoom implementation with wheel support
+  const handleWheelZoom = useCallback((event: WheelEvent) => {
+    event.preventDefault();
+    setIsZooming(true);
+
+    const zoomSpeed = 0.1;
+    const delta = event.deltaY > 0 ? -zoomSpeed : zoomSpeed;
+
+    setZoomLevel((prev) => {
+      const newZoom = Math.max(0.2, Math.min(prev + delta, 3)); // Space view (0.2) to close view (3)
+      return newZoom;
+    });
+
+    // Clear zooming state after a delay
+    setTimeout(() => setIsZooming(false), 150);
+  }, []);
 
   const handleZoomIn = () => {
-    setZoomLevel((prev) => Math.min(prev + 0.2, 2))
-  }
+    setZoomLevel((prev) => Math.min(prev + 0.15, 3));
+  };
 
   const handleZoomOut = () => {
-    setZoomLevel((prev) => Math.max(prev - 0.2, 0.5))
-  }
+    setZoomLevel((prev) => Math.max(prev - 0.15, 0.2));
+  };
 
   const handleResetZoom = () => {
-    setZoomLevel(1)
+    setZoomLevel(0.3); // Reset to space-like view
     // Reset to initial centered position
     if (mapContainerRef.current) {
-      const viewportWidth = window.innerWidth
-      const viewportHeight = window.innerHeight
-      const abuDhabiCenterX = 1185
-      const abuDhabiCenterY = 950
-      const centerX = Math.max(0, abuDhabiCenterX - (viewportWidth * 0.7) / 2)
-      const centerY = Math.max(0, abuDhabiCenterY - (viewportHeight * 0.7) / 2)
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const abuDhabiCenterX = 1185;
+      const abuDhabiCenterY = 950;
+      const centerX = Math.max(0, abuDhabiCenterX - (viewportWidth * 0.7) / 2);
+      const centerY = Math.max(0, abuDhabiCenterY - (viewportHeight * 0.7) / 2);
 
       window.scrollTo({
         left: centerX,
         top: centerY,
         behavior: "smooth",
-      })
+      });
     }
-  }
+  };
 
   useEffect(() => {
-    // Center the map when component loads - show wider Abu Dhabi area view
+    // Center the map when component loads - show space-like view
     if (mapContainerRef.current) {
-      // Calculate center position for wider Abu Dhabi area view
-      const mapWidth = 2370
-      const mapHeight = 2370
-      const viewportWidth = window.innerWidth
-      const viewportHeight = window.innerHeight
+      // Calculate center position for space-like view
+      const mapWidth = 2370;
+      const mapHeight = 2370;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
 
-      // Show wider area - center on broader Abu Dhabi region (zoomed out view)
-      const abuDhabiCenterX = 1185 // Slightly adjusted for better coverage
-      const abuDhabiCenterY = 950 // Higher up to show more area
+      // Center for space-like view - show entire Abu Dhabi region from space
+      const abuDhabiCenterX = 1185;
+      const abuDhabiCenterY = 950;
 
-      // Reduce the centering offset to show more of the map (zoomed out effect)
-      const centerX = Math.max(0, abuDhabiCenterX - (viewportWidth * 0.7) / 2) // Show more area
-      const centerY = Math.max(0, abuDhabiCenterY - (viewportHeight * 0.7) / 2) // Show more area
+      // For space view, center the entire map in viewport
+      const centerX = Math.max(0, (mapWidth * 0.3 - viewportWidth) / 2);
+      const centerY = Math.max(0, (mapHeight * 0.3 - viewportHeight) / 2);
 
-      // Set initial scroll position to show wider Abu Dhabi area
+      // Set initial scroll position for space-like view
       window.scrollTo({
         left: centerX,
         top: centerY,
         behavior: "smooth",
-      })
+      });
     }
-  }, [])
+
+    // Add wheel event listener for smooth zoom
+    const mapContainer = mapContainerRef.current;
+    if (mapContainer) {
+      mapContainer.addEventListener("wheel", handleWheelZoom, {
+        passive: false,
+      });
+      return () => {
+        mapContainer.removeEventListener("wheel", handleWheelZoom);
+      };
+    }
+  }, [handleWheelZoom]);
 
   useEffect(() => {
     // Add wave animation styles to the document
     if (!document.getElementById("wave-animations")) {
-      const styleElement = document.createElement("style")
-      styleElement.id = "wave-animations"
+      const styleElement = document.createElement("style");
+      styleElement.id = "wave-animations";
       styleElement.innerHTML = `
 @keyframes waterWave {
   0% {
@@ -144,65 +177,65 @@ export const Map = (): JSX.Element => {
   background: rgba(255, 255, 255, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
-`
-      document.head.appendChild(styleElement)
+`;
+      document.head.appendChild(styleElement);
 
       return () => {
-        const element = document.getElementById("wave-animations")
+        const element = document.getElementById("wave-animations");
         if (element) {
-          element.remove()
+          element.remove();
         }
-      }
+      };
     }
-  }, [])
+  }, []);
 
   const handleLabelHover = (labelId: string | null) => {
-    setHoveredLabel(labelId)
-  }
+    setHoveredLabel(labelId);
+  };
 
   const getElementOpacity = (elementId?: string) => {
-    if (!hoveredLabel) return "opacity-100"
-    return hoveredLabel === elementId ? "opacity-100" : "opacity-30"
-  }
+    if (!hoveredLabel) return "opacity-100";
+    return hoveredLabel === elementId ? "opacity-100" : "opacity-30";
+  };
 
   const getElementScale = (elementId?: string) => {
-    if (!hoveredLabel) return "scale-100"
-    return hoveredLabel === elementId ? "scale-110" : "scale-95"
-  }
+    if (!hoveredLabel) return "scale-100";
+    return hoveredLabel === elementId ? "scale-110" : "scale-95";
+  };
 
   const getElementBrightness = () => {
-    return hoveredLabel ? "brightness-75" : "brightness-100"
-  }
+    return hoveredLabel ? "brightness-75" : "brightness-100";
+  };
 
   const getLabelClasses = (labelId: string) => {
     const baseClasses =
-      "group flex items-center justify-center px-3 py-2 bg-white hover:bg-black rounded-full border-2 border-solid transition-all duration-300 cursor-pointer font-sans font-medium"
-    const isHovered = hoveredLabel === labelId
+      "group flex items-center justify-center px-3 py-2 bg-white hover:bg-black rounded-full border-2 border-solid transition-all duration-300 cursor-pointer font-sans font-medium";
+    const isHovered = hoveredLabel === labelId;
 
     if (isHovered) {
-      return `${baseClasses} shadow-lg shadow-blue-500/50 ring-2 ring-blue-400 z-50 scale-110`
+      return `${baseClasses} shadow-lg shadow-blue-500/50 ring-2 ring-blue-400 z-50 scale-110`;
     }
 
-    return `${baseClasses} ${getElementOpacity(labelId)} ${getElementScale(labelId)}`
-  }
+    return `${baseClasses} ${getElementOpacity(labelId)} ${getElementScale(labelId)}`;
+  };
 
   const getTextClasses = () => {
-    return "text-black group-hover:text-white tracking-normal leading-snug whitespace-nowrap overflow-hidden text-ellipsis font-sans font-semibold antialiased"
-  }
+    return "text-black group-hover:text-white tracking-normal leading-snug whitespace-nowrap overflow-hidden text-ellipsis font-sans font-semibold antialiased";
+  };
 
   const getDotClasses = (elementId?: string) => {
-    return `flex w-[26px] h-[26px] items-center justify-center gap-[2.83px] p-[4.24px] absolute bg-[#ffffff1a] rounded-[13px] transition-all duration-300 ${getElementOpacity(elementId)} ${getElementScale(elementId)}`
-  }
+    return `flex w-[26px] h-[26px] items-center justify-center gap-[2.83px] p-[4.24px] absolute bg-[#ffffff1a] rounded-[13px] transition-all duration-300 ${getElementOpacity(elementId)} ${getElementScale(elementId)}`;
+  };
 
   const getVectorClasses = (elementId?: string) => {
-    return `absolute transition-all duration-300 ${getElementOpacity(elementId)} ${getElementScale(elementId)}`
-  }
+    return `absolute transition-all duration-300 ${getElementOpacity(elementId)} ${getElementScale(elementId)}`;
+  };
 
   return (
     <div className="w-full h-screen overflow-auto">
       <div
         ref={mapContainerRef}
-        className="relative w-[2370px] h-[2370px] bg-cover bg-center transition-all duration-300 min-w-[2370px] overflow-visible"
+        className="relative w-[2370px] h-[2370px] bg-cover bg-center min-w-[2370px] overflow-visible"
         style={{
           backgroundImage: "url('/images/abu-dhabi-satellite-map.jpg')",
           backgroundSize: "2370px 2370px",
@@ -210,9 +243,18 @@ export const Map = (): JSX.Element => {
           backgroundPosition: "center center",
           transform: `scale(${zoomLevel})`,
           transformOrigin: "center center",
+          transition: isZooming
+            ? "transform 0.1s ease-out"
+            : "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          filter:
+            zoomLevel < 0.6
+              ? `brightness(0.9) contrast(1.1) saturate(1.2)`
+              : "none", // Space-like effect
         }}
       >
-        <div className={`w-full h-full transition-all duration-300 ${getElementBrightness()}`}>
+        <div
+          className={`w-full h-full transition-all duration-300 ${getElementBrightness()}`}
+        >
           {/* Hospital markers */}
           <Button
             onClick={() =>
@@ -294,7 +336,9 @@ export const Map = (): JSX.Element => {
           <div
             className={`absolute w-[69px] h-[68px] top-[589px] left-[1134px] transition-all duration-300 ${getElementOpacity("urgent-point-al-aliah")} ${getElementScale("urgent-point-al-aliah")}`}
           >
-            <div className={`${getDotClasses("urgent-point-al-aliah")} top-[42px] left-0`}>
+            <div
+              className={`${getDotClasses("urgent-point-al-aliah")} top-[42px] left-0`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -310,7 +354,9 @@ export const Map = (): JSX.Element => {
           <div
             className={`absolute w-[51px] h-[39px] top-[1502px] left-[1328px] transition-all duration-300 ${getElementOpacity("urgent-point-al-nahdha")} ${getElementScale("urgent-point-al-nahdha")}`}
           >
-            <div className={`${getDotClasses("urgent-point-al-nahdha")} top-[13px] left-[25px]`}>
+            <div
+              className={`${getDotClasses("urgent-point-al-nahdha")} top-[13px] left-[25px]`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -326,7 +372,9 @@ export const Map = (): JSX.Element => {
           <div
             className={`absolute w-[51px] h-[39px] top-[1753px] left-[2015px] transition-all duration-300 ${getElementOpacity("shooting-range-ad-police-rcc")} ${getElementScale("shooting-range-ad-police-rcc")}`}
           >
-            <div className={`${getDotClasses("shooting-range-ad-police-rcc")} top-[13px] left-[25px]`}>
+            <div
+              className={`${getDotClasses("shooting-range-ad-police-rcc")} top-[13px] left-[25px]`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -345,7 +393,9 @@ export const Map = (): JSX.Element => {
             <div className="absolute w-[332px] h-[92px] top-[23px] left-[62px]">
               {/* Urgent Point - Al Riyad */}
               <div className="absolute w-[216px] h-12 top-11 left-[116px]">
-                <div className={`${getDotClasses("urgent-point-al-riyad")} top-[22px] left-[190px]`}>
+                <div
+                  className={`${getDotClasses("urgent-point-al-riyad")} top-[22px] left-[190px]`}
+                >
                   <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
                 </div>
                 <Image
@@ -364,15 +414,25 @@ export const Map = (): JSX.Element => {
                   onMouseEnter={() => handleLabelHover("urgent-point-al-riyad")}
                   onMouseLeave={() => handleLabelHover(null)}
                   className={getLabelClasses("urgent-point-al-riyad")}
-                  style={{ width: "163px", height: "26px", position: "absolute", top: "0", left: "0" }}
+                  style={{
+                    width: "163px",
+                    height: "26px",
+                    position: "absolute",
+                    top: "0",
+                    left: "0",
+                  }}
                 >
-                  <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Al Riyad</span>
+                  <span className={`text-[14px] ${getTextClasses()}`}>
+                    Urgent Point - Al Riyad
+                  </span>
                 </Button>
               </div>
 
               {/* Urgent Point - Rabdan 2 */}
               <div className="absolute w-[187px] h-[54px] top-0 left-0">
-                <div className={`${getDotClasses("urgent-point-rabdan-2")} top-7 left-0`}>
+                <div
+                  className={`${getDotClasses("urgent-point-rabdan-2")} top-7 left-0`}
+                >
                   <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
                 </div>
                 <Image
@@ -391,16 +451,26 @@ export const Map = (): JSX.Element => {
                   onMouseEnter={() => handleLabelHover("urgent-point-rabdan-2")}
                   onMouseLeave={() => handleLabelHover(null)}
                   className={getLabelClasses("urgent-point-rabdan-2")}
-                  style={{ width: "163px", height: "26px", position: "absolute", top: "0", left: "24" }}
+                  style={{
+                    width: "163px",
+                    height: "26px",
+                    position: "absolute",
+                    top: "0",
+                    left: "24",
+                  }}
                 >
-                  <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Rabdan 2</span>
+                  <span className={`text-[14px] ${getTextClasses()}`}>
+                    Urgent Point - Rabdan 2
+                  </span>
                 </Button>
               </div>
             </div>
 
             {/* NGC MBZ Ambulance */}
             <div className="absolute w-[50px] h-[49px] top-0 left-[361px]">
-              <div className={`${getDotClasses("ngc-mbz-ambulance")} top-[23px] left-6`}>
+              <div
+                className={`${getDotClasses("ngc-mbz-ambulance")} top-[23px] left-6`}
+              >
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
               </div>
               <Image
@@ -421,9 +491,17 @@ export const Map = (): JSX.Element => {
               onMouseEnter={() => handleLabelHover("ngc-mbz-ambulance")}
               onMouseLeave={() => handleLabelHover(null)}
               className={getLabelClasses("ngc-mbz-ambulance")}
-              style={{ width: "163px", height: "26px", position: "absolute", top: "95px", left: "0" }}
+              style={{
+                width: "163px",
+                height: "26px",
+                position: "absolute",
+                top: "95px",
+                left: "0",
+              }}
             >
-              <span className={`text-[14px] ${getTextClasses()}`}>NGC MBZ Ambulance</span>
+              <span className={`text-[14px] ${getTextClasses()}`}>
+                NGC MBZ Ambulance
+              </span>
             </Button>
           </div>
 
@@ -431,7 +509,9 @@ export const Map = (): JSX.Element => {
           <div
             className={`absolute w-[35px] h-11 top-[1381px] left-[1466px] transition-all duration-300 ${getElementOpacity("shakboot-civil-defense")} ${getElementScale("shakboot-civil-defense")}`}
           >
-            <div className={`${getDotClasses("shakboot-civil-defense")} top-[18px] left-0`}>
+            <div
+              className={`${getDotClasses("shakboot-civil-defense")} top-[18px] left-0`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -447,7 +527,9 @@ export const Map = (): JSX.Element => {
           <div
             className={`absolute w-[26px] h-[55px] top-[1369px] left-[1152px] transition-all duration-300 ${getElementOpacity("ngc-abu-dhabi-airport")} ${getElementScale("ngc-abu-dhabi-airport")}`}
           >
-            <div className={`${getDotClasses("ngc-abu-dhabi-airport")} top-[29px] left-0`}>
+            <div
+              className={`${getDotClasses("ngc-abu-dhabi-airport")} top-[29px] left-0`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -463,7 +545,9 @@ export const Map = (): JSX.Element => {
           <div
             className={`absolute w-12 h-[49px] top-[1427px] left-[1103px] transition-all duration-300 ${getElementOpacity("police-center-musaffah")} ${getElementScale("police-center-musaffah")}`}
           >
-            <div className={`${getDotClasses("police-center-musaffah")} top-[23px] left-[22px]`}>
+            <div
+              className={`${getDotClasses("police-center-musaffah")} top-[23px] left-[22px]`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -481,7 +565,9 @@ export const Map = (): JSX.Element => {
           >
             <div className="absolute w-[195px] h-[82px] top-[51px] left-10">
               <div className="absolute w-[26px] h-11 top-0 left-[169px]">
-                <div className={`${getDotClasses("rebdan-police-points")} top-[18px] left-0`}>
+                <div
+                  className={`${getDotClasses("rebdan-police-points")} top-[18px] left-0`}
+                >
                   <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
                 </div>
                 <Image
@@ -494,7 +580,9 @@ export const Map = (): JSX.Element => {
               </div>
 
               <div className="absolute w-[195px] h-[52px] top-[30px] left-0">
-                <div className={`${getDotClasses("rebdan-police-points")} top-[26px] left-[169px]`}>
+                <div
+                  className={`${getDotClasses("rebdan-police-points")} top-[26px] left-[169px]`}
+                >
                   <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
                 </div>
                 <Image
@@ -513,15 +601,25 @@ export const Map = (): JSX.Element => {
                   onMouseEnter={() => handleLabelHover("rebdan-police-points")}
                   onMouseLeave={() => handleLabelHover(null)}
                   className={getLabelClasses("rebdan-police-points")}
-                  style={{ width: "150px", height: "29px", position: "absolute", top: "0", left: "0" }}
+                  style={{
+                    width: "150px",
+                    height: "29px",
+                    position: "absolute",
+                    top: "0",
+                    left: "0",
+                  }}
                 >
-                  <span className={`text-[14px] ${getTextClasses()}`}>Rebdan Police Points</span>
+                  <span className={`text-[14px] ${getTextClasses()}`}>
+                    Rebdan Police Points
+                  </span>
                 </Button>
               </div>
             </div>
 
             <div className="absolute w-[139px] h-[65px] top-0 left-0">
-              <div className={`${getDotClasses("disciplinary-department")} top-[39px] left-[57px]`}>
+              <div
+                className={`${getDotClasses("disciplinary-department")} top-[39px] left-[57px]`}
+              >
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
               </div>
               <Image
@@ -540,9 +638,17 @@ export const Map = (): JSX.Element => {
                 onMouseEnter={() => handleLabelHover("disciplinary-department")}
                 onMouseLeave={() => handleLabelHover(null)}
                 className={getLabelClasses("disciplinary-department")}
-                style={{ width: "139px", height: "22px", position: "absolute", top: "0", left: "0" }}
+                style={{
+                  width: "139px",
+                  height: "22px",
+                  position: "absolute",
+                  top: "0",
+                  left: "0",
+                }}
               >
-                <span className={`text-[13px] ${getTextClasses()}`}>Disciplinary Department</span>
+                <span className={`text-[13px] ${getTextClasses()}`}>
+                  Disciplinary Department
+                </span>
               </Button>
             </div>
           </div>
@@ -553,7 +659,9 @@ export const Map = (): JSX.Element => {
             onMouseLeave={() => handleLabelHover(null)}
             className={`absolute w-[26px] h-[81px] top-[991px] left-[670px] transition-all duration-300 cursor-pointer ${getElementOpacity("special-task-sector")} ${getElementScale("special-task-sector")}`}
           >
-            <div className={`${getDotClasses("special-task-sector")} top-[55px] left-0`}>
+            <div
+              className={`${getDotClasses("special-task-sector")} top-[55px] left-0`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -569,7 +677,9 @@ export const Map = (): JSX.Element => {
           <div
             className={`absolute w-[180px] h-24 top-[1044px] left-[488px] transition-all duration-300 ${getElementOpacity("clinics-al-bateen")} ${getElementScale("clinics-al-bateen")}`}
           >
-            <div className={`${getDotClasses("clinics-al-bateen")} top-[70px] left-[154px]`}>
+            <div
+              className={`${getDotClasses("clinics-al-bateen")} top-[70px] left-[154px]`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -588,9 +698,17 @@ export const Map = (): JSX.Element => {
               onMouseEnter={() => handleLabelHover("clinics-al-bateen")}
               onMouseLeave={() => handleLabelHover(null)}
               className={getLabelClasses("clinics-al-bateen")}
-              style={{ width: "141px", height: "28px", position: "absolute", top: "0", left: "0" }}
+              style={{
+                width: "141px",
+                height: "28px",
+                position: "absolute",
+                top: "0",
+                left: "0",
+              }}
             >
-              <span className={`text-[14px] ${getTextClasses()}`}>Clinics - Al Bateen</span>
+              <span className={`text-[14px] ${getTextClasses()}`}>
+                Clinics - Al Bateen
+              </span>
             </Button>
           </div>
 
@@ -598,7 +716,9 @@ export const Map = (): JSX.Element => {
           <div
             className={`absolute w-[68px] h-12 top-[1162px] left-[734px] transition-all duration-300 ${getElementOpacity("al-mushrif-children")} ${getElementScale("al-mushrif-children")}`}
           >
-            <div className={`${getDotClasses("al-mushrif-children")} top-4 left-[42px]`}>
+            <div
+              className={`${getDotClasses("al-mushrif-children")} top-4 left-[42px]`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -614,7 +734,9 @@ export const Map = (): JSX.Element => {
           <div
             className={`absolute w-[26px] h-[59px] top-[850px] left-[881px] transition-all duration-300 ${getElementOpacity("sadyat-civil-defense")} ${getElementScale("sadyat-civil-defense")}`}
           >
-            <div className={`${getDotClasses("sadyat-civil-defense")} top-[33px] left-0`}>
+            <div
+              className={`${getDotClasses("sadyat-civil-defense")} top-[33px] left-0`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -663,7 +785,9 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("urgent-point-shahkbout")}
             onMouseLeave={() => handleLabelHover(null)}
           >
-            <div className={`${getDotClasses("urgent-point-shahkbout")} top-[23px] left-6`}>
+            <div
+              className={`${getDotClasses("urgent-point-shahkbout")} top-[23px] left-6`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -717,7 +841,9 @@ export const Map = (): JSX.Element => {
             <div className="absolute w-[321px] h-[104px] top-0 left-0">
               <div className="absolute w-[321px] h-[83px] top-0 left-0">
                 <div
-                  onMouseEnter={() => handleLabelHover("traffic-patrol-general")}
+                  onMouseEnter={() =>
+                    handleLabelHover("traffic-patrol-general")
+                  }
                   onMouseLeave={() => handleLabelHover(null)}
                   className={`${getDotClasses("traffic-patrol-general")} top-[19px] left-[30px] cursor-pointer`}
                 >
@@ -731,7 +857,9 @@ export const Map = (): JSX.Element => {
                   <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
                 </div>
                 <Image
-                  onMouseEnter={() => handleLabelHover("traffic-patrol-general")}
+                  onMouseEnter={() =>
+                    handleLabelHover("traffic-patrol-general")
+                  }
                   onMouseLeave={() => handleLabelHover(null)}
                   className={`${getVectorClasses("traffic-patrol-general")} w-[23px] h-[31px] top-0 left-[19px] cursor-pointer`}
                   alt="Vector"
@@ -754,12 +882,22 @@ export const Map = (): JSX.Element => {
                       `/dashboard/abu-dhabi-traffic-patrol-general?name=${encodeURIComponent("Traffic And Patrol + General Maintenance")}&nameAr=${encodeURIComponent("المرور والدوريات + الصيانة العامة")}`,
                     )
                   }
-                  onMouseEnter={() => handleLabelHover("traffic-patrol-general")}
+                  onMouseEnter={() =>
+                    handleLabelHover("traffic-patrol-general")
+                  }
                   onMouseLeave={() => handleLabelHover(null)}
                   className={getLabelClasses("traffic-patrol-general")}
-                  style={{ width: "245px", height: "27px", position: "absolute", top: "14px", left: "76px" }}
+                  style={{
+                    width: "245px",
+                    height: "27px",
+                    position: "absolute",
+                    top: "14px",
+                    left: "76px",
+                  }}
                 >
-                  <span className={`text-[13px] ${getTextClasses()}`}>Traffic And Patrol + General Maintenance</span>
+                  <span className={`text-[13px] ${getTextClasses()}`}>
+                    Traffic And Patrol + General Maintenance
+                  </span>
                 </Button>
               </div>
               <Button
@@ -771,9 +909,17 @@ export const Map = (): JSX.Element => {
                 onMouseEnter={() => handleLabelHover("clinics-al-shamkha")}
                 onMouseLeave={() => handleLabelHover(null)}
                 className={`group flex items-center justify-center px-3 py-2 bg-white hover:bg-black rounded-full border-2 border-solid transition-all duration-300 cursor-pointer font-sans font-medium ${hoveredLabel === "clinics-al-shamkha" ? "shadow-lg shadow-blue-500/50 ring-2 ring-blue-400 z-50 scale-110" : `${getElementOpacity("clinics-al-shamkha")} ${getElementScale("clinics-al-shamkha")}`}`}
-                style={{ width: "145px", height: "29px", position: "absolute", top: "75px", left: "130px" }}
+                style={{
+                  width: "145px",
+                  height: "29px",
+                  position: "absolute",
+                  top: "75px",
+                  left: "130px",
+                }}
               >
-                <span className={`text-[14px] ${getTextClasses()}`}>Clinics - Al Shamkha</span>
+                <span className={`text-[14px] ${getTextClasses()}`}>
+                  Clinics - Al Shamkha
+                </span>
               </Button>
             </div>
             {/* Update Start */}
@@ -817,7 +963,9 @@ export const Map = (): JSX.Element => {
           <div
             className={`absolute w-[35px] h-11 top-[1116px] left-[1699px] transition-all duration-300 ${getElementOpacity("new-alfalah-civil-defense")} ${getElementScale("new-alfalah-civil-defense")}`}
           >
-            <div className={`${getDotClasses("new-alfalah-civil-defense")} top-[18px] left-[9px]`}>
+            <div
+              className={`${getDotClasses("new-alfalah-civil-defense")} top-[18px] left-[9px]`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -849,7 +997,9 @@ export const Map = (): JSX.Element => {
           <div
             className={`absolute w-[70px] h-[54px] top-[1616px] left-[1492px] transition-all duration-300 ${getElementOpacity("al-wathba-civil-defense")} ${getElementScale("al-wathba-civil-defense")}`}
           >
-            <div className={`${getDotClasses("al-wathba-civil-defense")} top-7 left-0`}>
+            <div
+              className={`${getDotClasses("al-wathba-civil-defense")} top-7 left-0`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -865,7 +1015,9 @@ export const Map = (): JSX.Element => {
           <div
             className={`absolute w-[53px] h-12 top-[819px] left-[1475px] transition-all duration-300 ${getElementOpacity("sih-shoaib-civil-defense")} ${getElementScale("sih-shoaib-civil-defense")}`}
           >
-            <div className={`${getDotClasses("sih-shoaib-civil-defense")} top-[22px] left-[27px]`}>
+            <div
+              className={`${getDotClasses("sih-shoaib-civil-defense")} top-[22px] left-[27px]`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -881,7 +1033,9 @@ export const Map = (): JSX.Element => {
           <div
             className={`absolute w-[42px] h-[70px] top-[777px] left-[1606px] transition-all duration-300 ${getElementOpacity("dpsc-al-shahama-clinic")} ${getElementScale("dpsc-al-shahama-clinic")}`}
           >
-            <div className={`${getDotClasses("dpsc-al-shahama-clinic")} top-11 left-0`}>
+            <div
+              className={`${getDotClasses("dpsc-al-shahama-clinic")} top-11 left-0`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -897,7 +1051,9 @@ export const Map = (): JSX.Element => {
           <div
             className={`absolute w-[163px] h-[85px] top-[640px] left-[1474px] transition-all duration-300 ${getElementOpacity("urgent-point-al-rahbah")} ${getElementScale("urgent-point-al-rahbah")}`}
           >
-            <div className={`${getDotClasses("urgent-point-al-rahbah")} top-[59px] left-[68px]`}>
+            <div
+              className={`${getDotClasses("urgent-point-al-rahbah")} top-[59px] left-[68px]`}
+            >
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
             </div>
             <Image
@@ -916,9 +1072,17 @@ export const Map = (): JSX.Element => {
               onMouseEnter={() => handleLabelHover("urgent-point-al-rahbah")}
               onMouseLeave={() => handleLabelHover(null)}
               className={getLabelClasses("urgent-point-al-rahbah")}
-              style={{ width: "163px", height: "26px", position: "absolute", top: "0", left: "0" }}
+              style={{
+                width: "163px",
+                height: "26px",
+                position: "absolute",
+                top: "0",
+                left: "0",
+              }}
             >
-              <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Al Rahbah</span>
+              <span className={`text-[14px] ${getTextClasses()}`}>
+                Urgent Point - Al Rahbah
+              </span>
             </Button>
           </div>
 
@@ -927,7 +1091,9 @@ export const Map = (): JSX.Element => {
             className={`absolute w-[316px] h-[104px] top-[438px] left-[1651px] transition-all duration-300 ${getElementOpacity("al-rahba-police-hcni")} ${getElementScale("al-rahba-police-hcni")}`}
           >
             <div className="absolute w-[163px] h-[70px] top-0 left-0">
-              <div className={`${getDotClasses("al-rahba-police-hcni")} top-11 left-[69px]`}>
+              <div
+                className={`${getDotClasses("al-rahba-police-hcni")} top-11 left-[69px]`}
+              >
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
               </div>
               <Image
@@ -946,14 +1112,24 @@ export const Map = (): JSX.Element => {
                 onMouseEnter={() => handleLabelHover("al-rahba-police-hcni")}
                 onMouseLeave={() => handleLabelHover(null)}
                 className={getLabelClasses("al-rahba-police-hcni")}
-                style={{ width: "163px", height: "17px", position: "absolute", top: "0", left: "0" }}
+                style={{
+                  width: "163px",
+                  height: "17px",
+                  position: "absolute",
+                  top: "0",
+                  left: "0",
+                }}
               >
-                <span className={`text-[11px] ${getTextClasses()}`}>Al Rahba Police Station - AD Police HCNI</span>
+                <span className={`text-[11px] ${getTextClasses()}`}>
+                  Al Rahba Police Station - AD Police HCNI
+                </span>
               </Button>
             </div>
 
             <div className="absolute w-[190px] h-[75px] top-[29px] left-[126px]">
-              <div className={`${getDotClasses("al-rahba-police-rcc")} top-[49px] left-[21px]`}>
+              <div
+                className={`${getDotClasses("al-rahba-police-rcc")} top-[49px] left-[21px]`}
+              >
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
               </div>
               <Image
@@ -972,9 +1148,17 @@ export const Map = (): JSX.Element => {
                 onMouseEnter={() => handleLabelHover("al-rahba-police-rcc")}
                 onMouseLeave={() => handleLabelHover(null)}
                 className={getLabelClasses("al-rahba-police-rcc")}
-                style={{ width: "190px", height: "20px", position: "absolute", top: "0", left: "0" }}
+                style={{
+                  width: "190px",
+                  height: "20px",
+                  position: "absolute",
+                  top: "0",
+                  left: "0",
+                }}
               >
-                <span className={`text-[12px] ${getTextClasses()}`}>Al Rahba Police Station - AD Police RCC</span>
+                <span className={`text-[12px] ${getTextClasses()}`}>
+                  Al Rahba Police Station - AD Police RCC
+                </span>
               </Button>
             </div>
           </div>
@@ -1005,9 +1189,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("urgent-point-al-bahyah")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("urgent-point-al-bahyah")}
-            style={{ width: "163px", height: "29px", position: "absolute", top: "787px", left: "1389px" }}
+            style={{
+              width: "163px",
+              height: "29px",
+              position: "absolute",
+              top: "787px",
+              left: "1389px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Al Bahyah</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              Urgent Point - Al Bahyah
+            </span>
           </Button>
 
           <Button
@@ -1019,9 +1211,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("urgent-point-al-aliah")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("urgent-point-al-aliah")}
-            style={{ width: "164px", height: "26px", position: "absolute", top: "562px", left: "1190px" }}
+            style={{
+              width: "164px",
+              height: "26px",
+              position: "absolute",
+              top: "562px",
+              left: "1190px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Al Aliah</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              Urgent Point - Al Aliah
+            </span>
           </Button>
 
           <Button
@@ -1033,9 +1233,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("urgent-point-al-nahdha")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("urgent-point-al-nahdha")}
-            style={{ width: "161px", height: "25px", position: "absolute", top: "1474px", left: "1252px" }}
+            style={{
+              width: "161px",
+              height: "25px",
+              position: "absolute",
+              top: "1474px",
+              left: "1252px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Al Nahdha</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              Urgent Point - Al Nahdha
+            </span>
           </Button>
 
           <Button
@@ -1047,9 +1255,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("urgent-point-shahkbout")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("urgent-point-shahkbout")}
-            style={{ width: "170px", height: "27px", position: "absolute", top: "1217px", left: "1279px" }}
+            style={{
+              width: "170px",
+              height: "27px",
+              position: "absolute",
+              top: "1217px",
+              left: "1279px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Shahkbout</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              Urgent Point - Shahkbout
+            </span>
           </Button>
 
           <Button
@@ -1061,9 +1277,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("urgent-point-rabdan-1")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("urgent-point-rabdan-1")}
-            style={{ width: "163px", height: "26px", position: "absolute", top: "1232px", left: "958px" }}
+            style={{
+              width: "163px",
+              height: "26px",
+              position: "absolute",
+              top: "1232px",
+              left: "958px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Rabdan 1</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              Urgent Point - Rabdan 1
+            </span>
           </Button>
 
           <Button
@@ -1075,9 +1299,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("urgent-point-al-bateen")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("urgent-point-al-bateen")}
-            style={{ width: "162px", height: "25px", position: "absolute", top: "964px", left: "607px" }}
+            style={{
+              width: "162px",
+              height: "25px",
+              position: "absolute",
+              top: "964px",
+              left: "607px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Al Bateen</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              Urgent Point - Al Bateen
+            </span>
           </Button>
 
           <Button
@@ -1089,9 +1321,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("urgent-point-al-muntazah")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("urgent-point-al-muntazah")}
-            style={{ width: "162px", height: "24px", position: "absolute", top: "1103px", left: "865px" }}
+            style={{
+              width: "162px",
+              height: "24px",
+              position: "absolute",
+              top: "1103px",
+              left: "865px",
+            }}
           >
-            <span className={`text-[13px] ${getTextClasses()}`}>Urgent Point - Al Muntazah</span>
+            <span className={`text-[13px] ${getTextClasses()}`}>
+              Urgent Point - Al Muntazah
+            </span>
           </Button>
 
           <Button
@@ -1103,9 +1343,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("ngc-abu-dhabi-airport")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("ngc-abu-dhabi-airport")}
-            style={{ width: "171px", height: "27px", position: "absolute", top: "1168px", left: "1382px" }}
+            style={{
+              width: "171px",
+              height: "27px",
+              position: "absolute",
+              top: "1168px",
+              left: "1382px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>NGC Abu Dhabi Airport</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              NGC Abu Dhabi Airport
+            </span>
           </Button>
 
           <Button
@@ -1114,12 +1362,22 @@ export const Map = (): JSX.Element => {
                 `/dashboard/abu-dhabi-shooting-range-ad-police-rcc?name=${encodeURIComponent("Shooting Range - AD Police RCC")}&nameAr=${encodeURIComponent("ميدان الرماية - شرطة أبوظبي")}`,
               )
             }
-            onMouseEnter={() => handleLabelHover("shooting-range-ad-police-rcc")}
+            onMouseEnter={() =>
+              handleLabelHover("shooting-range-ad-police-rcc")
+            }
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("shooting-range-ad-police-rcc")}
-            style={{ width: "206px", height: "27px", position: "absolute", top: "1725px", left: "1858px" }}
+            style={{
+              width: "206px",
+              height: "27px",
+              position: "absolute",
+              top: "1725px",
+              left: "1858px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>Shooting Range - AD Police RCC</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              Shooting Range - AD Police RCC
+            </span>
           </Button>
 
           <Button
@@ -1131,9 +1389,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("police-center-musaffah")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("police-center-musaffah")}
-            style={{ width: "255px", height: "27px", position: "absolute", top: "1400px", left: "860px" }}
+            style={{
+              width: "255px",
+              height: "27px",
+              position: "absolute",
+              top: "1400px",
+              left: "860px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>Police Center Musaffah - AD Police RCC</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              Police Center Musaffah - AD Police RCC
+            </span>
           </Button>
 
           <Button
@@ -1145,9 +1411,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("special-task-sector")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("special-task-sector")}
-            style={{ width: "190px", height: "22px", position: "absolute", top: "1133px", left: "732px" }}
+            style={{
+              width: "190px",
+              height: "22px",
+              position: "absolute",
+              top: "1133px",
+              left: "732px",
+            }}
           >
-            <span className={`text-[13px] ${getTextClasses()}`}>Special Task Sector - AD Police RCC</span>
+            <span className={`text-[13px] ${getTextClasses()}`}>
+              Special Task Sector - AD Police RCC
+            </span>
           </Button>
 
           <Button
@@ -1159,9 +1433,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("shamkha-community-police")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("shamkha-community-police")}
-            style={{ width: "159px", height: "25px", position: "absolute", top: "1229px", left: "1571px" }}
+            style={{
+              width: "159px",
+              height: "25px",
+              position: "absolute",
+              top: "1229px",
+              left: "1571px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>Shamkha Community Police</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              Shamkha Community Police
+            </span>
           </Button>
 
           <Button
@@ -1173,9 +1455,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("haggana-offices")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("haggana-offices")}
-            style={{ width: "151px", height: "33px", position: "absolute", top: "1680px", left: "1516px" }}
+            style={{
+              width: "151px",
+              height: "33px",
+              position: "absolute",
+              top: "1680px",
+              left: "1516px",
+            }}
           >
-            <span className={`text-[15px] ${getTextClasses()}`}>Haggana Offices</span>
+            <span className={`text-[15px] ${getTextClasses()}`}>
+              Haggana Offices
+            </span>
           </Button>
 
           <Button
@@ -1187,9 +1477,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("shakboot-civil-defense")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("shakboot-civil-defense")}
-            style={{ width: "138px", height: "22px", position: "absolute", top: "1357px", left: "1463px" }}
+            style={{
+              width: "138px",
+              height: "22px",
+              position: "absolute",
+              top: "1357px",
+              left: "1463px",
+            }}
           >
-            <span className={`text-[13px] ${getTextClasses()}`}>Shakboot Civil Defense</span>
+            <span className={`text-[13px] ${getTextClasses()}`}>
+              Shakboot Civil Defense
+            </span>
           </Button>
 
           <Button
@@ -1201,9 +1499,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("sadyat-civil-defense")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("sadyat-civil-defense")}
-            style={{ width: "162px", height: "25px", position: "absolute", top: "821px", left: "798px" }}
+            style={{
+              width: "162px",
+              height: "25px",
+              position: "absolute",
+              top: "821px",
+              left: "798px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>Sadyat Civil Defense</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              Sadyat Civil Defense
+            </span>
           </Button>
 
           <Button
@@ -1215,9 +1521,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("new-alfalah-civil-defense")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("new-alfalah-civil-defense")}
-            style={{ width: "180px", height: "28px", position: "absolute", top: "1084px", left: "1611px" }}
+            style={{
+              width: "180px",
+              height: "28px",
+              position: "absolute",
+              top: "1084px",
+              left: "1611px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>New Alfalah Civil Defense</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              New Alfalah Civil Defense
+            </span>
           </Button>
 
           <Button
@@ -1229,9 +1543,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("sih-shoaib-civil-defense")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("sih-shoaib-civil-defense")}
-            style={{ width: "164px", height: "26px", position: "absolute", top: "449px", left: "1427px" }}
+            style={{
+              width: "164px",
+              height: "26px",
+              position: "absolute",
+              top: "449px",
+              left: "1427px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>Sih Shoaib Civil Defense</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              Sih Shoaib Civil Defense
+            </span>
           </Button>
 
           <Button
@@ -1243,9 +1565,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("al-wathba-civil-defense")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("al-wathba-civil-defense")}
-            style={{ width: "219px", height: "32px", position: "absolute", top: "1582px", left: "1455px" }}
+            style={{
+              width: "219px",
+              height: "32px",
+              position: "absolute",
+              top: "1582px",
+              left: "1455px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>Al Wathba Civil Defense Gym</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              Al Wathba Civil Defense Gym
+            </span>
           </Button>
 
           <Button
@@ -1257,9 +1587,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("dpsc-al-shahama-clinic")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("dpsc-al-shahama-clinic")}
-            style={{ width: "212px", height: "31px", position: "absolute", top: "745px", left: "1581px" }}
+            style={{
+              width: "212px",
+              height: "31px",
+              position: "absolute",
+              top: "745px",
+              left: "1581px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>DPSC Al Shahama Clinic</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              DPSC Al Shahama Clinic
+            </span>
           </Button>
 
           <Button
@@ -1271,9 +1609,17 @@ export const Map = (): JSX.Element => {
             onMouseEnter={() => handleLabelHover("al-mushrif-children")}
             onMouseLeave={() => handleLabelHover(null)}
             className={getLabelClasses("al-mushrif-children")}
-            style={{ width: "275px", height: "29px", position: "absolute", top: "1162px", left: "454px" }}
+            style={{
+              width: "275px",
+              height: "29px",
+              position: "absolute",
+              top: "1162px",
+              left: "454px",
+            }}
           >
-            <span className={`text-[14px] ${getTextClasses()}`}>Al Mushrif Children Speciality Centre</span>
+            <span className={`text-[14px] ${getTextClasses()}`}>
+              Al Mushrif Children Speciality Centre
+            </span>
           </Button>
         </div>
       </div>
@@ -1291,7 +1637,33 @@ export const Map = (): JSX.Element => {
                   Hide Controls
                 </button>
                 <div className="text-white text-sm">
-                  Abu Dhabi Interactive Map - Use mouse to navigate | Zoom: {Math.round(zoomLevel * 100)}%
+                  Abu Dhabi Interactive Map - Use mouse wheel to zoom | Zoom:{" "}
+                  {Math.round(zoomLevel * 100)}% |{" "}
+                  {zoomLevel < 0.5
+                    ? "🛰️ Space View"
+                    : zoomLevel < 1
+                      ? "✈️ Aerial View"
+                      : "🏙️ City View"}
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={handleZoomOut}
+                    className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
+                  >
+                    Zoom Out
+                  </button>
+                  <button
+                    onClick={handleResetZoom}
+                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
+                  >
+                    Space View
+                  </button>
+                  <button
+                    onClick={handleZoomIn}
+                    className="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm transition-colors"
+                  >
+                    Zoom In
+                  </button>
                 </div>
               </div>
             </div>
@@ -1309,7 +1681,7 @@ export const Map = (): JSX.Element => {
         </button>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Map
+export default Map;
