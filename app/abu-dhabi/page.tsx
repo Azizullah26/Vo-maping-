@@ -21,6 +21,7 @@ export const Map = (): JSX.Element => {
     translateY: 0,
   });
   const [isZooming, setIsZooming] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Smooth zoom implementation with wheel support
   const handleWheelZoom = useCallback((event: WheelEvent) => {
@@ -700,7 +701,7 @@ export const Map = (): JSX.Element => {
             <Button
               onClick={() =>
                 router.push(
-                  `/dashboard/abu-dhabi-clinics-al-bateen?name=${encodeURIComponent("Clinics - Al Bateen")}&nameAr=${encodeURIComponent("عيادات - البطين")}`,
+                  `/dashboard/abu-dhabi-clinics-al-bateen?name=${encodeURIComponent("Clinics - Al Bateen")}&nameAr=${encodeURIComponent("عيا��ات - البطين")}`,
                 )
               }
               onMouseEnter={() => handleLabelHover("clinics-al-bateen")}
@@ -1213,7 +1214,7 @@ export const Map = (): JSX.Element => {
           <Button
             onClick={() =>
               router.push(
-                `/dashboard/abu-dhabi-urgent-point-al-aliah?name=${encodeURIComponent("Urgent Point - Al Aliah")}&nameAr=${encodeURIComponent("نقطة عاجل�� - العالية")}`,
+                `/dashboard/abu-dhabi-urgent-point-al-aliah?name=${encodeURIComponent("Urgent Point - Al Aliah")}&nameAr=${encodeURIComponent("نقطة عاجلة - العالية")}`,
               )
             }
             onMouseEnter={() => handleLabelHover("urgent-point-al-aliah")}
@@ -1611,7 +1612,7 @@ export const Map = (): JSX.Element => {
           <Button
             onClick={() =>
               router.push(
-                `/dashboard/abu-dhabi-al-mushrif-children?name=${encodeURIComponent("Al Mushrif Children Speciality Centre")}&nameAr=${encodeURIComponent("مركز المشرف التخصص�� لل��طفال")}`,
+                `/dashboard/abu-dhabi-al-mushrif-children?name=${encodeURIComponent("Al Mushrif Children Speciality Centre")}&nameAr=${encodeURIComponent("مركز المشرف التخصص�� للأطفال")}`,
               )
             }
             onMouseEnter={() => handleLabelHover("al-mushrif-children")}
