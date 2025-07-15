@@ -109,9 +109,9 @@ export const Map = (): JSX.Element => {
       const abuDhabiCenterX = 1185;
       const abuDhabiCenterY = 950;
 
-      // For space view, center the entire map in viewport
-      const centerX = Math.max(0, (mapWidth * 0.3 - viewportWidth) / 2);
-      const centerY = Math.max(0, (mapHeight * 0.3 - viewportHeight) / 2);
+      // For 40% zoom view, center the entire map in viewport for full screen
+      const centerX = Math.max(0, (mapWidth * 0.4 - viewportWidth) / 2);
+      const centerY = Math.max(0, (mapHeight * 0.4 - viewportHeight) / 2);
 
       // Set initial scroll position for space-like view
       window.scrollTo({
@@ -1553,7 +1553,7 @@ export const Map = (): JSX.Element => {
           <Button
             onClick={() =>
               router.push(
-                `/dashboard/abu-dhabi-new-alfalah-civil-defense?name=${encodeURIComponent("New Alfalah Civil Defense")}&nameAr=${encodeURIComponent("دفاع مدني الفلاح الجديد")}`,
+                `/dashboard/abu-dhabi-new-alfalah-civil-defense?name=${encodeURIComponent("New Alfalah Civil Defense")}&nameAr=${encodeURIComponent("دفاع مدني الف��اح الجديد")}`,
               )
             }
             onMouseEnter={() => handleLabelHover("new-alfalah-civil-defense")}
