@@ -52,12 +52,17 @@ export const Map = (): JSX.Element => {
     setZoomLevel(0.4); // Reset to 40% zoom fixed view
     // Reset to initial centered position
     if (mapContainerRef.current) {
+      const mapWidth = 2370;
+      const mapHeight = 2370;
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const abuDhabiCenterX = 1185;
-      const abuDhabiCenterY = 950;
-      const centerX = Math.max(0, abuDhabiCenterX - (viewportWidth * 0.7) / 2);
-      const centerY = Math.max(0, abuDhabiCenterY - (viewportHeight * 0.7) / 2);
+
+      // Center the map image perfectly in the viewport at 40% zoom
+      const scaledMapWidth = mapWidth * 0.4;
+      const scaledMapHeight = mapHeight * 0.4;
+
+      const centerX = Math.max(0, (scaledMapWidth - viewportWidth) / 2);
+      const centerY = Math.max(0, (scaledMapHeight - viewportHeight) / 2);
 
       window.scrollTo({
         left: centerX,
