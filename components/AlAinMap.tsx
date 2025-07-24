@@ -1,20 +1,18 @@
-"use client";
+"use client"
 
-import type React from "react";
+import type React from "react"
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { AnimatedControls } from "@/components/AnimatedControls";
-import { useMapboxToken } from "@/hooks/useMapboxToken";
-import alainStrokeLines from "@/data/alain-stroke-lines.json";
-import { MarkerHoverWidget } from "@/components/MarkerHoverWidget";
-import MapInstructionWidget from "@/components/MapInstructionWidget";
-// import { alainBoundaryData } from "@/data/alainCoordinates"
+import { useEffect, useRef, useState, useCallback } from "react"
+import { useRouter } from "next/navigation"
+import { AnimatedControls } from "@/components/AnimatedControls"
+import { useMapboxToken } from "@/hooks/useMapboxToken"
+import { MarkerHoverWidget } from "@/components/MarkerHoverWidget"
+import MapInstructionWidget from "@/components/MapInstructionWidget"
 
 // Declare mapboxgl as a global variable
 declare global {
   interface Window {
-    mapboxgl: any;
+    mapboxgl: any
   }
 }
 
@@ -37,7 +35,7 @@ const markerStyles = `
   z-index: 1;
   pointer-events: auto;
   width: 3rem;
-  height: 3rem;
+  height: 3.5rem;
 }
 
 @media (min-width: 640px) {
@@ -58,8 +56,8 @@ const markerStyles = `
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 0.75rem;
+  height: 0.75rem;
   background-color: #ffffff;
   border-radius: 50%;
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
@@ -74,21 +72,21 @@ const markerStyles = `
 
 @media (min-width: 640px) {
   .marker-circle {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 0.875rem;
+    height: 0.875rem;
   }
 }
 
 @media (min-width: 768px) {
   .marker-circle {
-    width: 1.75rem;
-    height: 1.75rem;
+    width: 0.9375rem;
+    height: 0.9375rem;
   }
 }
 
 .marker-number {
   color: #000000;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: bold;
   text-align: center;
   line-height: 1;
@@ -98,17 +96,16 @@ const markerStyles = `
 
 @media (min-width: 640px) {
   .marker-number {
-    font-size: 1rem;
+    font-size: 0.8125rem;
   }
 }
 
 @media (min-width: 768px) {
   .marker-number {
-    font-size: 1.125rem;
+    font-size: 0.875rem;
   }
 }
 
-/* Rest of the styles remain the same but with responsive adjustments */
 .marker-tooltip {
   position: absolute;
   background-color: rgba(0, 0, 0, 0.8);
@@ -145,20 +142,20 @@ const markerStyles = `
 .mapboxgl-ctrl-bottom-right {
   display: none !important;
 }
-`;
+`
 
 interface AlAinMapProps {
   policeLocations: Array<{
-    name: string;
-    coordinates: [number, number];
-    type: string;
-    description: string;
-  }>;
-  onToggleTerrain: () => void;
-  offsetX?: number;
-  offsetY?: number;
-  mapRef?: React.MutableRefObject<any>;
-  rightSliderRef?: React.MutableRefObject<any>;
+    name: string
+    coordinates: [number, number]
+    type: string
+    description: string
+  }>
+  onToggleTerrain: () => void
+  offsetX?: number
+  offsetY?: number
+  mapRef?: React.MutableRefObject<any>
+  rightSliderRef?: React.MutableRefObject<any>
 }
 
 // Mapbox styles configuration
@@ -175,24 +172,47 @@ const MAPBOX_STYLES = {
     url: "mapbox://styles/azizullah2611/cm6okbhyo000301qz5q58gdud",
     name: "Style 3 (Original)",
   },
-};
+}
 
 // Constants
-const ZOOM_THRESHOLD = 12;
-const FREE_MOVEMENT_ZOOM_THRESHOLD = 2.0; // This constant is no longer directly used for dragPan logic
-const EXCLUDED_COORDINATES: [number, number] = [
-  55.74252775199696, 24.23252678639456,
-];
+const ZOOM_THRESHOLD = 12
+const EXCLUDED_COORDINATES: [number, number] = [55.74252775199696, 24.23252678639456]
 
-const ALWAYS_HIDDEN_MARKERS: string[] = ["مركز شرطة الجيمي القديم"];
-const ALWAYS_VISIBLE_MARKERS: string[] = [
-  "16 Projects",
-  "7 Projects",
-  "2 Projects",
-  "1 Project",
-  "مركز شرطة الوقن",
-];
-const EXCLUDED_MARKERS: string[] = [];
+const ALWAYS_HIDDEN_MARKERS: string[] = [
+  "مركز شرطة الجيمي القديم",
+  "قسم الدوريات الخاصة",
+  "إدارة الدوريات الخاصة",
+  "قسم هندسة المرور",
+  "مركز شرطة فلج هزاع",
+  "إدارة الأسلحة والمتفجرات",
+  "مبنى التحريات والمخدرات",
+  "ادارة المهام الخاصة العين",
+  "الضبط المروري والمراسم",
+  "المتابعة الشرطية والرعاية اللاحقة",
+  "سكن أفراد المرور",
+  "المعهد المروري",
+  "إدارة المرور والترخيص",
+  "ساحة حجز المركبات فلج هزاع",
+  "قسم التفتيش الأمني K9",
+  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
+]
+
+const ALWAYS_VISIBLE_MARKERS: string[] = ["مركز شرطة الوقن"]
+
+const EXCLUDED_MARKERS: string[] = [
+  "مركز شرطة فلج هزاع",
+  "إدارة الأسلحة والمتفجرات",
+  "مبنى التحريات والمخدرات",
+  "ادارة المهام الخاصة العين",
+  "الضبط المروري والمراسم",
+  "المتابعة الشرطية والرعاية اللاحقة",
+  "سكن أفراد المرور",
+  "المعهد المروري",
+  "إدارة المرور والترخيص",
+  "ساحة حجز المركبات فلج هزاع",
+  "قسم التفتيش الأمني K9",
+  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
+]
 
 const HIDDEN_AT_START = [
   "ميدان الشرطة بدع بنت سعود",
@@ -200,29 +220,18 @@ const HIDDEN_AT_START = [
   "مركز شرطة المربعة",
   "مديرية شرطة العين",
   "فرع النقل والمشاغل",
-  "نادي ض��اط الشرطة",
+  "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
   "فلل فلج هزاع",
-  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
-  "قسم التفتيش الأمني K9",
-  "الضبط المروري والمراسم",
-  "ساحة حجز المركبات فلج هزاع",
-  "إدارة المرور والترخيص",
-  "قسم الدوريات الخاصة",
-  "إدارة الدوريات الخاصة",
-  "المعهد المروري",
-  "سكن أفراد المرور",
-  "قسم هندسة المرور",
-  "المتابعة الشرطية والرعاية اللاحقة",
-  "ادارة المهام الخاصة العين",
-  "مبنى التحريات والمخدرات",
-  "إدار��� الأسلحة والمتفجرات",
-  "مركز شرطة فلج هزاع",
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
   "مركز شرطة الساد",
-  "ساحة حجز المركبات -asad",
-];
+  "ساحة حجز المركبات - الساد",
+  "16 Projects",
+  "7 Projects",
+  "2 Projects",
+  "1 Project",
+]
 
 const PROJECT_NUMBERS: { [key: string]: string } = {
   "16 Projects": "16",
@@ -238,7 +247,7 @@ const PROJECT_NUMBERS: { [key: string]: string } = {
   "مركز شرطة سويحان": "1",
   "مركز شرطة الهير": "1",
   "مركز شرطة الوقن": "1",
-};
+}
 
 const HOVERABLE_MARKERS = [
   "قسم موسيقى شرطة أبوظبي",
@@ -251,20 +260,17 @@ const HOVERABLE_MARKERS = [
   "فرع النقل والمشاغل",
   "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
-  "فلل ف��ج هزاع",
+  "فلل فلج هزاع",
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
   "قسم التفتيش الأمني K9",
   "الضبط المروري والمراسم",
   "ساحة حجز المركبات فلج هزاع",
   "إدارة المرور والترخيص",
-  "قسم الدوريات الخاصة",
-  "إدارة الدوريات ا��خاصة",
   "المعهد المروري",
   "سكن أفراد المرور",
-  "قسم هندسة المرور",
   "المتابعة الشرطية والرعاية اللاحقة",
   "ادارة المهام الخاصة العين",
-  "مبنى التحر��ات والمخدرات",
+  "مبنى التحريات والمخدرات",
   "إدارة الأسلحة والمتفجرات",
   "مركز شرطة فلج هزاع",
   "فلل للادرات الشرطية عشارج",
@@ -276,22 +282,15 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة القوع (فلل صحة)",
   "نقطة ثبات الروضة",
   "فرع الضبط المروري (الخزنة)",
-  "مبنى إدارات (التربية ��لرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
+  "مبنى إدارات (التربية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
   "1 Project",
   "مركز شرطة سويحان",
   "مركز شرطة الهير",
-];
+]
 
 // Helper functions
-function areCoordinatesEqual(
-  coord1: [number, number],
-  coord2: [number, number],
-  tolerance = 0.0001,
-): boolean {
-  return (
-    Math.abs(coord1[0] - coord2[0]) < tolerance &&
-    Math.abs(coord1[1] - coord2[1]) < tolerance
-  );
+function areCoordinatesEqual(coord1: [number, number], coord2: [number, number], tolerance = 0.0001): boolean {
+  return Math.abs(coord1[0] - coord2[0]) < tolerance && Math.abs(coord1[1] - coord2[1]) < tolerance
 }
 
 function isValidCoordinate(coord: [number, number]): boolean {
@@ -302,7 +301,7 @@ function isValidCoordinate(coord: [number, number]): boolean {
     typeof coord[1] === "number" &&
     !isNaN(coord[0]) &&
     !isNaN(coord[1])
-  );
+  )
 }
 
 export default function AlAinMap({
@@ -313,69 +312,330 @@ export default function AlAinMap({
   mapRef,
   rightSliderRef,
 }: AlAinMapProps) {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<any>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const [mapboxLoaded, setMapboxLoaded] = useState(false);
-  const [currentStyle, setCurrentStyle] =
-    useState<keyof typeof MAPBOX_STYLES>("style2"); // Default to current style
-  const router = useRouter();
-  const markersRef = useRef<{ [key: string]: any }>({});
-  const [lng] = useState(55.74);
-  const [lat] = useState(24.13);
-  const [zoom] = useState(10);
-  const initialZoomRef = useRef<number>(0.02); // Initial zoom level for fixed position
-  const { token, loading, error } = useMapboxToken();
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const initialCenterRef = useRef<[number, number]>([0, 0]);
-  const [hoveredMarker, setHoveredMarker] = useState<string | null>(null);
-  const tooltipRef = useRef<HTMLDivElement | null>(null);
-  const lastCenterRef = useRef<any>(null);
-  const [clickedMarker, setClickedMarker] = useState<string | null>(null);
+  const mapContainer = useRef<HTMLDivElement>(null)
+  const map = useRef<any>(null)
+  const [mapLoaded, setMapLoaded] = useState(false)
+  const [mapboxLoaded, setMapboxLoaded] = useState(false)
+  const [currentStyle, setCurrentStyle] = useState<keyof typeof MAPBOX_STYLES>("style2")
+  const router = useRouter()
+  const markersRef = useRef<{ [key: string]: any }>({})
+  const [lng] = useState(55.74)
+  const [lat] = useState(24.13)
+  const [zoom] = useState(10)
+  const initialZoomRef = useRef<number>(10.0)
+  const { token, loading, error } = useMapboxToken()
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const initialCenterRef = useRef<[number, number]>([0, 0])
+  const [hoveredMarker, setHoveredMarker] = useState<string | null>(null)
+  const tooltipRef = useRef<HTMLDivElement | null>(null)
+  const lastCenterRef = useRef<any>(null)
+  const [clickedMarker, setClickedMarker] = useState<string | null>(null)
 
   // Load Mapbox GL from CDN
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined") return
 
     // Check if mapboxgl is already loaded
     if (window.mapboxgl) {
-      setMapboxLoaded(true);
-      return;
+      setMapboxLoaded(true)
+      return
     }
 
     // Load CSS
-    const cssLink = document.createElement("link");
-    cssLink.rel = "stylesheet";
-    cssLink.href = "https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css";
-    document.head.appendChild(cssLink);
+    const cssLink = document.createElement("link")
+    cssLink.rel = "stylesheet"
+    cssLink.href = "https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css"
+    document.head.appendChild(cssLink)
 
     // Load JS
-    const script = document.createElement("script");
-    script.src = "https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js";
+    const script = document.createElement("script")
+    script.src = "https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"
     script.onload = () => {
-      setMapboxLoaded(true);
-    };
+      setMapboxLoaded(true)
+    }
     script.onerror = () => {
-      console.error("Failed to load Mapbox GL JS from CDN");
-    };
-    document.head.appendChild(script);
+      console.error("Failed to load Mapbox GL JS from CDN")
+    }
+    document.head.appendChild(script)
 
     return () => {
       // Cleanup
-      if (document.head.contains(cssLink)) document.head.removeChild(cssLink);
-      if (document.head.contains(script)) document.head.removeChild(script);
-    };
-  }, []);
+      try {
+        if (document.head.contains(cssLink)) document.head.removeChild(cssLink)
+        if (document.head.contains(script)) document.head.removeChild(script)
+      } catch (e) {
+        console.warn("Cleanup error:", e)
+      }
+    }
+  }, [])
 
   // Handle style change
   const handleStyleChange = (newStyle: keyof typeof MAPBOX_STYLES) => {
     if (map.current && mapLoaded) {
-      setCurrentStyle(newStyle);
-      map.current.setStyle(MAPBOX_STYLES[newStyle].url);
+      try {
+        setCurrentStyle(newStyle)
+        map.current.setStyle(MAPBOX_STYLES[newStyle].url)
 
-      // Re-add layers and markers after style change
-      map.current.once("styledata", () => {
-        // Re-add the dark overlay and stroke lines
+        // Re-add layers and markers after style change
+        map.current.once("styledata", () => {
+          try {
+            map.current.addLayer({
+              id: "dark-overlay",
+              type: "background",
+              paint: {
+                "background-color": "#000000",
+                "background-opacity": 0.4,
+              },
+            })
+
+            map.current.addLayer({
+              id: "map-mask",
+              type: "background",
+              paint: {
+                "background-color": "#1b1f3a",
+                "background-opacity": 0.25,
+              },
+              beforeId: "dark-overlay",
+            })
+          } catch (error) {
+            console.error("Error re-adding layers after style change:", error)
+          }
+        })
+      } catch (error) {
+        console.error("Error changing map style:", error)
+      }
+    }
+  }
+
+  const updateSlidersWithMarkerInfo = useCallback(
+    (markerName: string | null) => {
+      if (!markerName) return
+
+      try {
+        const projectData = {
+          id: 1,
+          imageSrc: getMarkerImage(markerName),
+          projectNameAr: markerName,
+          projectNameEn: getEnglishName(markerName),
+          coordinates: getMarkerCoordinates(markerName),
+        }
+
+        if (rightSliderRef?.current?.openLeftSlider) {
+          rightSliderRef.current.openLeftSlider(projectData)
+        }
+
+        const event = new CustomEvent("markerHovered", {
+          detail: { project: projectData },
+        })
+        window.dispatchEvent(event)
+      } catch (error) {
+        console.error("Error updating sliders:", error)
+      }
+    },
+    [rightSliderRef],
+  )
+
+  function getMarkerImage(name: string): string {
+    const imageMap: { [key: string]: string } = {
+      "قسم موسيقى شرطة أبوظبي": "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
+      "إدارة التأهيل الشرطي - الفوعة":
+        "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
+      "مركز شرطة هيلي": "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
+      "1 Project": "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg",
+      "مركز شرطة الوقن":
+        "https://www.visitabudhabi.ae/content/dam/visitabudhabi/images/plan-your-trip/regions-of-abu-dhabi/al-dhafra-region/liwa-oasis/liwa-oasis-hero-1920x1080.jpg",
+    }
+    return imageMap[name] || "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg"
+  }
+
+  function getEnglishName(name: string): string {
+    const nameMap: { [key: string]: string } = {
+      "قسم موسيقى شرطة أبوظبي": "Abu Dhabi Police Music Department",
+      "إدارة التأهيل الشرطي - الفوعة": "Police Rehabilitation Department - Al Foua",
+      "مركز شرطة هيلي": "Hili Police Station",
+      "1 Project": "Al Ain Development Project",
+      "مركز شرطة الوقن": "Al Wagan Police Station",
+    }
+    return nameMap[name] || "Police Facility"
+  }
+
+  function getMarkerCoordinates(name: string): [number, number] {
+    if (markersRef.current && markersRef.current[name]) {
+      try {
+        const lngLat = markersRef.current[name].getLngLat()
+        return [lngLat.lng, lngLat.lat]
+      } catch (error) {
+        console.error("Error getting marker coordinates:", error)
+      }
+    }
+    return [55.74, 24.13]
+  }
+
+  const debouncedUpdateMarkers = () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      if (!map.current) return
+
+      Object.entries(markersRef.current).forEach(([name, marker]) => {
+        try {
+          const position = marker.getLngLat()
+          if (position) {
+            const element = marker.getElement()
+            if (element.style.display !== "none") {
+              marker.setLngLat(position)
+            }
+          }
+        } catch (error) {
+          console.error(`Error updating marker position for ${name}:`, error)
+        }
+      })
+    }, 100)
+  }
+
+  useEffect(() => {
+    if (rightSliderRef) {
+      rightSliderRef.current = rightSliderRef.current
+    }
+  }, [rightSliderRef])
+
+  useEffect(() => {
+    if (map.current) return
+    if (loading) return
+    if (error || !token) {
+      console.error("Mapbox access token error:", error)
+      return
+    }
+    if (!mapboxLoaded || !window.mapboxgl) {
+      return
+    }
+
+    try {
+      window.mapboxgl.accessToken = token
+
+      const markers: { [key: string]: any } = {}
+      const markerPositions: { [key: string]: [number, number] } = {}
+
+      markersRef.current = markers
+
+      const baseCenterLng = 55.503133160600925
+      const baseCenterLat = 24.106600838029317
+
+      const lngOffset = offsetX * 0.0005
+      const latOffset = offsetY * 0.0005
+
+      const centerLng = baseCenterLng + lngOffset
+      const centerLat = baseCenterLat - latOffset
+
+      // Calculate the center of the bounded area for all devices to show all markers
+      const getInitialCenter = () => {
+        if (typeof window === "undefined") return [centerLng, centerLat]
+
+        // Use a more centered position for Al Ain area
+        const boundedCenterLng = 55.7 // Center around Al Ain city
+        const boundedCenterLat = 24.2 // Center around Al Ain city
+        return [boundedCenterLng, boundedCenterLat]
+      }
+
+      const initialCenter = getInitialCenter()
+      initialCenterRef.current = initialCenter
+
+      // Device-specific minimum zoom levels (prevents zooming out beyond these levels)
+      const getMinimumZoom = () => {
+        if (typeof window === "undefined") return 10.0
+        const width = window.innerWidth
+
+        // Minimum zoom levels for different device types
+        if (width <= 480) {
+          // Mobile: Minimum zoom 9.5 (can't zoom out beyond this)
+          return 9.5
+        }
+
+        if (width >= 481 && width <= 768) {
+          // Tablet: Minimum zoom 10.0 (can't zoom out beyond this)
+          return 10.0
+        }
+
+        return 10.5 // Desktop: Minimum zoom 10.5 (can't zoom out beyond this)
+      }
+
+      // Initial zoom levels (same as minimum zoom levels)
+      const getInitialZoom = () => {
+        if (typeof window === "undefined") return 10.0
+        const width = window.innerWidth
+
+        // Initial zoom levels for all device types
+        if (width <= 480) {
+          // Mobile: Initial zoom 9.5
+          return 9.5
+        }
+
+        if (width >= 481 && width <= 768) {
+          // Tablet: Initial zoom 10.0
+          return 10.0
+        }
+
+        return 10.5 // Desktop: Initial zoom 10.5
+      }
+
+      const minimumZoom = getMinimumZoom()
+      initialZoomRef.current = getInitialZoom()
+
+      map.current = new window.mapboxgl.Map({
+        container: mapContainer.current!,
+        style: MAPBOX_STYLES[currentStyle].url,
+        center: initialCenter,
+        zoom: initialZoomRef.current,
+        pitch: 0,
+        bearing: 0,
+        maxBounds: [
+          [53.8, 22.8],
+          [56.6, 25.5],
+        ],
+        minZoom: minimumZoom,
+        maxZoom: 16,
+        dragPan: true,
+        scrollZoom: true,
+        renderWorldCopies: false,
+        preserveDrawingBuffer: true,
+        attributionControl: false,
+        fadeDuration: 0,
+        trackResize: true,
+        interactive: true,
+        doubleClickZoom: true,
+        touchZoomRotate: true,
+      })
+
+      // Enable all interactions
+      map.current.scrollZoom.enable()
+      map.current.boxZoom.enable()
+      map.current.dragRotate.enable()
+      map.current.dragPan.enable()
+      map.current.keyboard.enable()
+      map.current.doubleClickZoom.enable()
+      map.current.touchZoomRotate.enable()
+
+      // Set zoom rates for smooth interaction
+      map.current.scrollZoom.setWheelZoomRate(0.01)
+      map.current.scrollZoom.setZoomRate(0.005)
+
+      if (mapRef) {
+        mapRef.current = map.current
+      }
+
+      const styleSheet = document.createElement("style")
+      styleSheet.textContent = markerStyles
+      document.head.appendChild(styleSheet)
+
+      map.current.on("load", () => {
+        setMapLoaded(true)
+        if (!map.current) return
+
+        lastCenterRef.current = map.current.getCenter()
+        map.current.getCanvas().style.willChange = "transform"
+
         try {
           map.current.addLayer({
             id: "dark-overlay",
@@ -384,7 +644,7 @@ export default function AlAinMap({
               "background-color": "#000000",
               "background-opacity": 0.4,
             },
-          });
+          })
 
           map.current.addLayer({
             id: "map-mask",
@@ -394,625 +654,237 @@ export default function AlAinMap({
               "background-opacity": 0.25,
             },
             beforeId: "dark-overlay",
-          });
-
-          // Re-add Al Ain stroke lines
-          map.current.addSource("alain-stroke-1", {
-            type: "geojson",
-            data: alainStrokeLines.features[0],
-            tolerance: 0.5,
-          });
-
-          map.current.addLayer({
-            id: "alain-stroke-1",
-            type: "line",
-            source: "alain-stroke-1",
-            layout: {
-              "line-join": "round",
-              "line-cap": "round",
-              visibility: "visible",
-            },
-            paint: {
-              "line-color": alainStrokeLines.features[0].properties.stroke,
-              "line-width":
-                alainStrokeLines.features[0].properties["stroke-width"],
-              "line-opacity":
-                alainStrokeLines.features[0].properties["stroke-opacity"],
-            },
-          });
-
-          map.current.addSource("alain-stroke-2", {
-            type: "geojson",
-            data: alainStrokeLines.features[1],
-            tolerance: 0.5,
-          });
-
-          map.current.addLayer({
-            id: "alain-stroke-2",
-            type: "line",
-            source: "alain-stroke-2",
-            layout: {
-              "line-join": "round",
-              "line-cap": "round",
-              visibility: "visible",
-            },
-            paint: {
-              "line-color": alainStrokeLines.features[1].properties.stroke,
-              "line-width":
-                alainStrokeLines.features[1].properties["stroke-width"],
-              "line-opacity":
-                alainStrokeLines.features[1].properties["stroke-opacity"],
-            },
-          });
+          })
         } catch (error) {
-          console.error("Error re-adding layers after style change:", error);
+          console.error("Error adding map layers:", error)
         }
-      });
-    }
-  };
 
-  const updateSlidersWithMarkerInfo = useCallback(
-    (markerName: string | null) => {
-      if (!markerName) return;
-
-      const projectData = {
-        id: 1,
-        imageSrc: getMarkerImage(markerName),
-        projectNameAr: markerName,
-        projectNameEn: getEnglishName(markerName),
-        coordinates: getMarkerCoordinates(markerName),
-      };
-
-      if (rightSliderRef?.current?.openLeftSlider) {
-        rightSliderRef.current.openLeftSlider(projectData);
-      }
-
-      const event = new CustomEvent("markerHovered", {
-        detail: { project: projectData },
-      });
-      window.dispatchEvent(event);
-    },
-    [rightSliderRef],
-  );
-
-  function getMarkerImage(name: string): string {
-    const imageMap: { [key: string]: string } = {
-      "قسم موسيقى شرطة أبوظبي":
-        "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
-      "إدارة التأهيل الشرطي - الفوعة":
-        "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
-      "مركز شرطة هيلي":
-        "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
-      "1 Project":
-        "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg",
-      "مركز شرطة الوقن":
-        "https://www.visitabudhabi.ae/content/dam/visitabudhabi/images/plan-your-trip/regions-of-abu-dhabi/al-dhafra-region/liwa-oasis/liwa-oasis-hero-1920x1080.jpg",
-    };
-    return (
-      imageMap[name] ||
-      "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg"
-    );
-  }
-
-  function getEnglishName(name: string): string {
-    const nameMap: { [key: string]: string } = {
-      "قسم موسيقى شرطة أبوظبي": "Abu Dhabi Police Music Department",
-      "إدارة التأهيل الشرطي - الفوعة":
-        "Police Rehabilitation Department - Al Foua",
-      "مركز شرطة هيلي": "Hili Police Station",
-      "1 Project": "Al Ain Development Project",
-      "مركز شرطة الوقن": "Al Wagan Police Station",
-    };
-    return nameMap[name] || "Police Facility";
-  }
-
-  function getMarkerCoordinates(name: string): [number, number] {
-    if (markersRef.current && markersRef.current[name]) {
-      const lngLat = markersRef.current[name].getLngLat();
-      return [lngLat.lng, lngLat.lat];
-    }
-    return [55.74, 24.13];
-  }
-
-  const debouncedUpdateMarkers = () => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    debounceTimerRef.current = setTimeout(() => {
-      if (!map.current) return;
-
-      Object.entries(markersRef.current).forEach(([name, marker]) => {
-        try {
-          const position = marker.getLngLat();
-          if (position) {
-            const element = marker.getElement();
-            if (element.style.display !== "none") {
-              marker.setLngLat(position);
+        // Create markers for police locations
+        policeLocations.forEach((location) => {
+          try {
+            if (location.name === "مبنى إدارات شرطة") {
+              return
             }
+
+            if (areCoordinatesEqual(location.coordinates, EXCLUDED_COORDINATES)) {
+              console.log(`Skipping marker at coordinates ${EXCLUDED_COORDINATES}`)
+              return
+            }
+
+            if (EXCLUDED_MARKERS.includes(location.name)) {
+              console.log(`Skipping marker creation for ${location.name}`)
+              return
+            }
+
+            if (!isValidCoordinate(location.coordinates)) {
+              console.error(`Invalid coordinates for ${location.name}:`, location.coordinates)
+              return
+            }
+
+            markers[location.name] = createMarker({
+              name: location.name,
+              coordinates: location.coordinates,
+              alignment: getMarkerAlignment(location.name),
+              size: location.name === "فلل للادرات الشرطية عشارج" ? "small" : "normal",
+              map: map.current!,
+            })
+
+            markerPositions[location.name] = location.coordinates
+          } catch (error) {
+            console.error(`Error creating marker for ${location.name}:`, error)
           }
-        } catch (error) {
-          console.error(`Error updating marker position for ${name}:`, error);
-        }
-      });
-    }, 100);
-  };
+        })
 
-  useEffect(() => {
-    if (rightSliderRef) {
-      rightSliderRef.current = rightSliderRef.current;
-    }
-  }, [rightSliderRef]);
-
-  useEffect(() => {
-    if (map.current) return;
-    if (loading) return;
-    if (error || !token) {
-      console.error("Mapbox access token error:", error);
-      return;
-    }
-    if (!mapboxLoaded || !window.mapboxgl) {
-      return;
-    }
-
-    window.mapboxgl.accessToken = token;
-
-    const markers: { [key: string]: any } = {};
-    const markerPositions: { [key: string]: [number, number] } = {};
-
-    markersRef.current = markers;
-
-    const baseCenterLng = 55.503133160600925;
-    const baseCenterLat = 24.106600838029317;
-
-    const lngOffset = offsetX * 0.0005;
-    const latOffset = offsetY * 0.0005;
-
-    const centerLng = baseCenterLng + lngOffset;
-    const centerLat = baseCenterLat - latOffset;
-
-    // Calculate the center of the bounded area for all devices to show all markers
-    const getInitialCenter = () => {
-      if (typeof window === "undefined") return [centerLng, centerLat];
-
-      // Always use bounded center to ensure all markers and coordinates are visible
-      const boundedCenterLng = (53.8 + 56.6) / 2 - 0.3; // Move center to the left by 0.3 degrees
-      const boundedCenterLat = (22.8 + 25.5) / 2; // Keep latitude unchanged
-      return [boundedCenterLng, boundedCenterLat];
-    };
-
-    const initialCenter = getInitialCenter();
-    initialCenterRef.current = initialCenter;
-
-    // initialZoomRef.current is already set to 0.02
-    const getInitialZoom = () => {
-      if (typeof window === "undefined") return 0.02;
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-
-      // Calculate zoom to fit all markers and boundaries within viewport
-      if (width <= 480) {
-        // Mobile: Calculate zoom based on screen dimensions and expanded map bounds
-        const mapBounds = {
-          lng: 56.6 - 53.8, // ~2.8 degrees (expanded)
-          lat: 25.5 - 22.8, // ~2.7 degrees (expanded)
-        };
-
-        // Account for mobile screen aspect ratio and margins
-        const margin = 0.2; // 20% margin for UI elements
-        const effectiveWidth = width * (1 - margin);
-        const effectiveHeight = height * (1 - margin);
-
-        // Calculate zoom that fits the bounds (empirically derived formula)
-        const zoomForWidth = Math.log2(
-          effectiveWidth / (mapBounds.lng * 40000),
-        );
-        const zoomForHeight = Math.log2(
-          effectiveHeight / (mapBounds.lat * 40000),
-        );
-
-        return Math.max(0.02, Math.min(zoomForWidth, zoomForHeight) * 0.8);
-      }
-
-      if (width >= 481 && width <= 768) {
-        // Tablet: Similar calculation with expanded bounds and different margins
-        const mapBounds = {
-          lng: 56.6 - 53.8, // Expanded longitude range
-          lat: 25.5 - 22.8, // Expanded latitude range
-        };
-
-        const margin = 0.15; // 15% margin for tablets
-        const effectiveWidth = width * (1 - margin);
-        const effectiveHeight = height * (1 - margin);
-
-        const zoomForWidth = Math.log2(
-          effectiveWidth / (mapBounds.lng * 40000),
-        );
-        const zoomForHeight = Math.log2(
-          effectiveHeight / (mapBounds.lat * 40000),
-        );
-
-        return Math.max(0.05, Math.min(zoomForWidth, zoomForHeight) * 0.9);
-      }
-
-      return 6.0; // Desktop unchanged
-    };
-
-    initialZoomRef.current = getInitialZoom();
-
-    try {
-      map.current = new window.mapboxgl.Map({
-        container: mapContainer.current!,
-        style: MAPBOX_STYLES[currentStyle].url,
-        center: initialCenter, // Use the calculated center
-        zoom: initialZoomRef.current, // Map starts at this zoom
-        pitch: 0,
-        bearing: 0,
-        maxBounds: [
-          [53.8, 22.8], // [left longitude, bottom latitude] - expanded west and south
-          [56.6, 25.5], // [right longitude, top latitude] - expanded east and north
-        ],
-        minZoom: 0.1, // Increase minZoom to prevent zooming out too far beyond boundaries
-        maxZoom: 16,
-        dragPan: false, // Start with dragPan disabled
-        scrollZoom: true,
-        renderWorldCopies: false,
-        preserveDrawingBuffer: true,
-        attributionControl: false,
-        fadeDuration: 0,
-        trackResize: true,
-        interactive: true,
-      });
-    } catch (error) {
-      console.error("Error initializing map:", error);
-      return;
-    }
-
-    map.current.scrollZoom.setWheelZoomRate(0.01);
-    map.current.scrollZoom.setZoomRate(0.005);
-    map.current.setMinZoom(0); // Allow zooming out, but panning will be restricted
-
-    if (mapRef) {
-      mapRef.current = map.current;
-    }
-
-    const styleSheet = document.createElement("style");
-    styleSheet.textContent = markerStyles;
-    document.head.appendChild(styleSheet);
-
-    map.current.on("load", () => {
-      setMapLoaded(true);
-      if (!map.current) return;
-
-      lastCenterRef.current = map.current.getCenter();
-      map.current.getCanvas().style.willChange = "transform";
-
-      try {
-        map.current.addLayer({
-          id: "dark-overlay",
-          type: "background",
-          paint: {
-            "background-color": "#000000",
-            "background-opacity": 0.4,
-          },
-        });
-
-        map.current.addLayer({
-          id: "map-mask",
-          type: "background",
-          paint: {
-            "background-color": "#1b1f3a",
-            "background-opacity": 0.25,
-          },
-          beforeId: "dark-overlay",
-        });
-      } catch (error) {
-        console.error("Error adding map layers:", error);
-      }
-
-      try {
-        map.current.addSource("alain-stroke-1", {
-          type: "geojson",
-          data: alainStrokeLines.features[0],
-          tolerance: 0.5,
-        });
-
-        map.current.addLayer({
-          id: "alain-stroke-1",
-          type: "line",
-          source: "alain-stroke-1",
-          layout: {
-            "line-join": "round",
-            "line-cap": "round",
-            visibility: "visible",
-          },
-          paint: {
-            "line-color": alainStrokeLines.features[0].properties.stroke,
-            "line-width":
-              alainStrokeLines.features[0].properties["stroke-width"],
-            "line-opacity":
-              alainStrokeLines.features[0].properties["stroke-opacity"],
-          },
-        });
-
-        map.current.addSource("alain-stroke-2", {
-          type: "geojson",
-          data: alainStrokeLines.features[1],
-          tolerance: 0.5,
-        });
-
-        map.current.addLayer({
-          id: "alain-stroke-2",
-          type: "line",
-          source: "alain-stroke-2",
-          layout: {
-            "line-join": "round",
-            "line-cap": "round",
-            visibility: "visible",
-          },
-          paint: {
-            "line-color": alainStrokeLines.features[1].properties.stroke,
-            "line-width":
-              alainStrokeLines.features[1].properties["stroke-width"],
-            "line-opacity":
-              alainStrokeLines.features[1].properties["stroke-opacity"],
-          },
-        });
-      } catch (error) {
-        console.error("Error adding Al Ain stroke lines:", error);
-      }
-
-      // Create markers for police locations
-      policeLocations.forEach((location) => {
+        // Add project markers
         try {
-          if (location.name === "مبنى إدارات شرطة") {
-            return;
+          const coords16Projects: [number, number] = [55.71402343413848, 24.191945156301003]
+          if (isValidCoordinate(coords16Projects)) {
+            markers["16 Projects"] = createMarker({
+              name: "16 Projects",
+              coordinates: coords16Projects,
+              alignment: "right-aligned",
+              map: map.current!,
+            })
+            markerPositions["16 Projects"] = coords16Projects
           }
 
-          if (areCoordinatesEqual(location.coordinates, EXCLUDED_COORDINATES)) {
-            console.log(
-              `Skipping marker at coordinates ${EXCLUDED_COORDINATES}`,
-            );
-            return;
+          const coords7Projects: [number, number] = [55.74320587470995, 24.27937770887191]
+          if (isValidCoordinate(coords7Projects)) {
+            markers["7 Projects"] = createMarker({
+              name: "7 Projects",
+              coordinates: coords7Projects,
+              alignment: "right-aligned",
+              map: map.current!,
+            })
+            markerPositions["7 Projects"] = coords7Projects
           }
 
-          if (EXCLUDED_MARKERS.includes(location.name)) {
-            console.log(`Skipping marker creation for ${location.name}`);
-            return;
+          const coords2Projects: [number, number] = [55.79420236287404, 24.333762072745526]
+          if (isValidCoordinate(coords2Projects)) {
+            markers["2 Projects"] = createMarker({
+              name: "2 Projects",
+              coordinates: coords2Projects,
+              alignment: "right-aligned",
+              map: map.current!,
+            })
+            markerPositions["2 Projects"] = coords2Projects
           }
 
-          if (!isValidCoordinate(location.coordinates)) {
-            console.error(
-              `Invalid coordinates for ${location.name}:`,
-              location.coordinates,
-            );
-            return;
+          const coords1Project: [number, number] = [55.70629570288418, 24.137217372354044]
+          if (isValidCoordinate(coords1Project)) {
+            markers["1 Project"] = createMarker({
+              name: "1 Project",
+              coordinates: coords1Project,
+              alignment: "right-aligned",
+              map: map.current!,
+            })
+            markerPositions["1 Project"] = coords1Project
           }
-
-          markers[location.name] = createMarker({
-            name: location.name,
-            coordinates: location.coordinates,
-            alignment: getMarkerAlignment(location.name),
-            size:
-              location.name === "فلل للادرات الشرطية عشارج"
-                ? "small"
-                : "normal",
-            map: map.current!,
-          });
-
-          markerPositions[location.name] = location.coordinates;
         } catch (error) {
-          console.error(`Error creating marker for ${location.name}:`, error);
-        }
-      });
-
-      // Add project markers
-      try {
-        const coords16Projects: [number, number] = [
-          55.71402343413848, 24.191945156301003,
-        ];
-        if (isValidCoordinate(coords16Projects)) {
-          markers["16 Projects"] = createMarker({
-            name: "16 Projects",
-            coordinates: coords16Projects,
-            alignment: "right-aligned",
-            map: map.current!,
-          });
-          markerPositions["16 Projects"] = coords16Projects;
+          console.error("Error creating project markers:", error)
         }
 
-        const coords7Projects: [number, number] = [
-          55.74320587470995, 24.27937770887191,
-        ];
-        if (isValidCoordinate(coords7Projects)) {
-          markers["7 Projects"] = createMarker({
-            name: "7 Projects",
-            coordinates: coords7Projects,
-            alignment: "right-aligned",
-            map: map.current!,
-          });
-          markerPositions["7 Projects"] = coords7Projects;
+        // Set marker visibility
+        try {
+          const currentZoom = map.current.getZoom()
+
+          ALWAYS_HIDDEN_MARKERS.forEach((markerName) => {
+            if (markers[markerName]) {
+              const element = markers[markerName].getElement()
+              element.style.display = "none"
+            }
+          })
+
+          ALWAYS_VISIBLE_MARKERS.forEach((markerName) => {
+            if (markers[markerName]) {
+              const element = markers[markerName].getElement()
+              element.style.display = currentZoom >= 10 ? "none" : "block"
+            }
+          })
+
+          HIDDEN_AT_START.forEach((markerName) => {
+            if (markers[markerName]) {
+              const element = markers[markerName].getElement()
+              element.style.display = currentZoom >= 8 ? "block" : "none"
+            }
+          })
+        } catch (error) {
+          console.error("Error setting marker visibility:", error)
         }
+      })
 
-        const coords2Projects: [number, number] = [
-          55.79420236287404, 24.333762072745526,
-        ];
-        if (isValidCoordinate(coords2Projects)) {
-          markers["2 Projects"] = createMarker({
-            name: "2 Projects",
-            coordinates: coords2Projects,
-            alignment: "right-aligned",
-            map: map.current!,
-          });
-          markerPositions["2 Projects"] = coords2Projects;
-        }
+      // Zoom event handler
+      map.current.on("zoom", () => {
+        try {
+          const currentZoom = map.current!.getZoom()
 
-        const coords1Project: [number, number] = [
-          55.70629570288418, 24.137217372354044,
-        ];
-        if (isValidCoordinate(coords1Project)) {
-          markers["1 Project"] = createMarker({
-            name: "1 Project",
-            coordinates: coords1Project,
-            alignment: "right-aligned",
-            map: map.current!,
-          });
-          markerPositions["1 Project"] = coords1Project;
-        }
-      } catch (error) {
-        console.error("Error creating project markers:", error);
-      }
-
-      // Set marker visibility
-      try {
-        const currentZoom = map.current.getZoom(); // Define currentZoom here
-
-        ALWAYS_HIDDEN_MARKERS.forEach((markerName) => {
-          if (markers[markerName]) {
-            const element = markers[markerName].getElement();
-            element.style.display = "none";
-          }
-        });
-
-        ALWAYS_VISIBLE_MARKERS.forEach((markerName) => {
-          if (markers[markerName]) {
-            const element = markers[markerName].getElement();
-            element.style.display = currentZoom >= 10 ? "none" : "block";
-          }
-        });
-      } catch (error) {
-        console.error("Error setting marker visibility:", error);
-      }
-
-      // Initial dragPan state: it should be disabled at initial zoom
-      map.current.dragPan.disable();
-
-      map.current.touchZoomRotate.disableRotation();
-      map.current.keyboard.disable();
-    });
-
-    // Zoom event handler
-    map.current.on("zoom", () => {
-      try {
-        const currentZoom = map.current!.getZoom();
-
-        // Conditional dragPan based on zoom level
-        // if (currentZoom > initialZoomRef.current) {
-        if (currentZoom > initialZoomRef.current) {
-          map.current.dragPan.enable();
-        } else {
-          map.current.dragPan.disable();
-          // Snap back to initial center if zoomed out to or below initial zoom
-          map.current.setCenter(initialCenterRef.current);
-        }
-
-        // ... (marker visibility logic)
-        Object.entries(markers).forEach(([name, marker]) => {
-          const element = marker.getElement();
-          const label = element.querySelector(".absolute.top-full"); // Select the label
-
-          if (ALWAYS_HIDDEN_MARKERS.includes(name)) {
-            element.style.display = "none";
-            return;
+          // Conditional dragPan based on zoom level - adjusted for much higher initial zoom
+          if (currentZoom > 8.0) {
+            // Higher threshold since we start much more zoomed in
+            map.current.dragPan.enable()
+          } else {
+            map.current.dragPan.disable()
+            // Snap back to initial center if zoomed out too far
+            map.current.setCenter(initialCenterRef.current)
           }
 
-          if (ALWAYS_VISIBLE_MARKERS.includes(name)) {
-            element.style.display = currentZoom >= 10 ? "none" : "block";
-          } else if (HIDDEN_AT_START.includes(name)) {
-            const shouldShow = currentZoom >= 8;
-            element.style.display = shouldShow ? "block" : "none";
-          }
-        });
+          // Marker visibility logic
+          Object.entries(markers).forEach(([name, marker]) => {
+            const element = marker.getElement()
 
-        debouncedUpdateMarkers();
-      } catch (error) {
-        console.error("Error handling zoom event:", error);
-      }
-    });
+            if (ALWAYS_HIDDEN_MARKERS.includes(name)) {
+              element.style.display = "none"
+              return
+            }
 
-    // Click handler
-    map.current.on("click", () => {
-      setClickedMarker(null);
+            if (ALWAYS_VISIBLE_MARKERS.includes(name)) {
+              element.style.display = currentZoom >= 10 ? "none" : "block"
+            } else if (HIDDEN_AT_START.includes(name)) {
+              const shouldShow = currentZoom >= 8
+              element.style.display = shouldShow ? "block" : "none"
+            }
+          })
 
-      Object.keys(markersRef.current).forEach((markerName) => {
-        const tooltip = document.getElementById(`tooltip-${markerName}`);
-        if (tooltip) {
-          tooltip.classList.remove("visible");
+          debouncedUpdateMarkers()
+        } catch (error) {
+          console.error("Error handling zoom event:", error)
         }
-      });
+      })
 
-      Object.entries(markersRef.current).forEach(([_, marker]) => {
-        const element = marker.getElement();
-        element.classList.remove("marker-dimmed");
-        element.classList.remove("marker-highlighted");
-        element.style.opacity = "";
-        element.style.zIndex = "";
-        element.style.filter = "";
-      });
-    });
+      // Click handler
+      map.current.on("click", () => {
+        setClickedMarker(null)
+
+        Object.keys(markersRef.current).forEach((markerName) => {
+          const tooltip = document.getElementById(`tooltip-${markerName}`)
+          if (tooltip) {
+            tooltip.classList.remove("visible")
+          }
+        })
+
+        Object.entries(markersRef.current).forEach(([_, marker]) => {
+          const element = marker.getElement()
+          element.classList.remove("marker-dimmed")
+          element.classList.remove("marker-highlighted")
+          element.style.opacity = ""
+          element.style.zIndex = ""
+          element.style.filter = ""
+        })
+      })
+    } catch (error) {
+      console.error("Error initializing map:", error)
+    }
 
     return () => {
       try {
         if (debounceTimerRef.current) {
-          clearTimeout(debounceTimerRef.current);
+          clearTimeout(debounceTimerRef.current)
         }
 
         // Safer cleanup to prevent AbortError
         if (map.current) {
           try {
             // Remove all event listeners first
-            map.current.off();
+            map.current.off()
 
             // Stop any ongoing operations
-            map.current.stop();
+            map.current.stop()
 
             // Set a minimal style to clear existing sources without triggering aborts
             map.current.setStyle({
               version: 8,
               sources: {},
               layers: [],
-            });
+            })
 
             // Small delay to allow style to clear, then remove
             setTimeout(() => {
               try {
                 if (map.current) {
-                  map.current.remove();
-                  map.current = null;
+                  map.current.remove()
+                  map.current = null
                 }
               } catch (e) {
-                console.warn("Map already removed or error during removal:", e);
+                console.warn("Map already removed or error during removal:", e)
               }
-            }, 50);
+            }, 50)
           } catch (e) {
             // If setStyle fails, try immediate removal
             try {
-              map.current.remove();
-              map.current = null;
+              map.current.remove()
+              map.current = null
             } catch (removeError) {
-              console.warn("Error during map removal:", removeError);
+              console.warn("Error during map removal:", removeError)
             }
           }
         }
 
-        document
-          .querySelectorAll("style[data-marker-style]")
-          .forEach((el) => el.remove());
+        document.querySelectorAll("style[data-marker-style]").forEach((el) => el.remove())
       } catch (error) {
-        console.error("Error cleaning up map:", error);
+        console.error("Error cleaning up map:", error)
       }
-    };
-  }, [
-    policeLocations,
-    offsetX,
-    offsetY,
-    mapRef,
-    token,
-    loading,
-    error,
-    mapboxLoaded,
-    currentStyle,
-  ]);
+    }
+  }, [policeLocations, offsetX, offsetY, mapRef, token, loading, error, mapboxLoaded, currentStyle])
 
   function createMarker({
     name,
@@ -1021,172 +893,160 @@ export default function AlAinMap({
     map,
     size = "normal",
   }: {
-    name: string;
-    coordinates: [number, number];
-    alignment: string;
-    map: any;
-    size?: "small" | "normal";
+    name: string
+    coordinates: [number, number]
+    alignment: string
+    map: any
+    size?: "small" | "normal"
   }) {
     try {
       if (!isValidCoordinate(coordinates)) {
-        console.error(`Invalid coordinates for marker ${name}:`, coordinates);
-        throw new Error(`Invalid coordinates for marker ${name}`);
+        console.error(`Invalid coordinates for marker ${name}:`, coordinates)
+        throw new Error(`Invalid coordinates for marker ${name}`)
       }
 
-      const markerElement = document.createElement("div");
-      markerElement.className = "marker-container";
-      markerElement.style.position = "absolute";
-      markerElement.style.pointerEvents = "auto";
-      markerElement.style.willChange = "transform";
+      const markerElement = document.createElement("div")
+      markerElement.className = "marker-container"
+      markerElement.style.position = "absolute"
+      markerElement.style.pointerEvents = "auto"
+      markerElement.style.willChange = "transform"
 
       // Add responsive classes
-      markerElement.classList.add(
-        "w-12",
-        "h-12",
-        "sm:w-14",
-        "sm:h-14",
-        "md:w-16",
-        "md:h-16",
-      );
+      markerElement.classList.add("w-12", "h-12", "sm:w-14", "sm:h-14", "md:w-16", "md:h-16")
 
       if (HOVERABLE_MARKERS.includes(name)) {
         markerElement.addEventListener("mouseenter", (e) => {
-          e.stopPropagation();
-          setHoveredMarker(name);
+          e.stopPropagation()
+          setHoveredMarker(name)
 
-          let tooltip = document.getElementById(`tooltip-${name}`);
+          let tooltip = document.getElementById(`tooltip-${name}`)
           if (!tooltip) {
-            tooltip = document.createElement("div");
-            tooltip.id = `tooltip-${name}`;
-            tooltip.className = "marker-tooltip";
-            tooltip.textContent = name;
-            markerElement.appendChild(tooltip);
+            tooltip = document.createElement("div")
+            tooltip.id = `tooltip-${name}`
+            tooltip.className = "marker-tooltip"
+            tooltip.textContent = name
+            markerElement.appendChild(tooltip)
           }
-          tooltip.classList.add("visible");
+          tooltip.classList.add("visible")
 
           Object.entries(markersRef.current).forEach(([markerName, marker]) => {
-            const element = marker.getElement();
+            const element = marker.getElement()
             if (markerName !== name) {
-              element.classList.add("marker-dimmed");
-              element.style.opacity = "0.2";
+              element.classList.add("marker-dimmed")
+              element.style.opacity = "0.2"
             } else {
-              element.classList.add("marker-highlighted");
-              element.style.opacity = "1";
-              element.style.zIndex = "1000";
-              element.style.filter =
-                "drop-shadow(0 0 8px rgba(0, 204, 255, 0.8))";
+              element.classList.add("marker-highlighted")
+              element.style.opacity = "1"
+              element.style.zIndex = "1000"
+              element.style.filter = "drop-shadow(0 0 8px rgba(0, 204, 255, 0.8))"
             }
-          });
-        });
+          })
+        })
 
         markerElement.addEventListener("mouseleave", (e) => {
-          e.stopPropagation();
+          e.stopPropagation()
           if (clickedMarker !== name) {
-            setHoveredMarker(null);
+            setHoveredMarker(null)
 
-            const tooltip = document.getElementById(`tooltip-${name}`);
+            const tooltip = document.getElementById(`tooltip-${name}`)
             if (tooltip) {
-              tooltip.classList.remove("visible");
+              tooltip.classList.remove("visible")
             }
 
             Object.entries(markersRef.current).forEach(([_, marker]) => {
-              const element = marker.getElement();
-              element.classList.remove("marker-dimmed");
-              element.classList.remove("marker-highlighted");
-              element.style.opacity = "";
-              element.style.zIndex = "";
-              element.style.filter = "";
-            });
+              const element = marker.getElement()
+              element.classList.remove("marker-dimmed")
+              element.classList.remove("marker-highlighted")
+              element.style.opacity = ""
+              element.style.zIndex = ""
+              element.style.filter = ""
+            })
           }
-        });
+        })
 
         markerElement.addEventListener("click", (e) => {
-          e.stopPropagation();
-          setHoveredMarker(name);
-          setClickedMarker(name);
+          e.stopPropagation()
+          setHoveredMarker(name)
+          setClickedMarker(name)
 
-          let tooltip = document.getElementById(`tooltip-${name}`);
+          let tooltip = document.getElementById(`tooltip-${name}`)
           if (!tooltip) {
-            tooltip = document.createElement("div");
-            tooltip.id = `tooltip-${name}`;
-            tooltip.className = "marker-tooltip";
-            tooltip.textContent = name;
-            markerElement.appendChild(tooltip);
+            tooltip = document.createElement("div")
+            tooltip.id = `tooltip-${name}`
+            tooltip.className = "marker-tooltip"
+            tooltip.textContent = name
+            markerElement.appendChild(tooltip)
           }
-          tooltip.classList.add("visible");
+          tooltip.classList.add("visible")
 
           Object.entries(markersRef.current).forEach(([markerName, marker]) => {
-            const element = marker.getElement();
+            const element = marker.getElement()
             if (markerName !== name) {
-              element.classList.add("marker-dimmed");
-              element.style.opacity = "0.2";
-              const otherTooltip = document.getElementById(
-                `tooltip-${markerName}`,
-              );
+              element.classList.add("marker-dimmed")
+              element.style.opacity = "0.2"
+              const otherTooltip = document.getElementById(`tooltip-${markerName}`)
               if (otherTooltip) {
-                otherTooltip.classList.remove("visible");
+                otherTooltip.classList.remove("visible")
               }
             } else {
-              element.classList.add("marker-highlighted");
-              element.style.opacity = "1";
-              element.style.zIndex = "1000";
-              element.style.filter =
-                "drop-shadow(0 0 8px rgba(0, 204, 255, 0.8))";
+              element.classList.add("marker-highlighted")
+              element.style.opacity = "1"
+              element.style.zIndex = "1000"
+              element.style.filter = "drop-shadow(0 0 8px rgba(0, 204, 255, 0.8))"
             }
-          });
-        });
+          })
+        })
       }
 
       if (size === "small") {
-        const style = document.createElement("style");
-        const uniqueClass = `marker-${name.toLowerCase().replace(/\s+/g, "-")}`;
-        markerElement.classList.add(uniqueClass);
+        const style = document.createElement("style")
+        const uniqueClass = `marker-${name.toLowerCase().replace(/\s+/g, "-")}`
+        markerElement.classList.add(uniqueClass)
 
         style.textContent = `
           .${uniqueClass} .marker-circle {
             width: 6px !important;
             height: 6px !important;
           }
-        `;
-        style.setAttribute("data-marker-style", "true");
-        document.head.appendChild(style);
+        `
+        style.setAttribute("data-marker-style", "true")
+        document.head.appendChild(style)
       }
 
       if (ALWAYS_VISIBLE_MARKERS.includes(name)) {
-        markerElement.style.display = "block";
+        markerElement.style.display = "block"
       } else if (ALWAYS_HIDDEN_MARKERS.includes(name)) {
-        markerElement.style.display = "none";
+        markerElement.style.display = "none"
       } else if (HIDDEN_AT_START.includes(name)) {
-        markerElement.style.display =
-          map.getZoom() >= ZOOM_THRESHOLD ? "block" : "none";
+        markerElement.style.display = "block"
       }
 
-      const circleElement = document.createElement("div");
-      circleElement.className = "marker-circle";
-      markerElement.appendChild(circleElement);
+      const circleElement = document.createElement("div")
+      circleElement.className = "marker-circle"
+      markerElement.appendChild(circleElement)
 
       if (PROJECT_NUMBERS[name]) {
-        const numberElement = document.createElement("div");
-        numberElement.className = "marker-number";
-        numberElement.textContent = PROJECT_NUMBERS[name];
-        circleElement.appendChild(numberElement);
+        const numberElement = document.createElement("div")
+        numberElement.className = "marker-number"
+        numberElement.textContent = PROJECT_NUMBERS[name]
+        circleElement.appendChild(numberElement)
       }
 
-      const contentWrapper = document.createElement("div");
-      contentWrapper.className = "marker-content-wrapper";
+      const contentWrapper = document.createElement("div")
+      contentWrapper.className = "marker-content-wrapper"
 
-      let clickTimer: NodeJS.Timeout | null = null;
-      let clickCount = 0;
+      let clickTimer: NodeJS.Timeout | null = null
+      let clickCount = 0
 
       markerElement.onclick = (e) => {
-        e.stopPropagation();
-        clickCount++;
+        e.stopPropagation()
+        clickCount++
 
         if (clickCount === 1) {
           clickTimer = setTimeout(() => {
             if (name === "16 Projects") {
               // Single click on 16 Projects goes directly to the detailed view
-              router.push("/al-ain/16-projects");
+              router.push("/al-ain/16-projects")
             } else {
               // Regular zoom behavior for other markers
               map.flyTo({
@@ -1194,37 +1054,36 @@ export default function AlAinMap({
                 zoom: 13,
                 duration: 1500,
                 essential: true,
-                easing: (t: number) =>
-                  t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
-              });
-              console.log(`Zoomed to ${name} at coordinates ${coordinates}`);
+                easing: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+              })
+              console.log(`Zoomed to ${name} at coordinates ${coordinates}`)
             }
-            clickCount = 0;
-          }, 300);
+            clickCount = 0
+          }, 300)
         } else if (clickCount === 2) {
-          if (clickTimer) clearTimeout(clickTimer);
-          clickCount = 0;
+          if (clickTimer) clearTimeout(clickTimer)
+          clickCount = 0
 
           if (name === "16 Projects") {
             // Double click also goes to detailed view
-            router.push("/al-ain/16-projects");
+            router.push("/al-ain/16-projects")
           } else {
             // Regular project detail navigation for other markers
-            const englishName = getEnglishName(name);
+            const englishName = getEnglishName(name)
             const projectId = englishName
               .toLowerCase()
               .replace(/[^a-z0-9]+/g, "-")
-              .replace(/(^-|-$)/g, "");
+              .replace(/(^-|-$)/g, "")
 
             router.push(
               `/dashboard/${projectId}?name=${encodeURIComponent(englishName)}&nameAr=${encodeURIComponent(name)}`,
-            );
+            )
           }
         }
-      };
+      }
 
-      markerElement.appendChild(contentWrapper);
-      markerElement.className += ` ${alignment}`;
+      markerElement.appendChild(contentWrapper)
+      markerElement.className += ` ${alignment}`
 
       const marker = new window.mapboxgl.Marker({
         element: markerElement,
@@ -1234,14 +1093,14 @@ export default function AlAinMap({
         rotationAlignment: "map",
       })
         .setLngLat(coordinates)
-        .addTo(map);
+        .addTo(map)
 
-      markerElement.setAttribute("data-marker-name", name);
+      markerElement.setAttribute("data-marker-name", name)
 
-      return marker;
+      return marker
     } catch (error) {
-      console.error(`Error creating marker for ${name}:`, error);
-      throw error;
+      console.error(`Error creating marker for ${name}:`, error)
+      throw error
     }
   }
 
@@ -1253,28 +1112,28 @@ export default function AlAinMap({
       case "متحف شرطة المربعة":
       case "مبنى التحريات والمخدرات":
       case "المتابعة الشرطية والرعاية اللاحقة":
-        return "left-aligned";
+        return "left-aligned"
       case "مركز شرطةasad":
-      case "مركز ��رطة الهير":
+      case "مركز شرطة الهير":
       case "1 Project":
       case "فلل فلج هزاع":
       case "قسم التفتيش الأمني K9":
-        return "bottom-aligned";
-      case "ن��دي ضباط الشرطة":
+        return "bottom-aligned"
+      case "نادي ضباط الشرطة":
       case "قسم موسيقى شرطة أبوظبي":
       case "مديرية شرطة العين":
       case "ساحة حجز المركبات -asad":
       case "فلل للادرات الشرطية عشارج":
       case "مركز شرطة المقام":
       case "مركز شرطة فلج هزاع":
-        return "top-aligned";
+        return "top-aligned"
       case "مركز شرطة الجيمي":
-      case "مركز ش��طة المقام":
-        return "bottom-left-aligned";
-      case "إدارة المرور والترخ��ص":
-        return "bottom-right-aligned";
+      case "مركز شرطة المقام":
+        return "bottom-left-aligned"
+      case "إدارة المرور والترخيص":
+        return "bottom-right-aligned"
       default:
-        return "right-aligned";
+        return "right-aligned"
     }
   }
 
@@ -1283,7 +1142,7 @@ export default function AlAinMap({
       <div className="w-full h-full flex items-center justify-center bg-gray-200">
         <p>Loading Mapbox...</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -1294,13 +1153,7 @@ export default function AlAinMap({
       <AnimatedControls
         onResetView={() => {
           if (map.current) {
-            const resetCenter =
-              typeof window !== "undefined" && window.innerWidth > 768
-                ? [
-                    (54.34922496616619 + 56.147585702153094) / 2,
-                    (23.273700903075678 + 24.98337183507047) / 2,
-                  ]
-                : initialCenterRef.current;
+            const resetCenter = initialCenterRef.current
 
             map.current.easeTo({
               center: resetCenter,
@@ -1309,27 +1162,22 @@ export default function AlAinMap({
               zoom: initialZoomRef.current,
               duration: 1500,
               essential: true,
-              easing: (t: number) =>
-                t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
-            });
+              easing: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+            })
           }
         }}
         onToggleTerrain={onToggleTerrain}
       />
-      <div
-        ref={tooltipRef}
-        className="absolute pointer-events-none"
-        style={{ display: "none" }}
-      />
+      <div ref={tooltipRef} className="absolute pointer-events-none" style={{ display: "none" }} />
       <MarkerHoverWidget
         markerName={hoveredMarker || clickedMarker}
         isVisible={!!hoveredMarker}
         isClicked={!!clickedMarker}
         onClickStateChange={(state) => {
-          if (!state) setClickedMarker(null);
+          if (!state) setClickedMarker(null)
         }}
       />
       <MapInstructionWidget />
     </div>
-  );
+  )
 }

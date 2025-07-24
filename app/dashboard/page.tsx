@@ -286,7 +286,7 @@ export default function DashboardPage() {
         size: "4.2 MB",
         date: "2023-05-18",
         url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/floor-plan-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
-        project: "مركز شرطة الساد",
+        project: "مركز شرطةasad",
       },
       {
         id: "1",
@@ -665,12 +665,6 @@ export default function DashboardPage() {
                   }}
                   className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
                 >
-                  {/* Add corner elements similar to the slider panel */}
-                  <div className="absolute top-0 left-0 w-2 h-2 border-t-1 border-l-1 border-cyan-500 animate-pulse"></div>
-                  <div className="absolute top-0 right-0 w-2 h-2 border-t-1 border-r-1 border-cyan-500 animate-pulse"></div>
-                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b-1 border-l-1 border-cyan-500 animate-pulse"></div>
-                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-1 border-r-1 border-cyan-500 animate-pulse"></div>
-
                   <div className="text-cyan-400 mb-1 relative z-10">Media</div>
                   <div className="relative z-10">
                     <div className="h-3 w-3 bg-cyan-400 rounded-sm animate-pulse"></div>

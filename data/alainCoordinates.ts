@@ -1,128 +1,306 @@
-export const alAinCoordinates: [number, number][] = [
-  [55.579, 24.245],
-  [55.757, 24.194],
-  [55.794, 24.109],
-  [52.577, 24.06],
-  [53.404, 24.151],
-  [54.008, 24.122],
-  [54.693, 24.797],
-  [55.439, 25.439],
-  [56.071, 26.055],
-  [56.261, 25.652],
-  [56.397, 24.98],
-  [56.745, 24.477],
-  [57.033, 23.878],
-  [56.609, 22.925],
-  [55.874, 22.818],
-  [55.303, 22.693],
-  [55.218, 22.708],
-  [52.0, 23.001],
-  [51.618, 24.014],
-  [51.579, 24.245],
-]
-
-// Add the missing alainBoundaryData export
-export const alainBoundaryData = {
-  type: "FeatureCollection",
-  features: [
-    {
-      type: "Feature",
-      properties: {},
-      geometry: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [55.822566320678504, 24.789557658471367],
-            [55.82171334882503, 24.789119839355536],
-            [55.73835350836066, 24.75800897849821],
-            [55.594286398959326, 24.71479875016611],
-            [55.52384744776583, 24.645978475383174],
-            [55.48743376867037, 24.63682547372956],
-            [55.480185177542694, 24.637484661296853],
-            [55.32779908500021, 24.620368804442222],
-            [55.20146237979151, 24.6641461395689],
-            [55.19929009531731, 24.662114796727025],
-            [55.16950105557561, 24.65473308465525],
-            [55.02685320430851, 24.417191038306328],
-            [55.13829557601514, 24.173972380703987],
-            [55.099670529868035, 24.133708886666213],
-            [55.08223274509169, 24.07787664981973],
-            [55.10098603995735, 24.01654249959647],
-            [55.079524151002175, 23.97438723149307],
-            [54.96546414530627, 23.891712586141423],
-            [54.878006849308406, 23.90029721805871],
-            [54.839107175574924, 23.890240771508132],
-            [54.78594290908322, 23.621639623533497],
-            [55.16019675613177, 23.50929823978575],
-            [55.44481506729335, 23.445021080079343],
-            [55.44708723589727, 23.456018510158415],
-            [55.49660041719082, 23.530480850984134],
-            [55.524136485316916, 23.554924196205548],
-            [55.571720882552114, 23.625759160656983],
-            [55.569628108868926, 23.69321859615566],
-            [55.57204362873139, 23.703171588108404],
-            [55.56866199644011, 23.72196955598224],
-            [55.53194713156881, 23.758009841951008],
-            [55.536248586107405, 23.7702829048404],
-            [55.53190077316154, 23.81669608610197],
-            [55.534930695133795, 23.843283494069752],
-            [55.513191630407704, 23.894529205165483],
-            [55.49943556342839, 23.905900916171873],
-            [55.498710927938276, 23.92334479851941],
-            [55.483976672955805, 23.941890139947034],
-            [55.49436311499241, 23.953810738016983],
-            [55.58252709971919, 23.991331351110944],
-            [55.58639182801841, 23.99817217225518],
-            [55.7342176745434, 24.058399773799565],
-            [55.75852705958016, 24.052865100967523],
-            [55.780004156289976, 24.057128559680734],
-            [55.807083973879514, 24.02045818847475],
-            [55.83229621784193, 24.015340560429294],
-            [55.85844224861788, 24.02472272290666],
-            [55.90326401566301, 24.047748763594655],
-            [56.01811979371746, 24.067360282734768],
-            [56.01531843327683, 24.092083577392387],
-            [55.96022501128431, 24.170484515269976],
-            [55.973298026672296, 24.186670022354036],
-            [55.9620925849097, 24.216480054369498],
-            [55.9513295161789, 24.214186666222318],
-            [55.95573056711518, 24.22310599899808],
-            [55.87088808518655, 24.215524605952865],
-            [55.85279487578359, 24.211064752211882],
-            [55.83299014657294, 24.20169855126875],
-            [55.8122074060432, 24.211956735448283],
-            [55.808274219169874, 24.21175301005421],
-            [55.79947211729731, 24.22111847199126],
-            [55.79287054089377, 24.222679315370144],
-            [55.79024403763867, 24.225794983294165],
-            [55.77665264963778, 24.234891516195432],
-            [55.76567972685274, 24.23231415586318],
-            [55.75304430803814, 24.234929341722705],
-            [55.75387345967144, 24.2462749888559],
-            [55.759490403917255, 24.26112498059375],
-            [55.76805256271922, 24.26218598158492],
-            [55.7916253938057, 24.27941465955368],
-            [55.80793627128159, 24.31031123776114],
-            [55.83444749052376, 24.327510913557575],
-            [55.83513740372223, 24.409735532063976],
-            [55.82616853222447, 24.409735532063976],
-            [55.82094990709945, 24.440058491361143],
-            [55.76920641769212, 24.51729027282684],
-            [55.76851650449984, 24.571888985175008],
-            [55.818190254335576, 24.61580172197533],
-            [55.793697164852375, 24.63743748386591],
-            [55.83647178276573, 24.67192356180118],
-            [55.828882737652435, 24.720188054598367],
-            [55.83164239042134, 24.74525313576399],
-            [55.83371212999808, 24.780335759685528],
-            [55.8289249563033, 24.78304001370951],
-            [55.822566329958846, 24.78955782290096],
-            [55.822566320678504, 24.789557658471367],
-          ],
-        ],
-      },
-    },
-  ],
+export interface PoliceLocation {
+  name: string
+  coordinates: [number, number]
+  type: string
+  description: string
 }
 
-export const ALAIN_IDENTIFIER = "alain"
+export const alainPoliceLocations: PoliceLocation[] = [
+  {
+    name: "قسم موسيقى شرطة أبوظبي",
+    coordinates: [55.76123, 24.20845],
+    type: "music_department",
+    description: "Abu Dhabi Police Music Department",
+  },
+  {
+    name: "إدارة التأهيل الشرطي - الفوعة",
+    coordinates: [55.78456, 24.21234],
+    type: "training_center",
+    description: "Police Rehabilitation Department - Al Foua",
+  },
+  {
+    name: "مركز شرطة هيلي",
+    coordinates: [55.76789, 24.19876],
+    type: "police_station",
+    description: "Hili Police Station",
+  },
+  {
+    name: "ميدان الشرطة بدع بنت سعود",
+    coordinates: [55.75234, 24.18765],
+    type: "police_square",
+    description: "Police Square Bada Bint Saud",
+  },
+  {
+    name: "متحف شرطة المربعة",
+    coordinates: [55.74567, 24.17654],
+    type: "museum",
+    description: "Al Murabba Police Museum",
+  },
+  {
+    name: "مركز شرطة المربعة",
+    coordinates: [55.7489, 24.1789],
+    type: "police_station",
+    description: "Al Murabba Police Station",
+  },
+  {
+    name: "مديرية شرطة العين",
+    coordinates: [55.75123, 24.18123],
+    type: "directorate",
+    description: "Al Ain Police Directorate",
+  },
+  {
+    name: "فرع النقل والمشاغل",
+    coordinates: [55.75456, 24.18456],
+    type: "transport_branch",
+    description: "Transport and Workshops Branch",
+  },
+  {
+    name: "نادي ضباط الشرطة",
+    coordinates: [55.75789, 24.18789],
+    type: "officers_club",
+    description: "Police Officers Club",
+  },
+  {
+    name: "مركز شرطة زاخر",
+    coordinates: [55.76012, 24.19012],
+    type: "police_station",
+    description: "Zakher Police Station",
+  },
+  {
+    name: "فلل فلج هزاع",
+    coordinates: [55.76345, 24.19345],
+    type: "residential_villas",
+    description: "Falaj Hazza Villas",
+  },
+  {
+    name: "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
+    coordinates: [55.76678, 24.19678],
+    type: "specialized_departments",
+    description: "Falaj Hazza Villas (Forensic Evidence - Community Police - Vehicle Rental - Recruitment)",
+  },
+  {
+    name: "قسم التفتيش الأمني K9",
+    coordinates: [55.76901, 24.19901],
+    type: "k9_unit",
+    description: "K9 Security Inspection Department",
+  },
+  {
+    name: "الضبط المروري والمراسم",
+    coordinates: [55.77234, 24.20234],
+    type: "traffic_control",
+    description: "Traffic Control and Ceremonies",
+  },
+  {
+    name: "ساحة حجز المركبات فلج هزاع",
+    coordinates: [55.77567, 24.20567],
+    type: "impound_lot",
+    description: "Falaj Hazza Vehicle Impound Lot",
+  },
+  {
+    name: "إدارة المرور والترخيص",
+    coordinates: [55.7789, 24.2089],
+    type: "traffic_licensing",
+    description: "Traffic and Licensing Department",
+  },
+  {
+    name: "قسم الدوريات الخاصة",
+    coordinates: [55.78123, 24.21123],
+    type: "special_patrols",
+    description: "Special Patrols Department",
+  },
+  {
+    name: "إدارة الدوريات الخاصة",
+    coordinates: [55.78456, 24.21456],
+    type: "special_patrols_admin",
+    description: "Special Patrols Administration",
+  },
+  {
+    name: "المعهد المروري",
+    coordinates: [55.78789, 24.21789],
+    type: "traffic_institute",
+    description: "Traffic Institute",
+  },
+  {
+    name: "سكن أفراد المرور",
+    coordinates: [55.79012, 24.22012],
+    type: "traffic_housing",
+    description: "Traffic Personnel Housing",
+  },
+  {
+    name: "قسم هندسة المرور",
+    coordinates: [55.79345, 24.22345],
+    type: "traffic_engineering",
+    description: "Traffic Engineering Department",
+  },
+  {
+    name: "المتابعة الشرطية والرعاية اللاحقة",
+    coordinates: [55.79678, 24.22678],
+    type: "police_follow_up",
+    description: "Police Follow-up and Aftercare",
+  },
+  {
+    name: "ادارة المهام الخاصة العين",
+    coordinates: [55.79901, 24.22901],
+    type: "special_tasks",
+    description: "Al Ain Special Tasks Administration",
+  },
+  {
+    name: "مبنى التحريات والمخدرات",
+    coordinates: [55.80234, 24.23234],
+    type: "investigations_narcotics",
+    description: "Investigations and Narcotics Building",
+  },
+  {
+    name: "إدارة الأسلحة والمتفجرات",
+    coordinates: [55.80567, 24.23567],
+    type: "weapons_explosives",
+    description: "Weapons and Explosives Administration",
+  },
+  {
+    name: "مركز شرطة فلج هزاع",
+    coordinates: [55.8089, 24.2389],
+    type: "police_station",
+    description: "Falaj Hazza Police Station",
+  },
+  {
+    name: "فلل للادرات الشرطية عشارج",
+    coordinates: [55.81123, 24.24123],
+    type: "admin_villas",
+    description: "Police Administration Villas Asharej",
+  },
+  {
+    name: "مركز شرطة المقام",
+    coordinates: [55.81456, 24.24456],
+    type: "police_station",
+    description: "Al Maqam Police Station",
+  },
+  {
+    name: "مركز شرطة الساد",
+    coordinates: [55.81789, 24.24789],
+    type: "police_station",
+    description: "Al Saad Police Station",
+  },
+  {
+    name: "ساحة حجز المركبات - الساد",
+    coordinates: [55.82012, 24.25012],
+    type: "impound_lot",
+    description: "Vehicle Impound Lot - Al Saad",
+  },
+  {
+    name: "مركز شرطة الوقن",
+    coordinates: [55.82345, 24.25345],
+    type: "police_station",
+    description: "Al Wagan Police Station",
+  },
+  {
+    name: "مركز شرطة الجيمي",
+    coordinates: [55.82678, 24.25678],
+    type: "police_station",
+    description: "Al Jimi Police Station",
+  },
+  {
+    name: "مركز شرطة القوع (فلل صحة)",
+    coordinates: [55.83012, 24.26012],
+    type: "police_station",
+    description: "Al Qua Police Station (Health Villas)",
+  },
+  {
+    name: "نقطة ثبات الروضة",
+    coordinates: [55.83345, 24.26345],
+    type: "checkpoint",
+    description: "Al Rawda Fixed Point",
+  },
+  {
+    name: "فرع الضبط المروري (الخزنة)",
+    coordinates: [55.83678, 24.26678],
+    type: "traffic_control_branch",
+    description: "Traffic Control Branch (Al Khazna)",
+  },
+  {
+    name: "مبنى إدارات (التربية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
+    coordinates: [55.84012, 24.27012],
+    type: "admin_building",
+    description: "Administration Building (Sports Education - Security Media - Crime Scene - Fingerprint Branch)",
+  },
+  {
+    name: "مركز شرطة سويحان",
+    coordinates: [55.84345, 24.27345],
+    type: "police_station",
+    description: "Sweihan Police Station",
+  },
+  {
+    name: "مركز شرطة الهير",
+    coordinates: [55.84678, 24.27678],
+    type: "police_station",
+    description: "Al Hair Police Station",
+  },
+  {
+    name: "مركز شرطة الجيمي القديم",
+    coordinates: [55.85012, 24.28012],
+    type: "old_police_station",
+    description: "Old Al Jimi Police Station",
+  },
+]
+
+export const alainProjectLocations = [
+  {
+    name: "16 Projects",
+    coordinates: [55.71402343413848, 24.191945156301003] as [number, number],
+    type: "development_project",
+    description: "16 Development Projects Area",
+  },
+  {
+    name: "7 Projects",
+    coordinates: [55.74320587470995, 24.27937770887191] as [number, number],
+    type: "development_project",
+    description: "7 Development Projects Area",
+  },
+  {
+    name: "2 Projects",
+    coordinates: [55.79420236287404, 24.333762072745526] as [number, number],
+    type: "development_project",
+    description: "2 Development Projects Area",
+  },
+  {
+    name: "1 Project",
+    coordinates: [55.70629570288418, 24.137217372354044] as [number, number],
+    type: "development_project",
+    description: "1 Development Project Area",
+  },
+]
+
+// Combined locations for easy access
+export const allAlainLocations = [...alainPoliceLocations, ...alainProjectLocations]
+
+// Helper functions
+export function getLocationByName(name: string): PoliceLocation | undefined {
+  return allAlainLocations.find((location) => location.name === name)
+}
+
+export function getLocationsByType(type: string): PoliceLocation[] {
+  return allAlainLocations.filter((location) => location.type === type)
+}
+
+export function getPoliceStations(): PoliceLocation[] {
+  return alainPoliceLocations.filter((location) => location.type === "police_station")
+}
+
+export function getDevelopmentProjects(): PoliceLocation[] {
+  return alainProjectLocations
+}
+
+// Bounds for Al Ain area
+export const alainBounds = {
+  southwest: [55.5, 24.0] as [number, number],
+  northeast: [56.0, 24.5] as [number, number],
+}
+
+// Center point for Al Ain
+export const alainCenter: [number, number] = [55.7, 24.2]
+
+// Default zoom levels for different views
+export const zoomLevels = {
+  overview: 9.5,
+  detailed: 12,
+  close: 15,
+}
