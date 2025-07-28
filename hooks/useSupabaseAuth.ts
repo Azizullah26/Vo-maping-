@@ -73,6 +73,10 @@ export function useSupabaseAuth() {
   }, [])
 
   const signIn = async (email: string, password: string) => {
+    if (!supabase) {
+      return { success: false, error: "Supabase not configured" }
+    }
+
     try {
       setAuthState((prev) => ({ ...prev, loading: true, error: null }))
 
