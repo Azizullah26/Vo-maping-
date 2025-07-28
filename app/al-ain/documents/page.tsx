@@ -1,16 +1,14 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { getSupabaseClient } from "@/lib/supabase-client";
-import { Breadcrumb } from "@/components/Breadcrumb";
-import { EnhancedPDFViewer } from "@/components/EnhancedPDFViewer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { FileText, Search, Filter, ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { getSupabaseClient } from "@/lib/supabase-client"
+import { Breadcrumb } from "@/components/Breadcrumb"
+import { EnhancedPDFViewer } from "@/components/EnhancedPDFViewer"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { FileText, ArrowLeft } from "lucide-react"
 
 // Sample document data - replace with your actual data source
 const sampleDocuments = [
@@ -41,76 +39,70 @@ const sampleDocuments = [
     uploadDate: "2024-01-05",
     size: "3.2 MB",
   },
-];
+]
 
 export default function DocumentsPage() {
-  const [documents, setDocuments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedDocument, setSelectedDocument] = useState<any | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentFolder, setCurrentFolder] = useState("");
-  const [folders, setFolders] = useState<string[]>([]);
-  const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [filteredDocuments, setFilteredDocuments] = useState(sampleDocuments);
+  const [documents, setDocuments] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedDocument, setSelectedDocument] = useState<any | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [currentFolder, setCurrentFolder] = useState("")
+  const [folders, setFolders] = useState<string[]>([])
+  const [navigationHistory, setNavigationHistory] = useState<string[]>([])
+  const [historyIndex, setHistoryIndex] = useState(-1)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("All")
+  const [filteredDocuments, setFilteredDocuments] = useState(sampleDocuments)
 
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const projectId = searchParams?.get("project") || "";
-  const folderId = searchParams?.get("folder") || "";
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const projectId = searchParams?.get("project") || ""
+  const folderId = searchParams?.get("folder") || ""
 
-  const categories = [
-    "All",
-    "Planning",
-    "Construction",
-    "Assessment",
-    "Reports",
-  ];
+  const categories = ["All", "Planning", "Construction", "Assessment", "Reports"]
 
   useEffect(() => {
-    let filtered = sampleDocuments;
+    let filtered = sampleDocuments
 
     if (searchTerm) {
       filtered = filtered.filter(
         (doc) =>
           doc.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
           doc.projectName.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
+      )
     }
 
     if (selectedCategory !== "All") {
-      filtered = filtered.filter((doc) => doc.category === selectedCategory);
+      filtered = filtered.filter((doc) => doc.category === selectedCategory)
     }
 
-    setFilteredDocuments(filtered);
-  }, [searchTerm, selectedCategory]);
+    setFilteredDocuments(filtered)
+  }, [searchTerm, selectedCategory])
 
   // Initialize navigation history when component mounts
   useEffect(() => {
     try {
-      const currentPath = `/al-ain/documents${projectId ? `?project=${projectId}` : ""}${folderId ? `&folder=${folderId}` : ""}`;
-      setNavigationHistory([currentPath]);
-      setHistoryIndex(0);
+      const currentPath = `/al-ain/documents${projectId ? `?project=${projectId}` : ""}${folderId ? `&folder=${folderId}` : ""}`
+      setNavigationHistory([currentPath])
+      setHistoryIndex(0)
     } catch (err) {
-      console.error("Error initializing navigation history:", err);
+      console.error("Error initializing navigation history:", err)
     }
-  }, []);
+  }, [])
 
   // Function to navigate back
   const handleBack = () => {
     if (historyIndex > 0) {
       try {
-        const newIndex = historyIndex - 1;
-        setHistoryIndex(newIndex);
-        const previousPath = navigationHistory[newIndex] || "";
+        const newIndex = historyIndex - 1
+        setHistoryIndex(newIndex)
+        const previousPath = navigationHistory[newIndex] || ""
 
         // Extract parameters from the path
-        const urlParams = new URLSearchParams(previousPath.split("?")[1] || "");
-        const prevProjectId = urlParams.get("project");
-        const prevFolderId = urlParams.get("folder");
+        const urlParams = new URLSearchParams(previousPath.split("?")[1] || "")
+        const prevProjectId = urlParams.get("project")
+        const prevFolderId = urlParams.get("folder")
 
         // Update state
         if (prevProjectId !== projectId) {
@@ -118,32 +110,32 @@ export default function DocumentsPage() {
         }
 
         if (prevFolderId !== folderId) {
-          setCurrentFolder(prevFolderId || "");
+          setCurrentFolder(prevFolderId || "")
         }
 
         // Clear selected document when navigating back
-        setSelectedDocument(null);
+        setSelectedDocument(null)
 
         // Update URL without triggering a new history entry
-        router.push(previousPath, { scroll: false });
+        router.push(previousPath, { scroll: false })
       } catch (err) {
-        console.error("Error navigating back:", err);
+        console.error("Error navigating back:", err)
       }
     }
-  };
+  }
 
   // Function to navigate forward
   const handleForward = () => {
     if (historyIndex < navigationHistory.length - 1) {
       try {
-        const newIndex = historyIndex + 1;
-        setHistoryIndex(newIndex);
-        const nextPath = navigationHistory[newIndex] || "";
+        const newIndex = historyIndex + 1
+        setHistoryIndex(newIndex)
+        const nextPath = navigationHistory[newIndex] || ""
 
         // Extract parameters from the path
-        const urlParams = new URLSearchParams(nextPath.split("?")[1] || "");
-        const nextProjectId = urlParams.get("project");
-        const nextFolderId = urlParams.get("folder");
+        const urlParams = new URLSearchParams(nextPath.split("?")[1] || "")
+        const nextProjectId = urlParams.get("project")
+        const nextFolderId = urlParams.get("folder")
 
         // Update state
         if (nextProjectId !== projectId) {
@@ -151,46 +143,44 @@ export default function DocumentsPage() {
         }
 
         if (nextFolderId !== folderId) {
-          setCurrentFolder(nextFolderId || "");
+          setCurrentFolder(nextFolderId || "")
         }
 
         // Clear selected document when navigating forward
-        setSelectedDocument(null);
+        setSelectedDocument(null)
 
         // Update URL without triggering a new history entry
-        router.push(nextPath, { scroll: false });
+        router.push(nextPath, { scroll: false })
       } catch (err) {
-        console.error("Error navigating forward:", err);
+        console.error("Error navigating forward:", err)
       }
     }
-  };
+  }
 
   // Function to add a new entry to navigation history
   const addToHistory = (path: string) => {
     try {
       // Remove any forward history if we're navigating from a point in history
-      const newHistory = navigationHistory.slice(0, historyIndex + 1);
-      newHistory.push(path);
-      setNavigationHistory(newHistory);
-      setHistoryIndex(newHistory.length - 1);
+      const newHistory = navigationHistory.slice(0, historyIndex + 1)
+      newHistory.push(path)
+      setNavigationHistory(newHistory)
+      setHistoryIndex(newHistory.length - 1)
     } catch (err) {
-      console.error("Error adding to history:", err);
+      console.error("Error adding to history:", err)
     }
-  };
+  }
 
   // Function to fetch documents from Supabase
   const fetchDocuments = async () => {
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
 
     try {
       // Check if we're in demo mode or if we should use demo data
-      const isDemoMode =
-        process.env.NEXT_PUBLIC_DEMO_MODE === "true" ||
-        process.env.NEXT_PUBLIC_STATIC_MODE === "true";
+      const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true" || process.env.NEXT_PUBLIC_STATIC_MODE === "true"
 
       if (isDemoMode) {
-        console.log("Running in demo mode, using sample data");
+        console.log("Running in demo mode, using sample data")
         // Provide sample documents data for demo mode
         const demoDocuments = [
           {
@@ -223,49 +213,39 @@ export default function DocumentsPage() {
             project_id: projectId || "demo",
             type: "application/pdf",
           },
-        ];
+        ]
 
-        setDocuments(demoDocuments);
-        return;
+        setDocuments(demoDocuments)
+        return
       }
 
       // Check if Supabase environment variables are available
-      if (
-        !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-        !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      ) {
-        console.warn(
-          "Supabase environment variables not found, using demo data",
-        );
-        throw new Error("Supabase not configured");
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.warn("Supabase environment variables not found, using demo data")
+        throw new Error("Supabase not configured")
       }
 
       // Get Supabase client with error handling
-      const supabase = getSupabaseClient();
+      const supabase = getSupabaseClient()
       if (!supabase) {
-        console.error(
-          "DocumentsPage: Supabase client initialization failed. Check environment variables.",
-        );
-        throw new Error("Supabase client initialization failed");
+        console.error("DocumentsPage: Supabase client initialization failed. Check environment variables.")
+        throw new Error("Supabase client initialization failed")
       }
 
-      console.log(
-        "DocumentsPage: Using Supabase URL:",
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-      );
+      console.log("DocumentsPage: Using Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL)
       console.log(
         "DocumentsPage: Using Supabase Anon Key (first 5 chars):",
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 5) + "...",
-      );
+      )
 
       // Test connection first
       const { data: testData, error: testError } = await supabase
         .from("documents")
-        .select("count", { count: "exact", head: true });
+        .select("count", { count: "exact", head: true })
 
       if (testError) {
-        console.warn("Documents table not accessible:", testError.message);
-        console.log("Falling back to demo data due to database error");
+        console.warn("Documents table not accessible:", testError.message)
+        console.log("Falling back to demo data due to database error")
         // Use demo data when database is not accessible
         const demoDocuments = [
           {
@@ -298,46 +278,41 @@ export default function DocumentsPage() {
             project_id: projectId || "demo",
             type: "application/pdf",
           },
-        ];
-        setDocuments(demoDocuments);
-        return;
+        ]
+        setDocuments(demoDocuments)
+        return
       }
 
       // Build the query
-      let query = supabase.from("documents").select("*");
+      let query = supabase.from("documents").select("*")
 
       if (projectId) {
-        query = query.eq("project_id", projectId);
+        query = query.eq("project_id", projectId)
       }
 
       if (searchQuery) {
-        query = query.or(
-          `title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`,
-        );
+        query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
       }
 
-      const { data: dbDocuments, error: dbError } = await query.order(
-        "created_at",
-        { ascending: false },
-      );
+      const { data: dbDocuments, error: dbError } = await query.order("created_at", { ascending: false })
 
       if (dbError) {
-        console.error("Error querying documents:", dbError);
-        throw new Error(`Query error: ${dbError.message}`);
+        console.error("Error querying documents:", dbError)
+        throw new Error(`Query error: ${dbError.message}`)
       }
 
       // Try to fetch storage files, but don't fail if this doesn't work
       try {
-        await fetchStorageFiles();
+        await fetchStorageFiles()
       } catch (storageError) {
-        console.warn("Error fetching storage files:", storageError);
+        console.warn("Error fetching storage files:", storageError)
         // Continue execution even if storage files fetch fails
       }
 
       if (dbDocuments && Array.isArray(dbDocuments) && dbDocuments.length > 0) {
-        setDocuments(dbDocuments);
+        setDocuments(dbDocuments)
       } else {
-        console.log("No documents found in database, using demo data");
+        console.log("No documents found in database, using demo data")
         // Use demo data when no documents found
         const fallbackDocuments = [
           {
@@ -350,11 +325,11 @@ export default function DocumentsPage() {
             project_id: projectId || "fallback",
             type: "application/pdf",
           },
-        ];
-        setDocuments(fallbackDocuments);
+        ]
+        setDocuments(fallbackDocuments)
       }
     } catch (err) {
-      console.error("Error fetching documents:", err);
+      console.error("Error fetching documents:", err)
 
       // Always provide fallback data instead of showing error
       const fallbackDocuments = [
@@ -378,24 +353,24 @@ export default function DocumentsPage() {
           project_id: projectId || "fallback",
           type: "application/pdf",
         },
-      ];
+      ]
 
-      setDocuments(fallbackDocuments);
-      setError(null); // Clear any previous errors
+      setDocuments(fallbackDocuments)
+      setError(null) // Clear any previous errors
 
       // Only log warning, don't set error state
-      console.warn("Using demo data due to database connection issues");
+      console.warn("Using demo data due to database connection issues")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // Function to fetch files from Supabase Storage
   const fetchStorageFiles = async () => {
     try {
-      const supabase = getSupabaseClient();
+      const supabase = getSupabaseClient()
       if (!supabase) {
-        throw new Error("Supabase client initialization failed");
+        throw new Error("Supabase client initialization failed")
       }
 
       // Define the folders to check
@@ -405,49 +380,41 @@ export default function DocumentsPage() {
         "unknown",
         "alfoua",
         "", // Root folder
-      ];
+      ]
 
       // If we have a specific folder from the URL, prioritize it
       if (folderId) {
-        foldersToCheck.unshift(folderId);
+        foldersToCheck.unshift(folderId)
       }
 
       // Collect all files from all folders
-      let allFiles: any[] = [];
-      const allFolders = new Set<string>();
+      let allFiles: any[] = []
+      const allFolders = new Set<string>()
 
       for (const folder of foldersToCheck) {
         try {
-          const { data: files, error } = await supabase.storage
-            .from("documents")
-            .list(folder, {
-              limit: 100,
-              offset: 0,
-              sortBy: { column: "name", order: "asc" },
-            });
+          const { data: files, error } = await supabase.storage.from("documents").list(folder, {
+            limit: 100,
+            offset: 0,
+            sortBy: { column: "name", order: "asc" },
+          })
 
           if (error) {
-            console.warn(`Error listing files in folder ${folder}:`, error);
-            continue;
+            console.warn(`Error listing files in folder ${folder}:`, error)
+            continue
           }
 
           if (files && files.length > 0) {
             // Extract subfolder names
-            const subfolders = files
-              .filter((item) => item.id === null)
-              .map((item) => item.name);
-            subfolders.forEach((subfolder) =>
-              allFolders.add(`${folder}/${subfolder}`),
-            );
+            const subfolders = files.filter((item) => item.id === null).map((item) => item.name)
+            subfolders.forEach((subfolder) => allFolders.add(`${folder}/${subfolder}`))
 
             // Process files
             const filesWithUrls = files
               .filter((file) => file.id !== null)
               .map((file) => {
                 try {
-                  const { data } = supabase.storage
-                    .from("documents")
-                    .getPublicUrl(`${folder}/${file.name}`);
+                  const { data } = supabase.storage.from("documents").getPublicUrl(`${folder}/${file.name}`)
 
                   return {
                     id: file.id || `file-${file.name}`,
@@ -459,155 +426,150 @@ export default function DocumentsPage() {
                     project_id: projectId || "unknown",
                     size: file.metadata?.size,
                     type: file.metadata?.mimetype,
-                  };
+                  }
                 } catch (urlError) {
-                  console.warn(
-                    `Error getting URL for file ${file.name}:`,
-                    urlError,
-                  );
-                  return null;
+                  console.warn(`Error getting URL for file ${file.name}:`, urlError)
+                  return null
                 }
               })
-              .filter(Boolean); // Remove any null entries
+              .filter(Boolean) // Remove any null entries
 
-            allFiles = [...allFiles, ...filesWithUrls];
+            allFiles = [...allFiles, ...filesWithUrls]
           }
         } catch (folderError) {
-          console.warn(`Error processing folder ${folder}:`, folderError);
+          console.warn(`Error processing folder ${folder}:`, folderError)
           // Continue with next folder
         }
       }
 
       // Update state with the files and folders
-      setFolders(Array.from(allFolders));
+      setFolders(Array.from(allFolders))
 
       // Merge with existing documents
       setDocuments((prevDocs) => {
         // Create a map of existing documents by file_path
-        const existingDocsMap = new Map(
-          prevDocs.map((doc) => [doc.file_path, doc]),
-        );
+        const existingDocsMap = new Map(prevDocs.map((doc) => [doc.file_path, doc]))
 
         // Add new files that don't exist in the database
         allFiles.forEach((file) => {
           if (!existingDocsMap.has(file.file_path)) {
-            existingDocsMap.set(file.file_path, file);
+            existingDocsMap.set(file.file_path, file)
           }
-        });
+        })
 
-        return Array.from(existingDocsMap.values());
-      });
+        return Array.from(existingDocsMap.values())
+      })
     } catch (err) {
-      console.error("Error fetching storage files:", err);
+      console.error("Error fetching storage files:", err)
       // Don't set error state here, as this is a secondary data source
       // Just log the error and continue
     }
-  };
+  }
 
   // Function to handle document selection
   const handleDocumentSelect = (document: any) => {
     try {
-      setSelectedDocument(document);
+      setSelectedDocument(document)
 
       // Add to navigation history when selecting a document
-      const newPath = `/al-ain/documents${projectId ? `?project=${projectId}` : ""}${folderId ? `&folder=${folderId}` : ""}&doc=${document.id}`;
-      addToHistory(newPath);
+      const newPath = `/al-ain/documents${projectId ? `?project=${projectId}` : ""}${folderId ? `&folder=${folderId}` : ""}&doc=${document.id}`
+      addToHistory(newPath)
     } catch (err) {
-      console.error("Error selecting document:", err);
+      console.error("Error selecting document:", err)
     }
-  };
+  }
 
   // Function to handle folder navigation
   const handleFolderSelect = (folder: string) => {
     try {
-      setCurrentFolder(folder);
-      setSelectedDocument(null); // Clear selected document when changing folders
+      setCurrentFolder(folder)
+      setSelectedDocument(null) // Clear selected document when changing folders
 
       // Create the new path
-      const newPath = `/al-ain/documents?folder=${folder}${projectId ? `&project=${projectId}` : ""}`;
+      const newPath = `/al-ain/documents?folder=${folder}${projectId ? `&project=${projectId}` : ""}`
 
       // Add to navigation history
-      addToHistory(newPath);
+      addToHistory(newPath)
 
       // Navigate to the new path
-      router.push(newPath, { scroll: false });
+      router.push(newPath, { scroll: false })
     } catch (err) {
-      console.error("Error selecting folder:", err);
+      console.error("Error selecting folder:", err)
     }
-  };
+  }
 
   // Function to handle project navigation
   const handleProjectSelect = (project: string) => {
     try {
-      setSelectedDocument(null); // Clear selected document when changing projects
+      setSelectedDocument(null) // Clear selected document when changing projects
 
       // Create the new path
-      const newPath = `/al-ain/documents?project=${project}${currentFolder ? `&folder=${currentFolder}` : ""}`;
+      const newPath = `/al-ain/documents?project=${project}${currentFolder ? `&folder=${currentFolder}` : ""}`
 
       // Add to navigation history
-      addToHistory(newPath);
+      addToHistory(newPath)
 
       // Navigate to the new path
-      router.push(newPath, { scroll: false });
+      router.push(newPath, { scroll: false })
     } catch (err) {
-      console.error("Error selecting project:", err);
+      console.error("Error selecting project:", err)
     }
-  };
+  }
 
   // Function to handle breadcrumb navigation
   const handleBreadcrumbClick = (path: string) => {
     try {
       // Add to navigation history
-      addToHistory(path);
+      addToHistory(path)
 
       // Navigate to the path
-      router.push(path, { scroll: false });
+      router.push(path, { scroll: false })
 
       // Clear selected document when using breadcrumb navigation
-      setSelectedDocument(null);
+      setSelectedDocument(null)
     } catch (err) {
-      console.error("Error handling breadcrumb click:", err);
+      console.error("Error handling breadcrumb click:", err)
     }
-  };
+  }
 
   // Function to handle search
   const handleSearch = (query: string) => {
     try {
-      setSearchQuery(query);
-      setSearchTerm(query);
+      setSearchQuery(query)
+      setSearchTerm(query)
 
       // Only add to history if the search is executed (not on every keystroke)
       if (query.length > 2 || query.length === 0) {
-        const newPath = `/al-ain/documents${projectId ? `?project=${projectId}` : ""}${folderId ? `&folder=${folderId}` : ""}&search=${encodeURIComponent(query)}`;
-        addToHistory(newPath);
+        const newPath = `/al-ain/documents${projectId ? `?project=${projectId}` : ""}${folderId ? `&folder=${folderId}` : ""}&search=${encodeURIComponent(query)}`
+        addToHistory(newPath)
       }
     } catch (err) {
-      console.error("Error handling search:", err);
+      console.error("Error handling search:", err)
     }
-  };
+  }
 
   // Function to handle document close
   const handleCloseDocument = () => {
     try {
-      setSelectedDocument(null);
+      setSelectedDocument(null)
 
       // Create the path without the document
-      const newPath = `/al-ain/documents${projectId ? `?project=${projectId}` : ""}${folderId ? `&folder=${folderId}` : ""}`;
+      const newPath = `/al-ain/documents${projectId ? `?project=${projectId}` : ""}${folderId ? `&folder=${folderId}` : ""}`
 
       // Add to navigation history
-      addToHistory(newPath);
+      addToHistory(newPath)
 
       // Navigate to the new path
-      router.push(newPath, { scroll: false });
+      router.push(newPath, { scroll: false })
     } catch (err) {
-      console.error("Error closing document:", err);
+      console.error("Error closing document:", err)
     }
-  };
+  }
 
   // Load documents on initial render and when dependencies change
   useEffect(() => {
-    fetchDocuments();
-  }, [projectId, folderId, searchQuery]);
+    fetchDocuments()
+  }, [projectId, folderId, searchQuery])
 
   // Prepare breadcrumb items with safe values
   const breadcrumbItems = [
@@ -627,8 +589,7 @@ export default function DocumentsPage() {
           {
             label: projectId,
             href: `/al-ain/documents?project=${projectId}`,
-            onClick: () =>
-              handleBreadcrumbClick(`/al-ain/documents?project=${projectId}`),
+            onClick: () => handleBreadcrumbClick(`/al-ain/documents?project=${projectId}`),
           },
         ]
       : []),
@@ -653,18 +614,14 @@ export default function DocumentsPage() {
           },
         ]
       : []),
-  ];
+  ]
 
   if (selectedDocument) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6">
-            <Button
-              onClick={() => setSelectedDocument(null)}
-              variant="outline"
-              className="mb-4"
-            >
+            <Button onClick={() => setSelectedDocument(null)} variant="outline" className="mb-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Documents
             </Button>
@@ -680,7 +637,7 @@ export default function DocumentsPage() {
           />
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -723,9 +680,7 @@ export default function DocumentsPage() {
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
-              <span className="text-sm">
-                Last updated: {new Date().toLocaleDateString()}
-              </span>
+              <span className="text-sm">Last updated: {new Date().toLocaleDateString()}</span>
             </div>
             <div className="flex items-center">
               <svg
@@ -770,51 +725,6 @@ export default function DocumentsPage() {
       {/* Main content with glass effect */}
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-4xl font-bold text-white mb-2">
-                Al Ain Documents
-              </h1>
-              <p className="text-white/70">Project documentation and reports</p>
-            </div>
-            <Link href="/al-ain">
-              <Button variant="outline">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Al Ain
-              </Button>
-            </Link>
-          </div>
-
-          {/* Search and Filter */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search documents..."
-                value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50"
-              />
-            </div>
-            <div className="flex gap-2">
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={
-                    selectedCategory === category ? "default" : "outline"
-                  }
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
-                  className={selectedCategory === category ? "bg-blue-600" : ""}
-                >
-                  <Filter className="mr-1 h-3 w-3" />
-                  {category}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
 
         {/* Documents Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -827,22 +737,15 @@ export default function DocumentsPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <FileText className="h-8 w-8 text-blue-400 mb-2" />
-                  <Badge
-                    variant="secondary"
-                    className="bg-blue-500/20 text-blue-200"
-                  >
+                  <Badge variant="secondary" className="bg-blue-500/20 text-blue-200">
                     {document.category}
                   </Badge>
                 </div>
-                <CardTitle className="text-white text-lg line-clamp-2">
-                  {document.fileName}
-                </CardTitle>
+                <CardTitle className="text-white text-lg line-clamp-2">{document.fileName}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <p className="text-white/70 text-sm">
-                    Project: {document.projectName}
-                  </p>
+                  <p className="text-white/70 text-sm">Project: {document.projectName}</p>
                   <div className="flex justify-between text-xs text-white/50">
                     <span>{document.uploadDate}</span>
                     <span>{document.size}</span>
@@ -856,15 +759,11 @@ export default function DocumentsPage() {
         {filteredDocuments.length === 0 && (
           <div className="text-center py-12">
             <FileText className="h-16 w-16 text-white/30 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">
-              No documents found
-            </h3>
-            <p className="text-white/70">
-              Try adjusting your search or filter criteria
-            </p>
+            <h3 className="text-xl font-semibold text-white mb-2">No documents found</h3>
+            <p className="text-white/70">Try adjusting your search or filter criteria</p>
           </div>
         )}
       </div>
     </div>
-  );
+  )
 }

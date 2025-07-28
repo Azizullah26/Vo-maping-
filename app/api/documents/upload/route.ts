@@ -8,16 +8,33 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.error("Missing Supabase credentials in environment variables for /api/documents/upload")
+  console.error("NEXT_PUBLIC_SUPABASE_URL:", supabaseUrl ? "present" : "missing")
+  console.error("SUPABASE_SERVICE_ROLE_KEY:", supabaseServiceKey ? "present" : "missing")
 }
 
-const supabaseAdmin = createClient<Database>(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    persistSession: false,
-  },
-})
+// Only create client if both environment variables are present
+const supabaseAdmin = supabaseUrl && supabaseServiceKey 
+  ? createClient<Database>(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        persistSession: false,
+      },
+    })
+  : null
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Supabase client is available
+    if (!supabaseAdmin) {
+      console.error("Supabase client not initialized - missing environment variables")
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: "Server configuration error: Missing Supabase credentials. Please check environment variables." 
+        },
+        { status: 500 }
+      )
+    }
+
     const formData = await request.formData()
     const file = formData.get("file") as File
     const projectName = formData.get("projectName") as string // Use projectName directly

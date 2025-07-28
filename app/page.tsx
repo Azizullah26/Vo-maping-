@@ -2,11 +2,8 @@
 
 import { useState, useRef, useEffect } from "react"
 import dynamic from "next/dynamic"
-import AlAinLeftSlider from "../components/AlAinLeftSlider" // Assuming this component exists
-import RightSliderButton from "../components/RightSliderButton" // Assuming this component exists
-import PoliceData from "../data/police_locations.json"
 
-// Dynamically import AlAinMap
+// Dynamically import components to avoid SSR issues
 const AlAinMap = dynamic(() => import("../components/AlAinMap"), {
   ssr: false,
   loading: () => (
@@ -16,15 +13,33 @@ const AlAinMap = dynamic(() => import("../components/AlAinMap"), {
   ),
 })
 
-// function classNames(...classes: string[]) {
-//   return classes.filter(Boolean).join(" ")
-// }
+const AlAinLeftSlider = dynamic(() => import("../components/AlAinLeftSlider"), {
+  ssr: false,
+  loading: () => null,
+})
+
+const RightSliderButton = dynamic(() => import("../components/RightSliderButton"), {
+  ssr: false,
+  loading: () => null,
+})
+
+// Default police data in case import fails
+const defaultPoliceData = {
+  police_stations: [
+    {
+      name: "مركز شرطة الوقن",
+      coordinates: [55.7, 24.2] as [number, number],
+      type: "police_station",
+      description: "Al Wagan Police Station",
+    },
+  ],
+}
 
 export default function HomePage() {
   const [isLeftSliderOpen, setIsLeftSliderOpen] = useState(false)
   const [isRightSliderOpen, setIsRightSliderOpen] = useState(false)
   const [terrainEnabled, setTerrainEnabled] = useState(false)
-  const [policeLocations, setPoliceLocations] = useState(PoliceData.police_stations) // Adjusted to match typical JSON structure
+  const [policeLocations, setPoliceLocations] = useState(defaultPoliceData.police_stations)
   const [selectedProject, setSelectedProject] = useState<{
     id: number
     imageSrc: string
@@ -33,9 +48,30 @@ export default function HomePage() {
     coordinates: [number, number]
   } | null>(null)
 
-  // Explicitly type mapRef for better type safety with the exposed toggleTerrain method
   const mapRef = useRef<{ toggleTerrain: (currentTerrainEnabled: boolean) => void } | null>(null)
-  const rightSliderRef = useRef(null) // Keep as is if its usage is generic
+  const rightSliderRef = useRef(null)
+
+  // Load police data safely
+  useEffect(() => {
+    const loadPoliceData = async () => {
+      try {
+        const PoliceData = await import("../data/police_locations.json")
+        if (PoliceData && Array.isArray(PoliceData.police_stations)) {
+          setPoliceLocations(PoliceData.police_stations)
+        } else if (Array.isArray(PoliceData.default)) {
+          setPoliceLocations(PoliceData.default)
+        } else {
+          console.warn("Police data not in expected format, using default")
+          setPoliceLocations(defaultPoliceData.police_stations)
+        }
+      } catch (error) {
+        console.error("Failed to load police data:", error)
+        setPoliceLocations(defaultPoliceData.police_stations)
+      }
+    }
+
+    loadPoliceData()
+  }, [])
 
   const toggleLeftSlider = () => {
     setIsLeftSliderOpen(!isLeftSliderOpen)
@@ -56,37 +92,26 @@ export default function HomePage() {
 
   const handleToggleTerrain = () => {
     if (mapRef.current && typeof mapRef.current.toggleTerrain === "function") {
-      mapRef.current.toggleTerrain(terrainEnabled) // Pass current state, component will flip it
-      setTerrainEnabled(!terrainEnabled) // Update local state
+      try {
+        mapRef.current.toggleTerrain(terrainEnabled)
+        setTerrainEnabled(!terrainEnabled)
+      } catch (error) {
+        console.warn("Error toggling terrain:", error)
+      }
     } else {
       console.warn("Map reference or toggleTerrain function not available.")
     }
   }
 
-  // Ensure policeLocations is correctly initialized
-  useEffect(() => {
-    // Assuming PoliceData is { "police_stations": [...] }
-    // If PoliceData is directly an array, use setPoliceLocations(PoliceData)
-    if (PoliceData && Array.isArray(PoliceData.police_stations)) {
-      setPoliceLocations(PoliceData.police_stations)
-    } else if (Array.isArray(PoliceData)) {
-      setPoliceLocations(PoliceData)
-    } else {
-      console.error("PoliceData is not in the expected format:", PoliceData)
-      setPoliceLocations([]) // Default to empty array on error
-    }
-  }, [])
-
   return (
     <div className="relative h-screen w-screen">
       <AlAinMap
         policeLocations={policeLocations}
-        onToggleTerrain={setTerrainEnabled} // Pass setter for internal map state if needed
+        onToggleTerrain={setTerrainEnabled}
         mapRef={mapRef}
-        rightSliderRef={rightSliderRef} // Pass if AlAinMap uses it
+        rightSliderRef={rightSliderRef}
       />
 
-      {/* Left Slider - Assuming AlAinLeftSlider and RightSliderButton are correctly implemented */}
       <AlAinLeftSlider
         isOpen={isLeftSliderOpen}
         toggleSlider={toggleLeftSlider}
@@ -94,7 +119,6 @@ export default function HomePage() {
         setSelectedProject={setSelectedProject}
       />
 
-      {/* Right Slider Button */}
       <RightSliderButton
         isOpen={isRightSliderOpen}
         onClose={closeRightSlider}

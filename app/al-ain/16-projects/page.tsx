@@ -1,429 +1,421 @@
-"use client";
+"use client"
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { projects16, type Project16 } from "@/data/16-projects-data";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, MapPin, Clock, Building } from "lucide-react";
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { MapPin, Calendar, Users, Building, ArrowLeft } from "lucide-react"
+import { useRouter } from "next/navigation"
+import Image from "next/image"
 
-const statusColors = {
-  completed: "bg-green-400 shadow-green-400/50",
-  "in-progress": "bg-yellow-400 shadow-yellow-400/50",
-  planned: "bg-blue-400 shadow-blue-400/50",
-};
+interface Project {
+  id: string
+  name: string
+  nameAr: string
+  status: "completed" | "in-progress" | "planned"
+  completion: number
+  location: { x: number; y: number }
+  description: string
+  startDate: string
+  endDate: string
+  team: number
+  budget: string
+}
 
-const statusLabels = {
-  completed: "Completed",
-  "in-progress": "In Progress",
-  planned: "Planned",
-};
-
-const categoryIcons = {
-  residential: "🏠",
-  commercial: "🏢",
-  infrastructure: "🏗️",
-  public: "🏛️",
-};
+const projects: Project[] = [
+  {
+    id: "1",
+    name: "Al Ain Oasis Heritage Center",
+    nameAr: "مركز تراث واحة العين",
+    status: "completed",
+    completion: 100,
+    location: { x: 45, y: 35 },
+    description: "A cultural heritage center showcasing the history and traditions of Al Ain Oasis.",
+    startDate: "2022-01-15",
+    endDate: "2023-12-20",
+    team: 25,
+    budget: "AED 15M",
+  },
+  {
+    id: "2",
+    name: "Green Valley Residential Complex",
+    nameAr: "مجمع الوادي الأخضر السكني",
+    status: "in-progress",
+    completion: 75,
+    location: { x: 60, y: 25 },
+    description: "Modern residential complex with sustainable design and green spaces.",
+    startDate: "2023-03-01",
+    endDate: "2024-08-30",
+    team: 40,
+    budget: "AED 45M",
+  },
+  {
+    id: "3",
+    name: "Al Ain Technology Hub",
+    nameAr: "مركز العين التقني",
+    status: "in-progress",
+    completion: 60,
+    location: { x: 30, y: 50 },
+    description: "State-of-the-art technology center for innovation and research.",
+    startDate: "2023-06-15",
+    endDate: "2025-01-15",
+    team: 35,
+    budget: "AED 30M",
+  },
+  {
+    id: "4",
+    name: "Desert Rose Shopping Center",
+    nameAr: "مركز وردة الصحراء التجاري",
+    status: "planned",
+    completion: 0,
+    location: { x: 70, y: 60 },
+    description: "Modern shopping and entertainment complex in the heart of Al Ain.",
+    startDate: "2024-02-01",
+    endDate: "2025-12-31",
+    team: 50,
+    budget: "AED 60M",
+  },
+  {
+    id: "5",
+    name: "Al Ain Sports Complex",
+    nameAr: "مجمع العين الرياضي",
+    status: "in-progress",
+    completion: 40,
+    location: { x: 25, y: 70 },
+    description: "Multi-purpose sports facility with Olympic-standard amenities.",
+    startDate: "2023-09-01",
+    endDate: "2025-06-30",
+    team: 45,
+    budget: "AED 80M",
+  },
+  {
+    id: "6",
+    name: "Jebel Hafeet Observatory",
+    nameAr: "مرصد جبل حفيت",
+    status: "completed",
+    completion: 100,
+    location: { x: 80, y: 40 },
+    description: "Advanced astronomical observatory on Jebel Hafeet mountain.",
+    startDate: "2021-05-01",
+    endDate: "2023-03-15",
+    team: 20,
+    budget: "AED 25M",
+  },
+  {
+    id: "7",
+    name: "Al Ain Medical Center",
+    nameAr: "مركز العين الطبي",
+    status: "in-progress",
+    completion: 85,
+    location: { x: 40, y: 45 },
+    description: "Modern healthcare facility with specialized medical services.",
+    startDate: "2022-08-01",
+    endDate: "2024-04-30",
+    team: 60,
+    budget: "AED 120M",
+  },
+  {
+    id: "8",
+    name: "Palm Gardens Residential",
+    nameAr: "حدائق النخيل السكنية",
+    status: "planned",
+    completion: 0,
+    location: { x: 55, y: 75 },
+    description: "Luxury residential development with landscaped gardens.",
+    startDate: "2024-06-01",
+    endDate: "2026-12-31",
+    team: 35,
+    budget: "AED 90M",
+  },
+  {
+    id: "9",
+    name: "Al Ain Innovation District",
+    nameAr: "منطقة العين للابتكار",
+    status: "planned",
+    completion: 0,
+    location: { x: 35, y: 30 },
+    description: "Business and innovation hub for startups and tech companies.",
+    startDate: "2024-09-01",
+    endDate: "2027-03-31",
+    team: 40,
+    budget: "AED 150M",
+  },
+  {
+    id: "10",
+    name: "Desert Bloom Park",
+    nameAr: "حديقة زهرة الصحراء",
+    status: "completed",
+    completion: 100,
+    location: { x: 50, y: 55 },
+    description: "Large public park with native desert flora and recreational facilities.",
+    startDate: "2022-01-01",
+    endDate: "2023-08-15",
+    team: 30,
+    budget: "AED 35M",
+  },
+  {
+    id: "11",
+    name: "Al Ain Cultural Museum",
+    nameAr: "متحف العين الثقافي",
+    status: "in-progress",
+    completion: 70,
+    location: { x: 65, y: 35 },
+    description: "Museum showcasing the rich cultural heritage of the UAE.",
+    startDate: "2023-02-15",
+    endDate: "2024-11-30",
+    team: 25,
+    budget: "AED 40M",
+  },
+  {
+    id: "12",
+    name: "Sunrise Business Tower",
+    nameAr: "برج شروق الأعمال",
+    status: "planned",
+    completion: 0,
+    location: { x: 45, y: 65 },
+    description: "Modern office tower for business and commercial activities.",
+    startDate: "2024-12-01",
+    endDate: "2027-06-30",
+    team: 55,
+    budget: "AED 200M",
+  },
+  {
+    id: "13",
+    name: "Al Ain Water Treatment Plant",
+    nameAr: "محطة معالجة مياه العين",
+    status: "in-progress",
+    completion: 90,
+    location: { x: 20, y: 40 },
+    description: "Advanced water treatment facility for sustainable water management.",
+    startDate: "2022-10-01",
+    endDate: "2024-03-31",
+    team: 40,
+    budget: "AED 75M",
+  },
+  {
+    id: "14",
+    name: "Golden Sands Resort",
+    nameAr: "منتجع الرمال الذهبية",
+    status: "planned",
+    completion: 0,
+    location: { x: 75, y: 70 },
+    description: "Luxury desert resort with world-class amenities.",
+    startDate: "2025-01-01",
+    endDate: "2027-12-31",
+    team: 70,
+    budget: "AED 300M",
+  },
+  {
+    id: "15",
+    name: "Al Ain Solar Farm",
+    nameAr: "مزرعة العين الشمسية",
+    status: "completed",
+    completion: 100,
+    location: { x: 85, y: 55 },
+    description: "Large-scale solar energy facility for renewable power generation.",
+    startDate: "2021-03-01",
+    endDate: "2022-11-30",
+    team: 35,
+    budget: "AED 180M",
+  },
+  {
+    id: "16",
+    name: "Heritage Village Restoration",
+    nameAr: "ترميم القرية التراثية",
+    status: "in-progress",
+    completion: 55,
+    location: { x: 60, y: 80 },
+    description: "Restoration and preservation of traditional Emirati village.",
+    startDate: "2023-04-01",
+    endDate: "2024-12-31",
+    team: 28,
+    budget: "AED 50M",
+  },
+]
 
 export default function SixteenProjectsPage() {
-  const router = useRouter();
-  const [selectedProject, setSelectedProject] = useState<Project16 | null>(
-    null,
-  );
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageDimensions, setImageDimensions] = useState({
-    width: 0,
-    height: 0,
-  });
-  const imageRef = useRef<HTMLImageElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const router = useRouter()
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (imageRef.current && containerRef.current) {
-        const containerRect = containerRef.current.getBoundingClientRect();
-        const imageRect = imageRef.current.getBoundingClientRect();
-        setImageDimensions({
-          width: imageRect.width,
-          height: imageRect.height,
-        });
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [imageLoaded]);
-
-  const handleImageLoad = () => {
-    setImageLoaded(true);
-    if (imageRef.current && containerRef.current) {
-      const containerRect = containerRef.current.getBoundingClientRect();
-      const imageRect = imageRef.current.getBoundingClientRect();
-      setImageDimensions({
-        width: imageRect.width,
-        height: imageRect.height,
-      });
+  const getStatusColor = (status: Project["status"]) => {
+    switch (status) {
+      case "completed":
+        return "bg-green-500/20 text-green-400 border-green-400/30"
+      case "in-progress":
+        return "bg-blue-500/20 text-blue-400 border-blue-400/30"
+      case "planned":
+        return "bg-yellow-500/20 text-yellow-400 border-yellow-400/30"
+      default:
+        return "bg-gray-500/20 text-gray-400 border-gray-400/30"
     }
-  };
+  }
 
-  const getMarkerPosition = (percentageCoords: [number, number]) => {
-    if (!imageLoaded || !imageRef.current || !containerRef.current)
-      return { left: 0, top: 0 };
-
-    const imageRect = imageRef.current.getBoundingClientRect();
-    const containerRect = containerRef.current.getBoundingClientRect();
-
-    // Calculate marker position using percentages
-    const left =
-      (percentageCoords[0] / 100) * imageRect.width +
-      (imageRect.left - containerRect.left);
-    const top =
-      (percentageCoords[1] / 100) * imageRect.height +
-      (imageRect.top - containerRect.top);
-
-    return { left, top };
-  };
+  const getStatusText = (status: Project["status"]) => {
+    switch (status) {
+      case "completed":
+        return "Completed"
+      case "in-progress":
+        return "In Progress"
+      case "planned":
+        return "Planned"
+      default:
+        return "Unknown"
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white relative">
-      {/* Floating Back Button */}
-      <div className="absolute top-4 left-4 z-50">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.back()}
-          className="text-white hover:bg-black/50 bg-black/30 backdrop-blur-sm"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]" />
+      <div className="absolute inset-0 bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,rgba(59,130,246,0.05)_60deg,transparent_120deg)]" />
+
+      {/* Back Button */}
+      <Button
+        onClick={() => router.back()}
+        variant="outline"
+        size="sm"
+        className="absolute top-6 left-6 z-50 border-cyan-400/30 text-cyan-400 hover:bg-cyan-400/10 bg-slate-900/50 backdrop-blur-sm"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back
+      </Button>
 
       <div className="flex h-screen">
-        {/* Main Map Area - Full Screen */}
-        <div
-          className="fixed inset-0 bg-gray-900 overflow-hidden text-white000"
-          ref={containerRef}
-        >
-          <img
-            ref={imageRef}
-            src="/images/al-ain-16-projects-satellite.png"
-            alt="Al Ain 16 Projects Satellite View"
-            className="w-full h-full object-cover"
-            onLoad={handleImageLoad}
-          />
-
-          {/* Futuristic Color Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-transparent to-purple-900/20 pointer-events-none" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/30 via-transparent to-slate-900/10 pointer-events-none" />
-
-          {/* Animated Grid Pattern */}
-          <div className="absolute inset-0 opacity-10 pointer-events-none">
-            <div
-              className="w-full h-full"
-              style={{
-                backgroundImage: `
-                  linear-gradient(rgba(34, 211, 238, 0.3) 1px, transparent 1px),
-                  linear-gradient(90deg, rgba(34, 211, 238, 0.3) 1px, transparent 1px)
-                `,
-                backgroundSize: "50px 50px",
-                animation: "gridMove 20s linear infinite",
-              }}
+        {/* Main Map Area */}
+        <div className="flex-1 relative">
+          {/* Satellite Image with Dark Overlays */}
+          <div className="relative w-full h-full overflow-hidden">
+            <Image
+              src="/images/al-ain-16-projects-satellite.png"
+              alt="Al Ain 16 Projects Satellite View"
+              fill
+              className="object-cover"
+              priority
             />
-          </div>
 
-          {/* Project Markers */}
-          {imageLoaded &&
-            projects16.map((project, index) => {
-              const position = getMarkerPosition(project.percentageCoordinates);
-              const isSelected = selectedProject?.id === project.id;
-              return (
-                <div
-                  key={project.id}
-                  className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group"
-                  style={{
-                    left: `${position.left}px`,
-                    top: `${position.top}px`,
-                    animationDelay: `${index * 0.1}s`,
-                  }}
-                  onClick={() => setSelectedProject(project)}
-                >
-                  {/* Outer Pulsing Ring */}
+            {/* Greenish dark contrast mask - positioned between image and markers */}
+            <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-900/30 via-slate-800/20 to-slate-700/10" />
+            <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-900/40 via-slate-800/20 to-transparent" />
+
+            {/* Project Markers */}
+            {projects.map((project, index) => (
+              <div
+                key={project.id}
+                className="absolute z-20 transform -translate-x-1/2 -translate-y-1/2"
+                style={{
+                  left: `${project.location.x}%`,
+                  top: `${project.location.y}%`,
+                }}
+              >
+                {/* Marker Container */}
+                <div className="relative group">
+                  {/* Small circle marker */}
                   <div
-                    className={`absolute inset-0 rounded-full animate-ping ${
-                      isSelected ? "bg-cyan-400/30" : "bg-blue-400/20"
-                    }`}
+                    className="w-3 h-3 bg-white rounded-full border border-white shadow-lg cursor-pointer hover:scale-110 transition-transform duration-300"
+                    onClick={() => setSelectedProject(project)}
                     style={{
-                      width: "24px",
-                      height: "24px",
-                      transform: "translate(-50%, -50%)",
-                      top: "50%",
-                      left: "50%",
+                      boxShadow: "0 0 8px rgba(255, 255, 255, 0.8)",
+                      animationDelay: `${index * 0.1}s`,
                     }}
                   />
 
-                  {/* Secondary Ring */}
+                  {/* Dotted line */}
                   <div
-                    className={`absolute rounded-full transition-all duration-500 ${
-                      isSelected
-                        ? "bg-gradient-to-r from-cyan-400/40 to-blue-500/40 scale-150"
-                        : "bg-gradient-to-r from-blue-400/30 to-purple-500/30 group-hover:scale-125"
-                    }`}
+                    className="absolute bottom-4 left-2 w-0.5 h-12 opacity-80"
                     style={{
-                      width: "20px",
-                      height: "20px",
-                      transform: "translate(-50%, -50%)",
-                      top: "50%",
-                      left: "50%",
+                      background:
+                        "repeating-linear-gradient(0deg, #ffffff 0px, #ffffff 4px, transparent 4px, transparent 8px)",
                     }}
                   />
 
-                  {/* Main Marker Circle */}
-                  <div
-                    className={`
-                      relative w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 rounded-full border-2 transition-all duration-300 ease-out
-                      ${
-                        isSelected
-                          ? "bg-gradient-to-br from-cyan-400 to-blue-600 border-cyan-300 scale-125 shadow-lg shadow-cyan-400/50"
-                          : "bg-gradient-to-br from-blue-500 to-purple-600 border-blue-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-400/50"
-                      }
-                      shadow-2xl transform-gpu
-                    `}
+                  {/* Project label */}
+                  <button
+                    onClick={() =>
+                      router.push(
+                        `/dashboard/${project.id}?name=${encodeURIComponent(project.name)}&nameAr=${encodeURIComponent(project.nameAr)}`,
+                      )
+                    }
+                    className="absolute bottom-16 left-1/2 transform -translate-x-1/2 px-1 py-0.5 bg-white hover:bg-black text-black hover:text-white rounded-full border-2 border-solid transition-all duration-300 cursor-pointer font-sans font-medium shadow-lg hover:shadow-blue-500/50 hover:ring-2 hover:ring-blue-400 hover:scale-110"
                     style={{
-                      boxShadow: isSelected
-                        ? "0 0 20px rgba(34, 211, 238, 0.6), 0 0 40px rgba(34, 211, 238, 0.3)"
-                        : "0 0 15px rgba(59, 130, 246, 0.4), 0 0 30px rgba(59, 130, 246, 0.2)",
+                      animationDelay: `${index * 0.1 + 0.2}s`,
                     }}
                   >
-                    {/* Inner Animated Core */}
-                    <div
-                      className={`absolute inset-1 rounded-full transition-all duration-300 ${
-                        isSelected
-                          ? "bg-gradient-to-br from-cyan-200 to-blue-400 animate-pulse"
-                          : "bg-gradient-to-br from-blue-200 to-purple-400 group-hover:animate-pulse"
-                      }`}
-                    />
+                    <span className="tracking-normal leading-snug whitespace-nowrap overflow-hidden text-ellipsis font-sans font-semibold antialiased text-[8px]">
+                      {project.name}
+                    </span>
+                  </button>
 
-                    {/* Center Dot */}
-                    <div
-                      className={`absolute inset-1/2 w-1 h-1 sm:w-1.5 sm:h-1.5 md:w-2 md:h-2 rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${
-                        isSelected
-                          ? "bg-white animate-ping"
-                          : "bg-white/80 group-hover:bg-white"
-                      }`}
-                    />
+                  {/* Project Number */}
+                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900/90 text-white text-xs px-2 py-1 rounded backdrop-blur-sm border border-cyan-400/30 shadow-lg">
+                    {project.id}
                   </div>
 
-                  {/* Floating Project Number */}
-                  <div
-                    className={`absolute -top-7 sm:-top-9 md:-top-11 left-1/2 transform -translate-x-1/2 transition-all duration-300 ${
-                      isSelected
-                        ? "bg-gradient-to-r from-cyan-600 to-blue-700 border-cyan-400 scale-110 shadow-lg shadow-cyan-400/30"
-                        : "bg-gradient-to-r from-slate-800 to-blue-900 border-blue-400 group-hover:scale-105 group-hover:shadow-lg group-hover:shadow-blue-400/30"
-                    } text-white text-[10px] sm:text-xs md:text-sm font-bold px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 rounded-full border-2 whitespace-nowrap backdrop-blur-sm`}
-                  >
-                    #{project.id.split("-")[1]}
-                  </div>
-
-                  {/* Status Indicator */}
-                  <div
-                    className={`absolute -bottom-2 sm:-bottom-3 md:-bottom-4 left-1/2 transform -translate-x-1/2 w-2 h-2 sm:w-3 sm:h-3 rounded-full border border-white/50 transition-all duration-300 ${
-                      project.status === "completed"
-                        ? "bg-green-400 shadow-green-400/50"
-                        : project.status === "in-progress"
-                          ? "bg-yellow-400 shadow-yellow-400/50"
-                          : "bg-gray-400 shadow-gray-400/50"
-                    } animate-pulse`}
-                  />
-
-                  {/* Enhanced Hover Tooltip */}
-                  <div className="absolute top-8 sm:top-10 md:top-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-y-1 pointer-events-none z-30 hidden sm:block">
-                    <div className="bg-gradient-to-br from-slate-900/95 via-blue-900/95 to-purple-900/95 border-2 border-cyan-400/50 rounded-xl px-3 md:px-4 py-2 md:py-3 shadow-2xl shadow-cyan-400/20 backdrop-blur-md">
-                      <div className="text-cyan-100 font-semibold text-xs md:text-sm whitespace-nowrap">
-                        {project.name}
-                      </div>
-                      <div className="text-cyan-300/80 text-[10px] md:text-xs whitespace-nowrap">
-                        {project.nameAr}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-lg">
-                          {categoryIcons[project.category]}
-                        </span>
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-medium text-white ${
-                            project.status === "completed"
-                              ? "bg-green-500/80"
-                              : project.status === "in-progress"
-                                ? "bg-yellow-500/80"
-                                : "bg-gray-500/80"
-                          }`}
-                        >
-                          {statusLabels[project.status]}
+                  {/* Hover Tooltip */}
+                  <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    <div className="bg-slate-900/95 text-white text-sm px-3 py-2 rounded-lg border border-cyan-400/30 backdrop-blur-sm shadow-xl whitespace-nowrap">
+                      <div className="font-semibold">{project.name}</div>
+                      <div className="text-slate-400 text-xs">{project.nameAr}</div>
+                      <div className="text-xs mt-1">
+                        <span className={`inline-block px-2 py-1 rounded text-xs ${getStatusColor(project.status)}`}>
+                          {getStatusText(project.status)}
                         </span>
                       </div>
-
-                      {/* Tooltip Arrow */}
-                      <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-cyan-400/50"></div>
                     </div>
                   </div>
-
-                  {/* Ripple Effect on Click */}
-                  {isSelected && (
-                    <div
-                      className="absolute inset-0 rounded-full animate-ping bg-cyan-400/20"
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        transform: "translate(-50%, -50%)",
-                        top: "50%",
-                        left: "50%",
-                      }}
-                    />
-                  )}
                 </div>
-              );
-            })}
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Mobile Bottom Sheet / Desktop Side Panel */}
-        {selectedProject && (
-          <>
-            {/* Mobile Bottom Sheet */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-slate-900 via-blue-900/90 to-purple-900/90 border-t-2 border-cyan-400/50 rounded-t-2xl max-h-[50vh] overflow-y-auto backdrop-blur-md">
-              <div className="p-4">
-                {/* Handle bar */}
-                <div className="w-12 h-1 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full mx-auto mb-4 shadow-lg shadow-cyan-400/30"></div>
-
-                <Card className="bg-gradient-to-br from-slate-800/80 to-blue-900/80 border-2 border-cyan-400/30 shadow-lg shadow-cyan-400/20 backdrop-blur-sm">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text flex items-center gap-2 text-lg font-bold">
-                      <span>{categoryIcons[selectedProject.category]}</span>
-                      {selectedProject.name}
-                    </CardTitle>
-                    <p className="text-cyan-300 text-sm">
-                      {selectedProject.nameAr}
-                    </p>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-cyan-400" />
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs text-white border transition-all duration-300 ${
-                          selectedProject.status === "completed"
-                            ? "bg-green-500/80 border-green-400 shadow-green-400/30"
-                            : selectedProject.status === "in-progress"
-                              ? "bg-yellow-500/80 border-yellow-400 shadow-yellow-400/30"
-                              : "bg-gray-500/80 border-gray-400 shadow-gray-400/30"
-                        } shadow-lg`}
-                      >
-                        {statusLabels[selectedProject.status]}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Building className="w-4 h-4 text-purple-400" />
-                      <span className="capitalize text-sm text-cyan-100">
-                        {selectedProject.category}
-                      </span>
-                    </div>
-
-                    <p className="text-cyan-200 text-sm leading-relaxed">
-                      {selectedProject.description}
-                    </p>
-
-                    <div className="flex gap-2 pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedProject(null)}
-                        className="flex-1 bg-gradient-to-r from-slate-700 to-gray-800 border-slate-500 text-cyan-100 hover:from-slate-600 hover:to-gray-700 hover:shadow-lg hover:shadow-slate-400/30 transition-all duration-300"
-                      >
-                        Close
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          router.push(
-                            `/dashboard/${selectedProject.id}?name=${encodeURIComponent(selectedProject.name)}&nameAr=${encodeURIComponent(selectedProject.nameAr)}`,
-                          );
-                        }}
-                        className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 border-cyan-400 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300"
-                      >
-                        View Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+        {/* Mobile Bottom Panel */}
+        <div className="md:hidden absolute bottom-0 left-0 right-0 z-40">
+          {selectedProject && (
+            <Card className="m-4 bg-gradient-to-br from-slate-800/95 to-blue-900/95 border-2 border-cyan-400/30 shadow-xl shadow-cyan-400/20 backdrop-blur-md">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg text-cyan-400 mb-1">{selectedProject.name}</CardTitle>
+                    <p className="text-sm text-slate-400 mb-2">{selectedProject.nameAr}</p>
+                    <Badge className={`text-xs ${getStatusColor(selectedProject.status)}`}>
+                      {getStatusText(selectedProject.status)} - {selectedProject.completion}%
+                    </Badge>
+                  </div>
+                  <Button
+                    onClick={() => setSelectedProject(null)}
+                    variant="ghost"
+                    size="sm"
+                    className="text-slate-400 hover:text-white"
+                  >
+                    ×
+                  </Button>
+                </div>
+              </CardHeader>
+              <div className="pt-0 px-6 pb-6">
+                <p className="text-sm text-slate-300 mb-4">{selectedProject.description}</p>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <Calendar className="w-4 h-4" />
+                    <span>{selectedProject.startDate}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <Users className="w-4 h-4" />
+                    <span>{selectedProject.team} members</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <Building className="w-4 h-4" />
+                    <span>{selectedProject.budget}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <MapPin className="w-4 h-4" />
+                    <span>Project #{selectedProject.id}</span>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            {/* Desktop Side Panel */}
-            <div className="hidden md:block w-96 bg-gradient-to-b from-slate-900 via-blue-900/90 to-purple-900/90 border-l-2 border-cyan-400/50 overflow-y-auto backdrop-blur-md">
-              <div className="p-6">
-                <Card className="bg-gradient-to-br from-slate-800/80 to-blue-900/80 border-2 border-cyan-400/30 shadow-xl shadow-cyan-400/20 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle className="text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text flex items-center gap-2 font-bold">
-                      <span>{categoryIcons[selectedProject.category]}</span>
-                      {selectedProject.name}
-                    </CardTitle>
-                    <p className="text-cyan-300">{selectedProject.nameAr}</p>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-cyan-400" />
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs text-white border transition-all duration-300 ${
-                          selectedProject.status === "completed"
-                            ? "bg-green-500/80 border-green-400 shadow-green-400/30"
-                            : selectedProject.status === "in-progress"
-                              ? "bg-yellow-500/80 border-yellow-400 shadow-yellow-400/30"
-                              : "bg-gray-500/80 border-gray-400 shadow-gray-400/30"
-                        } shadow-lg`}
-                      >
-                        {statusLabels[selectedProject.status]}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Building className="w-4 h-4 text-purple-400" />
-                      <span className="capitalize text-cyan-100">
-                        {selectedProject.category}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-blue-400" />
-                      <span className="text-sm text-cyan-200">
-                        Position:{" "}
-                        {selectedProject.percentageCoordinates[0].toFixed(1)}%,{" "}
-                        {selectedProject.percentageCoordinates[1].toFixed(1)}%
-                      </span>
-                    </div>
-
-                    <div className="bg-slate-800/50 rounded-lg p-3 border border-cyan-400/20">
-                      <p className="text-cyan-200 leading-relaxed">
-                        {selectedProject.description}
-                      </p>
-                    </div>
-
-                    <Button
-                      className="w-full mt-4 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 border border-cyan-400 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300 text-white font-medium"
-                      onClick={() => {
-                        router.push(
-                          `/dashboard/${selectedProject.id}?name=${encodeURIComponent(selectedProject.name)}&nameAr=${encodeURIComponent(selectedProject.nameAr)}`,
-                        );
-                      }}
-                    >
-                      View Project Details
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </>
-        )}
+            </Card>
+          )}
+        </div>
       </div>
     </div>
-  );
+  )
 }

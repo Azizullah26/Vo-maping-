@@ -15,8 +15,18 @@ export function getSupabaseClient() {
   if (!supabaseAnonKey) supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("Missing Supabase environment variables")
-    throw new Error("Missing Supabase environment variables")
+    console.warn("Missing Supabase environment variables, using placeholder client")
+    // Return a placeholder client during build time to prevent build failures
+    supabaseInstance = createClient(
+      supabaseUrl || "https://placeholder.supabase.co",
+      supabaseAnonKey || "placeholder-anon-key",
+      {
+        auth: {
+          persistSession: false,
+        },
+      },
+    )
+    return supabaseInstance
   }
 
   supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
@@ -35,7 +45,7 @@ export function getSupabaseAdminClient() {
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SUPABASE_SERVICE_ROLE_KEY
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error("Missing Supabase admin credentials")
+      console.warn("Missing Supabase admin credentials, returning null")
       return null
     }
 
@@ -67,6 +77,17 @@ export async function checkSupabaseConnection() {
   try {
     const supabase = getSupabaseClient()
 
+    // Check if we have valid credentials
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes("placeholder")) {
+      return {
+        success: false,
+        message: "Supabase environment variables not configured",
+      }
+    }
+
     // Try a simple query to check the connection
     const { error } = await supabase.from("projects").select("count", { count: "exact", head: true })
 
@@ -86,14 +107,23 @@ export async function checkSupabaseConnection() {
 const supabase = getSupabaseClient()
 export default supabase
 
-// Remove this export that exposes the admin client directly
-// export const supabaseAdmin = createClient(
-//   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-//   process.env.SUPABASE_SERVICE_ROLE_KEY || "",
-// )
+// Create a safer version that checks for server-side execution and valid environment variables
+export const supabaseAdmin = (() => {
+  if (typeof window !== "undefined") {
+    return null // Client-side, return null
+  }
 
-// Instead, create a safer version that checks for server-side execution
-export const supabaseAdmin =
-  typeof window === "undefined"
-    ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL || "", process.env.SUPABASE_SERVICE_ROLE_KEY || "")
-    : null
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !supabaseServiceKey || supabaseUrl.includes("placeholder")) {
+    return null // Missing or placeholder credentials
+  }
+
+  try {
+    return createClient(supabaseUrl, supabaseServiceKey)
+  } catch (error) {
+    console.error("Error creating supabaseAdmin:", error)
+    return null
+  }
+})()

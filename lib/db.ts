@@ -28,28 +28,36 @@ const DEMO_DOCUMENTS = [
   },
 ]
 
-// Supabase client instance (singleton for server-side)
-let supabaseServerClient: ReturnType<typeof createClient> | null = null
-
 /**
  * Get the Supabase client for server-side operations.
  * Uses SUPABASE_SERVICE_ROLE_KEY for elevated privileges.
  */
-function getSupabaseServerClient() {
-  if (!supabaseServerClient) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+export const getSupabaseServerClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-    if (!supabaseUrl || !supabaseServiceRoleKey) {
-      console.error("Missing Supabase URL or Service Role Key environment variables for server client.")
-      return null
-    }
-
-    supabaseServerClient = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: { persistSession: false }, // Server-side client, no session persistence needed
-    })
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.warn("Missing Supabase server environment variables")
+    return null
   }
-  return supabaseServerClient
+
+  return createClient(supabaseUrl, supabaseServiceKey)
+}
+
+/**
+ * Get the Supabase client for client-side operations.
+ * Uses NEXT_PUBLIC_SUPABASE_ANON_KEY for public access.
+ */
+export const getSupabaseClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn("Missing Supabase client environment variables")
+    return null
+  }
+
+  return createClient(supabaseUrl, supabaseAnonKey)
 }
 
 /**
@@ -62,9 +70,7 @@ export async function checkDatabaseConnection(): Promise<boolean> {
       return false
     }
 
-    // Perform a simple query to check connection (e.g., check if 'documents' table exists or count rows)
-    // Using a simple select from 'documents' table. If it doesn't exist, it will throw an error.
-    // For a more robust check, you might use a custom RPC function like 'get_db_version' if available.
+    // Perform a simple query to check connection
     const { error } = await supabase.from("documents").select("id").limit(1)
 
     if (error && error.code !== "42P01") {
@@ -82,8 +88,6 @@ export async function checkDatabaseConnection(): Promise<boolean> {
 
 /**
  * Initialize the database (e.g., create tables if they don't exist).
- * This function assumes the necessary SQL scripts are run via Supabase migrations or initial setup.
- * For this example, we'll just check connection.
  */
 export async function initializeDatabase(): Promise<{ success: boolean; message: string }> {
   const isConnected = await checkDatabaseConnection()
@@ -99,8 +103,6 @@ export async function initializeDatabase(): Promise<{ success: boolean; message:
 
 /**
  * Execute a generic database query using Supabase RPC.
- * This assumes you have an RPC function named 'execute_sql' in Supabase that can run arbitrary SQL.
- * If not, direct table operations should be used instead of this generic function.
  */
 export async function executeQuery(
   query: string,

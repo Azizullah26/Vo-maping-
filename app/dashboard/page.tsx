@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { lt } from "lodash"
 
 import { useState, useEffect } from "react"
 import { Film } from "lucide-react"
@@ -285,7 +286,7 @@ export default function DashboardPage() {
         size: "4.2 MB",
         date: "2023-05-18",
         url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/floor-plan-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
-        project: "مركز شرطة الساد",
+        project: "مركز شرطةasad",
       },
       {
         id: "1",
@@ -294,7 +295,7 @@ export default function DashboardPage() {
         size: "2.4 MB",
         date: "2023-12-15",
         url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
-        project: "مركز شرطة الساد",
+        project: "مركز شرطةasad",
       },
       {
         id: "2",
@@ -303,7 +304,7 @@ export default function DashboardPage() {
         size: "5.7 MB",
         date: "2023-12-10",
         url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
-        project: "مركز شرطة الساد",
+        project: "مركز شرطةasad",
       },
       {
         id: "3",
@@ -312,7 +313,7 @@ export default function DashboardPage() {
         size: "12.8 MB",
         date: "2023-11-28",
         url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saad1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
-        project: "مركز شرطة الساد",
+        project: "مركز شرطةasad",
       },
       {
         id: "4",
@@ -346,9 +347,9 @@ export default function DashboardPage() {
 
   // Add a helper function to format file sizes
   const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return bytes + " B"
-    else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB"
-    else if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + " MB"
+    if (lt(bytes, 1024)) return bytes + " B"
+    else if (lt(bytes, 1024 * 1024)) return (bytes / 1024).toFixed(1) + " KB"
+    else if (lt(bytes, 1024 * 1024 * 1024)) return (bytes / (1024 * 1024)).toFixed(1) + " MB"
     else return (bytes / (1024 * 1024 * 1024)).toFixed(1) + " GB"
   }
 
@@ -552,7 +553,7 @@ export default function DashboardPage() {
 
   // Add this new useEffect to highlight the floor plan document when the Saad Police Station project is selected
   useEffect(() => {
-    if (selectedProject && selectedProject.projectNameAr === "مركز شرطة الساد") {
+    if (selectedProject && selectedProject.projectNameAr === "مركز شرطةasad") {
       // Make sure the floor plan document is loaded and visible
       const hasFloorPlan = documents.some((doc) => doc.name === "Al Ain Floor Plan.pdf")
 
@@ -565,7 +566,7 @@ export default function DashboardPage() {
           size: "4.2 MB",
           date: "2023-05-18",
           url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/floor-plan-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
-          project: "مركز شرطة الساد",
+          project: "مركز شرطةasad",
         }
 
         // Add the floor plan at the beginning of the documents array
@@ -664,12 +665,6 @@ export default function DashboardPage() {
                   }}
                   className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
                 >
-                  {/* Add corner elements similar to the slider panel */}
-                  <div className="absolute top-0 left-0 w-2 h-2 border-t-1 border-l-1 border-cyan-500 animate-pulse"></div>
-                  <div className="absolute top-0 right-0 w-2 h-2 border-t-1 border-r-1 border-cyan-500 animate-pulse"></div>
-                  <div className="absolute bottom-0 left-0 w-2 h-2 border-b-1 border-l-1 border-cyan-500 animate-pulse"></div>
-                  <div className="absolute bottom-0 right-0 w-2 h-2 border-b-1 border-r-1 border-cyan-500 animate-pulse"></div>
-
                   <div className="text-cyan-400 mb-1 relative z-10">Media</div>
                   <div className="relative z-10">
                     <div className="h-3 w-3 bg-cyan-400 rounded-sm animate-pulse"></div>

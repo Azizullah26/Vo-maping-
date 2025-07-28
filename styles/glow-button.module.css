@@ -36,5 +36,5 @@
 
 /* Export for compatibility */
 .glowStyles {
-  composes: glowOnHover;
+  /* composes: glowOnHover; */
 }
