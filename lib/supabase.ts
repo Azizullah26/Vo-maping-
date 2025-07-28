@@ -34,7 +34,7 @@ export const supabase = supabaseUrl && supabaseAnonKey && isValidConfig(supabase
 
 // Admin client for server-side operations with null fallback
 export const supabaseAdmin =
-  supabaseUrl && supabaseServiceRoleKey
+  supabaseUrl && supabaseServiceRoleKey && isValidConfig(supabaseUrl, supabaseServiceRoleKey)
     ? createSupabaseClient(supabaseUrl, supabaseServiceRoleKey, {
         auth: {
           autoRefreshToken: false,
@@ -47,7 +47,7 @@ export const supabaseAdmin =
 export async function testSupabaseConnection() {
   try {
     if (!supabase) {
-      return { success: false, error: "Supabase not configured" }
+      return { success: false, error: "Supabase not configured or using demo configuration" }
     }
 
     const { data, error } = await supabase.from("projects").select("count", { count: "exact", head: true })
@@ -60,7 +60,7 @@ export async function testSupabaseConnection() {
 
 // Check if Supabase is configured
 export function isSupabaseConfigured() {
-  return !!(supabaseUrl && supabaseAnonKey)
+  return !!(supabaseUrl && supabaseAnonKey && isValidConfig(supabaseUrl, supabaseAnonKey))
 }
 
 // Default export with null fallback
