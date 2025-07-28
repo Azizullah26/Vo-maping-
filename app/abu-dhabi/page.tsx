@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { useRef } from "react"
@@ -14,6 +14,7 @@ export const Map = (): JSX.Element => {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const [showSliders, setShowSliders] = useState(true)
   const router = useRouter()
+  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null)
 
   // Advanced zoom functionality
   const [zoomLevel, setZoomLevel] = useState(() => {
@@ -252,18 +253,33 @@ export const Map = (): JSX.Element => {
     setZoomLevel((prev) => Math.max(0.58, Math.min(3, prev + delta)))
   }
 
-  const handleLabelHover = (labelId: string | null) => {
-    setHoveredLabel(labelId)
-  }
+  const handleLabelHover = useCallback(
+    (labelId: string | null) => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout)
+      }
+
+      const timeout = setTimeout(() => {
+        setHoveredLabel(labelId)
+      }, 50) // Small delay for smoother transitions
+
+      setHoverTimeout(timeout)
+    },
+    [hoverTimeout],
+  )
 
   const getElementOpacity = (elementId?: string) => {
-    if (!hoveredLabel) return "opacity-100"
-    return hoveredLabel === elementId ? "opacity-100" : "opacity-30"
+    if (!hoveredLabel) return "opacity-100 transition-opacity duration-500 ease-out"
+    return hoveredLabel === elementId
+      ? "opacity-100 transition-opacity duration-300 ease-out"
+      : "opacity-40 transition-opacity duration-500 ease-out"
   }
 
   const getElementScale = (elementId?: string) => {
-    if (!hoveredLabel) return "scale-100"
-    return hoveredLabel === elementId ? "scale-110" : "scale-95"
+    if (!hoveredLabel) return "scale-100 transition-transform duration-300 ease-out"
+    return hoveredLabel === elementId
+      ? "scale-110 transition-transform duration-200 ease-out"
+      : "scale-95 transition-transform duration-300 ease-out"
   }
 
   const getElementBrightness = () => {
@@ -272,14 +288,14 @@ export const Map = (): JSX.Element => {
 
   const getLabelClasses = (labelId: string) => {
     const baseClasses =
-      "group flex items-center justify-center px-3 py-2 bg-white hover:bg-black rounded-full border-2 border-solid transition-all duration-300 cursor-pointer font-sans font-medium"
+      "group flex items-center justify-center px-3 py-2 bg-white hover:bg-black rounded-full border-2 border-solid transition-all duration-300 ease-out cursor-pointer font-sans font-medium transform-gpu"
     const isHovered = hoveredLabel === labelId
 
     if (isHovered) {
-      return `${baseClasses} shadow-lg shadow-blue-500/50 ring-2 ring-blue-400 z-50 scale-110`
+      return `${baseClasses} shadow-lg shadow-blue-500/50 ring-2 ring-blue-400 z-50 scale-110 brightness-110`
     }
 
-    return `${baseClasses} ${getElementOpacity(labelId)} ${getElementScale(labelId)}`
+    return `${baseClasses} ${getElementOpacity(labelId)} ${getElementScale(labelId)} hover:shadow-md hover:shadow-blue-500/30`
   }
 
   const getTextClasses = () => {
@@ -293,6 +309,14 @@ export const Map = (): JSX.Element => {
   const getVectorClasses = (elementId?: string) => {
     return `absolute transition-all duration-300 ${getElementOpacity(elementId)} ${getElementScale(elementId)}`
   }
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout)
+      }
+    }
+  }, [hoverTimeout])
 
   return (
     <div className="w-full h-screen overflow-hidden bg-black relative">
@@ -443,7 +467,7 @@ export const Map = (): JSX.Element => {
 
             {/* Marker 1 - Al Aliah */}
             <div
-              className={`absolute w-[69px] h-[68px] top-[589px] left-[1134px] transition-all duration-300 ${getElementOpacity("urgent-point-al-aliah")} ${getElementScale("urgent-point-al-aliah")}`}
+              className={`absolute w-[69px] h-[68px] top-[589px] left-[1134px] transition-all duration-300 transform-gpu ${getElementOpacity("urgent-point-al-aliah")} ${getElementScale("urgent-point-al-aliah")}`}
             >
               <div className={`${getDotClasses("urgent-point-al-aliah")} top-[42px] left-0`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -459,7 +483,7 @@ export const Map = (): JSX.Element => {
 
             {/* Marker 2 - Al Nahdha */}
             <div
-              className={`absolute w-[51px] h-[39px] top-[1502px] left-[1328px] transition-all duration-300 ${getElementOpacity("urgent-point-al-nahdha")} ${getElementScale("urgent-point-al-nahdha")}`}
+              className={`absolute w-[51px] h-[39px] top-[1502px] left-[1328px] transition-all duration-300 transform-gpu ${getElementOpacity("urgent-point-al-nahdha")} ${getElementScale("urgent-point-al-nahdha")}`}
             >
               <div className={`${getDotClasses("urgent-point-al-nahdha")} top-[13px] left-[25px]`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -475,7 +499,7 @@ export const Map = (): JSX.Element => {
 
             {/* Marker 3 - Shooting Range */}
             <div
-              className={`absolute w-[51px] h-[39px] top-[1753px] left-[2015px] transition-all duration-300 ${getElementOpacity("shooting-range-ad-police-rcc")} ${getElementScale("shooting-range-ad-police-rcc")}`}
+              className={`absolute w-[51px] h-[39px] top-[1753px] left-[2015px] transition-all duration-300 transform-gpu ${getElementOpacity("shooting-range-ad-police-rcc")} ${getElementScale("shooting-range-ad-police-rcc")}`}
             >
               <div className={`${getDotClasses("shooting-range-ad-police-rcc")} top-[13px] left-[25px]`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -491,7 +515,7 @@ export const Map = (): JSX.Element => {
 
             {/* Complex marker group - Urgent Points Al Riyad & Rabdan 2 + NGC MBZ */}
             <div
-              className={`absolute w-[411px] h-[121px] top-[1248px] left-[1048px] transition-all duration-300 ${getElementOpacity("urgent-point-al-riyad")} ${getElementScale("urgent-point-al-riyad")}`}
+              className={`absolute w-[411px] h-[121px] top-[1248px] left-[1048px] transition-all duration-300 transform-gpu ${getElementOpacity("urgent-point-al-riyad")} ${getElementScale("urgent-point-al-riyad")}`}
             >
               <div className="absolute w-[332px] h-[92px] top-[23px] left-[62px]">
                 {/* Urgent Point - Al Riyad */}
@@ -580,7 +604,7 @@ export const Map = (): JSX.Element => {
 
             {/* Shakboot Civil Defense */}
             <div
-              className={`absolute w-[35px] h-11 top-[1381px] left-[1466px] transition-all duration-300 ${getElementOpacity("shakboot-civil-defense")} ${getElementScale("shakboot-civil-defense")}`}
+              className={`absolute w-[35px] h-11 top-[1381px] left-[1466px] transition-all duration-300 transform-gpu ${getElementOpacity("shakboot-civil-defense")} ${getElementScale("shakboot-civil-defense")}`}
             >
               <div className={`${getDotClasses("shakboot-civil-defense")} top-[18px] left-0`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -596,7 +620,7 @@ export const Map = (): JSX.Element => {
 
             {/* NGC Abu Dhabi Airport */}
             <div
-              className={`absolute w-[26px] h-[55px] top-[1369px] left-[1152px] transition-all duration-300 ${getElementOpacity("ngc-abu-dhabi-airport")} ${getElementScale("ngc-abu-dhabi-airport")}`}
+              className={`absolute w-[26px] h-[55px] top-[1369px] left-[1152px] transition-all duration-300 transform-gpu ${getElementOpacity("ngc-abu-dhabi-airport")} ${getElementScale("ngc-abu-dhabi-airport")}`}
             >
               <div className={`${getDotClasses("ngc-abu-dhabi-airport")} top-[29px] left-0`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -612,7 +636,7 @@ export const Map = (): JSX.Element => {
 
             {/* Police Center Musaffah */}
             <div
-              className={`absolute w-12 h-[49px] top-[1427px] left-[1103px] transition-all duration-300 ${getElementOpacity("police-center-musaffah")} ${getElementScale("police-center-musaffah")}`}
+              className={`absolute w-12 h-[49px] top-[1427px] left-[1103px] transition-all duration-300 transform-gpu ${getElementOpacity("police-center-musaffah")} ${getElementScale("police-center-musaffah")}`}
             >
               <div className={`${getDotClasses("police-center-musaffah")} top-[23px] left-[22px]`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -628,11 +652,15 @@ export const Map = (): JSX.Element => {
 
             {/* Rebdan Police Points & Disciplinary Department Complex */}
             <div
-              className={`absolute w-[235px] h-[132px] top-[1208px] left-[814px] transition-all duration-300 ${getElementOpacity("rebdan-police-points")} ${getElementScale("rebdan-police-points")}`}
+              className={`absolute w-[235px] h-[132px] top-[1208px] left-[814px] transition-all duration-300 transform-gpu`}
             >
               <div className="absolute w-[195px] h-[82px] top-[51px] left-10">
                 <div className="absolute w-[26px] h-11 top-0 left-[169px]">
-                  <div className={`${getDotClasses("rebdan-police-points")} top-[18px] left-0`}>
+                  <div
+                    className={`${getDotClasses("rebdan-police-points")} top-[18px] left-0`}
+                    onMouseEnter={() => handleLabelHover("rebdan-police-points")}
+                    onMouseLeave={() => handleLabelHover(null)}
+                  >
                     <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
                   </div>
                   <Image
@@ -641,11 +669,19 @@ export const Map = (): JSX.Element => {
                     src="/vector-27.svg"
                     width={1.5}
                     height={8}
+                    onMouseEnter={() => handleLabelHover("rebdan-police-points")}
+                    onMouseLeave={() => handleLabelHover(null)}
                   />
                 </div>
 
-                <div className="absolute w-[195px] h-[52px] top-[30px] left-0">
-                  <div className={`${getDotClasses("rebdan-police-points")} top-[26px] left-[169px]`}>
+                <div
+                  className={`absolute w-[195px] h-[52px] top-[30px] left-0 transition-all duration-300 transform-gpu ${getElementOpacity("rebdan-police-points")} ${getElementScale("rebdan-police-points")}`}
+                >
+                  <div
+                    className={`${getDotClasses("rebdan-police-points")} top-[26px] left-[169px]`}
+                    onMouseEnter={() => handleLabelHover("rebdan-police-points")}
+                    onMouseLeave={() => handleLabelHover(null)}
+                  >
                     <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
                   </div>
                   <Image
@@ -654,6 +690,8 @@ export const Map = (): JSX.Element => {
                     src="/vector-42.svg"
                     width={35}
                     height={17}
+                    onMouseEnter={() => handleLabelHover("rebdan-police-points")}
+                    onMouseLeave={() => handleLabelHover(null)}
                   />
                   <Button
                     onClick={() =>
@@ -671,8 +709,14 @@ export const Map = (): JSX.Element => {
                 </div>
               </div>
 
-              <div className="absolute w-[139px] h-[65px] top-0 left-0">
-                <div className={`${getDotClasses("disciplinary-department")} top-[39px] left-[57px]`}>
+              <div
+                className={`absolute w-[139px] h-[65px] top-0 left-0 transition-all duration-300 transform-gpu ${getElementOpacity("disciplinary-department")} ${getElementScale("disciplinary-department")}`}
+              >
+                <div
+                  className={`${getDotClasses("disciplinary-department")} top-[39px] left-[57px]`}
+                  onMouseEnter={() => handleLabelHover("disciplinary-department")}
+                  onMouseLeave={() => handleLabelHover(null)}
+                >
                   <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
                 </div>
                 <Image
@@ -681,6 +725,8 @@ export const Map = (): JSX.Element => {
                   src="/vector-30.svg"
                   width={1.5}
                   height={30}
+                  onMouseEnter={() => handleLabelHover("disciplinary-department")}
+                  onMouseLeave={() => handleLabelHover(null)}
                 />
                 <Button
                   onClick={() =>
@@ -702,7 +748,7 @@ export const Map = (): JSX.Element => {
             <div
               onMouseEnter={() => handleLabelHover("special-task-sector")}
               onMouseLeave={() => handleLabelHover(null)}
-              className={`absolute w-[26px] h-[81px] top-[991px] left-[670px] transition-all duration-300 cursor-pointer ${getElementOpacity("special-task-sector")} ${getElementScale("special-task-sector")}`}
+              className={`absolute w-[26px] h-[81px] top-[991px] left-[670px] transition-all duration-300 cursor-pointer transform-gpu ${getElementOpacity("special-task-sector")} ${getElementScale("special-task-sector")}`}
             >
               <div className={`${getDotClasses("special-task-sector")} top-[55px] left-0`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -718,7 +764,7 @@ export const Map = (): JSX.Element => {
 
             {/* Clinics - Al Bateen */}
             <div
-              className={`absolute w-[180px] h-24 top-[1044px] left-[488px] transition-all duration-300 ${getElementOpacity("clinics-al-bateen")} ${getElementScale("clinics-al-bateen")}`}
+              className={`absolute w-[180px] h-24 top-[1044px] left-[488px] transition-all duration-300 transform-gpu ${getElementOpacity("clinics-al-bateen")} ${getElementScale("clinics-al-bateen")}`}
             >
               <div className={`${getDotClasses("clinics-al-bateen")} top-[70px] left-[154px]`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -747,7 +793,7 @@ export const Map = (): JSX.Element => {
 
             {/* Al Mushrif Children Speciality Centre */}
             <div
-              className={`absolute w-[68px] h-12 top-[1162px] left-[734px] transition-all duration-300 ${getElementOpacity("al-mushrif-children")} ${getElementScale("al-mushrif-children")}`}
+              className={`absolute w-[68px] h-12 top-[1162px] left-[734px] transition-all duration-300 transform-gpu ${getElementOpacity("al-mushrif-children")} ${getElementScale("al-mushrif-children")}`}
             >
               <div className={`${getDotClasses("al-mushrif-children")} top-4 left-[42px]`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -763,7 +809,7 @@ export const Map = (): JSX.Element => {
 
             {/* Sadyat Civil Defense */}
             <div
-              className={`absolute w-[26px] h-[59px] top-[850px] left-[881px] transition-all duration-300 ${getElementOpacity("sadyat-civil-defense")} ${getElementScale("sadyat-civil-defense")}`}
+              className={`absolute w-[26px] h-[59px] top-[850px] left-[881px] transition-all duration-300 transform-gpu ${getElementOpacity("sadyat-civil-defense")} ${getElementScale("sadyat-civil-defense")}`}
             >
               <div className={`${getDotClasses("sadyat-civil-defense")} top-[33px] left-0`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -779,7 +825,7 @@ export const Map = (): JSX.Element => {
 
             {/* Additional markers with proper positioning */}
             <div
-              className={`absolute w-[26px] h-[46px] top-[1128px] left-[923px] transition-all duration-300  transition-all duration-300`}
+              className={`absolute w-[26px] h-[46px] top-[1128px] left-[923px] transition-all duration-300 transform-gpu transition-all duration-300`}
             >
               <div className={`${getDotClasses()} top-5 left-0`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -794,7 +840,7 @@ export const Map = (): JSX.Element => {
             </div>
 
             <div
-              className={`absolute w-[26px] h-[46px] top-[1156px] left-[853px] transition-all duration-300  transition-all duration-300`}
+              className={`absolute w-[26px] h-[46px] top-[1156px] left-[853px] transition-all duration-300 transform-gpu transition-all duration-300`}
             >
               <div className={`${getDotClasses()} top-5 left-0`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -810,7 +856,7 @@ export const Map = (): JSX.Element => {
 
             {/* Urgent Point - Shahkbout */}
             <div
-              className={`absolute w-[50px] h-[49px] top-[1200px] left-[1465px] transition-all duration-300 ${getElementOpacity("urgent-point-shahkbout")} ${getElementScale("urgent-point-shahkbout")}`}
+              className={`absolute w-[50px] h-[49px] top-[1200px] left-[1465px] transition-all duration-300 transform-gpu ${getElementOpacity("urgent-point-shahkbout")} ${getElementScale("urgent-point-shahkbout")}`}
               onMouseEnter={() => handleLabelHover("urgent-point-shahkbout")}
               onMouseLeave={() => handleLabelHover(null)}
             >
@@ -863,7 +909,7 @@ export const Map = (): JSX.Element => {
             <div
               onMouseEnter={() => handleLabelHover("traffic-patrol-general")}
               onMouseLeave={() => handleLabelHover(null)}
-              className={`absolute w-[321px] h-[111px] top-[1258px] left-[1618px] transition-all duration-300 cursor-pointer ${getElementOpacity("traffic-patrol-general")} ${getElementScale("traffic-patrol-general")}`}
+              className={`absolute w-[321px] h-[111px] top-[1258px] left-[1618px] transition-all duration-300 cursor-pointer transform-gpu ${getElementOpacity("traffic-patrol-general")} ${getElementScale("traffic-patrol-general")}`}
             >
               <div className="absolute w-[321px] h-[104px] top-0 left-0">
                 <div className="absolute w-[321px] h-[83px] top-0 left-0">
@@ -931,7 +977,7 @@ export const Map = (): JSX.Element => {
 
             {/* New Alfalah Civil Defense */}
             <div
-              className={`absolute w-[35px] h-11 top-[1116px] left-[1699px] transition-all duration-300 ${getElementOpacity("new-alfalah-civil-defense")} ${getElementScale("new-alfalah-civil-defense")}`}
+              className={`absolute w-[35px] h-11 top-[1116px] left-[1699px] transition-all duration-300 transform-gpu ${getElementOpacity("new-alfalah-civil-defense")} ${getElementScale("new-alfalah-civil-defense")}`}
             >
               <div className={`${getDotClasses("new-alfalah-civil-defense")} top-[18px] left-[9px]`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -947,7 +993,7 @@ export const Map = (): JSX.Element => {
 
             {/* Haggana Offices */}
             <div
-              className={`absolute w-[70px] h-[54px] top-[1715px] left-[1514px] transition-all duration-300 ${getElementOpacity("haggana-offices")} ${getElementScale("haggana-offices")}`}
+              className={`absolute w-[70px] h-[54px] top-[1715px] left-[1514px] transition-all duration-300 transform-gpu ${getElementOpacity("haggana-offices")} ${getElementScale("haggana-offices")}`}
             >
               <div className={`${getDotClasses("haggana-offices")} top-7 left-0`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -963,7 +1009,7 @@ export const Map = (): JSX.Element => {
 
             {/* Al Wathba Civil Defense Gym */}
             <div
-              className={`absolute w-[70px] h-[54px] top-[1616px] left-[1492px] transition-all duration-300 ${getElementOpacity("al-wathba-civil-defense")} ${getElementScale("al-wathba-civil-defense")}`}
+              className={`absolute w-[70px] h-[54px] top-[1616px] left-[1492px] transition-all duration-300 transform-gpu ${getElementOpacity("al-wathba-civil-defense")} ${getElementScale("al-wathba-civil-defense")}`}
             >
               <div className={`${getDotClasses("al-wathba-civil-defense")} top-7 left-0`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -979,7 +1025,7 @@ export const Map = (): JSX.Element => {
 
             {/* Sih Shoaib Civil Defense */}
             <div
-              className={`absolute w-[53px] h-12 top-[819px] left-[1475px] transition-all duration-300 ${getElementOpacity("sih-shoaib-civil-defense")} ${getElementScale("sih-shoaib-civil-defense")}`}
+              className={`absolute w-[53px] h-12 top-[819px] left-[1475px] transition-all duration-300 transform-gpu ${getElementOpacity("sih-shoaib-civil-defense")} ${getElementScale("sih-shoaib-civil-defense")}`}
             >
               <div className={`${getDotClasses("sih-shoaib-civil-defense")} top-[22px] left-[27px]`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -995,7 +1041,7 @@ export const Map = (): JSX.Element => {
 
             {/* DPSC Al Shahama Clinic */}
             <div
-              className={`absolute w-[42px] h-[70px] top-[777px] left-[1606px] transition-all duration-300 ${getElementOpacity("dpsc-al-shahama-clinic")} ${getElementScale("dpsc-al-shahama-clinic")}`}
+              className={`absolute w-[42px] h-[70px] top-[777px] left-[1606px] transition-all duration-300 transform-gpu ${getElementOpacity("dpsc-al-shahama-clinic")} ${getElementScale("dpsc-al-shahama-clinic")}`}
             >
               <div className={`${getDotClasses("dpsc-al-shahama-clinic")} top-11 left-0`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -1011,7 +1057,7 @@ export const Map = (): JSX.Element => {
 
             {/* Urgent Point - Al Rahbah */}
             <div
-              className={`absolute w-[163px] h-[85px] top-[640px] left-[1474px] transition-all duration-300 ${getElementOpacity("urgent-point-al-rahbah")} ${getElementScale("urgent-point-al-rahbah")}`}
+              className={`absolute w-[163px] h-[85px] top-[640px] left-[1474px] transition-all duration-300 transform-gpu ${getElementOpacity("urgent-point-al-rahbah")} ${getElementScale("urgent-point-al-rahbah")}`}
             >
               <div className={`${getDotClasses("urgent-point-al-rahbah")} top-[59px] left-[68px]`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
@@ -1040,7 +1086,7 @@ export const Map = (): JSX.Element => {
 
             {/* Al Rahba Police Station Complex */}
             <div
-              className={`absolute w-[316px] h-[104px] top-[438px] left-[1651px] transition-all duration-300 ${getElementOpacity("al-rahba-police-hcni")} ${getElementScale("al-rahba-police-hcni")}`}
+              className={`absolute w-[316px] h-[104px] top-[438px] left-[1651px] transition-all duration-300 transform-gpu ${getElementOpacity("al-rahba-police-hcni")} ${getElementScale("al-rahba-police-hcni")}`}
             >
               <div className="absolute w-[163px] h-[70px] top-0 left-0">
                 <div className={`${getDotClasses("al-rahba-police-hcni")} top-11 left-[69px]`}>
@@ -1097,7 +1143,7 @@ export const Map = (): JSX.Element => {
 
             {/* Additional vector marker */}
             <div
-              className={`absolute w-[26px] h-14 top-[475px] left-[1507px] transition-all duration-300  transition-all duration-300`}
+              className={`absolute w-[26px] h-14 top-[475px] left-[1507px] transition-all duration-300 transform-gpu transition-all duration-300`}
             >
               <div className={`${getDotClasses()} top-[30px] left-0`}>
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
