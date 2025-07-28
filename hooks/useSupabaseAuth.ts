@@ -20,6 +20,17 @@ export function useSupabaseAuth() {
   })
 
   useEffect(() => {
+    // Check if Supabase is configured
+    if (!supabase) {
+      setAuthState({
+        user: null,
+        session: null,
+        loading: false,
+        error: "Supabase not configured",
+      })
+      return
+    }
+
     // Get initial session
     const getInitialSession = async () => {
       try {
