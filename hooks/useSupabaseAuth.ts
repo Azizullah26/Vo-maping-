@@ -96,6 +96,10 @@ export function useSupabaseAuth() {
   }
 
   const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
+    if (!supabase) {
+      return { success: false, error: "Supabase not configured" }
+    }
+
     try {
       setAuthState((prev) => ({ ...prev, loading: true, error: null }))
 
@@ -118,6 +122,10 @@ export function useSupabaseAuth() {
   }
 
   const signOut = async () => {
+    if (!supabase) {
+      return { success: false, error: "Supabase not configured" }
+    }
+
     try {
       setAuthState((prev) => ({ ...prev, loading: true, error: null }))
 
@@ -133,6 +141,10 @@ export function useSupabaseAuth() {
   }
 
   const resetPassword = async (email: string) => {
+    if (!supabase) {
+      return { success: false, error: "Supabase not configured" }
+    }
+
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email)
       if (error) throw error
@@ -145,6 +157,10 @@ export function useSupabaseAuth() {
   }
 
   const updateProfile = async (updates: Record<string, any>) => {
+    if (!supabase) {
+      return { success: false, error: "Supabase not configured" }
+    }
+
     try {
       const { error } = await supabase.auth.updateUser({
         data: updates,
