@@ -62,6 +62,10 @@ export function useSupabaseRealtime<T = any>(table: string, filter?: { column: s
   useEffect(() => {
     fetchData()
 
+    if (!supabase) {
+      return
+    }
+
     // Set up realtime subscription
     const channelName = filter ? `${table}-${filter.column}-${filter.value}` : table
 
