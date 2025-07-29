@@ -197,12 +197,9 @@ export default function AlAinLeftSlider({
     try {
       setLoadingDocuments(true)
 
-      // Check if Supabase credentials are available
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-      if (!supabaseUrl || !supabaseAnonKey) {
-        console.warn("Supabase credentials not available, using demo data")
+      // Check if Supabase is configured using centralized function
+      if (!isSupabaseConfigured()) {
+        console.warn("Supabase not configured, using demo data")
         setDemoDocuments()
         return
       }
