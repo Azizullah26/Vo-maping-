@@ -470,7 +470,10 @@ export default function AlAinLeftSlider({
 
     if (supabaseUrl && supabaseAnonKey) {
       try {
-        const supabase = createClient(supabaseUrl, supabaseAnonKey)
+        if (!supabase || !isSupabaseConfigured()) {
+          console.warn("Supabase not configured for upload")
+          return
+        }
 
         // First check if the documents table exists
         supabase
