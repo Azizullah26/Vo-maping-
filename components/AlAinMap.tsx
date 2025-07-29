@@ -379,27 +379,14 @@ export default function AlAinMap({
         // Re-add layers and markers after style change
         map.current.once("styledata", () => {
           try {
-            map.current.addLayer({
-              id: "dark-overlay",
-              type: "background",
-              paint: {
-                "background-color": "#000000",
-                "background-opacity": 0.4,
-              },
-            })
-
-            map.current.addLayer({
-              id: "map-mask",
-              type: "background",
-              paint: {
-                "background-color": "#1b1f3a",
-                "background-opacity": 0.25,
-              },
-              beforeId: "dark-overlay",
-            })
+            // Remove this entire addLayer call for dark-overlay
           } catch (error) {
             console.error("Error re-adding layers after style change:", error)
           }
+
+          // Reapply contrast and saturation filter after style change
+          const canvas = map.current.getCanvas()
+          canvas.style.filter = "contrast(1.2) saturate(1.5) brightness(0.9)"
         })
       } catch (error) {
         console.error("Error changing map style:", error)
@@ -636,25 +623,22 @@ export default function AlAinMap({
         lastCenterRef.current = map.current.getCenter()
         map.current.getCanvas().style.willChange = "transform"
 
-        try {
-          map.current.addLayer({
-            id: "dark-overlay",
-            type: "background",
-            paint: {
-              "background-color": "#000000",
-              "background-opacity": 0.4,
-            },
-          })
+        // Apply contrast and decrease saturation
+        map.current.addLayer({
+          id: "contrast-saturation-filter",
+          type: "background",
+          paint: {
+            "background-color": "rgba(0, 0, 0, 0)",
+          },
+          filter: ["all"],
+        })
 
-          map.current.addLayer({
-            id: "map-mask",
-            type: "background",
-            paint: {
-              "background-color": "#1b1f3a",
-              "background-opacity": 0.25,
-            },
-            beforeId: "dark-overlay",
-          })
+        // Apply CSS filter to the map canvas for contrast and saturation
+        const canvas = map.current.getCanvas()
+        canvas.style.filter = "contrast(1.2) saturate(1.5) brightness(0.9)"
+
+        try {
+          // Remove this entire addLayer call for dark-overlay
         } catch (error) {
           console.error("Error adding map layers:", error)
         }

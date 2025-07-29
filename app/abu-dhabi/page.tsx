@@ -1,5 +1,6 @@
 "use client"
 
+<<<<<<< HEAD
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,23 @@ export const Map = (): JSX.Element => {
   const [showSliders, setShowSliders] = useState(true);
   const [slidersPosition, setSlidersPosition] = useState("center");
   const router = useRouter();
+=======
+import type React from "react"
+
+import { useState, useEffect, useCallback } from "react"
+import Image from "next/image"
+import { Button } from "@/components/ui/button"
+import { useRef } from "react"
+import type { JSX } from "react"
+import { useRouter } from "next/navigation"
+
+export const Map = (): JSX.Element => {
+  const [hoveredLabel, setHoveredLabel] = useState<string | null>(null)
+  const mapContainerRef = useRef<HTMLDivElement>(null)
+  const [showSliders, setShowSliders] = useState(true)
+  const router = useRouter()
+  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null)
+>>>>>>> origin/main
 
   const [zoomLevel, setZoomLevel] = useState(0.4); // Start with 40% zoom fixed on full screen
   const [mapTransform, setMapTransform] = useState({
@@ -224,6 +242,7 @@ export const Map = (): JSX.Element => {
     }
   }, []);
 
+<<<<<<< HEAD
   const handleLabelHover = (labelId: string | null) => {
     setHoveredLabel(labelId);
   };
@@ -237,6 +256,36 @@ export const Map = (): JSX.Element => {
     if (!hoveredLabel) return "scale-100";
     return hoveredLabel === elementId ? "scale-110" : "scale-95";
   };
+=======
+  const handleLabelHover = useCallback(
+    (labelId: string | null) => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout)
+      }
+
+      const timeout = setTimeout(() => {
+        setHoveredLabel(labelId)
+      }, 50) // Small delay for smoother transitions
+
+      setHoverTimeout(timeout)
+    },
+    [hoverTimeout],
+  )
+
+  const getElementOpacity = (elementId?: string) => {
+    if (!hoveredLabel) return "opacity-100 transition-opacity duration-500 ease-out"
+    return hoveredLabel === elementId
+      ? "opacity-100 transition-opacity duration-300 ease-out"
+      : "opacity-40 transition-opacity duration-500 ease-out"
+  }
+
+  const getElementScale = (elementId?: string) => {
+    if (!hoveredLabel) return "scale-100 transition-transform duration-300 ease-out"
+    return hoveredLabel === elementId
+      ? "scale-110 transition-transform duration-200 ease-out"
+      : "scale-95 transition-transform duration-300 ease-out"
+  }
+>>>>>>> origin/main
 
   const getElementBrightness = () => {
     return hoveredLabel ? "brightness-75" : "brightness-100";
@@ -244,6 +293,7 @@ export const Map = (): JSX.Element => {
 
   const getLabelClasses = (labelId: string) => {
     const baseClasses =
+<<<<<<< HEAD
       "group flex items-center justify-center px-3 py-2 bg-white hover:bg-black rounded-full border-2 border-solid transition-all duration-300 cursor-pointer font-sans font-medium";
     const isHovered = hoveredLabel === labelId;
 
@@ -253,6 +303,17 @@ export const Map = (): JSX.Element => {
 
     return `${baseClasses} ${getElementOpacity(labelId)} ${getElementScale(labelId)}`;
   };
+=======
+      "group flex items-center justify-center px-3 py-2 bg-white hover:bg-black rounded-full border-2 border-solid transition-all duration-300 ease-out cursor-pointer font-sans font-medium transform-gpu"
+    const isHovered = hoveredLabel === labelId
+
+    if (isHovered) {
+      return `${baseClasses} shadow-lg shadow-blue-500/50 ring-2 ring-blue-400 z-50 scale-110 brightness-110`
+    }
+
+    return `${baseClasses} ${getElementOpacity(labelId)} ${getElementScale(labelId)} hover:shadow-md hover:shadow-blue-500/30`
+  }
+>>>>>>> origin/main
 
   const getTextClasses = () => {
     return "text-black group-hover:text-white tracking-normal leading-snug whitespace-nowrap overflow-hidden text-ellipsis font-sans font-semibold antialiased";
@@ -265,6 +326,14 @@ export const Map = (): JSX.Element => {
   const getVectorClasses = (elementId?: string) => {
     return `absolute transition-all duration-300 ${getElementOpacity(elementId)} ${getElementScale(elementId)}`;
   };
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout)
+      }
+    }
+  }, [hoverTimeout])
 
   return (
     <div
@@ -373,12 +442,29 @@ export const Map = (): JSX.Element => {
             />
           </Button>
 
+<<<<<<< HEAD
           {/* Marker 1 - Al Aliah */}
           <div
             className={`absolute w-[69px] h-[68px] top-[589px] left-[1134px] transition-all duration-300 ${getElementOpacity("urgent-point-al-aliah")} ${getElementScale("urgent-point-al-aliah")}`}
           >
             <div className={`${getDotClasses("urgent-point-al-aliah")} top-[42px] left-0`}>
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+=======
+            {/* Marker 1 - Al Aliah */}
+            <div
+              className={`absolute w-[69px] h-[68px] top-[589px] left-[1134px] transition-all duration-300 transform-gpu ${getElementOpacity("urgent-point-al-aliah")} ${getElementScale("urgent-point-al-aliah")}`}
+            >
+              <div className={`${getDotClasses("urgent-point-al-aliah")} top-[42px] left-0`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("urgent-point-al-aliah")} w-14 h-14 top-0 left-[13px]`}
+                alt="Vector"
+                src="/vector-21.svg"
+                width={14}
+                height={14}
+              />
+>>>>>>> origin/main
             </div>
             <Image
               className={`${getVectorClasses("urgent-point-al-aliah")} w-14 h-14 top-0 left-[13px]`}
@@ -389,12 +475,29 @@ export const Map = (): JSX.Element => {
             />
           </div>
 
+<<<<<<< HEAD
           {/* Marker 2 - Al Nahdha */}
           <div
             className={`absolute w-[51px] h-[39px] top-[1502px] left-[1328px] transition-all duration-300 ${getElementOpacity("urgent-point-al-nahdha")} ${getElementScale("urgent-point-al-nahdha")}`}
           >
             <div className={`${getDotClasses("urgent-point-al-nahdha")} top-[13px] left-[25px]`}>
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+=======
+            {/* Marker 2 - Al Nahdha */}
+            <div
+              className={`absolute w-[51px] h-[39px] top-[1502px] left-[1328px] transition-all duration-300 transform-gpu ${getElementOpacity("urgent-point-al-nahdha")} ${getElementScale("urgent-point-al-nahdha")}`}
+            >
+              <div className={`${getDotClasses("urgent-point-al-nahdha")} top-[13px] left-[25px]`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("urgent-point-al-nahdha")} w-[37px] h-[26px] top-0 left-0`}
+                alt="Vector"
+                src="/vector-35.svg"
+                width={37}
+                height={26}
+              />
+>>>>>>> origin/main
             </div>
             <Image
               className={`${getVectorClasses("urgent-point-al-nahdha")} w-[37px] h-[26px] top-0 left-0`}
@@ -405,12 +508,29 @@ export const Map = (): JSX.Element => {
             />
           </div>
 
+<<<<<<< HEAD
           {/* Marker 3 - Shooting Range */}
           <div
             className={`absolute w-[51px] h-[39px] top-[1753px] left-[2015px] transition-all duration-300 ${getElementOpacity("shooting-range-ad-police-rcc")} ${getElementScale("shooting-range-ad-police-rcc")}`}
           >
             <div className={`${getDotClasses("shooting-range-ad-police-rcc")} top-[13px] left-[25px]`}>
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+=======
+            {/* Marker 3 - Shooting Range */}
+            <div
+              className={`absolute w-[51px] h-[39px] top-[1753px] left-[2015px] transition-all duration-300 transform-gpu ${getElementOpacity("shooting-range-ad-police-rcc")} ${getElementScale("shooting-range-ad-police-rcc")}`}
+            >
+              <div className={`${getDotClasses("shooting-range-ad-police-rcc")} top-[13px] left-[25px]`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("shooting-range-ad-police-rcc")} w-[37px] h-[26px] top-0 left-0`}
+                alt="Vector"
+                src="/vector-35.svg"
+                width={37}
+                height={26}
+              />
+>>>>>>> origin/main
             </div>
             <Image
               className={`${getVectorClasses("shooting-range-ad-police-rcc")} w-[37px] h-[26px] top-0 left-0`}
@@ -421,6 +541,7 @@ export const Map = (): JSX.Element => {
             />
           </div>
 
+<<<<<<< HEAD
           {/* Complex marker group - Urgent Points Al Riyad & Rabdan 2 + NGC MBZ */}
           <div
             className={`absolute w-[411px] h-[121px] top-[1248px] left-[1048px] transition-all duration-300 ${getElementOpacity("urgent-point-al-riyad")} ${getElementScale("urgent-point-al-riyad")}`}
@@ -429,14 +550,228 @@ export const Map = (): JSX.Element => {
               {/* Urgent Point - Al Riyad */}
               <div className="absolute w-[216px] h-12 top-11 left-[116px]">
                 <div className={`${getDotClasses("urgent-point-al-riyad")} top-[22px] left-[190px]`}>
+=======
+            {/* Complex marker group - Urgent Points Al Riyad & Rabdan 2 + NGC MBZ */}
+            <div
+              className={`absolute w-[411px] h-[121px] top-[1248px] left-[1048px] transition-all duration-300 transform-gpu ${getElementOpacity("urgent-point-al-riyad")} ${getElementScale("urgent-point-al-riyad")}`}
+            >
+              <div className="absolute w-[332px] h-[92px] top-[23px] left-[62px]">
+                {/* Urgent Point - Al Riyad */}
+                <div className="absolute w-[216px] h-12 top-11 left-[116px]">
+                  <div className={`${getDotClasses("urgent-point-al-riyad")} top-[22px] left-[190px]`}>
+                    <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+                  </div>
+                  <Image
+                    className={`${getVectorClasses("urgent-point-al-riyad")} w-[38px] h-[17px] top-[17px] left-[163px]`}
+                    alt="Vector"
+                    src="/vector-24.svg"
+                    width={38}
+                    height={17}
+                  />
+                  <Button
+                    onClick={() =>
+                      router.push(
+                        `/dashboard/abu-dhabi-urgent-point-al-riyad?name=${encodeURIComponent("Urgent Point - Al Riyad")}&nameAr=${encodeURIComponent("نقطة عاجلة - الرياض")}`,
+                      )
+                    }
+                    onMouseEnter={() => handleLabelHover("urgent-point-al-riyad")}
+                    onMouseLeave={() => handleLabelHover(null)}
+                    className={getLabelClasses("urgent-point-al-riyad")}
+                    style={{ width: "163px", height: "26px", position: "absolute", top: "0", left: "0" }}
+                  >
+                    <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Al Riyad</span>
+                  </Button>
+                </div>
+
+                {/* Urgent Point - Rabdan 2 */}
+                <div className="absolute w-[187px] h-[54px] top-0 left-0">
+                  <div className={`${getDotClasses("urgent-point-rabdan-2")} top-7 left-0`}>
+                    <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+                  </div>
+                  <Image
+                    className={`${getVectorClasses("urgent-point-rabdan-2")} w-5 h-[17px] top-6 left-[11px]`}
+                    alt="Vector"
+                    src="/vector-26.svg"
+                    width={5}
+                    height={17}
+                  />
+                  <Button
+                    onClick={() =>
+                      router.push(
+                        `/dashboard/abu-dhabi-urgent-point-rabdan-2?name=${encodeURIComponent("Urgent Point - Rabdan 2")}&nameAr=${encodeURIComponent("نقطة عاجلة - ربدان 2")}`,
+                      )
+                    }
+                    onMouseEnter={() => handleLabelHover("urgent-point-rabdan-2")}
+                    onMouseLeave={() => handleLabelHover(null)}
+                    className={getLabelClasses("urgent-point-rabdan-2")}
+                    style={{ width: "163px", height: "26px", position: "absolute", top: "0", left: "24" }}
+                  >
+                    <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Rabdan 2</span>
+                  </Button>
+                </div>
+              </div>
+
+              {/* NGC MBZ Ambulance */}
+              <div className="absolute w-[50px] h-[49px] top-0 left-[361px]">
+                <div className={`${getDotClasses("ngc-mbz-ambulance")} top-[23px] left-6`}>
+>>>>>>> origin/main
                   <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
                 </div>
                 <Image
                   className={`${getVectorClasses("urgent-point-al-riyad")} w-[38px] h-[17px] top-[17px] left-[163px]`}
                   alt="Vector"
+<<<<<<< HEAD
                   src="/vector-24.svg"
                   width={38}
                   height={17}
+=======
+                  src="/vector-31.svg"
+                  width={35}
+                  height={35}
+                />
+              </div>
+
+              <Button
+                onClick={() =>
+                  router.push(
+                    `/dashboard/abu-dhabi-ngc-mbz-ambulance?name=${encodeURIComponent("NGC MBZ Ambulance")}&nameAr=${encodeURIComponent("إسعاف مركز الإدارة البيئية")}`,
+                  )
+                }
+                onMouseEnter={() => handleLabelHover("ngc-mbz-ambulance")}
+                onMouseLeave={() => handleLabelHover(null)}
+                className={getLabelClasses("ngc-mbz-ambulance")}
+                style={{ width: "163px", height: "26px", position: "absolute", top: "95px", left: "0" }}
+              >
+                <span className={`text-[14px] ${getTextClasses()}`}>NGC MBZ Ambulance</span>
+              </Button>
+            </div>
+
+            {/* Shakboot Civil Defense */}
+            <div
+              className={`absolute w-[35px] h-11 top-[1381px] left-[1466px] transition-all duration-300 transform-gpu ${getElementOpacity("shakboot-civil-defense")} ${getElementScale("shakboot-civil-defense")}`}
+            >
+              <div className={`${getDotClasses("shakboot-civil-defense")} top-[18px] left-0`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("shakboot-civil-defense")} w-[21px] h-[30px] top-0 left-3.5`}
+                alt="Vector"
+                src="/vector-43.svg"
+                width={21}
+                height={30}
+              />
+            </div>
+
+            {/* NGC Abu Dhabi Airport */}
+            <div
+              className={`absolute w-[26px] h-[55px] top-[1369px] left-[1152px] transition-all duration-300 transform-gpu ${getElementOpacity("ngc-abu-dhabi-airport")} ${getElementScale("ngc-abu-dhabi-airport")}`}
+            >
+              <div className={`${getDotClasses("ngc-abu-dhabi-airport")} top-[29px] left-0`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("ngc-abu-dhabi-airport")} w-1.5 h-[42px] top-0 left-2.5`}
+                alt="Vector"
+                src="/vector-32.svg"
+                width={1.5}
+                height={42}
+              />
+            </div>
+
+            {/* Police Center Musaffah */}
+            <div
+              className={`absolute w-12 h-[49px] top-[1427px] left-[1103px] transition-all duration-300 transform-gpu ${getElementOpacity("police-center-musaffah")} ${getElementScale("police-center-musaffah")}`}
+            >
+              <div className={`${getDotClasses("police-center-musaffah")} top-[23px] left-[22px]`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("police-center-musaffah")} w-[35px] h-9 top-0 left-0`}
+                alt="Vector"
+                src="/vector-36.svg"
+                width={35}
+                height={9}
+              />
+            </div>
+
+            {/* Rebdan Police Points & Disciplinary Department Complex */}
+            <div
+              className={`absolute w-[235px] h-[132px] top-[1208px] left-[814px] transition-all duration-300 transform-gpu`}
+            >
+              <div className="absolute w-[195px] h-[82px] top-[51px] left-10">
+                <div className="absolute w-[26px] h-11 top-0 left-[169px]">
+                  <div
+                    className={`${getDotClasses("rebdan-police-points")} top-[18px] left-0`}
+                    onMouseEnter={() => handleLabelHover("rebdan-police-points")}
+                    onMouseLeave={() => handleLabelHover(null)}
+                  >
+                    <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+                  </div>
+                  <Image
+                    className={`${getVectorClasses("rebdan-police-points")} w-1.5 h-8 top-0 left-[11px]`}
+                    alt="Vector"
+                    src="/vector-27.svg"
+                    width={1.5}
+                    height={8}
+                    onMouseEnter={() => handleLabelHover("rebdan-police-points")}
+                    onMouseLeave={() => handleLabelHover(null)}
+                  />
+                </div>
+
+                <div
+                  className={`absolute w-[195px] h-[52px] top-[30px] left-0 transition-all duration-300 transform-gpu ${getElementOpacity("rebdan-police-points")} ${getElementScale("rebdan-police-points")}`}
+                >
+                  <div
+                    className={`${getDotClasses("rebdan-police-points")} top-[26px] left-[169px]`}
+                    onMouseEnter={() => handleLabelHover("rebdan-police-points")}
+                    onMouseLeave={() => handleLabelHover(null)}
+                  >
+                    <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+                  </div>
+                  <Image
+                    className={`${getVectorClasses("rebdan-police-points")} w-[35px] h-[17px] top-[23px] left-[148px]`}
+                    alt="Vector"
+                    src="/vector-42.svg"
+                    width={35}
+                    height={17}
+                    onMouseEnter={() => handleLabelHover("rebdan-police-points")}
+                    onMouseLeave={() => handleLabelHover(null)}
+                  />
+                  <Button
+                    onClick={() =>
+                      router.push(
+                        `/dashboard/abu-dhabi-rebdan-police-points?name=${encodeURIComponent("Rebdan Police Points")}&nameAr=${encodeURIComponent("نقاط شرطة ربدان")}`,
+                      )
+                    }
+                    onMouseEnter={() => handleLabelHover("rebdan-police-points")}
+                    onMouseLeave={() => handleLabelHover(null)}
+                    className={getLabelClasses("rebdan-police-points")}
+                    style={{ width: "150px", height: "29px", position: "absolute", top: "0", left: "0" }}
+                  >
+                    <span className={`text-[14px] ${getTextClasses()}`}>Rebdan Police Points</span>
+                  </Button>
+                </div>
+              </div>
+
+              <div
+                className={`absolute w-[139px] h-[65px] top-0 left-0 transition-all duration-300 transform-gpu ${getElementOpacity("disciplinary-department")} ${getElementScale("disciplinary-department")}`}
+              >
+                <div
+                  className={`${getDotClasses("disciplinary-department")} top-[39px] left-[57px]`}
+                  onMouseEnter={() => handleLabelHover("disciplinary-department")}
+                  onMouseLeave={() => handleLabelHover(null)}
+                >
+                  <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+                </div>
+                <Image
+                  className={`${getVectorClasses("disciplinary-department")} w-1.5 h-[30px] top-[21px] left-[68px]`}
+                  alt="Vector"
+                  src="/vector-30.svg"
+                  width={1.5}
+                  height={30}
+                  onMouseEnter={() => handleLabelHover("disciplinary-department")}
+                  onMouseLeave={() => handleLabelHover(null)}
+>>>>>>> origin/main
                 />
                 <Button
                   onClick={() =>
@@ -481,6 +816,7 @@ export const Map = (): JSX.Element => {
               </div>
             </div>
 
+<<<<<<< HEAD
             {/* NGC MBZ Ambulance */}
             <div className="absolute w-[50px] h-[49px] top-0 left-[361px]">
               <div className={`${getDotClasses("ngc-mbz-ambulance")} top-[23px] left-6`}>
@@ -488,6 +824,129 @@ export const Map = (): JSX.Element => {
               </div>
               <Image
                 className={`${getVectorClasses("ngc-mbz-ambulance")} w-[35px] h-[35px] top-0 left-0`}
+=======
+            {/* Special Task Sector */}
+            <div
+              onMouseEnter={() => handleLabelHover("special-task-sector")}
+              onMouseLeave={() => handleLabelHover(null)}
+              className={`absolute w-[26px] h-[81px] top-[991px] left-[670px] transition-all duration-300 cursor-pointer transform-gpu ${getElementOpacity("special-task-sector")} ${getElementScale("special-task-sector")}`}
+            >
+              <div className={`${getDotClasses("special-task-sector")} top-[55px] left-0`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("special-task-sector")} w-1.5 h-[65px] top-0 left-[11px]`}
+                alt="Vector"
+                src="/vector-29.svg"
+                width={1.5}
+                height={65}
+              />
+            </div>
+
+            {/* Clinics - Al Bateen */}
+            <div
+              className={`absolute w-[180px] h-24 top-[1044px] left-[488px] transition-all duration-300 transform-gpu ${getElementOpacity("clinics-al-bateen")} ${getElementScale("clinics-al-bateen")}`}
+            >
+              <div className={`${getDotClasses("clinics-al-bateen")} top-[70px] left-[154px]`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("clinics-al-bateen")} w-[30px] h-[60px] top-[23px] left-[137px]`}
+                alt="Vector"
+                src="/vector-48.svg"
+                width={30}
+                height={60}
+              />
+              <Button
+                onClick={() =>
+                  router.push(
+                    `/dashboard/abu-dhabi-clinics-al-bateen?name=${encodeURIComponent("Clinics - Al Bateen")}&nameAr=${encodeURIComponent("عيادات - البطين")}`,
+                  )
+                }
+                onMouseEnter={() => handleLabelHover("clinics-al-bateen")}
+                onMouseLeave={() => handleLabelHover(null)}
+                className={getLabelClasses("clinics-al-bateen")}
+                style={{ width: "141px", height: "28px", position: "absolute", top: "0", left: "0" }}
+              >
+                <span className={`text-[14px] ${getTextClasses()}`}>Clinics - Al Bateen</span>
+              </Button>
+            </div>
+
+            {/* Al Mushrif Children Speciality Centre */}
+            <div
+              className={`absolute w-[68px] h-12 top-[1162px] left-[734px] transition-all duration-300 transform-gpu ${getElementOpacity("al-mushrif-children")} ${getElementScale("al-mushrif-children")}`}
+            >
+              <div className={`${getDotClasses("al-mushrif-children")} top-4 left-[42px]`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("al-mushrif-children")} w-[54px] h-12 top-0 left-0`}
+                alt="Vector"
+                src="/vector-51.svg"
+                width={54}
+                height={12}
+              />
+            </div>
+
+            {/* Sadyat Civil Defense */}
+            <div
+              className={`absolute w-[26px] h-[59px] top-[850px] left-[881px] transition-all duration-300 transform-gpu ${getElementOpacity("sadyat-civil-defense")} ${getElementScale("sadyat-civil-defense")}`}
+            >
+              <div className={`${getDotClasses("sadyat-civil-defense")} top-[33px] left-0`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("sadyat-civil-defense")} w-[5px] h-[47px] top-0 left-[11px]`}
+                alt="Vector"
+                src="/vector-44.svg"
+                width={5}
+                height={47}
+              />
+            </div>
+
+            {/* Additional markers with proper positioning */}
+            <div
+              className={`absolute w-[26px] h-[46px] top-[1128px] left-[923px] transition-all duration-300 transform-gpu transition-all duration-300`}
+            >
+              <div className={`${getDotClasses()} top-5 left-0`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses()} w-1.5 h-[30px] top-0 left-2.5`}
+                alt="Vector"
+                src="/vector-30.svg"
+                width={1.5}
+                height={30}
+              />
+            </div>
+
+            <div
+              className={`absolute w-[26px] h-[46px] top-[1156px] left-[853px] transition-all duration-300 transform-gpu transition-all duration-300`}
+            >
+              <div className={`${getDotClasses()} top-5 left-0`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses()} w-1.5 h-[30px] top-0 left-2.5`}
+                alt="Vector"
+                src="/vector-30.svg"
+                width={1.5}
+                height={30}
+              />
+            </div>
+
+            {/* Urgent Point - Shahkbout */}
+            <div
+              className={`absolute w-[50px] h-[49px] top-[1200px] left-[1465px] transition-all duration-300 transform-gpu ${getElementOpacity("urgent-point-shahkbout")} ${getElementScale("urgent-point-shahkbout")}`}
+              onMouseEnter={() => handleLabelHover("urgent-point-shahkbout")}
+              onMouseLeave={() => handleLabelHover(null)}
+            >
+              <div className={`${getDotClasses("urgent-point-shahkbout")} top-[23px] left-6`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("urgent-point-shahkbout")} w-[35px] h-[35px] top-0 left-0 hover:scale-110 transition-transform duration-300`}
+>>>>>>> origin/main
                 alt="Vector"
                 src="/vector-31.svg"
                 width={35}
@@ -503,8 +962,12 @@ export const Map = (): JSX.Element => {
               }
               onMouseEnter={() => handleLabelHover("ngc-mbz-ambulance")}
               onMouseLeave={() => handleLabelHover(null)}
+<<<<<<< HEAD
               className={getLabelClasses("ngc-mbz-ambulance")}
               style={{ width: "163px", height: "26px", position: "absolute", top: "95px", left: "0" }}
+=======
+              className={`absolute w-[321px] h-[111px] top-[1258px] left-[1618px] transition-all duration-300 cursor-pointer transform-gpu ${getElementOpacity("traffic-patrol-general")} ${getElementScale("traffic-patrol-general")}`}
+>>>>>>> origin/main
             >
               <span className={`text-[14px] ${getTextClasses()}`}>NGC MBZ Ambulance</span>
             </Button>
@@ -603,14 +1066,106 @@ export const Map = (): JSX.Element => {
               </div>
             </div>
 
+<<<<<<< HEAD
             <div className="absolute w-[139px] h-[65px] top-0 left-0">
               <div className={`${getDotClasses("disciplinary-department")} top-[39px] left-[57px]`}>
+=======
+            {/* New Alfalah Civil Defense */}
+            <div
+              className={`absolute w-[35px] h-11 top-[1116px] left-[1699px] transition-all duration-300 transform-gpu ${getElementOpacity("new-alfalah-civil-defense")} ${getElementScale("new-alfalah-civil-defense")}`}
+            >
+              <div className={`${getDotClasses("new-alfalah-civil-defense")} top-[18px] left-[9px]`}>
+>>>>>>> origin/main
                 <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
               </div>
               <Image
                 className={`${getVectorClasses("disciplinary-department")} w-1.5 h-[30px] top-[21px] left-[68px]`}
                 alt="Vector"
+<<<<<<< HEAD
                 src="/vector-30.svg"
+=======
+                src="/vector-38.svg"
+                width={23}
+                height={31}
+              />
+            </div>
+
+            {/* Haggana Offices */}
+            <div
+              className={`absolute w-[70px] h-[54px] top-[1715px] left-[1514px] transition-all duration-300 transform-gpu ${getElementOpacity("haggana-offices")} ${getElementScale("haggana-offices")}`}
+            >
+              <div className={`${getDotClasses("haggana-offices")} top-7 left-0`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("haggana-offices")} w-[58px] h-[41px] top-0 left-3`}
+                alt="Vector"
+                src="/vector-40.svg"
+                width={58}
+                height={41}
+              />
+            </div>
+
+            {/* Al Wathba Civil Defense Gym */}
+            <div
+              className={`absolute w-[70px] h-[54px] top-[1616px] left-[1492px] transition-all duration-300 transform-gpu ${getElementOpacity("al-wathba-civil-defense")} ${getElementScale("al-wathba-civil-defense")}`}
+            >
+              <div className={`${getDotClasses("al-wathba-civil-defense")} top-7 left-0`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("al-wathba-civil-defense")} w-[58px] h-[41px] top-0 left-3`}
+                alt="Vector"
+                src="/vector-40.svg"
+                width={58}
+                height={41}
+              />
+            </div>
+
+            {/* Sih Shoaib Civil Defense */}
+            <div
+              className={`absolute w-[53px] h-12 top-[819px] left-[1475px] transition-all duration-300 transform-gpu ${getElementOpacity("sih-shoaib-civil-defense")} ${getElementScale("sih-shoaib-civil-defense")}`}
+            >
+              <div className={`${getDotClasses("sih-shoaib-civil-defense")} top-[22px] left-[27px]`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("sih-shoaib-civil-defense")} w-[38px] h-[35px] top-0 left-0`}
+                alt="Vector"
+                src="/vector-23.svg"
+                width={38}
+                height={35}
+              />
+            </div>
+
+            {/* DPSC Al Shahama Clinic */}
+            <div
+              className={`absolute w-[42px] h-[70px] top-[777px] left-[1606px] transition-all duration-300 transform-gpu ${getElementOpacity("dpsc-al-shahama-clinic")} ${getElementScale("dpsc-al-shahama-clinic")}`}
+            >
+              <div className={`${getDotClasses("dpsc-al-shahama-clinic")} top-11 left-0`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("dpsc-al-shahama-clinic")} w-[30px] h-[57px] top-0 left-3`}
+                alt="Vector"
+                src="/vector-49.svg"
+                width={30}
+                height={57}
+              />
+            </div>
+
+            {/* Urgent Point - Al Rahbah */}
+            <div
+              className={`absolute w-[163px] h-[85px] top-[640px] left-[1474px] transition-all duration-300 transform-gpu ${getElementOpacity("urgent-point-al-rahbah")} ${getElementScale("urgent-point-al-rahbah")}`}
+            >
+              <div className={`${getDotClasses("urgent-point-al-rahbah")} top-[59px] left-[68px]`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses("urgent-point-al-rahbah")} w-1.5 h-[43px] top-6 left-[78px]`}
+                alt="Vector"
+                src="/vector-33.svg"
+>>>>>>> origin/main
                 width={1.5}
                 height={30}
               />
@@ -630,6 +1185,7 @@ export const Map = (): JSX.Element => {
             </div>
           </div>
 
+<<<<<<< HEAD
           {/* Special Task Sector */}
           <div
             onMouseEnter={() => handleLabelHover("special-task-sector")}
@@ -638,6 +1194,63 @@ export const Map = (): JSX.Element => {
           >
             <div className={`${getDotClasses("special-task-sector")} top-[55px] left-0`}>
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+=======
+            {/* Al Rahba Police Station Complex */}
+            <div
+              className={`absolute w-[316px] h-[104px] top-[438px] left-[1651px] transition-all duration-300 transform-gpu ${getElementOpacity("al-rahba-police-hcni")} ${getElementScale("al-rahba-police-hcni")}`}
+            >
+              <div className="absolute w-[163px] h-[70px] top-0 left-0">
+                <div className={`${getDotClasses("al-rahba-police-hcni")} top-11 left-[69px]`}>
+                  <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+                </div>
+                <Image
+                  className={`${getVectorClasses("al-rahba-police-hcni")} w-1.5 h-[43px] top-3.5 left-[79px]`}
+                  alt="Vector"
+                  src="/vector-33.svg"
+                  width={1.5}
+                  height={43}
+                />
+                <Button
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/abu-dhabi-al-rahba-police-hcni?name=${encodeURIComponent("Al Rahba Police Station - AD Police HCNI")}&nameAr=${encodeURIComponent("مركز شرطة الرحبة - شرطة أبوظبي HCNI")}`,
+                    )
+                  }
+                  onMouseEnter={() => handleLabelHover("al-rahba-police-hcni")}
+                  onMouseLeave={() => handleLabelHover(null)}
+                  className={getLabelClasses("al-rahba-police-hcni")}
+                  style={{ width: "163px", height: "17px", position: "absolute", top: "0", left: "0" }}
+                >
+                  <span className={`text-[11px] ${getTextClasses()}`}>Al Rahba Police Station - AD Police HCNI</span>
+                </Button>
+              </div>
+
+              <div className="absolute w-[190px] h-[75px] top-[29px] left-[126px]">
+                <div className={`${getDotClasses("al-rahba-police-rcc")} top-[49px] left-[21px]`}>
+                  <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+                </div>
+                <Image
+                  className={`${getVectorClasses("al-rahba-police-rcc")} w-1.5 h-[43px] top-[19px] left-[31px]`}
+                  alt="Vector"
+                  src="/vector-33.svg"
+                  width={1.5}
+                  height={43}
+                />
+                <Button
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/abu-dhabi-al-rahba-police-rcc?name=${encodeURIComponent("Al Rahba Police Station - AD Police RCC")}&nameAr=${encodeURIComponent("مركز شرطة الرحبة - شرطة أبوظبي RCC")}`,
+                    )
+                  }
+                  onMouseEnter={() => handleLabelHover("al-rahba-police-rcc")}
+                  onMouseLeave={() => handleLabelHover(null)}
+                  className={getLabelClasses("al-rahba-police-rcc")}
+                  style={{ width: "190px", height: "20px", position: "absolute", top: "0", left: "0" }}
+                >
+                  <span className={`text-[12px] ${getTextClasses()}`}>Al Rahba Police Station - AD Police RCC</span>
+                </Button>
+              </div>
+>>>>>>> origin/main
             </div>
             <Image
               className={`${getVectorClasses("special-task-sector")} w-1.5 h-[65px] top-0 left-[11px]`}
@@ -648,12 +1261,29 @@ export const Map = (): JSX.Element => {
             />
           </div>
 
+<<<<<<< HEAD
           {/* Clinics - Al Bateen */}
           <div
             className={`absolute w-[180px] h-24 top-[1044px] left-[488px] transition-all duration-300 ${getElementOpacity("clinics-al-bateen")} ${getElementScale("clinics-al-bateen")}`}
           >
             <div className={`${getDotClasses("clinics-al-bateen")} top-[70px] left-[154px]`}>
               <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+=======
+            {/* Additional vector marker */}
+            <div
+              className={`absolute w-[26px] h-14 top-[475px] left-[1507px] transition-all duration-300 transform-gpu transition-all duration-300`}
+            >
+              <div className={`${getDotClasses()} top-[30px] left-0`}>
+                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
+              </div>
+              <Image
+                className={`${getVectorClasses()} w-1.5 h-[43px] top-0 left-2.5`}
+                alt="Vector"
+                src="/vector-33.svg"
+                width={1.5}
+                height={43}
+              />
+>>>>>>> origin/main
             </div>
             <Image
               className={`${getVectorClasses("clinics-al-bateen")} w-[30px] h-[60px] top-[23px] left-[137px]`}

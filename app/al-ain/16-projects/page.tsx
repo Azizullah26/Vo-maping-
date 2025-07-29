@@ -311,7 +311,7 @@ export default function SixteenProjectsPage() {
                 <div className="relative group">
                   {/* Small circle marker */}
                   <div
-                    className="w-3 h-3 bg-white rounded-full border border-white shadow-lg cursor-pointer hover:scale-110 transition-transform duration-300"
+                    className="w-2 h-2 bg-white rounded-full border border-white shadow-lg cursor-pointer hover:scale-110 transition-transform duration-300"
                     onClick={() => setSelectedProject(project)}
                     style={{
                       boxShadow: "0 0 8px rgba(255, 255, 255, 0.8)",
@@ -321,7 +321,7 @@ export default function SixteenProjectsPage() {
 
                   {/* Dotted line */}
                   <div
-                    className="absolute bottom-4 left-2 w-0.5 h-12 opacity-80"
+                    className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-0.5 h-12 opacity-80"
                     style={{
                       background:
                         "repeating-linear-gradient(0deg, #ffffff 0px, #ffffff 4px, transparent 4px, transparent 8px)",
@@ -344,24 +344,6 @@ export default function SixteenProjectsPage() {
                       {project.name}
                     </span>
                   </button>
-
-                  {/* Project Number */}
-                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900/90 text-white text-xs px-2 py-1 rounded backdrop-blur-sm border border-cyan-400/30 shadow-lg">
-                    {project.id}
-                  </div>
-
-                  {/* Hover Tooltip */}
-                  <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                    <div className="bg-slate-900/95 text-white text-sm px-3 py-2 rounded-lg border border-cyan-400/30 backdrop-blur-sm shadow-xl whitespace-nowrap">
-                      <div className="font-semibold">{project.name}</div>
-                      <div className="text-slate-400 text-xs">{project.nameAr}</div>
-                      <div className="text-xs mt-1">
-                        <span className={`inline-block px-2 py-1 rounded text-xs ${getStatusColor(project.status)}`}>
-                          {getStatusText(project.status)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             ))}
