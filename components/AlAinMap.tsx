@@ -834,31 +834,20 @@ export default function AlAinMap({
             // Stop any ongoing operations
             map.current.stop()
 
-            // Set a minimal style to clear existing sources without triggering aborts
-            map.current.setStyle({
-              version: 8,
-              sources: {},
-              layers: [],
-            })
-
-            // Small delay to allow style to clear, then remove
-            setTimeout(() => {
-              try {
-                if (map.current) {
-                  map.current.remove()
-                  map.current = null
-                }
-              } catch (e) {
-                console.warn("Map already removed or error during removal:", e)
-              }
-            }, 50)
+            // Skip style clearing to prevent AbortError during unmount
+            // Directly remove the map instead
+            map.current.remove()
+            map.current = null
           } catch (e) {
-            // If setStyle fails, try immediate removal
-            try {
-              map.current.remove()
+            // Handle any cleanup errors gracefully
+            console.warn("Error during map cleanup:", e)
+            if (map.current) {
+              try {
+                map.current.remove()
+              } catch (removeError) {
+                // Ignore removal errors during cleanup
+              }
               map.current = null
-            } catch (removeError) {
-              console.warn("Error during map removal:", removeError)
             }
           }
         }

@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import { Film } from "lucide-react"
 import "@/styles/vue-futuristic-alain.css"
 import { useRouter } from "next/navigation"
-import { createClient } from "@supabase/supabase-js"
+import { supabase, isSupabaseConfigured } from "@/lib/supabase"
 import { cn } from "@/lib/utils"
 
 // Add a new interface for documents
@@ -197,19 +197,20 @@ export default function AlAinLeftSlider({
     try {
       setLoadingDocuments(true)
 
-      // Check if Supabase credentials are available
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-      if (!supabaseUrl || !supabaseAnonKey) {
-        console.warn("Supabase credentials not available, using demo data")
+      // Check if Supabase is configured using centralized function
+      if (!isSupabaseConfigured()) {
+        console.warn("Supabase not configured, using demo data")
         setDemoDocuments()
         return
       }
 
       try {
-        // Initialize Supabase client
-        const supabase = createClient(supabaseUrl, supabaseAnonKey)
+        // Check if Supabase is configured
+        if (!supabase || !isSupabaseConfigured()) {
+          console.warn("Supabase not configured, using demo documents")
+          setDemoDocuments()
+          return
+        }
 
         // Test connection with a simple query first
         const { error: connectionError } = await supabase.from("documents").select("count").limit(1).single()
@@ -458,15 +459,11 @@ export default function AlAinLeftSlider({
       fetchDocuments(filters)
     }, 30000) // Poll every 30 seconds as a fallback
 
-    // Try to set up Supabase realtime subscription if credentials are available
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
+    // Try to set up Supabase realtime subscription if configured
     let subscription: { unsubscribe: () => void } | undefined
 
-    if (supabaseUrl && supabaseAnonKey) {
+    if (supabase && isSupabaseConfigured()) {
       try {
-        const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
         // First check if the documents table exists
         supabase

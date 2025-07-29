@@ -23,6 +23,15 @@ export function useSupabaseRealtime<T = any>(table: string, filter?: { column: s
   const [channel, setChannel] = useState<RealtimeChannel | null>(null)
 
   const fetchData = useCallback(async () => {
+    if (!supabase) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: "Supabase not configured",
+      }))
+      return
+    }
+
     try {
       setState((prev) => ({ ...prev, loading: true, error: null }))
 
@@ -52,6 +61,10 @@ export function useSupabaseRealtime<T = any>(table: string, filter?: { column: s
 
   useEffect(() => {
     fetchData()
+
+    if (!supabase) {
+      return
+    }
 
     // Set up realtime subscription
     const channelName = filter ? `${table}-${filter.column}-${filter.value}` : table
