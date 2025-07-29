@@ -208,8 +208,12 @@ export default function AlAinLeftSlider({
       }
 
       try {
-        // Initialize Supabase client
-        const supabase = createClient(supabaseUrl, supabaseAnonKey)
+        // Check if Supabase is configured
+        if (!supabase || !isSupabaseConfigured()) {
+          console.warn("Supabase not configured, using demo documents")
+          setDemoDocuments()
+          return
+        }
 
         // Test connection with a simple query first
         const { error: connectionError } = await supabase.from("documents").select("count").limit(1).single()
