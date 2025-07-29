@@ -23,6 +23,50 @@ export function getEnvVariable(key: string): string | undefined {
 }
 
 /**
+ * Gets server-side environment variables (only works on server)
+ * @param key The environment variable name
+ * @returns The value of the environment variable
+ */
+export function getServerEnvVariable(key: string): string | undefined {
+  // Prevent access on client side
+  if (typeof window !== "undefined") {
+    console.warn(`Attempted to access server env variable "${key}" on the client side`)
+    return undefined
+  }
+
+  return process.env[key]
+}
+
+/**
+ * Safely gets NODE_ENV with fallback
+ * @returns The NODE_ENV value or 'development' as fallback
+ */
+export function getNodeEnv(): string {
+  // On client side, return a safe default
+  if (typeof window !== "undefined") {
+    return "production" // Assume production on client side
+  }
+
+  return process.env.NODE_ENV || "development"
+}
+
+/**
+ * Checks if we're in development mode
+ * @returns boolean indicating if in development
+ */
+export function isDevelopment(): boolean {
+  return getNodeEnv() === "development"
+}
+
+/**
+ * Checks if we're in production mode
+ * @returns boolean indicating if in production
+ */
+export function isProduction(): boolean {
+  return getNodeEnv() === "production"
+}
+
+/**
  * Checks if required environment variables are set
  * @returns Object with status and missing variables
  */
