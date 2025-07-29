@@ -459,18 +459,11 @@ export default function AlAinLeftSlider({
       fetchDocuments(filters)
     }, 30000) // Poll every 30 seconds as a fallback
 
-    // Try to set up Supabase realtime subscription if credentials are available
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
+    // Try to set up Supabase realtime subscription if configured
     let subscription: { unsubscribe: () => void } | undefined
 
-    if (supabaseUrl && supabaseAnonKey) {
+    if (supabase && isSupabaseConfigured()) {
       try {
-        if (!supabase || !isSupabaseConfigured()) {
-          console.warn("Supabase not configured for upload")
-          return
-        }
 
         // First check if the documents table exists
         supabase
