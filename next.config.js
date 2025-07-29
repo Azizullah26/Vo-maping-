@@ -16,10 +16,11 @@ const nextConfig = {
     ],
     unoptimized: true,
   },
-  // Environment variables for build time
+  // Environment variables for build time - make sure they're prefixed with NEXT_PUBLIC_
   env: {
-    NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE || "true",
-    NEXT_PUBLIC_STATIC_MODE: process.env.NEXT_PUBLIC_STATIC_MODE || "true",
+    NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE || process.env.DEMO_MODE || "true",
+    NEXT_PUBLIC_STATIC_MODE: process.env.NEXT_PUBLIC_STATIC_MODE || process.env.STATIC_MODE || "true",
+    NEXT_PUBLIC_VERCEL: process.env.VERCEL || "0",
   },
   // Simplified webpack configuration that doesn't require additional dependencies
   webpack: (config, { isServer }) => {

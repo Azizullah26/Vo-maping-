@@ -1,30 +1,29 @@
+import { isDemoMode, isStaticMode } from "./client-env"
+
 /**
  * Demo mode utilities for the application
  */
 
-export const isDemoMode = () => {
-  return process.env.NEXT_PUBLIC_DEMO_MODE === "true"
+export function getDemoMode(): boolean {
+  return isDemoMode()
 }
 
-export const isStaticMode = () => {
-  return process.env.NEXT_PUBLIC_STATIC_MODE === "true"
+export function getStaticMode(): boolean {
+  return isStaticMode()
 }
 
-export const isProductionBuild = () => {
-  return process.env.NODE_ENV === "production"
+export function shouldUseDemoData(): boolean {
+  return isDemoMode() || isStaticMode()
 }
 
-export const hasSupabaseConfig = () => {
-  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+export function getDemoConfig() {
+  return {
+    demoMode: getDemoMode(),
+    staticMode: getStaticMode(),
+    useDemoData: shouldUseDemoData(),
+  }
 }
 
-export const shouldUseDemoData = () => {
-  return isDemoMode() || !hasSupabaseConfig()
-}
-
-export const getAppMode = () => {
-  if (isDemoMode()) return "demo"
-  if (isStaticMode()) return "static"
-  if (hasSupabaseConfig()) return "full"
-  return "limited"
-}
+// Export for backward compatibility
+export const DEMO_MODE = getDemoMode()
+export const STATIC_MODE = getStaticMode()
