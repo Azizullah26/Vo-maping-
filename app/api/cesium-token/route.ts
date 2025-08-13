@@ -10,7 +10,7 @@ export async function GET() {
 
     return NextResponse.json({ token: cesiumToken })
   } catch (error) {
-    console.error("Error fetching Cesium token:", error)
-    return NextResponse.json({ error: "Failed to fetch Cesium token" }, { status: 500 })
+    console.error("Error providing Cesium token:", error)
+    return NextResponse.json({ error: "Failed to provide Cesium token" }, { status: 500 })
   }
 }

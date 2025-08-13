@@ -35,13 +35,6 @@ export function getSupabaseAnonKey(): string | undefined {
 }
 
 /**
- * Get Mapbox token (client-safe)
- */
-export function getMapboxToken(): string | undefined {
-  return process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN
-}
-
-/**
  * Check if we're running on Vercel (client-safe)
  */
 export function isVercel(): boolean {
