@@ -70,7 +70,6 @@ The application requires several environment variables for full functionality:
 
 ### Optional for Enhanced Features
 - `MAPBOX_ACCESS_TOKEN` - For map functionality (server-side only)
-- `NEXT_PUBLIC_CESIUM_ACCESS_TOKEN` - For 3D visualization
 - `BLOB_READ_WRITE_TOKEN` - For file storage
 
 ### Demo Mode

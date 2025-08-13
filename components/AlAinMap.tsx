@@ -34,21 +34,21 @@ const markerStyles = `
   transform: translate(-50%, -50%);
   z-index: 1;
   pointer-events: auto;
-  width: 3rem;
-  height: 3.5rem;
+  width: 2rem;
+  height: 2rem;
 }
 
 @media (min-width: 640px) {
   .marker-container {
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 2.25rem;
+    height: 2.25rem;
   }
 }
 
 @media (min-width: 768px) {
   .marker-container {
-    width: 4rem;
-    height: 4rem;
+    width: 2.5rem;
+    height: 2.5rem;
   }
 }
 
@@ -56,11 +56,11 @@ const markerStyles = `
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 0.75rem;
-  height: 0.75rem;
+  width: 0.625rem;
+  height: 0.625rem;
   background-color: #ffffff;
   border-radius: 50%;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
   transform: translate(-50%, -50%);
   transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
   z-index: 2;
@@ -72,21 +72,21 @@ const markerStyles = `
 
 @media (min-width: 640px) {
   .marker-circle {
-    width: 0.875rem;
-    height: 0.875rem;
+    width: 0.75rem;
+    height: 0.75rem;
   }
 }
 
 @media (min-width: 768px) {
   .marker-circle {
-    width: 0.9375rem;
-    height: 0.9375rem;
+    width: 0.875rem;
+    height: 0.875rem;
   }
 }
 
 .marker-number {
   color: #000000;
-  font-size: 0.75rem;
+  font-size: 0.625rem;
   font-weight: bold;
   text-align: center;
   line-height: 1;
@@ -96,13 +96,13 @@ const markerStyles = `
 
 @media (min-width: 640px) {
   .marker-number {
-    font-size: 0.8125rem;
+    font-size: 0.6875rem;
   }
 }
 
 @media (min-width: 768px) {
   .marker-number {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
   }
 }
 
@@ -141,6 +141,80 @@ const markerStyles = `
 /* Hide Mapbox attribution */
 .mapboxgl-ctrl-bottom-right {
   display: none !important;
+}
+
+/* Dashed connection lines */
+.connection-line {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dashed-line {
+  stroke: rgba(255, 255, 255, 0.8);
+  stroke-width: 2;
+  stroke-dasharray: 8 4;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+  animation: dashFlow 3s linear infinite;
+}
+
+.dashed-line-hover {
+  stroke: rgba(0, 204, 255, 1);
+  stroke-width: 3;
+  stroke-dasharray: 8 4;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 8px rgba(0, 204, 255, 0.6));
+  animation: dashFlow 2s linear infinite;
+}
+
+@keyframes dashFlow {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 24;
+  }
+}
+
+/* Connection labels */
+.connection-label {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.connection-label.visible {
+  opacity: 1;
+}
+
+.connection-label::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid rgba(0, 0, 0, 0.85);
+}
+
+.connection-label.opposite-label {
+  transform: none;
 }
 `
 
@@ -896,7 +970,7 @@ export default function AlAinMap({
       markerElement.style.willChange = "transform"
 
       // Add responsive classes
-      markerElement.classList.add("w-12", "h-12", "sm:w-14", "sm:h-14", "md:w-16", "md:h-16")
+      markerElement.classList.add("w-8", "h-8", "sm:w-9", "sm:h-9", "md:w-10", "md:h-10")
 
       if (HOVERABLE_MARKERS.includes(name)) {
         markerElement.addEventListener("mouseenter", (e) => {
@@ -1069,6 +1143,112 @@ export default function AlAinMap({
       markerElement.appendChild(contentWrapper)
       markerElement.className += ` ${alignment}`
 
+      // Add connection lines and labels for project markers
+      if (name === "16 Projects" || name === "7 Projects" || name === "2 Projects" || name === "1 Project") {
+        // Create connection line container
+        const connectionContainer = document.createElement("div")
+        connectionContainer.className = "connection-line"
+        connectionContainer.style.position = "absolute"
+        connectionContainer.style.top = "0"
+        connectionContainer.style.left = "0"
+        connectionContainer.style.width = "200px"
+        connectionContainer.style.height = "100px"
+        connectionContainer.style.pointerEvents = "none"
+
+        // Create SVG for dashed line
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+        svg.setAttribute("width", "200")
+        svg.setAttribute("height", "100")
+        svg.style.position = "absolute"
+        svg.style.top = "0"
+        svg.style.left = "0"
+
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line")
+
+        // Set line coordinates based on marker position
+        let x1 = 20,
+          y1 = 20,
+          x2 = 120,
+          y2 = 60
+
+        if (name === "16 Projects") {
+          x1 = 20
+          y1 = 20
+          x2 = 150
+          y2 = 20
+        } else if (name === "7 Projects") {
+          x1 = 20
+          y1 = 20
+          x2 = 20
+          y2 = 80
+        } else if (name === "2 Projects") {
+          x1 = 20
+          y1 = 20
+          x2 = 100
+          y2 = 80
+        } else if (name === "1 Project") {
+          x1 = 20
+          y1 = 20
+          x2 = 80
+          y2 = 20
+        }
+
+        line.setAttribute("x1", x1.toString())
+        line.setAttribute("y1", y1.toString())
+        line.setAttribute("x2", x2.toString())
+        line.setAttribute("y2", y2.toString())
+        line.setAttribute("class", "dashed-line")
+
+        svg.appendChild(line)
+        connectionContainer.appendChild(svg)
+
+        // Create connection label
+        const label = document.createElement("div")
+        label.className = "connection-label"
+        label.textContent = getConnectionLabel(name)
+        label.style.left = `${(x1 + x2) / 2}px`
+        label.style.top = `${(y1 + y2) / 2 - 15}px`
+
+        connectionContainer.appendChild(label)
+
+        // Create opposite side text label
+        const oppositeLabel = document.createElement("div")
+        oppositeLabel.className = "connection-label opposite-label"
+        oppositeLabel.textContent = getOppositeLabel(name)
+
+        // Position opposite label based on line direction
+        if (name === "16 Projects") {
+          oppositeLabel.style.left = `${x2 + 20}px`
+          oppositeLabel.style.top = `${y2 - 10}px`
+        } else if (name === "7 Projects") {
+          oppositeLabel.style.left = `${x2 + 20}px`
+          oppositeLabel.style.top = `${y2 + 10}px`
+        } else if (name === "2 Projects") {
+          oppositeLabel.style.left = `${x2 + 20}px`
+          oppositeLabel.style.top = `${y2 + 10}px`
+        } else if (name === "1 Project") {
+          oppositeLabel.style.left = `${x2 + 20}px`
+          oppositeLabel.style.top = `${y2 - 10}px`
+        }
+
+        connectionContainer.appendChild(oppositeLabel)
+
+        // Add hover effects for connection lines
+        markerElement.addEventListener("mouseenter", () => {
+          line.setAttribute("class", "dashed-line-hover")
+          label.classList.add("visible")
+          oppositeLabel.classList.add("visible")
+        })
+
+        markerElement.addEventListener("mouseleave", () => {
+          if (clickedMarker !== name) {
+            line.setAttribute("class", "dashed-line")
+            label.classList.remove("visible")
+            oppositeLabel.classList.remove("visible")
+          }
+        })
+      }
+
       const marker = new window.mapboxgl.Marker({
         element: markerElement,
         anchor: "center",
@@ -1119,6 +1299,26 @@ export default function AlAinMap({
       default:
         return "right-aligned"
     }
+  }
+
+  function getConnectionLabel(markerName: string): string {
+    const labels: { [key: string]: string } = {
+      "16 Projects": "Major Development Hub",
+      "7 Projects": "Commercial District",
+      "2 Projects": "Residential Area",
+      "1 Project": "Infrastructure Project",
+    }
+    return labels[markerName] || "Project Area"
+  }
+
+  function getOppositeLabel(markerName: string): string {
+    const oppositeLabels: { [key: string]: string } = {
+      "16 Projects": "Al Ain North District",
+      "7 Projects": "Central Business Zone",
+      "2 Projects": "Eastern Residential",
+      "1 Project": "South Infrastructure",
+    }
+    return oppositeLabels[markerName] || "Development Zone"
   }
 
   if (!mapboxLoaded) {

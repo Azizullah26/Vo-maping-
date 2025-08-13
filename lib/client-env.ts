@@ -42,13 +42,6 @@ export function getMapboxToken(): string | undefined {
 }
 
 /**
- * Get Cesium token (client-safe)
- */
-export function getCesiumToken(): string | undefined {
-  return process.env.NEXT_PUBLIC_CESIUM_ACCESS_TOKEN
-}
-
-/**
  * Check if we're running on Vercel (client-safe)
  */
 export function isVercel(): boolean {
