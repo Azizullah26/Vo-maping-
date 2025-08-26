@@ -238,10 +238,11 @@ const markerStyles = `
   width: 35px;
   height: 35px;
   transform: translate(-50%, -50%);
-  border-top: 2px dotted rgba(255, 255, 255, 0.7);
-  border-left: 2px dotted rgba(255, 255, 255, 0.7);
+  border-top: 2px dotted rgba(255, 255, 255, 0.9);
+  border-left: 2px dotted rgba(255, 255, 255, 0.9);
   margin-top: -35px;
   margin-left: -35px;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
 }
 
 /* Top-Right line - from circle center to top-right */
@@ -251,10 +252,11 @@ const markerStyles = `
   width: 35px;
   height: 35px;
   transform: translate(-50%, -50%);
-  border-top: 2px dotted rgba(255, 255, 255, 0.7);
-  border-right: 2px dotted rgba(255, 255, 255, 0.7);
+  border-top: 2px dotted rgba(255, 255, 255, 0.9);
+  border-right: 2px dotted rgba(255, 255, 255, 0.9);
   margin-top: -35px;
   margin-left: 0px;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
 }
 
 /* Right line - from circle center to right */
@@ -265,11 +267,12 @@ const markerStyles = `
   height: 2px;
   background: repeating-linear-gradient(
     to right,
-    rgba(255, 255, 255, 0.7) 0px,
-    rgba(255, 255, 255, 0.7) 4px,
+    rgba(255, 255, 255, 0.9) 0px,
+    rgba(255, 255, 255, 0.9) 4px,
     transparent 4px,
     transparent 8px
   );
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
   transform: translateY(-50%);
 }
 
@@ -280,10 +283,11 @@ const markerStyles = `
   width: 35px;
   height: 35px;
   transform: translate(-50%, -50%);
-  border-bottom: 2px dotted rgba(255, 255, 255, 0.7);
-  border-right: 2px dotted rgba(255, 255, 255, 0.7);
+  border-bottom: 2px dotted rgba(255, 255, 255, 0.9);
+  border-right: 2px dotted rgba(255, 255, 255, 0.9);
   margin-top: 0px;
   margin-left: 0px;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
 }
 
 /* Bottom line - from circle center to bottom */
@@ -309,10 +313,11 @@ const markerStyles = `
   width: 35px;
   height: 35px;
   transform: translate(-50%, -50%);
-  border-bottom: 2px dotted rgba(255, 255, 255, 0.7);
-  border-left: 2px dotted rgba(255, 255, 255, 0.7);
+  border-bottom: 2px dotted rgba(255, 255, 255, 0.9);
+  border-left: 2px dotted rgba(255, 255, 255, 0.9);
   margin-top: 0px;
   margin-left: -35px;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
 }
 
 /* Left line - from circle center to left */
