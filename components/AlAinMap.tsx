@@ -395,7 +395,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
   const map = useRef<any>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
   const [mapboxLoaded, setMapboxLoaded] = useState(false)
-  const [currentStyle, setCurrentStyle] = useState<keyof typeof MAPBOX_STYLES>("style1")
+  const [currentStyle, setCurrentStyle] = useState<keyof typeof MAPBOX_STYLES>("style3")
   const router = useRouter()
   const markersRef = useRef<{ [key: string]: any }>({})
   const [lng] = useState(55.74)
@@ -559,7 +559,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       "إدارة التأهيل الشرطي - الفوعة": "Police Rehabilitation Department - Al Foua",
       "مركز شرطة هيلي": "Hili Police Station",
       "1 Project": "Al Ain Development Project",
-      "مركز شرطة الو��ن": "Al Wagan Police Station",
+      "مركز شرطة الوقن": "Al Wagan Police Station",
     }
     return nameMap[name] || "Police Facility"
   }
@@ -1334,7 +1334,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       case "مبنى التحريات والمخدرات":
       case "المتابعة الشرطية والرعاية اللاحقة":
         return "left-aligned"
-      case "��ركز شرطةasad":
+      case "مركز شرطةasad":
       case "مركز شرطة الهير":
       case "1 Project":
       case "فلل فلج هزاع":
