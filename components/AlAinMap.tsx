@@ -381,14 +381,16 @@ function isValidCoordinate(coord: [number, number]): boolean {
   )
 }
 
-export default function AlAinMap({
-  policeLocations,
-  onToggleTerrain,
-  offsetX = 0,
-  offsetY = 0,
-  mapRef,
-  rightSliderRef,
-}: AlAinMapProps) {
+const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
+  {
+    policeLocations,
+    onToggleTerrain,
+    offsetX = 0,
+    offsetY = 0,
+    rightSliderRef,
+  },
+  ref
+) => {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<any>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
@@ -407,6 +409,14 @@ export default function AlAinMap({
   const tooltipRef = useRef<HTMLDivElement | null>(null)
   const lastCenterRef = useRef<any>(null)
   const [clickedMarker, setClickedMarker] = useState<string | null>(null)
+
+  // Expose toggleTerrain function through ref
+  useImperativeHandle(ref, () => ({
+    toggleTerrain: (currentTerrainEnabled: boolean) => {
+      console.log("Toggle terrain called with:", currentTerrainEnabled)
+      // Implement terrain toggle logic here if needed
+    },
+  }))
 
   // Load Mapbox GL from CDN
   useEffect(() => {
@@ -501,7 +511,7 @@ export default function AlAinMap({
 
   function getMarkerImage(name: string): string {
     const imageMap: { [key: string]: string } = {
-      "قسم موسيقى شرطة أبوظبي": "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
+      "قسم مو��يقى شرطة أبوظبي": "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
       "إدارة التأهيل الشرطي - الفوعة":
         "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
       "مركز شرطة هيلي": "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
@@ -685,9 +695,8 @@ export default function AlAinMap({
       map.current.scrollZoom.setWheelZoomRate(0.01)
       map.current.scrollZoom.setZoomRate(0.005)
 
-      if (mapRef) {
-        mapRef.current = map.current
-      }
+      // Map instance is available in the component
+      // Access via useImperativeHandle if needed
 
       const styleSheet = document.createElement("style")
       styleSheet.textContent = markerStyles
@@ -1367,4 +1376,8 @@ export default function AlAinMap({
       <MapInstructionWidget />
     </div>
   )
-}
+})
+
+AlAinMap.displayName = "AlAinMap"
+
+export default AlAinMap
