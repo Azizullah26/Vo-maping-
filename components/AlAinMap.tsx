@@ -262,7 +262,7 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "قسم هندسة المرور",
   "مركز شرطة فلج هزاع",
   "إدارة الأسلحة والمتفجرات",
-  "مبنى ال��حريات والمخدرات",
+  "مبنى التحريات والمخدرات",
   "ادارة المهام الخاصة العين",
   "الضبط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
@@ -286,9 +286,9 @@ const EXCLUDED_MARKERS: string[] = [
   "سكن أفراد المرور",
   "المعهد المروري",
   "إدارة المرور والترخيص",
-  "ساحة حجز المركبات فلج هزاع",
+  "ساح�� حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
-  "فلل فلج هزاع (قسم الأدلة ا��جنائية - قسم ��لشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
+  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم ��لشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
 ]
 
 const HIDDEN_AT_START = [
@@ -352,7 +352,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة فلج هزاع",
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
-  "مركز ��رطة الساد",
+  "مركز شرطة الساد",
   "سا��ة حجز المركبات - الساد",
   "مركز شرطة الوقن",
   "مركز شرطة الجيمي",
@@ -449,6 +449,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
     }
 
     window.addEventListener('error', handleGlobalError)
+    window.addEventListener('unhandledrejection', handleUnhandledRejection)
 
     // Check if mapboxgl is already loaded
     if (window.mapboxgl) {
@@ -1371,7 +1372,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       case "مركز شرطة فلج هزاع":
         return "top-aligned"
       case "مركز شرطة الجيمي":
-      case "مركز ش��طة المقام":
+      case "مركز شرطة المقام":
         return "bottom-left-aligned"
       case "إدارة المرور والترخيص":
         return "bottom-right-aligned"
