@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useRef, useEffect, forwardRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import dynamic from "next/dynamic"
 import { ErrorBoundary } from "@/app/components/ErrorBoundary"
+import RightSliderButton from "@/components/RightSliderButton"
 
 // Dynamically import components to avoid SSR issues
 const AlAinMap = dynamic(() => import("../components/AlAinMap"), {
@@ -35,7 +36,7 @@ RightSliderButtonWrapper.displayName = "RightSliderButtonWrapper"
 const defaultPoliceData = {
   police_stations: [
     {
-      name: "مركز شرطة ا��وقن",
+      name: "مركز شرطة الوقن",
       coordinates: [55.7, 24.2] as [number, number],
       type: "police_station",
       description: "Al Wagan Police Station",
