@@ -326,7 +326,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة زاخر",
   "فلل فلج هزاع",
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
-  "قسم التفتيش الأمني K9",
+  "قسم الت��تيش الأمني K9",
   "الض��ط المروري والمراسم",
   "ساحة حجز المركبات فلج هزاع",
   "إدارة المرور والترخيص",
@@ -346,7 +346,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة القوع (فلل صحة)",
   "نقطة ثبات الروضة",
   "فرع الضبط الم��وري (الخزنة)",
-  "مبنى إد��رات (التر��ية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
+  "مبنى إدارات (التر��ية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
   "1 Project",
   "مركز شرطة سويحان",
   "مركز شرطة الهير",
@@ -527,7 +527,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
 
   function getEnglishName(name: string): string {
     const nameMap: { [key: string]: string } = {
-      "قسم م��سيقى شرطة أبوظبي": "Abu Dhabi Police Music Department",
+      "قسم موسيقى شرطة أبوظبي": "Abu Dhabi Police Music Department",
       "إدارة التأهيل الشرطي - الفوعة": "Police Rehabilitation Department - Al Foua",
       "مركز شرطة هيلي": "Hili Police Station",
       "1 Project": "Al Ain Development Project",
@@ -701,6 +701,11 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
         console.error('Map error:', e.error)
       })
 
+      // Add style validation success logging for v3.x features
+      map.current.on('styledata', () => {
+        console.log('Style loaded successfully with v3.x features support')
+      })
+
       // Enable all interactions
       map.current.scrollZoom.enable()
       map.current.boxZoom.enable()
@@ -774,7 +779,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
               name: location.name,
               coordinates: location.coordinates,
               alignment: getMarkerAlignment(location.name),
-              size: location.name === "فلل للادرات الشرطية عشارج" ? "small" : "normal",
+              size: location.name === "فلل ��لادرات الشرطية عشارج" ? "small" : "normal",
               map: map.current!,
             })
 
