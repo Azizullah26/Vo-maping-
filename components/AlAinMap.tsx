@@ -358,7 +358,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة الجيمي",
   "مركز شرطة القوع (فلل صحة)",
   "نقطة ثبات الروضة",
-  "فرع الضبط المروري (الخزنة)",
+  "فرع الضبط الم��وري (الخزنة)",
   "مبنى إدارات (التربية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
   "1 Project",
   "مركز شرطة سويحان",
@@ -918,14 +918,27 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
           clearTimeout(debounceTimerRef.current)
         }
 
-        // Simplified cleanup to prevent AbortError
+        // Graceful cleanup to prevent AbortError
         if (map.current) {
           try {
-            // Remove all event listeners
-            map.current.off()
-            // Directly remove the map without complex cleanup
-            map.current.remove()
-            map.current = null
+            // First, stop any ongoing rendering
+            if (typeof map.current.stop === 'function') {
+              map.current.stop()
+            }
+
+            // Remove event listeners with timeout protection
+            setTimeout(() => {
+              try {
+                if (map.current) {
+                  map.current.off()
+                  map.current.remove()
+                  map.current = null
+                }
+              } catch (cleanupError) {
+                console.warn("Delayed cleanup error:", cleanupError)
+                map.current = null
+              }
+            }, 100)
           } catch (e) {
             console.warn("Error during map cleanup:", e)
             map.current = null
@@ -946,7 +959,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
         console.error("Error cleaning up map:", error)
       }
     }
-  }, [policeLocations, offsetX, offsetY, token, loading, error, mapboxLoaded, currentStyle])
+  }, [policeLocations, offsetX, offsetY, token, loading, error, mapboxLoaded])
 
   function createMarker({
     name,
