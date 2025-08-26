@@ -258,7 +258,7 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "إدارة المرور والترخيص",
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
-  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجت��عية - قسم تأجير المركبات - قسم الاستقطاب)",
+  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
 ]
 
 const ALWAYS_VISIBLE_MARKERS: string[] = ["مركز شرطة الوقن"]
@@ -334,7 +334,7 @@ const HOVERABLE_MARKERS = [
   "سكن أفراد المرور",
   "المتابعة الشرطية والرعاية اللاحقة",
   "ادارة المهام الخاصة العين",
-  "مبنى التحريات والمخدرات",
+  "مبن�� التحريات والمخدرات",
   "إدارة الأسلحة والمتفجرات",
   "مركز شرطة فلج هزاع",
   "فلل للادرات الشرطية عشارج",
@@ -349,7 +349,7 @@ const HOVERABLE_MARKERS = [
   "مبنى إدارات (التر��ية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
   "1 Project",
   "مركز شرطة سويحان",
-  "مركز شرطة ��لهير",
+  "مركز شرطة الهير",
 ]
 
 // Helper functions
@@ -433,6 +433,23 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
         console.warn('Mapbox AbortError promise rejection suppressed:', event.reason.message)
         return false
       }
+    }
+
+    // Suppress Mapbox style validation warnings for v3.x properties in v2.15.0
+    const originalConsoleError = console.error
+    console.error = (...args) => {
+      const message = args.join(' ')
+      if (message.includes('vertical-range: unknown property') ||
+          message.includes('Unknown expression "measure-light"') ||
+          message.includes('Unknown expression "config"') ||
+          message.includes('star-intensity') ||
+          message.includes('high-color') ||
+          message.includes('space-color') ||
+          message.includes('horizon-blend')) {
+        // Suppress these specific validation warnings
+        return
+      }
+      originalConsoleError.apply(console, args)
     }
 
     window.addEventListener('error', handleGlobalError)
@@ -1302,7 +1319,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       case "مركز شرطة سويحان":
       case "مركز شرطة زاخر":
       case "مركز شرطة الوق��":
-      case "��تحف شرطة المربعة":
+      case "متحف شرطة المربعة":
       case "مبنى التحريات والمخدرات":
       case "المتابعة الشرطية والرعاية اللاحقة":
         return "left-aligned"
