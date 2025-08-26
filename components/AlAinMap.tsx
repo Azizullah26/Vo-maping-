@@ -257,7 +257,7 @@ const EXCLUDED_COORDINATES: [number, number] = [55.74252775199696, 24.2325267863
 
 const ALWAYS_HIDDEN_MARKERS: string[] = [
   "مركز شرطة الجيمي القديم",
-  "قسم ا��دوريات الخاصة",
+  "قسم الدوريات الخاصة",
   "إدارة الدوريات الخاصة",
   "قسم هندسة المرور",
   "مركز شرطة فلج هزاع",
@@ -284,7 +284,7 @@ const EXCLUDED_MARKERS: string[] = [
   "الضبط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
-  "��لمعهد المروري",
+  "المعهد المروري",
   "إدارة المرور والترخيص",
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
@@ -303,7 +303,7 @@ const HIDDEN_AT_START = [
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
   "مركز شرطة الساد",
-  "ساحة حجز المركبات - الساد",
+  "ساحة ح��ز المركبات - الساد",
   "16 Projects",
   "7 Projects",
   "2 Projects",
@@ -319,7 +319,7 @@ const PROJECT_NUMBERS: { [key: string]: string } = {
   "Alamerah 2 Projects": "2 al",
   "نقطة ثبات الروضة": "1",
   "فرع الضبط المروري (الخزنة)": "1",
-  "مركز شرطة ال��وع (فلل صحة)": "1",
+  "مركز شرطة القوع (فلل صحة)": "1",
   "ساحة حجز المركبات - الساد": "1",
   "مركز شرطة سويحان": "1",
   "مركز شرطة الهير": "1",
@@ -486,6 +486,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       // Cleanup
       try {
         window.removeEventListener('error', handleGlobalError)
+        window.removeEventListener('unhandledrejection', handleUnhandledRejection)
         if (document.head.contains(cssLink)) document.head.removeChild(cssLink)
         if (document.head.contains(script)) document.head.removeChild(script)
       } catch (e) {
@@ -1353,7 +1354,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
     switch (name) {
       case "مركز شرطة سويحان":
       case "مركز شرطة زاخر":
-      case "مركز شرطة الوقن":
+      case "مركز شرطة الوق��":
       case "متحف شرطة المربعة":
       case "مبنى التحريات والمخدرات":
       case "المتابعة الشرطية والرعاية اللاحقة":
