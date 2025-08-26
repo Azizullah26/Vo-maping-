@@ -549,7 +549,7 @@ const locationData: LocationFeature[] = [
     vectorPosition: { top: -29, left: -3 },
   },
   {
-    place: "��سم التفتيش الأمني K9",
+    place: "قسم التفتيش الأمني K9",
     coordinates: [55.72352938898794, 24.18905139894737],
     direction: "position-2", // Top-Right
     vectorIcon: "/vector-42.svg",
@@ -723,7 +723,7 @@ export default function SixteenProjectsPage() {
 
       mapRef.current = new window.mapboxgl.Map({
         container: mapContainerRef.current,
-        style: "mapbox://styles/azizullah2611/cm7ehm5if00c001r7fr9pgvvk",
+        style: "mapbox://styles/azizullah2611/cm6okbhyo000301qz5q58gdud",
         center: INITIAL_CENTER,
         zoom: ZOOM_LEVEL,
         pitch: 0,
