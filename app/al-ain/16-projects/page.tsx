@@ -316,8 +316,8 @@ const markerStyles = `
 }
 
 .marker-container:hover .marker-line {
-  background: rgba(0, 204, 255, 0.8);
-  border-color: rgba(0, 204, 255, 0.8);
+  background: rgba(14, 165, 233, 0.8);
+  border-color: rgba(14, 165, 233, 0.8);
 }
 
 .marker-container:hover .marker-circle {
