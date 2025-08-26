@@ -20,17 +20,7 @@ const AlAinLeftSlider = dynamic(() => import("../components/AlAinLeftSlider"), {
   loading: () => null,
 })
 
-// Create a wrapper to handle forwardRef with dynamic imports
-const RightSliderButtonWrapper = forwardRef<any, any>((props, ref) => {
-  const RightSliderButton = dynamic(() => import("../components/RightSliderButton"), {
-    ssr: false,
-    loading: () => null,
-  })
-
-  return <RightSliderButton {...props} ref={ref} />
-})
-
-RightSliderButtonWrapper.displayName = "RightSliderButtonWrapper"
+// RightSliderButton is now imported directly above
 
 // Default police data in case import fails
 const defaultPoliceData = {
