@@ -53,11 +53,19 @@ export default function HomePage() {
   const mapRef = useRef<{ toggleTerrain: (currentTerrainEnabled: boolean) => void } | null>(null)
   const rightSliderRef = useRef(null)
 
-  // Load police data safely
+  // Load police data safely with AbortController
   useEffect(() => {
+    const abortController = new AbortController()
+    let isMounted = true
+
     const loadPoliceData = async () => {
       try {
+        if (abortController.signal.aborted || !isMounted) return
+
         const PoliceData = await import("../data/police_locations.json")
+
+        if (abortController.signal.aborted || !isMounted) return
+
         if (PoliceData && Array.isArray(PoliceData.police_stations)) {
           setPoliceLocations(PoliceData.police_stations)
         } else if (Array.isArray(PoliceData.default)) {
@@ -67,12 +75,19 @@ export default function HomePage() {
           setPoliceLocations(defaultPoliceData.police_stations)
         }
       } catch (error) {
-        console.error("Failed to load police data:", error)
-        setPoliceLocations(defaultPoliceData.police_stations)
+        if (!abortController.signal.aborted && isMounted) {
+          console.error("Failed to load police data:", error)
+          setPoliceLocations(defaultPoliceData.police_stations)
+        }
       }
     }
 
     loadPoliceData()
+
+    return () => {
+      isMounted = false
+      abortController.abort()
+    }
   }, [])
 
   // Add global error handler for unhandled script errors
