@@ -298,11 +298,12 @@ const markerStyles = `
   height: 35px;
   background: repeating-linear-gradient(
     to bottom,
-    rgba(255, 255, 255, 0.7) 0px,
-    rgba(255, 255, 255, 0.7) 4px,
+    rgba(255, 255, 255, 0.9) 0px,
+    rgba(255, 255, 255, 0.9) 4px,
     transparent 4px,
     transparent 8px
   );
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
   transform: translateX(-50%);
 }
 
@@ -328,11 +329,12 @@ const markerStyles = `
   height: 2px;
   background: repeating-linear-gradient(
     to left,
-    rgba(255, 255, 255, 0.7) 0px,
-    rgba(255, 255, 255, 0.7) 4px,
+    rgba(255, 255, 255, 0.9) 0px,
+    rgba(255, 255, 255, 0.9) 4px,
     transparent 4px,
     transparent 8px
   );
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
   transform: translate(-100%, -50%);
 }
 
@@ -344,11 +346,12 @@ const markerStyles = `
   height: 35px;
   background: repeating-linear-gradient(
     to top,
-    rgba(255, 255, 255, 0.7) 0px,
-    rgba(255, 255, 255, 0.7) 4px,
+    rgba(255, 255, 255, 0.9) 0px,
+    rgba(255, 255, 255, 0.9) 4px,
     transparent 4px,
     transparent 8px
   );
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
   transform: translate(-50%, -100%);
 }
 
@@ -622,7 +625,7 @@ const locationData: LocationFeature[] = [
     vectorPosition: { top: -22, left: -10 },
   },
   {
-    place: "المتابعة الشرطية والرعاية اللاحقة",
+    place: "المتاب��ة الشرطية والرعاية اللاحقة",
     coordinates: [55.722557288830416, 24.19360483409058],
     direction: "position-6", // Bottom-Left (better distribution)
     vectorIcon: "/vector-31.svg",
