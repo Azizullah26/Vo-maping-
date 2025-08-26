@@ -339,7 +339,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة زاخر",
   "فلل فلج هزاع",
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
-  "قس�� التفتيش الأمني K9",
+  "قسم التفتيش الأمني K9",
   "الضبط المروري والمراسم",
   "ساحة حجز المركبات فلج هزاع",
   "إدارة المرور والترخيص",
@@ -1329,6 +1329,28 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
     return (
       <div className="w-full h-full flex items-center justify-center bg-gray-200">
         <p>Loading Mapbox...</p>
+      </div>
+    )
+  }
+
+  if (error || !token) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-gray-200">
+        <div className="text-center p-4">
+          <p className="text-lg font-semibold mb-2 text-red-600">Mapbox Configuration Error</p>
+          <p className="text-sm text-gray-600 mb-4">
+            {error ? `Error: ${error}` : 'No Mapbox access token provided'}
+          </p>
+          <div className="text-xs text-gray-500 max-w-md">
+            <p className="mb-2">To fix this issue:</p>
+            <ol className="list-decimal list-inside text-left space-y-1">
+              <li>Go to <a href="https://account.mapbox.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">mapbox.com</a></li>
+              <li>Create an account or sign in</li>
+              <li>Create a new access token with default scopes</li>
+              <li>Set the MAPBOX_ACCESS_TOKEN environment variable</li>
+            </ol>
+          </div>
+        </div>
       </div>
     )
   }
