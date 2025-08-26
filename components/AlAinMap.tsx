@@ -288,7 +288,7 @@ const EXCLUDED_MARKERS: string[] = [
   "إدارة المرور والترخيص",
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
-  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم ��لشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
+  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم ��لشرطة المج��معية - قسم تأجير المركبات - قسم الاستقطاب)",
 ]
 
 const HIDDEN_AT_START = [
@@ -456,27 +456,44 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
     }
   }, [])
 
-  // Handle style change
+  // Handle style change with proper error handling
   const handleStyleChange = (newStyle: keyof typeof MAPBOX_STYLES) => {
     if (map.current && mapLoaded) {
       try {
+        // Stop any ongoing operations before style change
+        if (typeof map.current.stop === 'function') {
+          map.current.stop()
+        }
+
         setCurrentStyle(newStyle)
+
+        // Add error handling for style loading
+        map.current.on('error', (e) => {
+          if (e.error && e.error.message && e.error.message.includes('AbortError')) {
+            console.warn('Style loading was aborted, this is normal during rapid style changes')
+            return
+          }
+          console.error('Map style error:', e.error)
+        })
+
         map.current.setStyle(MAPBOX_STYLES[newStyle].url)
 
         // Re-add layers and markers after style change
         map.current.once("styledata", () => {
           try {
-            // Remove this entire addLayer call for dark-overlay
+            // Reapply contrast and saturation filter after style change
+            if (map.current) {
+              const canvas = map.current.getCanvas()
+              if (canvas) {
+                canvas.style.filter = "contrast(1.2) saturate(1.5) brightness(0.9)"
+              }
+            }
           } catch (error) {
-            console.error("Error re-adding layers after style change:", error)
+            console.warn("Error re-applying filters after style change:", error)
           }
-
-          // Reapply contrast and saturation filter after style change
-          const canvas = map.current.getCanvas()
-          canvas.style.filter = "contrast(1.2) saturate(1.5) brightness(0.9)"
         })
       } catch (error) {
-        console.error("Error changing map style:", error)
+        console.warn("Error changing map style:", error)
       }
     }
   }
