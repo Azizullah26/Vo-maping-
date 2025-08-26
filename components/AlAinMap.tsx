@@ -262,7 +262,7 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "قسم هندسة المرور",
   "مركز شرطة فلج هزاع",
   "إدارة الأسلحة والمتفجرات",
-  "مبنى التحريات والمخدرات",
+  "مبنى ال��حريات والمخدرات",
   "ادارة المهام الخاصة العين",
   "الضبط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
@@ -288,7 +288,7 @@ const EXCLUDED_MARKERS: string[] = [
   "إدارة المرور والترخيص",
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
-  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم ��لشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
+  "فلل فلج هزاع (قسم الأدلة ا��جنائية - قسم ��لشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
 ]
 
 const HIDDEN_AT_START = [
@@ -344,7 +344,7 @@ const HOVERABLE_MARKERS = [
   "ساحة حجز المركبات فلج هزاع",
   "إدارة المرور والترخيص",
   "المعهد المروري",
-  "سكن أفراد ا��مرور",
+  "سكن أفراد المرور",
   "المتابعة الشرطية والرعاية اللاحقة",
   "ادارة المهام الخاصة العين",
   "مبنى التحريات والمخدرات",
@@ -352,7 +352,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة فلج هزاع",
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
-  "مركز شرطة الساد",
+  "مركز ��رطة الساد",
   "سا��ة حجز المركبات - الساد",
   "مركز شرطة الوقن",
   "مركز شرطة الجيمي",
@@ -424,9 +424,26 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
 
     // Add global error handler for AbortErrors
     const handleGlobalError = (event: ErrorEvent) => {
-      if (event.error && event.error.name === 'AbortError') {
+      if (event.error && (
+        event.error.name === 'AbortError' ||
+        event.error.message?.includes('aborted') ||
+        event.error.message?.includes('signal is aborted')
+      )) {
         event.preventDefault()
         console.warn('Mapbox AbortError suppressed (normal during hot reloads):', event.error.message)
+        return false
+      }
+    }
+
+    // Also handle unhandled promise rejections from Mapbox
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      if (event.reason && (
+        event.reason.name === 'AbortError' ||
+        event.reason.message?.includes('aborted') ||
+        event.reason.message?.includes('signal is aborted')
+      )) {
+        event.preventDefault()
+        console.warn('Mapbox AbortError promise rejection suppressed:', event.reason.message)
         return false
       }
     }
@@ -1354,7 +1371,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       case "مركز شرطة فلج هزاع":
         return "top-aligned"
       case "مركز شرطة الجيمي":
-      case "مركز شرطة المقام":
+      case "مركز ش��طة المقام":
         return "bottom-left-aligned"
       case "إدارة المرور والترخيص":
         return "bottom-right-aligned"
