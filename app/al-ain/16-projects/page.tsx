@@ -331,126 +331,132 @@ const markerStyles = `
 
 .mapboxgl-ctrl-bottom-right { display: none !important; }
 
-/* Responsive adjustments */
+/* Responsive adjustments for clean positioning */
 @media (max-width: 768px) {
   .marker-label {
-    font-size: 12px;
-    padding: 6px 12px;
+    font-size: 11px;
+    padding: 4px 8px;
+    min-width: 100px;
   }
-  
-  .marker-container.position-1 .marker-line,
-  .marker-container.position-5 .marker-line {
-    height: 60px;
-  }
-  
+
+  /* Reduce distances for mobile */
   .marker-container.position-1 .marker-label {
-    bottom: calc(100% + 60px);
+    bottom: calc(100% + 20px);
+    right: calc(100% + 10px);
   }
-  
-  .marker-container.position-5 .marker-label {
-    top: calc(100% + 60px);
+
+  .marker-container.position-2 .marker-label {
+    bottom: calc(100% + 20px);
+    left: calc(100% + 10px);
   }
-  
-  .marker-container.position-3 .marker-line,
-  .marker-container.position-7 .marker-line {
-    width: 60px;
-  }
-  
+
   .marker-container.position-3 .marker-label {
-    left: calc(100% + 60px);
+    left: calc(100% + 20px);
   }
-  
+
+  .marker-container.position-4 .marker-label {
+    top: calc(100% + 20px);
+    left: calc(100% + 10px);
+  }
+
+  .marker-container.position-5 .marker-label {
+    top: calc(100% + 20px);
+  }
+
+  .marker-container.position-6 .marker-label {
+    top: calc(100% + 20px);
+    right: calc(100% + 10px);
+  }
+
   .marker-container.position-7 .marker-label {
-    right: calc(100% + 60px);
+    right: calc(100% + 20px);
   }
-  
+
+  .marker-container.position-8 .marker-label {
+    bottom: calc(100% + 20px);
+  }
+
+  /* Shorter connection lines for mobile */
+  .marker-container.position-1 .marker-line,
   .marker-container.position-2 .marker-line,
   .marker-container.position-4 .marker-line,
-  .marker-container.position-6 .marker-line,
+  .marker-container.position-6 .marker-line {
+    width: 20px;
+    height: 20px;
+  }
+
+  .marker-container.position-3 .marker-line,
+  .marker-container.position-7 .marker-line {
+    width: 20px;
+  }
+
+  .marker-container.position-5 .marker-line,
   .marker-container.position-8 .marker-line {
-    width: 45px;
-    height: 45px;
-  }
-  
-  .marker-container.position-2 .marker-label,
-  .marker-container.position-8 .marker-label {
-    bottom: calc(100% + 45px);
-  }
-  
-  .marker-container.position-4 .marker-label,
-  .marker-container.position-6 .marker-label {
-    top: calc(100% + 45px);
-  }
-  
-  .marker-container.position-2 .marker-label,
-  .marker-container.position-4 .marker-label {
-    left: calc(100% + 45px);
-  }
-  
-  .marker-container.position-6 .marker-label,
-  .marker-container.position-8 .marker-label {
-    right: calc(100% + 45px);
+    height: 20px;
   }
 }
 
 @media (max-width: 640px) {
   .marker-label {
-    font-size: 11px;
-    padding: 4px 8px;
+    font-size: 10px;
+    padding: 3px 6px;
+    min-width: 80px;
   }
-  
-  .marker-container.position-1 .marker-line,
-  .marker-container.position-5 .marker-line {
-    height: 45px;
-  }
-  
+
+  /* Further reduce distances for small mobile */
   .marker-container.position-1 .marker-label {
-    bottom: calc(100% + 45px);
+    bottom: calc(100% + 15px);
+    right: calc(100% + 8px);
   }
-  
-  .marker-container.position-5 .marker-label {
-    top: calc(100% + 45px);
+
+  .marker-container.position-2 .marker-label {
+    bottom: calc(100% + 15px);
+    left: calc(100% + 8px);
   }
-  
-  .marker-container.position-3 .marker-line,
-  .marker-container.position-7 .marker-line {
-    width: 45px;
-  }
-  
+
   .marker-container.position-3 .marker-label {
-    left: calc(100% + 45px);
+    left: calc(100% + 15px);
   }
-  
+
+  .marker-container.position-4 .marker-label {
+    top: calc(100% + 15px);
+    left: calc(100% + 8px);
+  }
+
+  .marker-container.position-5 .marker-label {
+    top: calc(100% + 15px);
+  }
+
+  .marker-container.position-6 .marker-label {
+    top: calc(100% + 15px);
+    right: calc(100% + 8px);
+  }
+
   .marker-container.position-7 .marker-label {
-    right: calc(100% + 45px);
+    right: calc(100% + 15px);
   }
-  
+
+  .marker-container.position-8 .marker-label {
+    bottom: calc(100% + 15px);
+  }
+
+  /* Even shorter connection lines for small mobile */
+  .marker-container.position-1 .marker-line,
   .marker-container.position-2 .marker-line,
   .marker-container.position-4 .marker-line,
-  .marker-container.position-6 .marker-line,
+  .marker-container.position-6 .marker-line {
+    width: 15px;
+    height: 15px;
+  }
+
+  .marker-container.position-3 .marker-line,
+  .marker-container.position-7 .marker-line {
+    width: 15px;
+  }
+
+  .marker-container.position-5 .marker-line,
   .marker-container.position-8 .marker-line {
-    width: 35px;
-    height: 35px;
-  }
-  
-  .marker-container.position-2 .marker-label,
-  .marker-container.position-8 .marker-label {
-    bottom: calc(100% + 35px);
-  }
-  
-  .marker-container.position-4 .marker-label,
-  .marker-container.position-6 .marker-label {
-    top: calc(100% + 35px);
-  }
-  
-  .marker-container.position-2 .marker-label,
-  .marker-container.position-4 .marker-label {
-    left: calc(100% + 35px);
-  }
-  
-  .marker-container.position-6 .marker-label,
-  .marker-container.position-8 .marker-label {
-    right: calc(100% + 35px);
+    height: 15px;
   }
 }
 `
