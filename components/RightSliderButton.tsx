@@ -296,4 +296,6 @@ export const RightSliderButton = forwardRef<{ openLeftSlider: (project: any) => 
   },
 )
 
+RightSliderButton.displayName = "RightSliderButton"
+
 export default RightSliderButton
