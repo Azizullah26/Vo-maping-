@@ -288,7 +288,7 @@ const EXCLUDED_MARKERS: string[] = [
   "إدارة المرور والترخيص",
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
-  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
+  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم ��لشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
 ]
 
 const HIDDEN_AT_START = [
@@ -353,7 +353,7 @@ const HOVERABLE_MARKERS = [
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
   "مركز شرطة الساد",
-  "ساحة حجز المركبات - الساد",
+  "سا��ة حجز المركبات - الساد",
   "مركز شرطة الوقن",
   "مركز شرطة الجيمي",
   "مركز شرطة القوع (فلل صحة)",
@@ -911,50 +911,35 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
           clearTimeout(debounceTimerRef.current)
         }
 
-        // Safer cleanup to prevent AbortError
+        // Simplified cleanup to prevent AbortError
         if (map.current) {
           try {
-            // Remove all event listeners first
+            // Remove all event listeners
             map.current.off()
-
-            // Stop any ongoing operations
-            map.current.stop()
-
-            // Set a minimal style to clear existing sources without triggering aborts
-            map.current.setStyle({
-              version: 8,
-              sources: {},
-              layers: [],
-            })
-
-            // Small delay to allow style to clear, then remove
-            setTimeout(() => {
-              try {
-                if (map.current) {
-                  map.current.remove()
-                  map.current = null
-                }
-              } catch (e) {
-                console.warn("Map already removed or error during removal:", e)
-              }
-            }, 50)
+            // Directly remove the map without complex cleanup
+            map.current.remove()
+            map.current = null
           } catch (e) {
-            // If setStyle fails, try immediate removal
-            try {
-              map.current.remove()
-              map.current = null
-            } catch (removeError) {
-              console.warn("Error during map removal:", removeError)
-            }
+            console.warn("Error during map cleanup:", e)
+            map.current = null
           }
         }
 
-        document.querySelectorAll("style[data-marker-style]").forEach((el) => el.remove())
+        // Clean up any marker styles
+        try {
+          document.querySelectorAll("style[data-marker-style]").forEach((el) => {
+            if (el.parentNode) {
+              el.parentNode.removeChild(el)
+            }
+          })
+        } catch (e) {
+          console.warn("Error cleaning up marker styles:", e)
+        }
       } catch (error) {
         console.error("Error cleaning up map:", error)
       }
     }
-  }, [policeLocations, offsetX, offsetY, mapRef, token, loading, error, mapboxLoaded, currentStyle])
+  }, [policeLocations, offsetX, offsetY, token, loading, error, mapboxLoaded, currentStyle])
 
   function createMarker({
     name,
