@@ -483,7 +483,7 @@ const locationData: LocationFeature[] = [
   {
     place: "ادارة المهام الخاصة العين",
     coordinates: [55.724096640469895, 24.1956108396531],
-    direction: "position-1", // Top
+    direction: "position-1", // Top-Left (cleaner positioning)
     vectorIcon: "/vector-21.svg",
     vectorSize: { width: 56, height: 56 },
     vectorPosition: { top: -28, left: -28 },
@@ -491,7 +491,7 @@ const locationData: LocationFeature[] = [
   {
     place: "مركز شرطة فلج هزاع",
     coordinates: [55.72710955627929, 24.19954145588217],
-    direction: "position-2", // Top-Right
+    direction: "position-8", // Top (cleaner above positioning)
     vectorIcon: "/vector-35.svg",
     vectorSize: { width: 37, height: 26 },
     vectorPosition: { top: -35, left: -18 },
@@ -499,7 +499,7 @@ const locationData: LocationFeature[] = [
   {
     place: "إدارة المرور والترخيص",
     coordinates: [55.727851797240874, 24.19304931881034],
-    direction: "position-3", // Right
+    direction: "position-2", // Top-Right (better spacing)
     vectorIcon: "/vector-24.svg",
     vectorSize: { width: 38, height: 17 },
     vectorPosition: { top: -25, left: -19 },
@@ -507,7 +507,7 @@ const locationData: LocationFeature[] = [
   {
     place: "قسم هندسة المرور",
     coordinates: [55.7225168640654, 24.19328471799456],
-    direction: "position-4", // Bottom-Right
+    direction: "position-7", // Left (avoid overlap)
     vectorIcon: "/vector-26.svg",
     vectorSize: { width: 20, height: 17 },
     vectorPosition: { top: -22, left: -10 },
@@ -515,7 +515,7 @@ const locationData: LocationFeature[] = [
   {
     place: "المتابعة الشرطية والرعاية اللاحقة",
     coordinates: [55.722557288830416, 24.19360483409058],
-    direction: "position-5", // Bottom
+    direction: "position-6", // Bottom-Left (better distribution)
     vectorIcon: "/vector-31.svg",
     vectorSize: { width: 35, height: 35 },
     vectorPosition: { top: -30, left: -17 },
@@ -523,7 +523,7 @@ const locationData: LocationFeature[] = [
   {
     place: "إدارة الأسلحة والمتفجرات",
     coordinates: [55.72427804325733, 24.19797500690261],
-    direction: "position-6", // Bottom-Left
+    direction: "position-1", // Top-Left (strategic positioning)
     vectorIcon: "/vector-43.svg",
     vectorSize: { width: 21, height: 30 },
     vectorPosition: { top: -28, left: -10 },
@@ -531,7 +531,7 @@ const locationData: LocationFeature[] = [
   {
     place: "فلل فلج هزاع",
     coordinates: [55.72680131200215, 24.186317410709492],
-    direction: "position-7", // Left
+    direction: "position-5", // Bottom (clean below positioning)
     vectorIcon: "/vector-32.svg",
     vectorSize: { width: 6, height: 42 },
     vectorPosition: { top: -34, left: -3 },
@@ -539,7 +539,7 @@ const locationData: LocationFeature[] = [
   {
     place: "الضبط المروري والمراسم",
     coordinates: [55.7286784476679, 24.191336582641284],
-    direction: "position-8", // Top-Left
+    direction: "position-3", // Right (better spacing)
     vectorIcon: "/vector-36.svg",
     vectorSize: { width: 35, height: 36 },
     vectorPosition: { top: -31, left: -17 },
@@ -547,7 +547,7 @@ const locationData: LocationFeature[] = [
   {
     place: "إدارة الدوريات الخاصة",
     coordinates: [55.723325119991586, 24.191513430459977],
-    direction: "position-1", // Top
+    direction: "position-7", // Left (avoid crowding)
     vectorIcon: "/vector-27.svg",
     vectorSize: { width: 6, height: 32 },
     vectorPosition: { top: -29, left: -3 },
@@ -555,7 +555,7 @@ const locationData: LocationFeature[] = [
   {
     place: "قسم التفتيش الأمني K9",
     coordinates: [55.72352938898794, 24.18905139894737],
-    direction: "position-2", // Top-Right
+    direction: "position-6", // Bottom-Left (spread out)
     vectorIcon: "/vector-42.svg",
     vectorSize: { width: 35, height: 17 },
     vectorPosition: { top: -22, left: -17 },
@@ -563,7 +563,7 @@ const locationData: LocationFeature[] = [
   {
     place: "سكن أفراد المرور",
     coordinates: [55.724324255872546, 24.193154596995498],
-    direction: "position-3", // Right
+    direction: "position-8", // Top (clean distribution)
     vectorIcon: "/vector-30.svg",
     vectorSize: { width: 6, height: 30 },
     vectorPosition: { top: -28, left: -3 },
@@ -571,7 +571,7 @@ const locationData: LocationFeature[] = [
   {
     place: "ساحة حجز المركبات فلج هزاع",
     coordinates: [55.726040750462175, 24.19089476054195],
-    direction: "position-4", // Bottom-Right
+    direction: "position-4", // Bottom-Right (good positioning)
     vectorIcon: "/vector-48.svg",
     vectorSize: { width: 30, height: 60 },
     vectorPosition: { top: -43, left: -15 },
@@ -579,7 +579,7 @@ const locationData: LocationFeature[] = [
   {
     place: "مبنى التحريات والمخدرات",
     coordinates: [55.71923885266557, 24.196245342189755],
-    direction: "position-5", // Bottom
+    direction: "position-7", // Left (avoid overlap)
     vectorIcon: "/vector-51.svg",
     vectorSize: { width: 54, height: 48 },
     vectorPosition: { top: -37, left: -27 },
