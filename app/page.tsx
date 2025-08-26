@@ -5,51 +5,24 @@ import dynamic from "next/dynamic"
 import { ErrorBoundary } from "@/app/components/ErrorBoundary"
 
 // Dynamically import components to avoid SSR issues
-const AlAinMap = dynamic(
-  () =>
-    import("../components/AlAinMap").catch((err) => {
-      console.error("Failed to load AlAinMap:", err)
-      return {
-        default: () => (
-          <div className="w-full h-full flex items-center justify-center bg-gray-200">
-            <p>Map failed to load</p>
-          </div>
-        ),
-      }
-    }),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-full flex items-center justify-center bg-gray-200">
-        <p>Loading Map...</p>
-      </div>
-    ),
-  },
-)
+const AlAinMap = dynamic(() => import("../components/AlAinMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-200">
+      <p>Loading Map...</p>
+    </div>
+  ),
+})
 
-const AlAinLeftSlider = dynamic(
-  () =>
-    import("../components/AlAinLeftSlider").catch((err) => {
-      console.error("Failed to load AlAinLeftSlider:", err)
-      return { default: () => null }
-    }),
-  {
-    ssr: false,
-    loading: () => null,
-  },
-)
+const AlAinLeftSlider = dynamic(() => import("../components/AlAinLeftSlider"), {
+  ssr: false,
+  loading: () => null,
+})
 
-const RightSliderButton = dynamic(
-  () =>
-    import("../components/RightSliderButton").catch((err) => {
-      console.error("Failed to load RightSliderButton:", err)
-      return { default: () => null }
-    }),
-  {
-    ssr: false,
-    loading: () => null,
-  },
-)
+const RightSliderButton = dynamic(() => import("../components/RightSliderButton"), {
+  ssr: false,
+  loading: () => null,
+})
 
 // Default police data in case import fails
 const defaultPoliceData = {
