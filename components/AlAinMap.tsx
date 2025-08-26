@@ -274,7 +274,7 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
 ]
 
-const ALWAYS_VISIBLE_MARKERS: string[] = ["مركز شرطة الوقن"]
+const ALWAYS_VISIBLE_MARKERS: string[] = ["مرك�� شرطة الوقن"]
 
 const EXCLUDED_MARKERS: string[] = [
   "مركز شرطة فلج هزاع",
@@ -431,12 +431,12 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
     // Load CSS
     const cssLink = document.createElement("link")
     cssLink.rel = "stylesheet"
-    cssLink.href = "https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css"
+    cssLink.href = "https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css"
     document.head.appendChild(cssLink)
 
     // Load JS
     const script = document.createElement("script")
-    script.src = "https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"
+    script.src = "https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"
     script.onload = () => {
       setMapboxLoaded(true)
     }
@@ -1286,7 +1286,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       case "ساحة حجز المركبات -asad":
       case "فلل للادرات الشرطية عشارج":
       case "مركز شرطة المقام":
-      case "مركز شرطة فلج هزاع":
+      case "مركز شر��ة فلج هزاع":
         return "top-aligned"
       case "مركز شرطة الجيمي":
       case "مركز شرطة المقام":
