@@ -723,7 +723,7 @@ export default function SixteenProjectsPage() {
 
       mapRef.current = new window.mapboxgl.Map({
         container: mapContainerRef.current,
-        style: "mapbox://styles/azizullah2611/cm7009fqu01j101pbe23262j4",
+        style: "mapbox://styles/azizullah2611/cm7ehm5if00c001r7fr9pgvvk",
         center: INITIAL_CENTER,
         zoom: ZOOM_LEVEL,
         pitch: 0,
