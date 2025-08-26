@@ -210,7 +210,7 @@ export default function HomePage() {
             setSelectedProject={setSelectedProject}
           />
 
-          <RightSliderButtonWrapper
+          <RightSliderButton
             isOpen={isRightSliderOpen}
             onClose={closeRightSlider}
             toggleProjects={toggleRightSlider}
