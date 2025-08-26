@@ -1081,11 +1081,20 @@ export default function SixteenProjectsPage() {
       })
 
       // Append elements in correct z-index order
+      // Shadow goes first (lowest z-index)
       markerElement.appendChild(shadow)
+      // Line goes second (connects circle to label)
       markerElement.appendChild(line)
+      // Circle goes third (main marker point)
       markerElement.appendChild(circleElement)
+      // Vector icon goes fourth (inside circle)
       markerElement.appendChild(vector)
+      // Label goes last (highest z-index)
       markerElement.appendChild(label)
+
+      // Debug: Add data attributes for easier debugging
+      line.setAttribute('data-direction', direction)
+      line.setAttribute('data-marker', name)
       markerElement.setAttribute("data-marker-name", name)
 
       const marker = new window.mapboxgl.Marker({
