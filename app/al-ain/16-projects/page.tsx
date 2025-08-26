@@ -877,7 +877,7 @@ export default function SixteenProjectsPage() {
       }
 
       const markerElement = document.createElement("div")
-      markerElement.className = `marker-container direction-${direction}`
+      markerElement.className = `marker-container ${direction}`
       markerElement.style.position = "absolute"
       markerElement.style.pointerEvents = "auto"
       markerElement.style.willChange = "transform"
