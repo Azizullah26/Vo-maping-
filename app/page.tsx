@@ -29,11 +29,13 @@ const RightSliderButtonWrapper = forwardRef<any, any>((props, ref) => {
   return <RightSliderButton {...props} ref={ref} />
 })
 
+RightSliderButtonWrapper.displayName = "RightSliderButtonWrapper"
+
 // Default police data in case import fails
 const defaultPoliceData = {
   police_stations: [
     {
-      name: "مركز شرطة الوقن",
+      name: "مركز شرطة ا��وقن",
       coordinates: [55.7, 24.2] as [number, number],
       type: "police_station",
       description: "Al Wagan Police Station",
