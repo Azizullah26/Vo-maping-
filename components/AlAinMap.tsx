@@ -435,21 +435,22 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
 
     // Check if mapboxgl is already loaded
     if (window.mapboxgl) {
+      console.log('Mapbox GL JS already loaded, version:', window.mapboxgl.version)
       setMapboxLoaded(true)
       return () => {
         window.removeEventListener('error', handleGlobalError)
       }
     }
 
-    // Load CSS
+    // Load CSS with cache busting
     const cssLink = document.createElement("link")
     cssLink.rel = "stylesheet"
-    cssLink.href = "https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css"
+    cssLink.href = `https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css?t=${Date.now()}`
     document.head.appendChild(cssLink)
 
-    // Load JS
+    // Load JS with cache busting
     const script = document.createElement("script")
-    script.src = "https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"
+    script.src = `https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js?t=${Date.now()}`
     script.onload = () => {
       setMapboxLoaded(true)
     }
