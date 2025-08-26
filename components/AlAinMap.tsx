@@ -257,7 +257,7 @@ const EXCLUDED_COORDINATES: [number, number] = [55.74252775199696, 24.2325267863
 
 const ALWAYS_HIDDEN_MARKERS: string[] = [
   "مركز شرطة الجيمي القديم",
-  "قسم الدوريات الخاصة",
+  "قسم ا��دوريات الخاصة",
   "إدارة الدوريات الخاصة",
   "قسم هندسة المرور",
   "مركز شرطة فلج هزاع",
@@ -284,9 +284,9 @@ const EXCLUDED_MARKERS: string[] = [
   "الضبط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
-  "المعهد المروري",
+  "��لمعهد المروري",
   "إدارة المرور والترخيص",
-  "ساح�� حجز المركبات فلج هزاع",
+  "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم ��لشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
 ]
@@ -319,7 +319,7 @@ const PROJECT_NUMBERS: { [key: string]: string } = {
   "Alamerah 2 Projects": "2 al",
   "نقطة ثبات الروضة": "1",
   "فرع الضبط المروري (الخزنة)": "1",
-  "مركز شرطة القوع (فلل صحة)": "1",
+  "مركز شرطة ال��وع (فلل صحة)": "1",
   "ساحة حجز المركبات - الساد": "1",
   "مركز شرطة سويحان": "1",
   "مركز شرطة الهير": "1",
@@ -457,6 +457,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       setMapboxLoaded(true)
       return () => {
         window.removeEventListener('error', handleGlobalError)
+        window.removeEventListener('unhandledrejection', handleUnhandledRejection)
       }
     }
 
