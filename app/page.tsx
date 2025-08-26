@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, forwardRef } from "react"
 import dynamic from "next/dynamic"
 import { ErrorBoundary } from "@/app/components/ErrorBoundary"
 
