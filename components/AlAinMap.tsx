@@ -239,15 +239,15 @@ export interface AlAinMapRef {
 const MAPBOX_STYLES = {
   style1: {
     url: "mapbox://styles/azizullah2611/cm7ehm5if00c001r7fr9pgvvk",
-    name: "Style 1 (Alternative)",
+    name: "Style 1 (Current - v2.15.0 Compatible)",
   },
   style2: {
     url: "mapbox://styles/azizullah2611/cm7009fqu01j101pbe23262j4",
-    name: "Style 2 (Alternative)",
+    name: "Style 2 (Alternative - v2.15.0 Compatible)",
   },
   style3: {
     url: "mapbox://styles/azizullah2611/cm6okbhyo000301qz5q58gdud",
-    name: "Style 3 (Current)",
+    name: "Style 3 (Requires Mapbox GL JS v3.x)",
   },
 }
 
@@ -268,7 +268,7 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
   "المعهد المروري",
-  "إدارة المرور والترخيص",
+  "إدارة ��لمرور والترخيص",
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
@@ -281,7 +281,7 @@ const EXCLUDED_MARKERS: string[] = [
   "إدارة الأسلحة والمتفجرات",
   "مبنى التحريات والمخدرات",
   "ادارة المهام الخاصة العين",
-  "الض��ط المروري والمراسم",
+  "الضبط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
   "المعهد المروري",
@@ -295,7 +295,7 @@ const HIDDEN_AT_START = [
   "ميدان الشرطة بدع بنت سعود",
   "متحف شرطة المربعة",
   "مركز شرطة المربعة",
-  "مديرية شرطة العين",
+  "م��يرية شرطة العين",
   "فرع النقل والمشاغل",
   "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
@@ -1366,7 +1366,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       case "قسم التفتيش الأمني K9":
         return "bottom-aligned"
       case "نادي ضباط الشرطة":
-      case "قسم موسي��ى شرطة أبوظبي":
+      case "قسم موسيقى شرطة أبوظبي":
       case "مديرية شرطة العين":
       case "ساحة حجز المركبات -asad":
       case "فلل للادرات الشرطية عشارج":
