@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from "react"
 import { useRouter } from "next/navigation"
 import { AnimatedControls } from "@/components/AnimatedControls"
 import { useMapboxToken } from "@/hooks/useMapboxToken"
@@ -1287,7 +1287,7 @@ export default function AlAinMap({
       case "قسم موسيقى شرطة أبوظبي":
       case "مديرية شرطة العين":
       case "ساحة حجز المركبات -asad":
-      case "فلل للادرات الشرطية عشارج":
+      case "فلل للادرات ا��شرطية عشارج":
       case "مركز شرطة المقام":
       case "مركز شرطة فلج هزاع":
         return "top-aligned"
