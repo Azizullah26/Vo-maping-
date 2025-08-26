@@ -384,21 +384,21 @@ return (
         src="/cloud-7.png"
         alt="Cloud"
         width={100}
-        height={70}
+        height={90}
         className="absolute top-[20%] opacity-25 cloud-2"
       />
       <Image
         src="/cloud-7.png"
         alt="Cloud"
         width={140}
-        height={90}
+        height={100}
         className="absolute top-[15%] opacity-35 cloud-3"
       />
       <Image
         src="/cloud-7.png"
         alt="Cloud"
-        width={90}
-        height={65}
+        width={100}
+        height={85}
         className="absolute top-[25%] opacity-20 cloud-4"
       />
       <Image
