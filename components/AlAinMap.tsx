@@ -269,7 +269,7 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "سكن أفراد المرور",
   "المعهد المروري",
   "إدارة المرور والترخيص",
-  "ساحة حجز المركبات فلج هزاع",
+  "ساحة حجز الم��كبات فلج هزاع",
   "قسم التفتيش الأمني K9",
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
 ]
@@ -334,10 +334,10 @@ const HOVERABLE_MARKERS = [
   "متحف شرطة المربعة",
   "مركز شرطة المربعة",
   "مديرية شرطة العين",
-  "فرع النقل والمشاغل",
+  "فرع ��لنقل والمشاغل",
   "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
-  "فلل فلج هز��ع",
+  "فلل فلج هزاع",
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
   "قسم التفتيش الأمني K9",
   "الضبط المروري والمراسم",
@@ -422,10 +422,23 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
   useEffect(() => {
     if (typeof window === "undefined") return
 
+    // Add global error handler for AbortErrors
+    const handleGlobalError = (event: ErrorEvent) => {
+      if (event.error && event.error.name === 'AbortError') {
+        event.preventDefault()
+        console.warn('Mapbox AbortError suppressed (normal during hot reloads):', event.error.message)
+        return false
+      }
+    }
+
+    window.addEventListener('error', handleGlobalError)
+
     // Check if mapboxgl is already loaded
     if (window.mapboxgl) {
       setMapboxLoaded(true)
-      return
+      return () => {
+        window.removeEventListener('error', handleGlobalError)
+      }
     }
 
     // Load CSS
@@ -1309,7 +1322,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       case "مركز شرطة الوقن":
       case "متحف شرطة المربعة":
       case "مبنى التحريات والمخدرات":
-      case "المتابعة الشرطية والرعاية اللاحقة":
+      case "المتابعة ��لشرطية والرعاية اللاحقة":
         return "left-aligned"
       case "مركز شرطةasad":
       case "مركز شرطة الهير":
