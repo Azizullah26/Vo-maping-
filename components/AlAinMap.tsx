@@ -235,21 +235,8 @@ export interface AlAinMapRef {
   toggleTerrain: (currentTerrainEnabled: boolean) => void
 }
 
-// Mapbox styles configuration
-const MAPBOX_STYLES = {
-  style1: {
-    url: "mapbox://styles/azizullah2611/cm7ehm5if00c001r7fr9pgvvk",
-    name: "Style 1 (Current - v2.15.0 Compatible)",
-  },
-  style2: {
-    url: "mapbox://styles/azizullah2611/cm7009fqu01j101pbe23262j4",
-    name: "Style 2 (Alternative - v2.15.0 Compatible)",
-  },
-  style3: {
-    url: "mapbox://styles/azizullah2611/cm6okbhyo000301qz5q58gdud",
-    name: "Style 3 (Requires Mapbox GL JS v3.x)",
-  },
-}
+// Mapbox style configuration
+const MAPBOX_STYLE = "mapbox://styles/azizullah2611/cm6okbhyo000301qz5q58gdud"
 
 // Constants
 const ZOOM_THRESHOLD = 12
@@ -268,10 +255,10 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
   "المعهد المروري",
-  "إدارة ��لمرور والترخيص",
+  "إدارة المرور والترخيص",
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
-  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
+  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجت��عية - قسم تأجير المركبات - قسم الاستقطاب)",
 ]
 
 const ALWAYS_VISIBLE_MARKERS: string[] = ["مركز شرطة الوقن"]
@@ -295,7 +282,7 @@ const HIDDEN_AT_START = [
   "ميدان الشرطة بدع بنت سعود",
   "متحف شرطة المربعة",
   "مركز شرطة المربعة",
-  "م��يرية شرطة العين",
+  "مديرية شرطة العين",
   "فرع النقل والمشاغل",
   "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
@@ -362,7 +349,7 @@ const HOVERABLE_MARKERS = [
   "مبنى إدارات (التر��ية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
   "1 Project",
   "مركز شرطة سويحان",
-  "مركز شرطة الهير",
+  "مركز شرطة ��لهير",
 ]
 
 // Helper functions
@@ -395,7 +382,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
   const map = useRef<any>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
   const [mapboxLoaded, setMapboxLoaded] = useState(false)
-  const [currentStyle, setCurrentStyle] = useState<keyof typeof MAPBOX_STYLES>("style1")
+  // Removed style state since we only use one style now
   const router = useRouter()
   const markersRef = useRef<{ [key: string]: any }>({})
   const [lng] = useState(55.74)
@@ -495,47 +482,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
     }
   }, [])
 
-  // Handle style change with proper error handling
-  const handleStyleChange = (newStyle: keyof typeof MAPBOX_STYLES) => {
-    if (map.current && mapLoaded) {
-      try {
-        // Stop any ongoing operations before style change
-        if (typeof map.current.stop === 'function') {
-          map.current.stop()
-        }
-
-        setCurrentStyle(newStyle)
-
-        // Add error handling for style loading
-        map.current.on('error', (e) => {
-          if (e.error && e.error.message && e.error.message.includes('AbortError')) {
-            console.warn('Style loading was aborted, this is normal during rapid style changes')
-            return
-          }
-          console.error('Map style error:', e.error)
-        })
-
-        map.current.setStyle(MAPBOX_STYLES[newStyle].url)
-
-        // Re-add layers and markers after style change
-        map.current.once("styledata", () => {
-          try {
-            // Reapply contrast and saturation filter after style change
-            if (map.current) {
-              const canvas = map.current.getCanvas()
-              if (canvas) {
-                canvas.style.filter = "contrast(1.2) saturate(1.5) brightness(0.9)"
-              }
-            }
-          } catch (error) {
-            console.warn("Error re-applying filters after style change:", error)
-          }
-        })
-      } catch (error) {
-        console.warn("Error changing map style:", error)
-      }
-    }
-  }
+  // Removed style change handler since we only use one style now
 
   const updateSlidersWithMarkerInfo = useCallback(
     (markerName: string | null) => {
@@ -722,7 +669,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
 
       map.current = new window.mapboxgl.Map({
         container: mapContainer.current!,
-        style: MAPBOX_STYLES[currentStyle].url,
+        style: MAPBOX_STYLE,
         center: initialCenter,
         zoom: initialZoomRef.current,
         pitch: 0,
@@ -1355,7 +1302,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       case "مركز شرطة سويحان":
       case "مركز شرطة زاخر":
       case "مركز شرطة الوق��":
-      case "متحف شرطة المربعة":
+      case "��تحف شرطة المربعة":
       case "مبنى التحريات والمخدرات":
       case "المتابعة الشرطية والرعاية اللاحقة":
         return "left-aligned"
