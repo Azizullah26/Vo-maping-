@@ -228,8 +228,11 @@ interface AlAinMapProps {
   onToggleTerrain: () => void
   offsetX?: number
   offsetY?: number
-  mapRef?: React.MutableRefObject<any>
   rightSliderRef?: React.MutableRefObject<any>
+}
+
+export interface AlAinMapRef {
+  toggleTerrain: (currentTerrainEnabled: boolean) => void
 }
 
 // Mapbox styles configuration
@@ -1287,7 +1290,7 @@ export default function AlAinMap({
       case "قسم موسيقى شرطة أبوظبي":
       case "مديرية شرطة العين":
       case "ساحة حجز المركبات -asad":
-      case "فلل للادرات ا��شرطية عشارج":
+      case "فلل للادرات الشرطية عشارج":
       case "مركز شرطة المقام":
       case "مركز شرطة فلج هزاع":
         return "top-aligned"
