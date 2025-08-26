@@ -19,10 +19,13 @@ const AlAinLeftSlider = dynamic(() => import("../components/AlAinLeftSlider"), {
   loading: () => null,
 })
 
-const RightSliderButton = dynamic(() => import("../components/RightSliderButton"), {
-  ssr: false,
-  loading: () => null,
-})
+const RightSliderButton = dynamic(
+  () => import("../components/RightSliderButton").then((mod) => ({ default: mod.default })),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+)
 
 // Default police data in case import fails
 const defaultPoliceData = {
