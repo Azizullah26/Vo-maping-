@@ -344,7 +344,7 @@ const HOVERABLE_MARKERS = [
   "ساحة حجز المركبات فلج هزاع",
   "إدارة المرور والترخيص",
   "المعهد المروري",
-  "سكن أفراد المرور",
+  "سكن أفراد ا��مرور",
   "المتابعة الشرطية والرعاية اللاحقة",
   "ادارة المهام الخاصة العين",
   "مبنى التحريات والمخدرات",
@@ -452,6 +452,10 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
     const script = document.createElement("script")
     script.src = `https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js?t=${Date.now()}`
     script.onload = () => {
+      console.log('Mapbox GL JS loaded, version:', window.mapboxgl?.version || 'unknown')
+      if (window.mapboxgl?.version && window.mapboxgl.version.startsWith('3.')) {
+        console.warn('Warning: Mapbox GL JS v3.x detected, this may cause AbortErrors. Consider using v2.15.0')
+      }
       setMapboxLoaded(true)
     }
     script.onerror = () => {
