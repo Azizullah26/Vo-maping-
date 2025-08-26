@@ -559,7 +559,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       "إدارة التأهيل الشرطي - الفوعة": "Police Rehabilitation Department - Al Foua",
       "مركز شرطة هيلي": "Hili Police Station",
       "1 Project": "Al Ain Development Project",
-      "مركز شرطة الوقن": "Al Wagan Police Station",
+      "مركز شرطة الو��ن": "Al Wagan Police Station",
     }
     return nameMap[name] || "Police Facility"
   }
@@ -718,6 +718,15 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
         interactive: true,
         doubleClickZoom: true,
         touchZoomRotate: true,
+      })
+
+      // Add error handling for the map instance
+      map.current.on('error', (e) => {
+        if (e.error && (e.error.name === 'AbortError' || e.error.message?.includes('aborted'))) {
+          console.warn('Mapbox operation was aborted (normal during hot reloads)')
+          return
+        }
+        console.error('Map error:', e.error)
       })
 
       // Enable all interactions
@@ -1325,7 +1334,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       case "مبنى التحريات والمخدرات":
       case "المتابعة الشرطية والرعاية اللاحقة":
         return "left-aligned"
-      case "مركز شرطةasad":
+      case "��ركز شرطةasad":
       case "مركز شرطة الهير":
       case "1 Project":
       case "فلل فلج هزاع":
