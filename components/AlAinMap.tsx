@@ -269,7 +269,7 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "سكن أفراد المرور",
   "المعهد المروري",
   "إدارة المرور والترخيص",
-  "ساحة حجز الم��كبات فلج هزاع",
+  "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
 ]
@@ -334,7 +334,7 @@ const HOVERABLE_MARKERS = [
   "متحف شرطة المربعة",
   "مركز شرطة المربعة",
   "مديرية شرطة العين",
-  "فرع ��لنقل والمشاغل",
+  "فرع النقل والمشاغل",
   "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
   "فلل فلج هزاع",
@@ -461,6 +461,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
     return () => {
       // Cleanup
       try {
+        window.removeEventListener('error', handleGlobalError)
         if (document.head.contains(cssLink)) document.head.removeChild(cssLink)
         if (document.head.contains(script)) document.head.removeChild(script)
       } catch (e) {
@@ -1322,7 +1323,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       case "مركز شرطة الوقن":
       case "متحف شرطة المربعة":
       case "مبنى التحريات والمخدرات":
-      case "المتابعة ��لشرطية والرعاية اللاحقة":
+      case "المتابعة الشرطية والرعاية اللاحقة":
         return "left-aligned"
       case "مركز شرطةasad":
       case "مركز شرطة الهير":
