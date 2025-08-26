@@ -346,7 +346,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة القوع (فلل صحة)",
   "نقطة ثبات الروضة",
   "فرع الضبط الم��وري (الخزنة)",
-  "مبنى إدارات (التر��ية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
+  "مبنى إد��رات (التر��ية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
   "1 Project",
   "مركز شرطة سويحان",
   "مركز شرطة الهير",
@@ -435,22 +435,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       }
     }
 
-    // Suppress Mapbox style validation warnings for v3.x properties in v2.15.0
-    const originalConsoleError = console.error
-    console.error = (...args) => {
-      const message = args.join(' ')
-      if (message.includes('vertical-range: unknown property') ||
-          message.includes('Unknown expression "measure-light"') ||
-          message.includes('Unknown expression "config"') ||
-          message.includes('star-intensity') ||
-          message.includes('high-color') ||
-          message.includes('space-color') ||
-          message.includes('horizon-blend')) {
-        // Suppress these specific validation warnings
-        return
-      }
-      originalConsoleError.apply(console, args)
-    }
+    // No need for error suppression with v3.x
 
     window.addEventListener('error', handleGlobalError)
     window.addEventListener('unhandledrejection', handleUnhandledRejection)
@@ -468,17 +453,14 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
     // Load CSS with cache busting
     const cssLink = document.createElement("link")
     cssLink.rel = "stylesheet"
-    cssLink.href = `https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css?t=${Date.now()}`
+    cssLink.href = `https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css?t=${Date.now()}`
     document.head.appendChild(cssLink)
 
     // Load JS with cache busting
     const script = document.createElement("script")
-    script.src = `https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js?t=${Date.now()}`
+    script.src = `https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js?t=${Date.now()}`
     script.onload = () => {
       console.log('Mapbox GL JS loaded, version:', window.mapboxgl?.version || 'unknown')
-      if (window.mapboxgl?.version && window.mapboxgl.version.startsWith('3.')) {
-        console.warn('Warning: Mapbox GL JS v3.x detected, this may cause AbortErrors. Consider using v2.15.0')
-      }
       setMapboxLoaded(true)
     }
     script.onerror = () => {
@@ -491,7 +473,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       try {
         window.removeEventListener('error', handleGlobalError)
         window.removeEventListener('unhandledrejection', handleUnhandledRejection)
-        console.error = originalConsoleError // Restore original console.error
+        // No console.error restoration needed
         if (document.head.contains(cssLink)) document.head.removeChild(cssLink)
         if (document.head.contains(script)) document.head.removeChild(script)
       } catch (e) {
@@ -545,7 +527,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
 
   function getEnglishName(name: string): string {
     const nameMap: { [key: string]: string } = {
-      "قسم موسيقى شرطة أبوظبي": "Abu Dhabi Police Music Department",
+      "قسم م��سيقى شرطة أبوظبي": "Abu Dhabi Police Music Department",
       "إدارة التأهيل الشرطي - الفوعة": "Police Rehabilitation Department - Al Foua",
       "مركز شرطة هيلي": "Hili Police Station",
       "1 Project": "Al Ain Development Project",
