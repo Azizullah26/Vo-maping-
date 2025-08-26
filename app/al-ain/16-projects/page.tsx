@@ -680,12 +680,12 @@ export default function SixteenProjectsPage() {
       // Load CSS
       const cssLink = document.createElement("link")
       cssLink.rel = "stylesheet"
-      cssLink.href = `https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css?t=${Date.now()}`
+      cssLink.href = `https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.css?t=${Date.now()}`
       document.head.appendChild(cssLink)
 
       // Load JS
       const script = document.createElement("script")
-      script.src = `https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js?t=${Date.now()}`
+      script.src = `https://api.mapbox.com/mapbox-gl-js/v3.7.0/mapbox-gl.js?t=${Date.now()}`
       script.onload = () => setMapboxLoaded(true)
       script.onerror = () => console.error("Failed to load Mapbox GL JS")
       document.head.appendChild(script)
