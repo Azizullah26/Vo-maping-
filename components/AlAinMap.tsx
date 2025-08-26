@@ -281,7 +281,7 @@ const EXCLUDED_MARKERS: string[] = [
   "إدارة الأسلحة والمتفجرات",
   "مبنى التحريات والمخدرات",
   "ادارة المهام الخاصة العين",
-  "الضبط المروري والمراسم",
+  "الض��ط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
   "المعهد المروري",
@@ -395,7 +395,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
   const map = useRef<any>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
   const [mapboxLoaded, setMapboxLoaded] = useState(false)
-  const [currentStyle, setCurrentStyle] = useState<keyof typeof MAPBOX_STYLES>("style3")
+  const [currentStyle, setCurrentStyle] = useState<keyof typeof MAPBOX_STYLES>("style1")
   const router = useRouter()
   const markersRef = useRef<{ [key: string]: any }>({})
   const [lng] = useState(55.74)
@@ -1366,7 +1366,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       case "قسم التفتيش الأمني K9":
         return "bottom-aligned"
       case "نادي ضباط الشرطة":
-      case "قسم موسيقى شرطة أبوظبي":
+      case "قسم موسي��ى شرطة أبوظبي":
       case "مديرية شرطة العين":
       case "ساحة حجز المركبات -asad":
       case "فلل للادرات الشرطية عشارج":
