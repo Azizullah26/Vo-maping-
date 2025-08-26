@@ -211,9 +211,9 @@ export default function HomePage() {
           }
         >
           <AlAinMap
+            ref={mapRef}
             policeLocations={policeLocations}
             onToggleTerrain={setTerrainEnabled}
-            mapRef={mapRef}
             rightSliderRef={rightSliderRef}
           />
 
