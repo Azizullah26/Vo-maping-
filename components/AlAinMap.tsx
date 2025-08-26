@@ -239,15 +239,15 @@ export interface AlAinMapRef {
 const MAPBOX_STYLES = {
   style1: {
     url: "mapbox://styles/azizullah2611/cm7ehm5if00c001r7fr9pgvvk",
-    name: "Style 1 (Latest)",
+    name: "Style 1 (Alternative)",
   },
   style2: {
     url: "mapbox://styles/azizullah2611/cm7009fqu01j101pbe23262j4",
-    name: "Style 2 (Current)",
+    name: "Style 2 (Alternative)",
   },
   style3: {
     url: "mapbox://styles/azizullah2611/cm6okbhyo000301qz5q58gdud",
-    name: "Style 3 (Original)",
+    name: "Style 3 (Current)",
   },
 }
 
@@ -333,7 +333,7 @@ const HOVERABLE_MARKERS = [
   "ميدان الشرطة بدع بنت سعود",
   "متحف شرطة المربعة",
   "مركز شرطة المربعة",
-  "مديرية شرطة العين",
+  "مديرية شرطة ا��عين",
   "فرع النقل والمشاغل",
   "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
@@ -359,7 +359,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة القوع (فلل صحة)",
   "نقطة ثبات الروضة",
   "فرع الضبط الم��وري (الخزنة)",
-  "مبنى إدارات (التربية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
+  "مبنى إدارات (التر��ية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
   "1 Project",
   "مركز شرطة سويحان",
   "مركز شرطة الهير",
