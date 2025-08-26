@@ -327,14 +327,14 @@ const HOVERABLE_MARKERS = [
   "فلل فلج هزاع",
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
   "قسم التفتيش الأمني K9",
-  "الضبط المروري والمراسم",
+  "الض��ط المروري والمراسم",
   "ساحة حجز المركبات فلج هزاع",
   "إدارة المرور والترخيص",
   "المعهد المروري",
   "سكن أفراد المرور",
   "المتابعة الشرطية والرعاية اللاحقة",
   "ادارة المهام الخاصة العين",
-  "مبن�� التحريات والمخدرات",
+  "مبنى التحريات والمخدرات",
   "إدارة الأسلحة والمتفجرات",
   "مركز شرطة فلج هزاع",
   "فلل للادرات الشرطية عشارج",
@@ -491,6 +491,7 @@ const AlAinMap = forwardRef<AlAinMapRef, AlAinMapProps>((
       try {
         window.removeEventListener('error', handleGlobalError)
         window.removeEventListener('unhandledrejection', handleUnhandledRejection)
+        console.error = originalConsoleError // Restore original console.error
         if (document.head.contains(cssLink)) document.head.removeChild(cssLink)
         if (document.head.contains(script)) document.head.removeChild(script)
       } catch (e) {
