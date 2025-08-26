@@ -348,8 +348,39 @@ const markerStyles = `
 }
 
 .marker-container:hover .marker-line {
-  background: rgba(14, 165, 233, 0.8);
   border-color: rgba(14, 165, 233, 0.8);
+}
+
+/* Update gradient backgrounds on hover for straight lines */
+.marker-container.position-3:hover .marker-line {
+  background: repeating-linear-gradient(
+    to right,
+    rgba(14, 165, 233, 0.8) 0px,
+    rgba(14, 165, 233, 0.8) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+.marker-container.position-5:hover .marker-line,
+.marker-container.position-8:hover .marker-line {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(14, 165, 233, 0.8) 0px,
+    rgba(14, 165, 233, 0.8) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+.marker-container.position-7:hover .marker-line {
+  background: repeating-linear-gradient(
+    to left,
+    rgba(14, 165, 233, 0.8) 0px,
+    rgba(14, 165, 233, 0.8) 4px,
+    transparent 4px,
+    transparent 8px
+  );
 }
 
 .marker-container:hover .marker-circle {
@@ -363,7 +394,7 @@ const markerStyles = `
 
 .mapboxgl-ctrl-bottom-right { display: none !important; }
 
-/* Responsive adjustments for clean positioning */
+/* Responsive adjustments for properly connected lines */
 @media (max-width: 768px) {
   .marker-label {
     font-size: 11px;
@@ -408,23 +439,44 @@ const markerStyles = `
     bottom: calc(100% + 20px);
   }
 
-  /* Shorter connection lines for mobile */
+  /* Shorter connection lines for mobile - adjust corner lines */
   .marker-container.position-1 .marker-line,
   .marker-container.position-2 .marker-line,
   .marker-container.position-4 .marker-line,
   .marker-container.position-6 .marker-line {
-    width: 20px;
-    height: 20px;
+    width: 25px;
+    height: 25px;
   }
 
+  .marker-container.position-1 .marker-line {
+    margin-top: -25px;
+    margin-left: -25px;
+  }
+
+  .marker-container.position-2 .marker-line {
+    margin-top: -25px;
+    margin-left: 0px;
+  }
+
+  .marker-container.position-4 .marker-line {
+    margin-top: 0px;
+    margin-left: 0px;
+  }
+
+  .marker-container.position-6 .marker-line {
+    margin-top: 0px;
+    margin-left: -25px;
+  }
+
+  /* Straight lines for mobile */
   .marker-container.position-3 .marker-line,
   .marker-container.position-7 .marker-line {
-    width: 20px;
+    width: 25px;
   }
 
   .marker-container.position-5 .marker-line,
   .marker-container.position-8 .marker-line {
-    height: 20px;
+    height: 25px;
   }
 }
 
@@ -477,18 +529,38 @@ const markerStyles = `
   .marker-container.position-2 .marker-line,
   .marker-container.position-4 .marker-line,
   .marker-container.position-6 .marker-line {
-    width: 15px;
-    height: 15px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .marker-container.position-1 .marker-line {
+    margin-top: -20px;
+    margin-left: -20px;
+  }
+
+  .marker-container.position-2 .marker-line {
+    margin-top: -20px;
+    margin-left: 0px;
+  }
+
+  .marker-container.position-4 .marker-line {
+    margin-top: 0px;
+    margin-left: 0px;
+  }
+
+  .marker-container.position-6 .marker-line {
+    margin-top: 0px;
+    margin-left: -20px;
   }
 
   .marker-container.position-3 .marker-line,
   .marker-container.position-7 .marker-line {
-    width: 15px;
+    width: 20px;
   }
 
   .marker-container.position-5 .marker-line,
   .marker-container.position-8 .marker-line {
-    height: 15px;
+    height: 20px;
   }
 }
 `
