@@ -223,96 +223,128 @@ const markerStyles = `
   transform: translateX(-50%);
 }
 
-/* Clean connecting lines - minimalist style like in screenshot */
+/* Properly connected dotted lines from circle center to labels */
 .marker-line {
   position: absolute;
-  background: rgba(255, 255, 255, 0.6);
   transition: all 0.3s ease;
   z-index: 11;
+  background: none;
 }
 
-/* Top-Left line */
+/* Top-Left line - from circle center to top-left */
 .marker-container.position-1 .marker-line {
-  right: 100%;
-  bottom: 100%;
-  width: 25px;
-  height: 25px;
-  border-top: 1px solid rgba(255, 255, 255, 0.6);
-  border-right: 1px solid rgba(255, 255, 255, 0.6);
-  background: none;
-}
-
-/* Top-Right line */
-.marker-container.position-2 .marker-line {
-  left: 100%;
-  bottom: 100%;
-  width: 25px;
-  height: 25px;
-  border-top: 1px solid rgba(255, 255, 255, 0.6);
-  border-left: 1px solid rgba(255, 255, 255, 0.6);
-  background: none;
-}
-
-/* Right line */
-.marker-container.position-3 .marker-line {
-  left: 100%;
+  left: 50%;
   top: 50%;
-  width: 25px;
-  height: 1px;
+  width: 35px;
+  height: 35px;
+  transform: translate(-50%, -50%);
+  border-top: 2px dotted rgba(255, 255, 255, 0.7);
+  border-left: 2px dotted rgba(255, 255, 255, 0.7);
+  margin-top: -35px;
+  margin-left: -35px;
+}
+
+/* Top-Right line - from circle center to top-right */
+.marker-container.position-2 .marker-line {
+  left: 50%;
+  top: 50%;
+  width: 35px;
+  height: 35px;
+  transform: translate(-50%, -50%);
+  border-top: 2px dotted rgba(255, 255, 255, 0.7);
+  border-right: 2px dotted rgba(255, 255, 255, 0.7);
+  margin-top: -35px;
+  margin-left: 0px;
+}
+
+/* Right line - from circle center to right */
+.marker-container.position-3 .marker-line {
+  left: 50%;
+  top: 50%;
+  width: 35px;
+  height: 2px;
+  background: repeating-linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.7) 0px,
+    rgba(255, 255, 255, 0.7) 4px,
+    transparent 4px,
+    transparent 8px
+  );
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.6);
 }
 
-/* Bottom-Right line */
+/* Bottom-Right line - from circle center to bottom-right */
 .marker-container.position-4 .marker-line {
-  left: 100%;
-  top: 100%;
-  width: 25px;
-  height: 25px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
-  border-left: 1px solid rgba(255, 255, 255, 0.6);
-  background: none;
+  left: 50%;
+  top: 50%;
+  width: 35px;
+  height: 35px;
+  transform: translate(-50%, -50%);
+  border-bottom: 2px dotted rgba(255, 255, 255, 0.7);
+  border-right: 2px dotted rgba(255, 255, 255, 0.7);
+  margin-top: 0px;
+  margin-left: 0px;
 }
 
-/* Bottom line */
+/* Bottom line - from circle center to bottom */
 .marker-container.position-5 .marker-line {
   left: 50%;
-  top: 100%;
-  width: 1px;
-  height: 25px;
-  transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.6);
-}
-
-/* Bottom-Left line */
-.marker-container.position-6 .marker-line {
-  right: 100%;
-  top: 100%;
-  width: 25px;
-  height: 25px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.6);
-  border-right: 1px solid rgba(255, 255, 255, 0.6);
-  background: none;
-}
-
-/* Left line */
-.marker-container.position-7 .marker-line {
-  right: 100%;
   top: 50%;
-  width: 25px;
-  height: 1px;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.6);
+  width: 2px;
+  height: 35px;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.7) 0px,
+    rgba(255, 255, 255, 0.7) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  transform: translateX(-50%);
 }
 
-/* Top line */
+/* Bottom-Left line - from circle center to bottom-left */
+.marker-container.position-6 .marker-line {
+  left: 50%;
+  top: 50%;
+  width: 35px;
+  height: 35px;
+  transform: translate(-50%, -50%);
+  border-bottom: 2px dotted rgba(255, 255, 255, 0.7);
+  border-left: 2px dotted rgba(255, 255, 255, 0.7);
+  margin-top: 0px;
+  margin-left: -35px;
+}
+
+/* Left line - from circle center to left */
+.marker-container.position-7 .marker-line {
+  left: 50%;
+  top: 50%;
+  width: 35px;
+  height: 2px;
+  background: repeating-linear-gradient(
+    to left,
+    rgba(255, 255, 255, 0.7) 0px,
+    rgba(255, 255, 255, 0.7) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  transform: translate(-100%, -50%);
+}
+
+/* Top line - from circle center to top */
 .marker-container.position-8 .marker-line {
   left: 50%;
-  bottom: 100%;
-  width: 1px;
-  height: 25px;
-  transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.6);
+  top: 50%;
+  width: 2px;
+  height: 35px;
+  background: repeating-linear-gradient(
+    to top,
+    rgba(255, 255, 255, 0.7) 0px,
+    rgba(255, 255, 255, 0.7) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  transform: translate(-50%, -100%);
 }
 
 .marker-container:hover .marker-line {
