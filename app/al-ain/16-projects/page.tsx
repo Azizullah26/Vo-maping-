@@ -622,7 +622,7 @@ const locationData: LocationFeature[] = [
     direction: "position-7", // Left (avoid overlap)
     vectorIcon: "/vector-26.svg",
     vectorSize: { width: 20, height: 17 },
-    vectorPosition: { top: -22, left: -10 },
+    vectorPosition: { top: 22, left: -163 },
   },
   {
     place: "المتاب��ة الشرطية والرعاية اللاحقة",
