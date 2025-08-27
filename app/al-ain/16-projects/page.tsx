@@ -609,7 +609,7 @@ const locationData: LocationFeature[] = [
     vectorPosition: { top: -35, left: -18 },
   },
   {
-    place: "إدارة المرور والترخيص",
+    place: "إدارة الم��ور والترخيص",
     coordinates: [55.727851797240874, 24.19304931881034],
     direction: "position-2", // Top-Right (better spacing)
     vectorIcon: "/vector-24.svg",
@@ -638,7 +638,7 @@ const locationData: LocationFeature[] = [
     direction: "position-1", // Top-Left (strategic positioning)
     vectorIcon: "/vector-43.svg",
     vectorSize: { width: 21, height: 30 },
-    vectorPosition: { top: -28, left: -10 },
+    vectorPosition: { top: -56, left: -10 },
   },
   {
     place: "فلل فلج هزاع",
