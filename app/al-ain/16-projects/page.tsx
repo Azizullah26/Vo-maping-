@@ -630,7 +630,7 @@ const locationData: LocationFeature[] = [
     direction: "position-6", // Bottom-Left (better distribution)
     vectorIcon: "/vector-31.svg",
     vectorSize: { width: 35, height: 35 },
-    vectorPosition: { top: -30, left: -17 },
+    vectorPosition: { top: 122, left: -195 },
   },
   {
     place: "إدارة الأسلحة والمتفجرات",
