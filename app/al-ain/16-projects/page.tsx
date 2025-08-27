@@ -649,7 +649,7 @@ const locationData: LocationFeature[] = [
     vectorPosition: { top: -34, left: -3 },
   },
   {
-    place: "الضبط ال��روري والمراسم",
+    place: "الضبط المروري والمراسم",
     coordinates: [55.7286784476679, 24.191336582641284],
     direction: "position-3", // Right (better spacing)
     vectorIcon: "/vector-36.svg",
@@ -1075,11 +1075,9 @@ export default function SixteenProjectsPage() {
       })
 
       // Append elements in correct z-index order
-      // Shadow goes first (lowest z-index)
-      markerElement.appendChild(shadow)
-      // Line goes second (connects circle to label)
+      // Line goes first (connects circle to label)
       markerElement.appendChild(line)
-      // Circle goes third (main marker point)
+      // Circle goes second (main marker point)
       markerElement.appendChild(circleElement)
       // Label goes last (highest z-index)
       markerElement.appendChild(label)
