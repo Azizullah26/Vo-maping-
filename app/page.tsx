@@ -20,6 +20,8 @@ const AlAinMap = React.forwardRef<any, any>((props, ref) => {
   return <AlAinMapDynamic {...props} ref={ref} />
 })
 
+AlAinMap.displayName = "AlAinMap"
+
 const AlAinLeftSlider = dynamic(() => import("../components/AlAinLeftSlider"), {
   ssr: false,
   loading: () => null,
