@@ -1083,8 +1083,6 @@ export default function SixteenProjectsPage() {
       markerElement.appendChild(line)
       // Circle goes third (main marker point)
       markerElement.appendChild(circleElement)
-      // Vector icon goes fourth (inside circle)
-      markerElement.appendChild(vector)
       // Label goes last (highest z-index)
       markerElement.appendChild(label)
 
