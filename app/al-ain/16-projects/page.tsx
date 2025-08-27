@@ -1009,19 +1009,7 @@ export default function SixteenProjectsPage() {
       const circleElement = document.createElement("div")
       circleElement.className = "marker-circle"
 
-      // Create SVG vector icon
-      const vector = document.createElement("img")
-      vector.src = vectorIcon
-      vector.className = "marker-vector"
-      vector.style.width = `${vectorSize.width}px`
-      vector.style.height = `${vectorSize.height}px`
-      vector.style.top = `${vectorPosition.top}px`
-      vector.style.left = `${vectorPosition.left}px`
-      vector.alt = "Marker icon"
-      vector.onerror = () => {
-        console.warn(`Failed to load SVG: ${vectorIcon}`)
-        vector.style.display = "none"
-      }
+      // SVG vector icon removed as per diff
 
       // Create label
       const label = document.createElement("button")
