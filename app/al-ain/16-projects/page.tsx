@@ -1129,11 +1129,6 @@ export default function SixteenProjectsPage() {
         {/* Map Area */}
         <div className="flex-1 relative">
           <div ref={mapContainerRef} className="relative w-full h-full overflow-hidden" />
-
-          {/* Map Mask Overlay */}
-          <div className="map-mask-overlay" />
-
-          <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-900/30 via-slate-800/10 to-transparent pointer-events-none" />
         </div>
 
         {/* Mobile Bottom Panel */}
