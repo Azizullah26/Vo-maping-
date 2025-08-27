@@ -208,173 +208,6 @@ const markerStyles = `
   transform: translateX(-50%);
 }
 
-/* Properly connected dotted lines from circle center to labels */
-.marker-line {
-  position: absolute;
-  transition: all 0.3s ease;
-  z-index: 11;
-  background: none;
-}
-
-/* Top-Left line - from circle center to top-left */
-.marker-container.position-1 .marker-line {
-  left: 50%;
-  top: 50%;
-  width: 35px;
-  height: 35px;
-  transform: translate(-50%, -50%);
-  border-top: 2px dotted rgba(255, 255, 255, 0.9);
-  border-left: 2px dotted rgba(255, 255, 255, 0.9);
-  margin-top: -35px;
-  margin-left: -35px;
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
-}
-
-/* Top-Right line - from circle center to top-right */
-.marker-container.position-2 .marker-line {
-  left: 50%;
-  top: 50%;
-  width: 35px;
-  height: 35px;
-  transform: translate(-50%, -50%);
-  border-top: 2px dotted rgba(255, 255, 255, 0.9);
-  border-right: 2px dotted rgba(255, 255, 255, 0.9);
-  margin-top: -35px;
-  margin-left: 0px;
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
-}
-
-/* Right line - from circle center to right */
-.marker-container.position-3 .marker-line {
-  left: 50%;
-  top: 50%;
-  width: 35px;
-  height: 2px;
-  background: repeating-linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0.9) 0px,
-    rgba(255, 255, 255, 0.9) 4px,
-    transparent 4px,
-    transparent 8px
-  );
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
-  transform: translateY(-50%);
-}
-
-/* Bottom-Right line - from circle center to bottom-right */
-.marker-container.position-4 .marker-line {
-  left: 50%;
-  top: 50%;
-  width: 35px;
-  height: 35px;
-  transform: translate(-50%, -50%);
-  border-bottom: 2px dotted rgba(255, 255, 255, 0.9);
-  border-right: 2px dotted rgba(255, 255, 255, 0.9);
-  margin-top: 0px;
-  margin-left: 0px;
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
-}
-
-/* Bottom line - from circle center to bottom */
-.marker-container.position-5 .marker-line {
-  left: 50%;
-  top: 50%;
-  width: 2px;
-  height: 35px;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.9) 0px,
-    rgba(255, 255, 255, 0.9) 4px,
-    transparent 4px,
-    transparent 8px
-  );
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
-  transform: translateX(-50%);
-}
-
-/* Bottom-Left line - from circle center to bottom-left */
-.marker-container.position-6 .marker-line {
-  left: 50%;
-  top: 50%;
-  width: 35px;
-  height: 35px;
-  transform: translate(-50%, -50%);
-  border-bottom: 2px dotted rgba(255, 255, 255, 0.9);
-  border-left: 2px dotted rgba(255, 255, 255, 0.9);
-  margin-top: 0px;
-  margin-left: -35px;
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
-}
-
-/* Left line - from circle center to left */
-.marker-container.position-7 .marker-line {
-  left: 50%;
-  top: 50%;
-  width: 35px;
-  height: 2px;
-  background: repeating-linear-gradient(
-    to left,
-    rgba(255, 255, 255, 0.9) 0px,
-    rgba(255, 255, 255, 0.9) 4px,
-    transparent 4px,
-    transparent 8px
-  );
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
-  transform: translate(-100%, -50%);
-}
-
-/* Top line - from circle center to top */
-.marker-container.position-8 .marker-line {
-  left: 50%;
-  top: 50%;
-  width: 2px;
-  height: 35px;
-  background: repeating-linear-gradient(
-    to top,
-    rgba(255, 255, 255, 0.9) 0px,
-    rgba(255, 255, 255, 0.9) 4px,
-    transparent 4px,
-    transparent 8px
-  );
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
-  transform: translate(-50%, -100%);
-}
-
-.marker-container:hover .marker-line {
-  border-color: rgba(14, 165, 233, 0.8);
-}
-
-/* Update gradient backgrounds on hover for straight lines */
-.marker-container.position-3:hover .marker-line {
-  background: repeating-linear-gradient(
-    to right,
-    rgba(14, 165, 233, 0.8) 0px,
-    rgba(14, 165, 233, 0.8) 4px,
-    transparent 4px,
-    transparent 8px
-  );
-}
-
-.marker-container.position-5:hover .marker-line,
-.marker-container.position-8:hover .marker-line {
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(14, 165, 233, 0.8) 0px,
-    rgba(14, 165, 233, 0.8) 4px,
-    transparent 4px,
-    transparent 8px
-  );
-}
-
-.marker-container.position-7:hover .marker-line {
-  background: repeating-linear-gradient(
-    to left,
-    rgba(14, 165, 233, 0.8) 0px,
-    rgba(14, 165, 233, 0.8) 4px,
-    transparent 4px,
-    transparent 8px
-  );
-}
 
 .marker-container:hover .marker-circle {
   transform: translate(-50%, -50%) scale(1.1);
@@ -662,8 +495,8 @@ const locationData: LocationFeature[] = [
     coordinates: [55.724324255872546, 24.193154596995498],
     direction: "position-8", // Top (clean distribution)
     vectorIcon: "/vector-30.svg",
-    vectorSize: { width: 71, height: 24 },
-    vectorPosition: { top: -135, left: 197 },
+    vectorSize: { width: 71, height: 30 },
+    vectorPosition: { top: -110, left: 145 },
   },
   {
     place: "ساحة حجز المركبات فلج هزاع",
@@ -984,10 +817,6 @@ export default function SixteenProjectsPage() {
 
       // Marker shadow removed for some markers as per diff
 
-      // Create connecting line (dotted line from circle to label)
-      const line = document.createElement("div")
-      line.className = "marker-line"
-
       // Create circle
       const circleElement = document.createElement("div")
       circleElement.className = "marker-circle"
@@ -1060,16 +889,12 @@ export default function SixteenProjectsPage() {
       })
 
       // Append elements in correct z-index order
-      // Line goes first (connects circle to label)
-      markerElement.appendChild(line)
       // Circle goes second (main marker point)
       markerElement.appendChild(circleElement)
       // Label goes last (highest z-index)
       markerElement.appendChild(label)
 
       // Debug: Add data attributes for easier debugging
-      line.setAttribute('data-direction', direction)
-      line.setAttribute('data-marker', name)
       markerElement.setAttribute("data-marker-name", name)
 
       const marker = new window.mapboxgl.Marker({
