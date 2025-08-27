@@ -13,7 +13,7 @@ const AlAinMap = dynamic(() => import("../components/AlAinMap"), {
       <p>Loading Map...</p>
     </div>
   ),
-})
+}) as any
 
 const AlAinLeftSlider = dynamic(() => import("../components/AlAinLeftSlider"), {
   ssr: false,
