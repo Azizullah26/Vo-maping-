@@ -609,7 +609,7 @@ const locationData: LocationFeature[] = [
     vectorPosition: { top: -35, left: -18 },
   },
   {
-    place: "إدارة الم��ور والترخيص",
+    place: "إدارة المرو�� والترخيص",
     coordinates: [55.727851797240874, 24.19304931881034],
     direction: "position-2", // Top-Right (better spacing)
     vectorIcon: "/vector-24.svg",
@@ -677,8 +677,8 @@ const locationData: LocationFeature[] = [
     coordinates: [55.724324255872546, 24.193154596995498],
     direction: "position-8", // Top (clean distribution)
     vectorIcon: "/vector-30.svg",
-    vectorSize: { width: 6, height: 30 },
-    vectorPosition: { top: -28, left: -3 },
+    vectorSize: { width: 71, height: 24 },
+    vectorPosition: { top: -135, left: 197 },
   },
   {
     place: "ساحة حجز المركبات فلج هزاع",
