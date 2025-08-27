@@ -6,14 +6,19 @@ import { ErrorBoundary } from "@/app/components/ErrorBoundary"
 import RightSliderButton from "@/components/RightSliderButton"
 
 // Dynamically import components to avoid SSR issues
-const AlAinMap = dynamic(() => import("../components/AlAinMap"), {
+const AlAinMapDynamic = dynamic(() => import("../components/AlAinMap"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center bg-gray-200">
       <p>Loading Map...</p>
     </div>
   ),
-}) as any
+})
+
+// Create a proper wrapper that forwards refs
+const AlAinMap = React.forwardRef<any, any>((props, ref) => {
+  return <AlAinMapDynamic {...props} ref={ref} />
+})
 
 const AlAinLeftSlider = dynamic(() => import("../components/AlAinLeftSlider"), {
   ssr: false,
