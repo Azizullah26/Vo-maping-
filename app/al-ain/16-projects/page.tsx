@@ -649,7 +649,7 @@ const locationData: LocationFeature[] = [
     vectorPosition: { top: -34, left: -3 },
   },
   {
-    place: "الضبط المروري والمراسم",
+    place: "الضبط ال��روري والمراسم",
     coordinates: [55.7286784476679, 24.191336582641284],
     direction: "position-3", // Right (better spacing)
     vectorIcon: "/vector-36.svg",
@@ -997,9 +997,7 @@ export default function SixteenProjectsPage() {
       // Add responsive classes
       markerElement.classList.add("w-12", "h-12", "sm:w-14", "sm:h-14", "md:w-16", "md:h-16")
 
-      // Create marker shadow using mask image
-      const shadow = document.createElement("div")
-      shadow.className = "marker-shadow"
+      // Marker shadow removed for some markers as per diff
 
       // Create connecting line (dotted line from circle to label)
       const line = document.createElement("div")
