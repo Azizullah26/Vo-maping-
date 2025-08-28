@@ -613,7 +613,7 @@ const locationData: LocationFeature[] = [
     vectorPosition: { top: -43, left: -15 },
   },
   {
-    place: "مبنى التحريات والم��درات",
+    place: "مبنى التحريات والمخدرات",
     coordinates: [55.71923885266557, 24.196245342189755],
     direction: "position-7", // Left (avoid overlap)
     vectorIcon: "/vector-51.svg",
@@ -942,88 +942,89 @@ export default function SixteenProjectsPage() {
       line.setAttribute("class", "marker-line")
 
       // Set line coordinates based on direction
+      // Circle radius is 12px, so we need to start from circle edge
       const setLineCoordinates = () => {
         if (direction.includes("position-1")) {
-          // Top-Left diagonal
-          svg.setAttribute("width", "40")
-          svg.setAttribute("height", "40")
-          line.setAttribute("x1", "28")
-          line.setAttribute("y1", "28")
-          line.setAttribute("x2", "8")
-          line.setAttribute("y2", "8")
-          lineContainer.style.left = "-25px"
-          lineContainer.style.top = "-40px"
+          // Top-Left diagonal - from circle edge to label edge
+          svg.setAttribute("width", "50")
+          svg.setAttribute("height", "50")
+          line.setAttribute("x1", "42") // Start from circle's top-left edge
+          line.setAttribute("y1", "42")
+          line.setAttribute("x2", "0") // End at label's bottom-right edge
+          line.setAttribute("y2", "0")
+          lineContainer.style.left = "-40px"
+          lineContainer.style.top = "-50px"
         } else if (direction.includes("position-2")) {
-          // Top-Right diagonal
-          svg.setAttribute("width", "40")
-          svg.setAttribute("height", "40")
-          line.setAttribute("x1", "12")
-          line.setAttribute("y1", "28")
-          line.setAttribute("x2", "32")
-          line.setAttribute("y2", "8")
-          lineContainer.style.right = "-25px"
-          lineContainer.style.top = "-40px"
+          // Top-Right diagonal - from circle edge to label edge
+          svg.setAttribute("width", "50")
+          svg.setAttribute("height", "50")
+          line.setAttribute("x1", "8") // Start from circle's top-right edge
+          line.setAttribute("y1", "42")
+          line.setAttribute("x2", "50") // End at label's bottom-left edge
+          line.setAttribute("y2", "0")
+          lineContainer.style.right = "-40px"
+          lineContainer.style.top = "-50px"
         } else if (direction.includes("position-3")) {
-          // Right horizontal
-          svg.setAttribute("width", "40")
+          // Right horizontal - from circle edge to label edge
+          svg.setAttribute("width", "50")
           svg.setAttribute("height", "4")
-          line.setAttribute("x1", "0")
+          line.setAttribute("x1", "0") // Start from circle's right edge
           line.setAttribute("y1", "2")
-          line.setAttribute("x2", "40")
+          line.setAttribute("x2", "50") // End at label's left edge
           line.setAttribute("y2", "2")
           lineContainer.style.left = "12px"
           lineContainer.style.top = "50%"
           lineContainer.style.transform = "translateY(-50%)"
         } else if (direction.includes("position-4")) {
-          // Bottom-Right diagonal
-          svg.setAttribute("width", "40")
-          svg.setAttribute("height", "40")
-          line.setAttribute("x1", "12")
-          line.setAttribute("y1", "12")
-          line.setAttribute("x2", "32")
-          line.setAttribute("y2", "32")
-          lineContainer.style.right = "-25px"
-          lineContainer.style.bottom = "-40px"
+          // Bottom-Right diagonal - from circle edge to label edge
+          svg.setAttribute("width", "50")
+          svg.setAttribute("height", "50")
+          line.setAttribute("x1", "8") // Start from circle's bottom-right edge
+          line.setAttribute("y1", "8")
+          line.setAttribute("x2", "50") // End at label's top-left edge
+          line.setAttribute("y2", "50")
+          lineContainer.style.right = "-40px"
+          lineContainer.style.bottom = "-50px"
         } else if (direction.includes("position-5")) {
-          // Bottom vertical
+          // Bottom vertical - from circle edge to label edge
           svg.setAttribute("width", "4")
-          svg.setAttribute("height", "40")
+          svg.setAttribute("height", "50")
           line.setAttribute("x1", "2")
-          line.setAttribute("y1", "0")
+          line.setAttribute("y1", "0") // Start from circle's bottom edge
           line.setAttribute("x2", "2")
-          line.setAttribute("y2", "40")
+          line.setAttribute("y2", "50") // End at label's top edge
           lineContainer.style.left = "50%"
           lineContainer.style.top = "12px"
           lineContainer.style.transform = "translateX(-50%)"
         } else if (direction.includes("position-6")) {
-          // Bottom-Left diagonal
-          svg.setAttribute("width", "40")
-          svg.setAttribute("height", "40")
-          line.setAttribute("x1", "28")
-          line.setAttribute("y1", "12")
-          line.setAttribute("x2", "8")
-          line.setAttribute("y2", "32")
-          lineContainer.style.left = "-25px"
-          lineContainer.style.bottom = "-40px"
+          // Bottom-Left diagonal - from circle edge to label edge
+          svg.setAttribute("width", "50")
+          svg.setAttribute("height", "50")
+          line.setAttribute("x1", "42") // Start from circle's bottom-left edge
+          line.setAttribute("y1", "8")
+          line.setAttribute("x2", "0") // End at label's top-right edge
+          line.setAttribute("y2", "50")
+          lineContainer.style.left = "-40px"
+          lineContainer.style.bottom = "-50px"
         } else if (direction.includes("position-7")) {
-          // Left horizontal
-          svg.setAttribute("width", "40")
+          // Left horizontal - from circle edge to label edge
+          svg.setAttribute("width", "50")
           svg.setAttribute("height", "4")
-          line.setAttribute("x1", "40")
+          line.setAttribute("x1", "50") // Start from circle's left edge
           line.setAttribute("y1", "2")
-          line.setAttribute("x2", "0")
+          line.setAttribute("x2", "0") // End at label's right edge
           line.setAttribute("y2", "2")
           lineContainer.style.right = "12px"
           lineContainer.style.top = "50%"
           lineContainer.style.transform = "translateY(-50%)"
         } else if (direction.includes("position-8")) {
-          // Top vertical
+          // Top vertical - from circle edge to label edge
           svg.setAttribute("width", "4")
-          svg.setAttribute("height", "40")
+          svg.setAttribute("height", "50")
           line.setAttribute("x1", "2")
-          line.setAttribute("y1", "40")
+          line.setAttribute("y1", "50") // Start from circle's top edge
           line.setAttribute("x2", "2")
-          line.setAttribute("y2", "0")
+          line.setAttribute("y2", "0") // End at label's bottom edge
           lineContainer.style.left = "50%"
           lineContainer.style.bottom = "12px"
           lineContainer.style.transform = "translateX(-50%)"
