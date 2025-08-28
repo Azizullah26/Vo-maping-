@@ -208,6 +208,32 @@ const markerStyles = `
   transform: translateX(-50%);
 }
 
+/* Custom positioning for specific markers based on diff */
+.marker-container[data-marker-name="مركز شرطة فلج هزاع"] .marker-label {
+  top: -125px !important;
+  width: 122px !important;
+  height: 34px !important;
+}
+
+.marker-container[data-marker-name="المتابة الشرطية والرعاية اللاحقة"] .marker-label {
+  top: 110px !important;
+  width: auto !important;
+  align-self: stretch !important;
+}
+
+.marker-container[data-marker-name="إدارة الدوريات الخاصة"] .marker-label {
+  left: -300px !important;
+  width: 100% !important;
+}
+
+.marker-container[data-marker-name="سكن أفراد المرور"] .marker-label {
+  left: 234px !important;
+  top: -223px !important;
+  width: 144px !important;
+  height: 33px !important;
+  transform: none !important;
+}
+
 
 .marker-container:hover .marker-circle {
   transform: translate(-50%, -50%) scale(1.1);
@@ -937,6 +963,19 @@ export default function SixteenProjectsPage() {
           <div ref={mapContainerRef} className="relative w-full h-full overflow-hidden" />
           {/* Gray mask overlay to reduce light between map and markers */}
           <div className="absolute inset-0 bg-gray-900/40 pointer-events-none z-5" />
+
+          {/* Custom HTML element as per diff */}
+          <div
+            className="absolute flex flex-col"
+            style={{
+              top: '239px',
+              left: '931px',
+              width: '200px',
+              height: '100px'
+            }}
+          >
+            <div dangerouslySetInnerHTML={{ __html: '<p>Hello there, I am custom HTML code!</p>' }} />
+          </div>
         </div>
 
         {/* Mobile Bottom Panel */}
