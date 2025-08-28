@@ -156,7 +156,7 @@ const markerStyles = `
   position: absolute;
   stroke: #ffffff;
   stroke-width: 2px;
-  stroke-dasharray: 6 4; /* Evenly spaced round dots */
+  stroke-dasharray: 2 6; /* Perfect dotted effect with small equal values */
   stroke-linecap: round;
   stroke-linejoin: round;
   fill: none;
@@ -613,7 +613,7 @@ const locationData: LocationFeature[] = [
     vectorPosition: { top: -43, left: -15 },
   },
   {
-    place: "مبنى التحريات والمخدرات",
+    place: "مبنى التحريات والم��درات",
     coordinates: [55.71923885266557, 24.196245342189755],
     direction: "position-7", // Left (avoid overlap)
     vectorIcon: "/vector-51.svg",
