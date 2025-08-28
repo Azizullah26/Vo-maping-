@@ -57,8 +57,8 @@ const markerStyles = `
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 0.75rem;
-  height: 0.75rem;
+  width: 24px; /* 12px radius = 24px diameter */
+  height: 24px; /* 12px radius = 24px diameter */
   background-color: #ffffff;
   border-radius: 50%;
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
@@ -73,15 +73,15 @@ const markerStyles = `
 
 @media (min-width: 640px) {
   .marker-circle {
-    width: 0.875rem;
-    height: 0.875rem;
+    width: 24px; /* Keep consistent 12px radius across all devices */
+    height: 24px;
   }
 }
 
 @media (min-width: 768px) {
   .marker-circle {
-    width: 0.9375rem;
-    height: 0.9375rem;
+    width: 24px; /* Keep consistent 12px radius across all devices */
+    height: 24px;
   }
 }
 
@@ -151,12 +151,32 @@ const markerStyles = `
   transform: scale(1.02);
 }
 
+/* Dotted connecting lines */
+.marker-line {
+  position: absolute;
+  stroke: #ffffff;
+  stroke-width: 2px;
+  stroke-dasharray: 6 4; /* Evenly spaced round dots */
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  z-index: 11;
+  pointer-events: none;
+}
+
 /* Strategic positioning system - like real estate development labels */
 /* Position 1: Top-Left (clean offset) */
 .marker-container.position-1 .marker-label {
   bottom: calc(100% + 25px);
   right: calc(100% + 15px);
   transform: none;
+}
+
+.marker-container.position-1 .marker-line {
+  width: 40px;
+  height: 40px;
+  left: -25px;
+  top: -40px;
 }
 
 /* Position 2: Top-Right (clean offset) */
@@ -166,10 +186,25 @@ const markerStyles = `
   transform: none;
 }
 
+.marker-container.position-2 .marker-line {
+  width: 40px;
+  height: 40px;
+  right: -25px;
+  top: -40px;
+}
+
 /* Position 3: Right (clean side) */
 .marker-container.position-3 .marker-label {
   top: 50%;
   left: calc(100% + 25px);
+  transform: translateY(-50%);
+}
+
+.marker-container.position-3 .marker-line {
+  width: 40px;
+  height: 2px;
+  left: 12px;
+  top: 50%;
   transform: translateY(-50%);
 }
 
@@ -180,10 +215,25 @@ const markerStyles = `
   transform: none;
 }
 
+.marker-container.position-4 .marker-line {
+  width: 40px;
+  height: 40px;
+  right: -25px;
+  bottom: -40px;
+}
+
 /* Position 5: Bottom (clean below) */
 .marker-container.position-5 .marker-label {
   top: calc(100% + 25px);
   left: 50%;
+  transform: translateX(-50%);
+}
+
+.marker-container.position-5 .marker-line {
+  width: 2px;
+  height: 40px;
+  left: 50%;
+  top: 12px;
   transform: translateX(-50%);
 }
 
@@ -194,6 +244,13 @@ const markerStyles = `
   transform: none;
 }
 
+.marker-container.position-6 .marker-line {
+  width: 40px;
+  height: 40px;
+  left: -25px;
+  bottom: -40px;
+}
+
 /* Position 7: Left (clean side) */
 .marker-container.position-7 .marker-label {
   top: 50%;
@@ -201,10 +258,26 @@ const markerStyles = `
   transform: translateY(-50%);
 }
 
+.marker-container.position-7 .marker-line {
+  width: 40px;
+  height: 2px;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 /* Position 8: Top (clean above) */
 .marker-container.position-8 .marker-label {
   bottom: calc(100% + 25px);
   left: 50%;
+  transform: translateX(-50%);
+}
+
+.marker-container.position-8 .marker-line {
+  width: 2px;
+  height: 40px;
+  left: 50%;
+  bottom: 12px;
   transform: translateX(-50%);
 }
 
@@ -855,7 +928,112 @@ export default function SixteenProjectsPage() {
       const circleElement = document.createElement("div")
       circleElement.className = "marker-circle"
 
-      // SVG vector icon removed as per diff
+      // Create dotted line (SVG for better control)
+      const lineContainer = document.createElement("div")
+      lineContainer.style.position = "absolute"
+      lineContainer.style.pointerEvents = "none"
+      lineContainer.style.zIndex = "11"
+
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+      svg.style.position = "absolute"
+      svg.style.overflow = "visible"
+
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line")
+      line.setAttribute("class", "marker-line")
+
+      // Set line coordinates based on direction
+      const setLineCoordinates = () => {
+        if (direction.includes("position-1")) {
+          // Top-Left diagonal
+          svg.setAttribute("width", "40")
+          svg.setAttribute("height", "40")
+          line.setAttribute("x1", "28")
+          line.setAttribute("y1", "28")
+          line.setAttribute("x2", "8")
+          line.setAttribute("y2", "8")
+          lineContainer.style.left = "-25px"
+          lineContainer.style.top = "-40px"
+        } else if (direction.includes("position-2")) {
+          // Top-Right diagonal
+          svg.setAttribute("width", "40")
+          svg.setAttribute("height", "40")
+          line.setAttribute("x1", "12")
+          line.setAttribute("y1", "28")
+          line.setAttribute("x2", "32")
+          line.setAttribute("y2", "8")
+          lineContainer.style.right = "-25px"
+          lineContainer.style.top = "-40px"
+        } else if (direction.includes("position-3")) {
+          // Right horizontal
+          svg.setAttribute("width", "40")
+          svg.setAttribute("height", "4")
+          line.setAttribute("x1", "0")
+          line.setAttribute("y1", "2")
+          line.setAttribute("x2", "40")
+          line.setAttribute("y2", "2")
+          lineContainer.style.left = "12px"
+          lineContainer.style.top = "50%"
+          lineContainer.style.transform = "translateY(-50%)"
+        } else if (direction.includes("position-4")) {
+          // Bottom-Right diagonal
+          svg.setAttribute("width", "40")
+          svg.setAttribute("height", "40")
+          line.setAttribute("x1", "12")
+          line.setAttribute("y1", "12")
+          line.setAttribute("x2", "32")
+          line.setAttribute("y2", "32")
+          lineContainer.style.right = "-25px"
+          lineContainer.style.bottom = "-40px"
+        } else if (direction.includes("position-5")) {
+          // Bottom vertical
+          svg.setAttribute("width", "4")
+          svg.setAttribute("height", "40")
+          line.setAttribute("x1", "2")
+          line.setAttribute("y1", "0")
+          line.setAttribute("x2", "2")
+          line.setAttribute("y2", "40")
+          lineContainer.style.left = "50%"
+          lineContainer.style.top = "12px"
+          lineContainer.style.transform = "translateX(-50%)"
+        } else if (direction.includes("position-6")) {
+          // Bottom-Left diagonal
+          svg.setAttribute("width", "40")
+          svg.setAttribute("height", "40")
+          line.setAttribute("x1", "28")
+          line.setAttribute("y1", "12")
+          line.setAttribute("x2", "8")
+          line.setAttribute("y2", "32")
+          lineContainer.style.left = "-25px"
+          lineContainer.style.bottom = "-40px"
+        } else if (direction.includes("position-7")) {
+          // Left horizontal
+          svg.setAttribute("width", "40")
+          svg.setAttribute("height", "4")
+          line.setAttribute("x1", "40")
+          line.setAttribute("y1", "2")
+          line.setAttribute("x2", "0")
+          line.setAttribute("y2", "2")
+          lineContainer.style.right = "12px"
+          lineContainer.style.top = "50%"
+          lineContainer.style.transform = "translateY(-50%)"
+        } else if (direction.includes("position-8")) {
+          // Top vertical
+          svg.setAttribute("width", "4")
+          svg.setAttribute("height", "40")
+          line.setAttribute("x1", "2")
+          line.setAttribute("y1", "40")
+          line.setAttribute("x2", "2")
+          line.setAttribute("y2", "0")
+          lineContainer.style.left = "50%"
+          lineContainer.style.bottom = "12px"
+          lineContainer.style.transform = "translateX(-50%)"
+        }
+      }
+
+      setLineCoordinates()
+
+      svg.appendChild(line)
+      lineContainer.appendChild(svg)
 
       // Create label
       const label = document.createElement("button")
@@ -923,6 +1101,8 @@ export default function SixteenProjectsPage() {
       })
 
       // Append elements in correct z-index order
+      // Line goes first (lowest z-index)
+      markerElement.appendChild(lineContainer)
       // Circle goes second (main marker point)
       markerElement.appendChild(circleElement)
       // Label goes last (highest z-index)
