@@ -935,6 +935,8 @@ export default function SixteenProjectsPage() {
         {/* Map Area */}
         <div className="flex-1 relative">
           <div ref={mapContainerRef} className="relative w-full h-full overflow-hidden" />
+          {/* Gray mask overlay to reduce light between map and markers */}
+          <div className="absolute inset-0 bg-gray-900/40 pointer-events-none z-5" />
         </div>
 
         {/* Mobile Bottom Panel */}
