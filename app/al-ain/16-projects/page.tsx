@@ -234,6 +234,13 @@ const markerStyles = `
   transform: none !important;
 }
 
+.marker-container[data-marker-name="إدارة الأسلحة والمتفجرات"] .marker-label {
+  top: -127px !important;
+  width: 50px !important;
+  left: -139px !important;
+  height: 44px !important;
+}
+
 
 .marker-container:hover .marker-circle {
   transform: translate(-50%, -50%) scale(1.1);
@@ -706,6 +713,7 @@ export default function SixteenProjectsPage() {
       mapRef.current.on("load", () => {
         setMapLoaded(true)
         mapRef.current.getCanvas().style.filter = "contrast(1.15) saturate(1.2) brightness(0.95)"
+        mapRef.current.getCanvas().style.left = "-4px"
       })
 
       // Zoom event handler
@@ -964,18 +972,6 @@ export default function SixteenProjectsPage() {
           {/* Gray mask overlay to reduce light between map and markers */}
           <div className="absolute inset-0 bg-gray-900/40 pointer-events-none z-5" />
 
-          {/* Custom HTML element as per diff */}
-          <div
-            className="absolute flex flex-col"
-            style={{
-              top: '239px',
-              left: '931px',
-              width: '200px',
-              height: '100px'
-            }}
-          >
-            <div dangerouslySetInnerHTML={{ __html: '<p>Hello there, I am custom HTML code!</p>' }} />
-          </div>
         </div>
 
         {/* Mobile Bottom Panel */}
