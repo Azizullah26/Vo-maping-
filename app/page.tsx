@@ -15,9 +15,9 @@ const AlAinMapDynamic = dynamic(() => import("../components/AlAinMap"), {
   ),
 })
 
-// Create a proper wrapper that forwards refs
+// Create a proper wrapper that forwards refs using forwardRef
 const AlAinMap = React.forwardRef<any, any>((props, ref) => {
-  return <AlAinMapDynamic {...props} ref={ref} />
+  return React.createElement(AlAinMapDynamic, { ...props, ref })
 })
 
 AlAinMap.displayName = "AlAinMap"
