@@ -5,18 +5,22 @@ import dynamic from "next/dynamic"
 import { ErrorBoundary } from "@/app/components/ErrorBoundary"
 import RightSliderButton from "@/components/RightSliderButton"
 
-// Dynamically import components to avoid SSR issues with proper ref forwarding
-const AlAinMap = dynamic(
-  () => import("../components/AlAinMap"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-full flex items-center justify-center bg-gray-200">
-        <p>Loading Map...</p>
-      </div>
-    ),
-  }
-)
+// Dynamically import components to avoid SSR issues
+const AlAinMapComponent = dynamic(() => import("../components/AlAinMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-200">
+      <p>Loading Map...</p>
+    </div>
+  ),
+})
+
+// Create a proper forwardRef wrapper for the dynamic component
+const AlAinMap = React.forwardRef<any, any>((props, ref) => {
+  return <AlAinMapComponent {...props} ref={ref} />
+})
+
+AlAinMap.displayName = "AlAinMapWrapper"
 
 const AlAinLeftSlider = dynamic(() => import("../components/AlAinLeftSlider"), {
   ssr: false,
