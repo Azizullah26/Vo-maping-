@@ -1,24 +1,7 @@
 /**
- * Client-safe environment utilities
- * These functions can be safely used on both client and server
+ * Client-side environment utilities
+ * Only includes variables that are safe to expose to the client
  */
-
-/**
- * Get demo mode setting (client-safe)
- */
-export function isDemoMode(): boolean {
-  // Check for NEXT_PUBLIC_ prefixed version first
-  const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE || process.env.REACT_APP_DEMO_MODE
-  return demoMode === "true"
-}
-
-/**
- * Get static mode setting (client-safe)
- */
-export function isStaticMode(): boolean {
-  const staticMode = process.env.NEXT_PUBLIC_STATIC_MODE || process.env.REACT_APP_STATIC_MODE
-  return staticMode === "true"
-}
 
 /**
  * Get Supabase URL (client-safe)
@@ -28,26 +11,42 @@ export function getSupabaseUrl(): string | undefined {
 }
 
 /**
- * Get Supabase Anon Key (client-safe)
+ * Get Supabase anonymous key (client-safe)
  */
 export function getSupabaseAnonKey(): string | undefined {
   return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY
 }
 
 /**
- * Check if we're running on Vercel (client-safe)
+ * Check if we're in demo mode (client-safe)
  */
-export function isVercel(): boolean {
-  return process.env.NEXT_PUBLIC_VERCEL === "1" || process.env.VERCEL === "1"
+export function isDemoMode(): boolean {
+  return process.env.NEXT_PUBLIC_DEMO_MODE === "true"
+}
+
+/**
+ * Check if we're in static mode (client-safe)
+ */
+export function isStaticMode(): boolean {
+  return process.env.NEXT_PUBLIC_STATIC_MODE === "true"
 }
 
 /**
  * Get base URL (client-safe)
  */
 export function getBaseUrl(): string {
-  if (typeof window !== "undefined") {
-    return window.location.origin
-  }
-
   return process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+}
+
+/**
+ * Get all client environment variables for debugging (client-safe only)
+ */
+export function getClientEnvVars(): Record<string, string | undefined> {
+  return {
+    NEXT_PUBLIC_SUPABASE_URL: getSupabaseUrl(),
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: getSupabaseAnonKey() ? "[PRESENT]" : undefined,
+    NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE,
+    NEXT_PUBLIC_STATIC_MODE: process.env.NEXT_PUBLIC_STATIC_MODE,
+    NEXT_PUBLIC_BASE_URL: getBaseUrl(),
+  }
 }

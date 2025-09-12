@@ -5,119 +5,105 @@ import { useCesiumToken } from "@/hooks/useCesiumToken"
 
 interface CesiumViewerProps {
   className?: string
-  onLoad?: () => void
+  onViewerReady?: (viewer: any) => void
 }
 
-export default function CesiumViewer({ className = "", onLoad }: CesiumViewerProps) {
+export default function CesiumViewer({ className = "", onViewerReady }: CesiumViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const viewerRef = useRef<any>(null)
-  const [cesiumLoaded, setCesiumLoaded] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { token, loading, error: tokenError } = useCesiumToken()
+  const { token, loading: tokenLoading, error: tokenError } = useCesiumToken()
 
-  // Load Cesium from CDN
   useEffect(() => {
-    if (typeof window === "undefined") return
+    if (tokenLoading || !token) return
 
-    // Check if Cesium is already loaded
-    if (window.Cesium) {
-      setCesiumLoaded(true)
+    if (tokenError) {
+      setError(tokenError)
+      setIsLoading(false)
       return
     }
 
-    // Load CSS
-    const cssLink = document.createElement("link")
-    cssLink.rel = "stylesheet"
-    cssLink.href = "https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Widgets/widgets.css"
-    document.head.appendChild(cssLink)
+    let isMounted = true
 
-    // Load JS
-    const script = document.createElement("script")
-    script.src = "https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Cesium.js"
-    script.onload = () => {
-      setCesiumLoaded(true)
-    }
-    script.onerror = () => {
-      setError("Failed to load Cesium from CDN")
-    }
-    document.head.appendChild(script)
-
-    return () => {
+    const initializeCesium = async () => {
       try {
-        if (document.head.contains(cssLink)) document.head.removeChild(cssLink)
-        if (document.head.contains(script)) document.head.removeChild(script)
-      } catch (e) {
-        console.warn("Cleanup error:", e)
-      }
-    }
-  }, [])
+        // Dynamically import Cesium
+        const Cesium = await import("cesium")
 
-  // Initialize Cesium viewer when both Cesium and token are ready
-  useEffect(() => {
-    if (!cesiumLoaded || !token || !containerRef.current || viewerRef.current) return
+        // Set the access token
+        Cesium.Ion.defaultAccessToken = token
 
-    try {
-      // Set Cesium access token
-      window.Cesium.Ion.defaultAccessToken = token
+        if (!isMounted || !containerRef.current) return
 
-      // Create viewer
-      viewerRef.current = new window.Cesium.Viewer(containerRef.current, {
-        terrainProvider: window.Cesium.createWorldTerrain(),
-        homeButton: false,
-        sceneModePicker: false,
-        baseLayerPicker: false,
-        navigationHelpButton: false,
-        animation: false,
-        timeline: false,
-        fullscreenButton: false,
-        vrButton: false,
-        geocoder: false,
-        infoBox: false,
-        selectionIndicator: false,
-      })
+        // Create the viewer
+        const viewer = new Cesium.Viewer(containerRef.current, {
+          terrainProvider: Cesium.createWorldTerrain(),
+          homeButton: false,
+          sceneModePicker: false,
+          baseLayerPicker: false,
+          navigationHelpButton: false,
+          animation: false,
+          timeline: false,
+          fullscreenButton: false,
+          geocoder: false,
+          infoBox: false,
+          selectionIndicator: false,
+        })
 
-      // Set initial view
-      viewerRef.current.camera.setView({
-        destination: window.Cesium.Cartesian3.fromDegrees(55.2708, 25.2048, 15000),
-        orientation: {
-          heading: window.Cesium.Math.toRadians(0.0),
-          pitch: window.Cesium.Math.toRadians(-45.0),
-        },
-      })
+        viewerRef.current = viewer
 
-      onLoad?.()
-    } catch (err) {
-      console.error("Error initializing Cesium viewer:", err)
-      setError("Failed to initialize Cesium viewer")
-    }
+        // Set initial view to UAE
+        viewer.camera.setView({
+          destination: Cesium.Cartesian3.fromDegrees(54.3773, 24.4539, 100000), // UAE coordinates
+        })
 
-    return () => {
-      if (viewerRef.current) {
-        try {
-          viewerRef.current.destroy()
-          viewerRef.current = null
-        } catch (e) {
-          console.warn("Error destroying Cesium viewer:", e)
+        if (onViewerReady) {
+          onViewerReady(viewer)
+        }
+
+        setIsLoading(false)
+      } catch (err) {
+        console.error("Error initializing Cesium:", err)
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : "Failed to initialize Cesium")
+          setIsLoading(false)
         }
       }
     }
-  }, [cesiumLoaded, token, onLoad])
 
-  if (loading) {
+    initializeCesium()
+
+    return () => {
+      isMounted = false
+      if (viewerRef.current) {
+        viewerRef.current.destroy()
+        viewerRef.current = null
+      }
+    }
+  }, [token, tokenLoading, tokenError, onViewerReady])
+
+  if (tokenLoading || isLoading) {
     return (
-      <div className={`flex items-center justify-center bg-gray-200 ${className}`}>
-        <p>Loading Cesium...</p>
+      <div className={`flex items-center justify-center bg-gray-100 ${className}`}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">Loading Cesium viewer...</p>
+        </div>
       </div>
     )
   }
 
-  if (tokenError || error) {
+  if (error || tokenError) {
     return (
-      <div className={`flex items-center justify-center bg-red-100 text-red-600 ${className}`}>
-        <p>Error: {tokenError || error}</p>
+      <div className={`flex items-center justify-center bg-red-50 ${className}`}>
+        <div className="text-center text-red-600">
+          <p>Error loading Cesium viewer</p>
+          <p className="text-sm mt-1">{error || tokenError}</p>
+        </div>
       </div>
     )
   }
 
-  return <div ref={containerRef} className={`w-full h-full ${className}`} />
+  return <div ref={containerRef} className={className} />
 }

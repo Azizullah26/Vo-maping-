@@ -8,7 +8,7 @@ interface CesiumTokenState {
   error: string | null
 }
 
-export function useCesiumToken() {
+export function useCesiumToken(): CesiumTokenState {
   const [state, setState] = useState<CesiumTokenState>({
     token: null,
     loading: true,
@@ -21,7 +21,7 @@ export function useCesiumToken() {
         const response = await fetch("/api/cesium-token")
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+          throw new Error(`Failed to fetch token: ${response.status}`)
         }
 
         const data = await response.json()
@@ -36,6 +36,7 @@ export function useCesiumToken() {
           error: null,
         })
       } catch (error) {
+        console.error("Error fetching Cesium token:", error)
         setState({
           token: null,
           loading: false,

@@ -1,16 +1,18 @@
 import { NextResponse } from "next/server"
 
+export const dynamic = "force-dynamic"
+
 export async function GET() {
   try {
-    const mapboxToken = process.env.MAPBOX_ACCESS_TOKEN
+    const token = process.env.MAPBOX_ACCESS_TOKEN
 
-    if (!mapboxToken) {
-      return NextResponse.json({ error: "Mapbox token not configured" }, { status: 500 })
+    if (!token) {
+      return NextResponse.json({ error: "Mapbox access token not configured" }, { status: 500 })
     }
 
-    return NextResponse.json({ token: mapboxToken })
+    return NextResponse.json({ token })
   } catch (error) {
-    console.error("Error providing Mapbox token:", error)
-    return NextResponse.json({ error: "Failed to provide Mapbox token" }, { status: 500 })
+    console.error("Error fetching Mapbox token:", error)
+    return NextResponse.json({ error: "Failed to fetch Mapbox token" }, { status: 500 })
   }
 }
