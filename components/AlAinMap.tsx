@@ -1295,6 +1295,7 @@ export default function AlAinMap({
         "ساحة حجز المركبات -asad",
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
+        "ساحة حجز المركبات - السا",
       ]
 
       if (labeledMarkers.includes(name)) {
@@ -1324,6 +1325,9 @@ export default function AlAinMap({
             break
           case "مركز شرطة هيلي":
             positionClass = "position-7" // Left
+            break
+          case "ساحة حجز المركبات - السا":
+            positionClass = "position-3" // Right
             break
           default:
             positionClass = "position-1" // Default to Top
@@ -1468,6 +1472,7 @@ export default function AlAinMap({
         "ساحة حجز المركبات -asad",
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
+        "ساحة حجز المركبات - السا",
       ]
 
       if (labeledMarkersArray.includes(name)) {
