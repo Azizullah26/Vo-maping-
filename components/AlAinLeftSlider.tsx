@@ -672,23 +672,8 @@ export default function AlAinLeftSlider({
                   {/* Docs button */}
                   <button
                     onClick={() => {
-                      try {
-                        console.log("Navigating to documents page...")
-                        // Navigate to documents page with the selected project as a query parameter
-                        if (selectedProject) {
-                          console.log("Selected project:", selectedProject)
-                          const url = `/al-ain/documents?project=${encodeURIComponent(selectedProject.projectNameEn)}&id=${selectedProject.id}`
-                          console.log("Navigation URL:", url)
-                          router.push(url)
-                        } else {
-                          console.log("No project selected, navigating to documents page without parameters")
-                          router.push("/al-ain/documents")
-                        }
-                      } catch (error) {
-                        console.error("Navigation error:", error)
-                        // Fallback navigation
-                        router.push("/al-ain/documents")
-                      }
+                      console.log("Switching to documents tab...")
+                      setActiveTab("documents")
                     }}
                     className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
                     aria-label="View documents"
@@ -708,12 +693,8 @@ export default function AlAinLeftSlider({
                   {/* Media button */}
                   <button
                     onClick={() => {
-                      try {
-                        console.log("Navigating to media page...")
-                        router.push("/al-ain/media")
-                      } catch (error) {
-                        console.error("Navigation error:", error)
-                      }
+                      console.log("Switching to media tab...")
+                      setActiveTab("media")
                     }}
                     className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
                   >
@@ -735,12 +716,8 @@ export default function AlAinLeftSlider({
                   {/* 3D button */}
                   <button
                     onClick={() => {
-                      try {
-                        console.log("Navigating to 3D page...")
-                        router.push("/al-ain/3d")
-                      } catch (error) {
-                        console.error("Navigation error:", error)
-                      }
+                      console.log("Switching to 3D tab...")
+                      setActiveTab("3d")
                     }}
                     className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
                   >
@@ -755,12 +732,8 @@ export default function AlAinLeftSlider({
                   {/* Live button */}
                   <button
                     onClick={() => {
-                      try {
-                        console.log("Navigating to live page...")
-                        router.push("/al-ain/live")
-                      } catch (error) {
-                        console.error("Navigation error:", error)
-                      }
+                      console.log("Switching to live tab...")
+                      setActiveTab("live")
                     }}
                     className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
                   >
