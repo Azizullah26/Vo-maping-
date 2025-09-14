@@ -5,11 +5,6 @@ import mapboxgl from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useMapboxToken } from "@/hooks/useMapboxToken"
 
-const MAPBOX_VERSION = "2.15.0"
-const MAPBOX_CSS_URL = `https://api.mapbox.com/mapbox-gl-js/v${MAPBOX_VERSION}/mapbox-gl.css`
-const MAPBOX_JS_URL = `https://api.mapbox.com/mapbox-gl-js/v${MAPBOX_VERSION}/mapbox-gl.js`
-
-// Memoize static data to prevent re-renders
 const ALWAYS_VISIBLE_MARKERS = [
   "مركز شرطة الوقن",
   "مركز شرطة هيلي",
@@ -57,7 +52,6 @@ const ALWAYS_VISIBLE_MARKERS = [
   "مركز شرطة الحوايك",
 ]
 
-// Labeled markers with positions
 const labeledMarkers = [
   { name: "مركز شرطة هيلي", position: "position-7" },
   { name: "ساحة حجز المركبات - الساد", position: "position-3" },
@@ -86,7 +80,6 @@ export default function AlAinMap({
   const [markers, setMarkers] = useState<{ [key: string]: mapboxgl.Marker }>({})
   const [policeData, setPoliceData] = useState<any[]>([])
 
-  // Load police data
   useEffect(() => {
     const loadPoliceData = async () => {
       try {
@@ -100,7 +93,6 @@ export default function AlAinMap({
     loadPoliceData()
   }, [])
 
-  // Initialize map
   useEffect(() => {
     if (map.current) return // already initialized
     if (loading) return
@@ -113,7 +105,6 @@ export default function AlAinMap({
       console.log("Initializing Al Ain map with token:", token.substring(0, 5) + "...")
       mapboxgl.accessToken = token
 
-      // Initialize map with satellite-streets style
       map.current = new mapboxgl.Map({
         container: mapContainer.current!,
         style: "mapbox://styles/mapbox/satellite-streets-v12",
@@ -125,7 +116,6 @@ export default function AlAinMap({
         renderWorldCopies: false,
       })
 
-      // Set up event handlers
       map.current.on("load", () => {
         console.log("Al Ain map loaded successfully")
         setMapLoaded(true)
@@ -142,7 +132,6 @@ export default function AlAinMap({
       setMapError(`Failed to initialize map: ${errorMessage}`)
     }
 
-    // Cleanup function
     return () => {
       try {
         if (map.current) {
@@ -156,18 +145,14 @@ export default function AlAinMap({
     }
   }, [token, loading, error])
 
-  // Add markers when map loads and data is available
   useEffect(() => {
     if (!map.current || !mapLoaded || policeData.length === 0) return
 
-    // Clear existing markers
     Object.values(markers).forEach((marker) => marker.remove())
 
-    // Create new markers
     const newMarkers: { [key: string]: mapboxgl.Marker } = {}
 
     policeData.forEach((location) => {
-      // Create custom marker element
       const markerEl = document.createElement("div")
       markerEl.className = "police-marker"
       markerEl.innerHTML = `
@@ -177,7 +162,6 @@ export default function AlAinMap({
         </div>
       `
 
-      // Create marker
       const marker = new mapboxgl.Marker({
         element: markerEl,
         anchor: "center",
@@ -185,7 +169,6 @@ export default function AlAinMap({
         .setLngLat([location.longitude, location.latitude])
         .addTo(map.current!)
 
-      // Add popup
       const popup = new mapboxgl.Popup({
         closeButton: false,
         closeOnClick: false,
@@ -198,7 +181,6 @@ export default function AlAinMap({
         </div>
       `)
 
-      // Add hover events
       markerEl.addEventListener("mouseenter", () => {
         marker.setPopup(popup).togglePopup()
         if (onMarkerHover) onMarkerHover(location)
@@ -209,11 +191,9 @@ export default function AlAinMap({
         if (onMarkerHover) onMarkerHover(null)
       })
 
-      // Add click event
       markerEl.addEventListener("click", () => {
         if (onProjectSelect) {
           onProjectSelect(location)
-          // Fly to the location
           map.current!.flyTo({
             center: [location.longitude, location.latitude],
             zoom: 15,
@@ -233,7 +213,6 @@ export default function AlAinMap({
 
   return (
     <div className="relative w-full h-full">
-      {/* Map error display */}
       {mapError && (
         <div className="absolute inset-0 flex items-center justify-center bg-red-100 z-10">
           <div className="bg-white p-4 rounded-lg shadow-lg max-w-md">
@@ -243,17 +222,14 @@ export default function AlAinMap({
         </div>
       )}
 
-      {/* Loading indicator */}
       {!mapLoaded && !mapError && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       )}
 
-      {/* Map container */}
       <div ref={mapContainer} className="absolute inset-0 w-full h-full z-0" />
 
-      {/* Custom styles for markers */}
       <style jsx global>{`
         .police-marker {
           width: 20px;
