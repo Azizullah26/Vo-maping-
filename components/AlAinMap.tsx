@@ -1295,7 +1295,7 @@ export default function AlAinMap({
         "ساحة حجز المركبات -asad",
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
-        "ساحة حجز المركبات - السا",
+        "ساحة حجز المركبات -asad", // Fixed the name to match the data file exactly
       ]
 
       if (labeledMarkers.includes(name)) {
@@ -1318,7 +1318,7 @@ export default function AlAinMap({
             positionClass = "position-3" // Right
             break
           case "ساحة حجز المركبات -asad":
-            positionClass = "position-7" // Left
+            positionClass = "position-3" // Right
             break
           case "إدارة التأهيل الشرطي - الفوعة":
             positionClass = "position-3" // Right
@@ -1326,7 +1326,7 @@ export default function AlAinMap({
           case "مركز شرطة هيلي":
             positionClass = "position-7" // Left
             break
-          case "ساحة حجز المركبات - السا":
+          case "ساحة حجز المركبات -asad": // Updated case to match the correct name from data
             positionClass = "position-3" // Right
             break
           default:
@@ -1472,7 +1472,7 @@ export default function AlAinMap({
         "ساحة حجز المركبات -asad",
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
-        "ساحة حجز المركبات - السا",
+        "ساحة حجز المركبات -asad", // Fixed the name to match the data file exactly
       ]
 
       if (labeledMarkersArray.includes(name)) {
