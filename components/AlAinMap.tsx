@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import "mapbox-gl/dist/mapbox-gl.css"
 import { useMapboxToken } from "@/hooks/useMapboxToken"
 
 const ALWAYS_VISIBLE_MARKERS = [
@@ -97,20 +96,23 @@ export default function AlAinMap({
     const loadMapbox = async () => {
       try {
         if (typeof window !== "undefined" && (window as any).mapboxgl) {
+          console.log("[v0] Mapbox GL loaded successfully")
           setMapboxgl((window as any).mapboxgl)
           return
         }
 
         const checkMapbox = () => {
           if ((window as any).mapboxgl) {
+            console.log("[v0] Mapbox GL loaded successfully")
             setMapboxgl((window as any).mapboxgl)
           } else {
+            console.log("[v0] Waiting for Mapbox GL to load...")
             setTimeout(checkMapbox, 100)
           }
         }
         checkMapbox()
       } catch (err) {
-        console.error("Error loading Mapbox GL:", err)
+        console.error("[v0] Error loading Mapbox GL:", err)
         setMapError("Failed to load Mapbox GL library")
       }
     }
@@ -127,7 +129,7 @@ export default function AlAinMap({
     }
 
     try {
-      console.log("Initializing Al Ain map with token:", token.substring(0, 5) + "...")
+      console.log("[v0] Initializing Al Ain map with token:", token.substring(0, 5) + "...")
       mapboxgl.accessToken = token
 
       map.current = new mapboxgl.Map({
@@ -142,17 +144,17 @@ export default function AlAinMap({
       })
 
       map.current.on("load", () => {
-        console.log("Al Ain map loaded successfully")
+        console.log("[v0] Al Ain map loaded successfully")
         setMapLoaded(true)
       })
 
       map.current.on("error", (e: any) => {
-        console.error("Mapbox error:", e)
+        console.error("[v0] Mapbox error:", e)
         const errorMessage = e.error?.message || e.message || "Unknown error"
         setMapError(`Map error: ${errorMessage}`)
       })
     } catch (err) {
-      console.error("Error initializing map:", err)
+      console.error("[v0] Error initializing map:", err)
       const errorMessage = err instanceof Error ? err.message : "Unknown error occurred"
       setMapError(`Failed to initialize map: ${errorMessage}`)
     }
@@ -160,12 +162,12 @@ export default function AlAinMap({
     return () => {
       try {
         if (map.current) {
-          console.log("Cleaning up Al Ain map")
+          console.log("[v0] Cleaning up Al Ain map")
           map.current.remove()
           map.current = null
         }
       } catch (err) {
-        console.error("Error during map cleanup:", err)
+        console.error("[v0] Error during map cleanup:", err)
       }
     }
   }, [token, loading, error, mapboxgl])
@@ -243,6 +245,9 @@ export default function AlAinMap({
           <div className="bg-white p-4 rounded-lg shadow-lg max-w-md">
             <h3 className="text-lg font-bold text-red-600">Map Error</h3>
             <p className="mt-2">{mapError}</p>
+            <p className="mt-2 text-sm text-gray-600">
+              Mapbox loaded: {mapboxgl ? "Yes" : "No"} | Token: {token ? "Available" : "Missing"}
+            </p>
           </div>
         </div>
       )}

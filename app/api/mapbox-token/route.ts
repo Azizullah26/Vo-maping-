@@ -12,7 +12,14 @@ export async function GET() {
       return NextResponse.json({ error: "Mapbox access token not configured" }, { status: 500 })
     }
 
-    return NextResponse.json({ token })
+    return NextResponse.json({
+      token,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    })
   } catch (error) {
     console.error("Error fetching Mapbox token:", error)
     return NextResponse.json({ error: "Failed to fetch Mapbox token" }, { status: 500 })
