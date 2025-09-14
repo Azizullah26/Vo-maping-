@@ -16,36 +16,11 @@ const nextConfig = {
     ],
     unoptimized: true,
   },
-  async headers() {
-    return [
-      {
-        source: "/(.*)",
-        headers: [
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-        ],
-      },
-      {
-        source: "/api/(.*)",
-        headers: [
-          {
-            key: "Content-Type",
-            value: "application/json; charset=utf-8",
-          },
-        ],
-      },
-    ]
-  },
   // Environment variables for build time - make sure they're prefixed with NEXT_PUBLIC_
   env: {
     NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE || process.env.DEMO_MODE || "true",
     NEXT_PUBLIC_STATIC_MODE: process.env.NEXT_PUBLIC_STATIC_MODE || process.env.STATIC_MODE || "true",
     NEXT_PUBLIC_VERCEL: process.env.VERCEL || "0",
-    MAPBOX_ACCESS_TOKEN:
-      process.env.MAPBOX_ACCESS_TOKEN ||
-      "pk.eyJ1IjoiYXppenVsbGFoMjYxMSIsImEiOiJjbWJzeDkxMDMwa3JhMmtzZHd0Ym9sZm44In0.V2TEaa53IsuNBxLXm4SXSg",
   },
   // Simplified webpack configuration that doesn't require additional dependencies
   webpack: (config, { isServer }) => {
@@ -68,17 +43,6 @@ const nextConfig = {
         zlib: false,
       }
     }
-
-    config.module.rules.push({
-      test: /\.js$/,
-      include: /node_modules\/mapbox-gl/,
-      use: {
-        loader: "babel-loader",
-        options: {
-          presets: ["@babel/preset-env"],
-        },
-      },
-    })
 
     return config
   },

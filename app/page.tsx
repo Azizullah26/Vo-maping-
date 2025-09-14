@@ -62,16 +62,21 @@ export default function HomePage() {
     const loadPoliceData = async () => {
       try {
         const PoliceData = await import("../data/police_locations.json")
-        if (PoliceData && Array.isArray(PoliceData.police_stations)) {
-          setPoliceLocations(PoliceData.police_stations)
-        } else if (Array.isArray(PoliceData.default)) {
+        console.log("[v0] Loaded police data:", PoliceData)
+
+        // Handle different possible JSON structures
+        if (Array.isArray(PoliceData.default)) {
           setPoliceLocations(PoliceData.default)
+        } else if (PoliceData && Array.isArray(PoliceData.police_stations)) {
+          setPoliceLocations(PoliceData.police_stations)
+        } else if (Array.isArray(PoliceData)) {
+          setPoliceLocations(PoliceData)
         } else {
           console.warn("Police data not in expected format, using default")
           setPoliceLocations(defaultPoliceData.police_stations)
         }
       } catch (error) {
-        console.error("Failed to load police data:", error)
+        console.error("Error loading police data:", error)
         setPoliceLocations(defaultPoliceData.police_stations)
       } finally {
         setIsLoading(false)
