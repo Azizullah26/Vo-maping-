@@ -133,11 +133,13 @@ export default function AlAinMap({
 
       map.current.on("error", (e) => {
         console.error("Mapbox error:", e)
-        setMapError(`Map error: ${e.error?.message || "Unknown error"}`)
+        const errorMessage = e.error?.message || e.message || "Unknown error"
+        setMapError(`Map error: ${errorMessage}`)
       })
     } catch (err) {
       console.error("Error initializing map:", err)
-      setMapError(`Failed to initialize map: ${err instanceof Error ? err.message : String(err)}`)
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred"
+      setMapError(`Failed to initialize map: ${errorMessage}`)
     }
 
     // Cleanup function
