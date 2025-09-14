@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import mapboxgl from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useMapboxToken } from "@/hooks/useMapboxToken"
 
@@ -73,12 +72,13 @@ export default function AlAinMap({
   onMarkerHover,
 }: AlAinMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
-  const map = useRef<mapboxgl.Map | null>(null)
+  const map = useRef<any>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
   const [mapError, setMapError] = useState<string | null>(null)
   const { token, loading, error } = useMapboxToken()
-  const [markers, setMarkers] = useState<{ [key: string]: mapboxgl.Marker }>({})
+  const [markers, setMarkers] = useState<{ [key: string]: any }>({})
   const [policeData, setPoliceData] = useState<any[]>([])
+  const [mapboxgl, setMapboxgl] = useState<any>(null)
 
   useEffect(() => {
     const loadPoliceData = async () => {
@@ -94,8 +94,33 @@ export default function AlAinMap({
   }, [])
 
   useEffect(() => {
-    if (map.current) return // already initialized
-    if (loading) return
+    const loadMapbox = async () => {
+      try {
+        if (typeof window !== "undefined" && (window as any).mapboxgl) {
+          setMapboxgl((window as any).mapboxgl)
+          return
+        }
+
+        const checkMapbox = () => {
+          if ((window as any).mapboxgl) {
+            setMapboxgl((window as any).mapboxgl)
+          } else {
+            setTimeout(checkMapbox, 100)
+          }
+        }
+        checkMapbox()
+      } catch (err) {
+        console.error("Error loading Mapbox GL:", err)
+        setMapError("Failed to load Mapbox GL library")
+      }
+    }
+
+    loadMapbox()
+  }, [])
+
+  useEffect(() => {
+    if (map.current) return
+    if (loading || !mapboxgl) return
     if (error || !token) {
       setMapError("Mapbox access token error: " + (error || "Token not available"))
       return
@@ -121,7 +146,7 @@ export default function AlAinMap({
         setMapLoaded(true)
       })
 
-      map.current.on("error", (e) => {
+      map.current.on("error", (e: any) => {
         console.error("Mapbox error:", e)
         const errorMessage = e.error?.message || e.message || "Unknown error"
         setMapError(`Map error: ${errorMessage}`)
@@ -143,14 +168,14 @@ export default function AlAinMap({
         console.error("Error during map cleanup:", err)
       }
     }
-  }, [token, loading, error])
+  }, [token, loading, error, mapboxgl])
 
   useEffect(() => {
-    if (!map.current || !mapLoaded || policeData.length === 0) return
+    if (!map.current || !mapLoaded || policeData.length === 0 || !mapboxgl) return
 
     Object.values(markers).forEach((marker) => marker.remove())
 
-    const newMarkers: { [key: string]: mapboxgl.Marker } = {}
+    const newMarkers: { [key: string]: any } = {}
 
     policeData.forEach((location) => {
       const markerEl = document.createElement("div")
@@ -209,7 +234,7 @@ export default function AlAinMap({
     })
 
     setMarkers(newMarkers)
-  }, [mapLoaded, policeData, onMarkerHover, onProjectSelect])
+  }, [mapLoaded, policeData, onMarkerHover, onProjectSelect, mapboxgl])
 
   return (
     <div className="relative w-full h-full">
@@ -222,7 +247,7 @@ export default function AlAinMap({
         </div>
       )}
 
-      {!mapLoaded && !mapError && (
+      {(!mapLoaded || !mapboxgl) && !mapError && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
