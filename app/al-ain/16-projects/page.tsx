@@ -166,6 +166,12 @@ const markerStyles = `
 
 .mapboxgl-ctrl-bottom-right { display: none !important; }
 
+/* Subtle dark-greenish tint to map canvas only (keeps HTML markers/labels bright) */
+.map-tinted canvas {
+  filter: brightness(0.9) saturate(0.9) hue-rotate(25deg) contrast(0.98);
+  transition: filter 0.2s ease;
+}
+
 @media (max-width: 768px) {
   .marker-label {
     font-size: 12px;
@@ -188,7 +194,7 @@ interface LocationFeature {
 
 const locations: LocationFeature[] = [
   {
-    place: "ادارة المهام الخاصة العين",
+    place: "ادارة ا��مهام الخاصة العين",
     coordinates: [55.724096640469895, 24.1956108396531],
   },
   {
