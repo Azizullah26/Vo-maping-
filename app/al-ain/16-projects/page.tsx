@@ -194,7 +194,7 @@ interface LocationFeature {
 
 const locations: LocationFeature[] = [
   {
-    place: "ادارة ا��مهام الخاصة العين",
+    place: "ادارة المهام الخاصة العين",
     coordinates: [55.724096640469895, 24.1956108396531],
   },
   {
@@ -699,7 +699,7 @@ export default function SixteenProjectsPage() {
 
       <div className="flex h-screen">
         <div className="flex-1 relative">
-          <div ref={mapContainerRef} className="relative w-full h-full overflow-hidden" />
+          <div ref={mapContainerRef} className="relative w-full h-full overflow-hidden map-tinted" />
 
           <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-800/30 via-slate-800/10 to-transparent pointer-events-none" />
         </div>
