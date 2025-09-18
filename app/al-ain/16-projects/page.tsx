@@ -556,7 +556,7 @@ export default function SixteenProjectsPage() {
       }
 
       if (name === "ساحة حجز المركبات فلج هزاع") {
-        offsetX += 30
+        offsetX += 60
       }
 
       label.style.left = `calc(50% + ${offsetX}px)`
