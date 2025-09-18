@@ -663,7 +663,7 @@ const HOVERABLE_MARKERS = [
   "1 Project",
   "مركز شرطة سويحان",
   "مركز شرطة الهير",
-  "مركز شرطة الساد",
+  "مركز شرطةasad",
 ]
 
 // Helper functions
@@ -684,7 +684,7 @@ function isValidCoordinate(coord: [number, number]): boolean {
 
 function getMarkerAlignment(markerName: string): string {
   const leftAligned = ["مركز شرطة زاخر", "ساحة حجز المركبات -asad", "مركز شرطة هيلي"]
-  const rightAligned = ["16 Projects", "7 Projects", "2 Projects", "مركز شرطة المربعة", "مركز شرطة الساد"]
+  const rightAligned = ["16 Projects", "7 Projects", "2 Projects", "مركز شرطة المربعة", "مركز شرطةasad"]
   const topAligned = ["فلل للادرات الشرطية عشارج"]
 
   if (leftAligned.includes(markerName)) {
@@ -844,7 +844,7 @@ export default function AlAinMap({
       "إدارة التأهيل الشرطي - الفوعة":
         "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
       "مركز شرطة هيلي": "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
-      "مركز شرطة الساد": "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg",
+      "مركز شرطةasad": "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg",
       "1 Project": "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg",
       "مركز شرطة الوقن":
         "https://www.visitabudhabi.ae/content/dam/visitabudhabi/images/plan-your-trip/regions-of-abu-dhabi/al-dhafra-region/liwa-oasis/liwa-oasis-hero-1920x1080.jpg",
@@ -857,7 +857,7 @@ export default function AlAinMap({
       "قسم موسيقى شرطة أبوظبي": "Abu Dhabi Police Music Department",
       "إدارة التأهيل الشرطي - الفوعة": "Police Rehabilitation Department - Al Foua",
       "مركز شرطة هيلي": "Hili Police Station",
-      "مركز شرطة الساد": "Al Saad Police Station",
+      "مركز شرطةasad": "Al Saad Police Station",
       "1 Project": "Al Ain Development Project",
       "مركز شرطة الوقن": "Al Wagan Police Station",
       "ساحة حجز المركبات -asad": "Vehicle Impound Facility - Asad",
@@ -1303,7 +1303,7 @@ export default function AlAinMap({
         "ساحة حجز المركبات -asad",
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
-        "مركز شرطة الساد",
+        "مركز شرطةasad",
       ]
 
       if (labeledMarkers.includes(name)) {
@@ -1334,7 +1334,7 @@ export default function AlAinMap({
           case "مركز شرطة هيلي":
             positionClass = "position-7" // Left
             break
-          case "مركز شرطة الساد":
+          case "مركز شرطةasad":
             positionClass = "position-3" // Right
             break
           default:
@@ -1371,7 +1371,7 @@ export default function AlAinMap({
         "ساحة حجز المركبات -asad",
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
-        "مركز شرطة الساد",
+        "مركز شرطةasad",
       ]
 
       if (labeledMarkersArray.includes(name)) {
@@ -1385,6 +1385,13 @@ export default function AlAinMap({
         label.className = "marker-label"
         label.textContent = name
         label.setAttribute("aria-label", name)
+
+        label.addEventListener("click", (e) => {
+          e.stopPropagation()
+          setClickedMarker(name)
+          updateSlidersWithMarkerInfo(name)
+        })
+
         markerElement.appendChild(label)
       }
 
@@ -1397,6 +1404,12 @@ export default function AlAinMap({
 
         markerElement.addEventListener("mouseleave", () => {
           setHoveredMarker(null)
+        })
+
+        markerElement.addEventListener("click", (e) => {
+          e.stopPropagation()
+          setClickedMarker(name)
+          updateSlidersWithMarkerInfo(name)
         })
       }
 
