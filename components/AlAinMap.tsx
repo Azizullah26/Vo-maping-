@@ -560,7 +560,7 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "قسم هندسة المرور",
   "مركز شرطة فلج هزاع",
   "إدارة الأسلحة والمتفجرات",
-  "مبنى التحريات والمخدرات",
+  "��بنى التحريات والمخدرات",
   "ادارة المهام الخاصة العين",
   "الضبط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
@@ -587,7 +587,7 @@ const EXCLUDED_MARKERS: string[] = [
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
   "فلل فلج هزاع",
-  "فلل للادرات الشرطية عشارج",
+  "ف��ل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
   "مركز شرطةasad",
   "ساحة حجز المركبات -asad",
@@ -634,7 +634,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة هيلي",
   "ميدان الشرطة بدع بنت سعود",
   "متحف شرطة المربعة",
-  "مركز شرطة المربعة",
+  "مركز شرطة ا��مربعة",
   "مديرية شرطة العين",
   "فرع النقل والمشاغل",
   "نادي ضباط الشرطة",
@@ -815,9 +815,10 @@ export default function AlAinMap({
           coordinates: getMarkerCoordinates(markerName),
         }
 
-        if (rightSliderRef?.current?.openLeftSlider) {
-          rightSliderRef.current.openLeftSlider(projectData)
-        }
+        const leftSliderEvent = new CustomEvent("openLeftSlider", {
+          detail: { project: projectData, source: "map", timestamp: Date.now() },
+        })
+        window.dispatchEvent(leftSliderEvent)
 
         const event = new CustomEvent("markerHovered", {
           detail: { project: projectData },
@@ -1291,7 +1292,7 @@ export default function AlAinMap({
         "2 Projects",
         "مركز شرطة زاخر",
         "مركز شرطة المربعة",
-        "ساحة حجز المركبات -asad",
+        "ساحة حجز ال��ركبات -asad",
         "ساحة حجز المركبات -asad",
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
