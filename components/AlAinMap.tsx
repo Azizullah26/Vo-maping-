@@ -601,7 +601,7 @@ const HIDDEN_AT_START = [
   "مركز شرطةasad",
   "متحف شرطة المربعة",
   "مركز شرطة المربعة",
-  "مديرية شرطة العين",
+  "مديرية شرطة ا��عين",
   "فرع النقل والمشاغل",
   "نادي ضباط الشرطة",
   "فلل فلج هزاع",
@@ -1138,10 +1138,16 @@ export default function AlAinMap({
         }
       })
 
-      // Error handler for map
+      // Error handler for map (ignore benign AbortError from tile cancellations)
       map.current.on("error", (e: any) => {
-        console.error("Map error:", e.error)
-        setMapError("Map rendering error occurred")
+        const err = e?.error
+        const name = err?.name || ""
+        const message = err?.message || String(err || "")
+        if (name === "AbortError" || message.toLowerCase().includes("abort")) {
+          return
+        }
+        console.error("Map error:", err)
+        setMapError(`Map rendering error occurred: ${message}`)
       })
 
       // Zoom event handler
@@ -1324,7 +1330,7 @@ export default function AlAinMap({
           case "إدارة التأهيل الشرطي - الفوعة":
             positionClass = "position-3" // Right
             break
-          case "مركز شرطة هيلي":
+          case "مركز شرطة هي��ي":
             positionClass = "position-7" // Left
             break
           case "مركز شرطةasad":
@@ -1469,7 +1475,7 @@ export default function AlAinMap({
         "7 Projects",
         "2 Projects",
         "مركز شرطة زاخر",
-        "مركز شرطة المربعة",
+        "مركز شرطة ��لمربعة",
         "ساحة حجز المركبات -asad",
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
