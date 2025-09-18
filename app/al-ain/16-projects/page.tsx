@@ -257,6 +257,10 @@ const manualLabelOffsets: Record<string, { left?: number; top?: number }> = {
   "مبنى التحريات والمخدرات": { left: -160, top: -41 },
 }
 
+const manualCircleOffsets: Record<string, { left: number; top: number }> = {
+  "المتابعة الشرطية والرعاية اللاحقة": { left: 30, top: 20 },
+}
+
 const CENTER_POINT: [number, number] = [55.72443, 24.1925] // Central point of all facilities
 const LABEL_RADIUS = 0.003 // Distance from center to labels (~300m)
 
@@ -546,7 +550,12 @@ export default function SixteenProjectsPage() {
       shadow.className = "marker-shadow"
 
       const circleElement = document.createElement("div")
-      circleElement.className = "marker-circle"
+  circleElement.className = "marker-circle"
+  const circleManual = manualCircleOffsets[name]
+  if (circleManual) {
+    circleElement.style.left = `${circleManual.left}px`
+    circleElement.style.top = `${circleManual.top}px`
+  }
 
       const label = document.createElement("button")
       label.className = "marker-label"
