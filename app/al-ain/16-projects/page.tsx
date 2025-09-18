@@ -241,6 +241,22 @@ const locations: LocationFeature[] = [
   },
 ]
 
+const manualLabelOffsets: Record<string, { left?: number; top?: number }> = {
+  "ادارة المهام الخاصة العين": { left: 283 },
+  "مركز شرطة فلج هزاع": { left: 13, top: -139 },
+  "إدارة المرور والترخيص": { left: 240, top: 171 },
+  "قسم هندسة المرور": { left: 354, top: 83 },
+  "المتابعة الشرطية والرعاية اللاحقة": { left: -161, top: 163 },
+  "إدارة الأسلحة والمتفجرات": { left: -130, top: -99 },
+  "فلل فلج هزاع": { left: -100, top: 127 },
+  "الضبط المروري والمراسم": { left: -321 },
+  "إدارة الدوريات الخاصة": { left: -273 },
+  "قسم التفتيش الأمني K9": { left: 196, top: 165 },
+  "سكن أفراد المرور": { left: 226, top: -178 },
+  "ساحة حجز المركبات فلج هزاع": { left: 301 },
+  "مبنى التحريات والمخدرات": { left: -160, top: -41 },
+}
+
 const CENTER_POINT: [number, number] = [55.72443, 24.1925] // Central point of all facilities
 const LABEL_RADIUS = 0.003 // Distance from center to labels (~300m)
 
@@ -559,8 +575,16 @@ export default function SixteenProjectsPage() {
         offsetX += 60
       }
 
-      label.style.left = `calc(50% + ${offsetX}px)`
-      label.style.top = `calc(50% + ${offsetY}px)`
+      const manual = manualLabelOffsets[name]
+      if (manual) {
+        if (typeof manual.left === "number") label.style.left = `${manual.left}px`
+        else label.style.left = `calc(50% + ${offsetX}px)`
+        if (typeof manual.top === "number") label.style.top = `${manual.top}px`
+        else label.style.top = `calc(50% + ${offsetY}px)`
+      } else {
+        label.style.left = `calc(50% + ${offsetX}px)`
+        label.style.top = `calc(50% + ${offsetY}px)`
+      }
       label.style.transform = "translate(-50%, -50%)"
 
       label.addEventListener("mouseenter", (e) => {
