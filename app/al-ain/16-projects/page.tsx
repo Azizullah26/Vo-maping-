@@ -555,6 +555,10 @@ export default function SixteenProjectsPage() {
         offsetX -= 30
       }
 
+      if (name === "ساحة حجز المركبات فلج هزاع") {
+        offsetX += 30
+      }
+
       label.style.left = `calc(50% + ${offsetX}px)`
       label.style.top = `calc(50% + ${offsetY}px)`
       label.style.transform = "translate(-50%, -50%)"
