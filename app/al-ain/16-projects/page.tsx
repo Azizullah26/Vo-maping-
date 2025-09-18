@@ -168,7 +168,7 @@ const markerStyles = `
 
 /* Subtle dark-greenish tint to map canvas only (keeps HTML markers/labels bright) */
 .map-tinted canvas {
-  filter: brightness(0.9) saturate(0.9) hue-rotate(25deg) contrast(0.98);
+  filter: brightness(0.6) saturate(0.85) hue-rotate(35deg) contrast(0.92);
   transition: filter 0.2s ease;
 }
 
@@ -253,7 +253,7 @@ const manualLabelOffsets: Record<string, { left?: number; top?: number }> = {
   "إدارة المرور والترخيص": { left: 240, top: 171 },
   "قسم هندسة المرور": { left: 354, top: 83 },
   "المتابعة الشرطية والرعاية اللاحقة": { left: -161, top: 163 },
-  "إدارة الأسلحة والمتفجرات": { left: -130, top: -99 },
+  "إدار�� الأسلحة والمتفجرات": { left: -130, top: -99 },
   "فلل فلج هزاع": { left: -100, top: 127 },
   "الضبط المروري والمراسم": { left: -321 },
   "إدارة الدوريات الخاصة": { left: -273 },
