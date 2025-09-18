@@ -638,6 +638,12 @@ const HOVERABLE_MARKERS = [
   "مديرية شرطة العين",
   "فرع النقل والمشاغل",
   "نادي ضباط الشرطة",
+  "مركز شرطةasad",
+  "متحف شرطة المربعة",
+  "مركز شرطة المربعة",
+  "مديرية شرطة العين",
+  "فرع النقل والمشاغل",
+  "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
   "فلل فلج هزاع",
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
@@ -654,6 +660,8 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة فلج هزاع",
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
+  "مركز شرطةasad",
+  "ساحة حجز المركبات -asad",
   "مركز شرطة الوقن",
   "مركز شرطة الجيمي",
   "مركز شرطة القوع (فلل صحة)",
@@ -663,7 +671,6 @@ const HOVERABLE_MARKERS = [
   "1 Project",
   "مركز شرطة سويحان",
   "مركز شرطة الهير",
-  "مركز شرطةasad",
 ]
 
 // Helper functions
@@ -680,21 +687,6 @@ function isValidCoordinate(coord: [number, number]): boolean {
     !isNaN(coord[0]) &&
     !isNaN(coord[1])
   )
-}
-
-function getMarkerAlignment(markerName: string): string {
-  const leftAligned = ["مركز شرطة زاخر", "ساحة حجز المركبات -asad", "مركز شرطة هيلي"]
-  const rightAligned = ["16 Projects", "7 Projects", "2 Projects", "مركز شرطة المربعة", "مركز شرطةasad"]
-  const topAligned = ["فلل للادرات الشرطية عشارج"]
-
-  if (leftAligned.includes(markerName)) {
-    return "left-aligned"
-  } else if (rightAligned.includes(markerName)) {
-    return "right-aligned"
-  } else if (topAligned.includes(markerName)) {
-    return "top-aligned"
-  }
-  return "center-aligned"
 }
 
 export default function AlAinMap({
@@ -844,7 +836,6 @@ export default function AlAinMap({
       "إدارة التأهيل الشرطي - الفوعة":
         "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
       "مركز شرطة هيلي": "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
-      "مركز شرطةasad": "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg",
       "1 Project": "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg",
       "مركز شرطة الوقن":
         "https://www.visitabudhabi.ae/content/dam/visitabudhabi/images/plan-your-trip/regions-of-abu-dhabi/al-dhafra-region/liwa-oasis/liwa-oasis-hero-1920x1080.jpg",
@@ -857,9 +848,9 @@ export default function AlAinMap({
       "قسم موسيقى شرطة أبوظبي": "Abu Dhabi Police Music Department",
       "إدارة التأهيل الشرطي - الفوعة": "Police Rehabilitation Department - Al Foua",
       "مركز شرطة هيلي": "Hili Police Station",
-      "مركز شرطةasad": "Al Saad Police Station",
       "1 Project": "Al Ain Development Project",
       "مركز شرطة الوقن": "Al Wagan Police Station",
+      "ساحة حجز المركبات -asad": "Vehicle Impound Facility - Asad",
       "ساحة حجز المركبات -asad": "Vehicle Impound Facility - Asad",
     }
     return nameMap[name] || "Police Facility"
@@ -1301,6 +1292,7 @@ export default function AlAinMap({
         "مركز شرطة زاخر",
         "مركز شرطة المربعة",
         "ساحة حجز المركبات -asad",
+        "ساحة حجز المركبات -asad",
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
         "مركز شرطةasad",
@@ -1347,20 +1339,129 @@ export default function AlAinMap({
       // Add responsive classes
       markerElement.classList.add("w-8", "h-8", "sm:w-9", "sm:h-9", "md:w-10", "md:h-10")
 
-      // Create marker circle
-      const markerCircle = document.createElement("div")
-      markerCircle.className = "marker-circle"
+      if (HOVERABLE_MARKERS.includes(name)) {
+        markerElement.addEventListener("mouseenter", (e) => {
+          e.stopPropagation()
+          setHoveredMarker(name)
 
-      // Add project number if applicable
-      const projectNumber = PROJECT_NUMBERS[name]
-      if (projectNumber) {
-        const numberElement = document.createElement("div")
-        numberElement.className = "marker-number"
-        numberElement.textContent = projectNumber
-        markerCircle.appendChild(numberElement)
+          let tooltip = document.getElementById(`tooltip-${name}`)
+          if (!tooltip) {
+            tooltip = document.createElement("div")
+            tooltip.id = `tooltip-${name}`
+            tooltip.className = "marker-tooltip"
+            tooltip.textContent = name
+            markerElement.appendChild(tooltip)
+          }
+          tooltip.classList.add("visible")
+
+          Object.entries(markersRef.current).forEach(([markerName, marker]) => {
+            const element = marker.getElement()
+            if (element) {
+              if (markerName !== name) {
+                element.classList.add("marker-dimmed")
+                element.style.opacity = "0.2"
+              } else {
+                element.classList.add("marker-highlighted")
+                element.style.opacity = "1"
+                element.style.zIndex = "1000"
+                element.style.filter = "drop-shadow(0 0 8px rgba(0, 204, 255, 0.8))"
+              }
+            }
+          })
+        })
+
+        markerElement.addEventListener("mouseleave", (e) => {
+          e.stopPropagation()
+          if (clickedMarker !== name) {
+            setHoveredMarker(null)
+
+            const tooltip = document.getElementById(`tooltip-${name}`)
+            if (tooltip) {
+              tooltip.classList.remove("visible")
+            }
+
+            Object.entries(markersRef.current).forEach(([_, marker]) => {
+              const element = marker.getElement()
+              if (element) {
+                element.classList.remove("marker-dimmed")
+                element.classList.remove("marker-highlighted")
+                element.style.opacity = ""
+                element.style.zIndex = ""
+                element.style.filter = ""
+              }
+            })
+          }
+        })
+
+        markerElement.addEventListener("click", (e) => {
+          e.stopPropagation()
+          setHoveredMarker(name)
+          setClickedMarker(name)
+
+          let tooltip = document.getElementById(`tooltip-${name}`)
+          if (!tooltip) {
+            tooltip = document.createElement("div")
+            tooltip.id = `tooltip-${name}`
+            tooltip.className = "marker-tooltip"
+            tooltip.textContent = name
+            markerElement.appendChild(tooltip)
+          }
+          tooltip.classList.add("visible")
+
+          Object.entries(markersRef.current).forEach(([markerName, marker]) => {
+            const element = marker.getElement()
+            if (element) {
+              if (markerName !== name) {
+                element.classList.add("marker-dimmed")
+                element.style.opacity = "0.2"
+                const otherTooltip = document.getElementById(`tooltip-${markerName}`)
+                if (otherTooltip) {
+                  otherTooltip.classList.remove("visible")
+                }
+              } else {
+                element.classList.add("marker-highlighted")
+                element.style.opacity = "1"
+                element.style.zIndex = "1000"
+                element.style.filter = "drop-shadow(0 0 8px rgba(0, 204, 255, 0.8))"
+              }
+            }
+          })
+        })
       }
 
-      markerElement.appendChild(markerCircle)
+      if (size === "small") {
+        const style = document.createElement("style")
+        const uniqueClass = `marker-${name.toLowerCase().replace(/\s+/g, "-")}`
+        markerElement.classList.add(uniqueClass)
+
+        style.textContent = `
+          .${uniqueClass} .marker-circle {
+            width: 6px !important;
+            height: 6px !important;
+          }
+        `
+        style.setAttribute("data-marker-style", "true")
+        document.head.appendChild(style)
+      }
+
+      if (ALWAYS_VISIBLE_MARKERS.includes(name)) {
+        markerElement.style.display = "block"
+      } else if (ALWAYS_HIDDEN_MARKERS.includes(name)) {
+        markerElement.style.display = "none"
+      } else if (HIDDEN_AT_START.includes(name)) {
+        markerElement.style.display = "block"
+      }
+
+      const circleElement = document.createElement("div")
+      circleElement.className = "marker-circle"
+      markerElement.appendChild(circleElement)
+
+      if (PROJECT_NUMBERS[name]) {
+        const numberElement = document.createElement("div")
+        numberElement.className = "marker-number"
+        numberElement.textContent = PROJECT_NUMBERS[name]
+        circleElement.appendChild(numberElement)
+      }
 
       const labeledMarkersArray = [
         "16 Projects",
@@ -1385,36 +1486,73 @@ export default function AlAinMap({
         label.className = "marker-label"
         label.textContent = name
         label.setAttribute("aria-label", name)
-
-        label.addEventListener("click", (e) => {
-          e.stopPropagation()
-          setClickedMarker(name)
-          updateSlidersWithMarkerInfo(name)
-        })
-
         markerElement.appendChild(label)
       }
 
-      // Add hover effects for hoverable markers
-      if (HOVERABLE_MARKERS.includes(name)) {
-        markerElement.addEventListener("mouseenter", () => {
-          setHoveredMarker(name)
-          updateSlidersWithMarkerInfo(name)
-        })
+      const contentWrapper = document.createElement("div")
+      contentWrapper.className = "marker-content-wrapper"
 
-        markerElement.addEventListener("mouseleave", () => {
-          setHoveredMarker(null)
-        })
+      let clickTimer: NodeJS.Timeout | null = null
+      let clickCount = 0
 
-        markerElement.addEventListener("click", (e) => {
-          e.stopPropagation()
-          setClickedMarker(name)
-          updateSlidersWithMarkerInfo(name)
-        })
+      markerElement.onclick = (e) => {
+        e.stopPropagation()
+        clickCount++
+
+        if (clickCount === 1) {
+          clickTimer = setTimeout(() => {
+            if (name === "16 Projects") {
+              // Single click on 16 Projects goes directly to the detailed view
+              router.push("/al-ain/16-projects")
+            } else {
+              // Regular zoom behavior for other markers
+              map.flyTo({
+                center: coordinates,
+                zoom: 13,
+                duration: 1500,
+                essential: true,
+                easing: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+              })
+              console.log(`Zoomed to ${name} at coordinates ${coordinates}`)
+            }
+            clickCount = 0
+          }, 300)
+        } else if (clickCount === 2) {
+          if (clickTimer) clearTimeout(clickTimer)
+          clickCount = 0
+
+          if (name === "16 Projects") {
+            // Double click also goes to detailed view
+            router.push("/al-ain/16-projects")
+          } else {
+            // Regular project detail navigation for other markers
+            const englishName = getEnglishName(name)
+            const projectId = englishName
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/(^-|-$)/g, "")
+
+            router.push(
+              `/dashboard/${projectId}?name=${encodeURIComponent(englishName)}&nameAr=${encodeURIComponent(name)}`,
+            )
+          }
+        }
       }
 
-      // Create and add marker to map
-      const marker = new window.mapboxgl.Marker(markerElement).setLngLat(coordinates).addTo(map)
+      markerElement.appendChild(contentWrapper)
+      markerElement.className += ` ${alignment}`
+
+      const marker = new window.mapboxgl.Marker({
+        element: markerElement,
+        anchor: "center",
+        offset: [0, 0],
+        pitchAlignment: "map",
+        rotationAlignment: "map",
+      })
+        .setLngLat(coordinates)
+        .addTo(map)
+
+      markerElement.setAttribute("data-marker-name", name)
 
       return marker
     } catch (error) {
@@ -1423,12 +1561,73 @@ export default function AlAinMap({
     }
   }
 
-  if (mapError) {
+  const getMarkerAlignment = (markerName: string): string => {
+    const leftAligned = ["مركز شرطة زاخر", "ساحة حجز المركبات -asad"]
+    const rightAligned = ["16 Projects", "7 Projects", "2 Projects", "مركز شرطة المربعة"]
+    const topAligned = ["فلل للادرات الشرطية عشارج"]
+
+    if (leftAligned.includes(markerName)) {
+      return "left-aligned"
+    } else if (rightAligned.includes(markerName)) {
+      return "right-aligned"
+    } else if (topAligned.includes(markerName)) {
+      return "top-aligned"
+    }
+    return "center-aligned"
+  }
+
+  const getConnectionLabel = (markerName: string): string => {
+    const labels: { [key: string]: string } = {
+      "16 Projects": "16 Development Projects",
+      "7 Projects": "7 Development Projects",
+      "2 Projects": "2 Development Projects",
+    }
+    return labels[markerName] || markerName
+  }
+
+  const getDistrictLabel = (markerName: string): string => {
+    const labels: { [key: string]: string } = {
+      "16 Projects": "Al Ain Development Zone",
+      "7 Projects": "Al Ain Development Zone",
+      "2 Projects": "Al Ain Development Zone",
+    }
+    return labels[markerName] || "Al Ain District"
+  }
+
+  if (loading) {
     return (
-      <div className="flex items-center justify-center h-full bg-gray-100">
+      <div className="w-full h-full flex items-center justify-center bg-gray-200">
         <div className="text-center">
-          <p className="text-red-600 mb-2">Map Error</p>
-          <p className="text-gray-600">{mapError}</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">Loading Mapbox token...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!mapboxLoaded) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-gray-200">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">Loading Mapbox...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || mapError) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-red-50">
+        <div className="text-center text-red-600">
+          <p className="text-lg font-semibold mb-2">Map Error</p>
+          <p className="text-sm">{error || mapError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          >
+            Refresh Page
+          </button>
         </div>
       </div>
     )
@@ -1437,17 +1636,36 @@ export default function AlAinMap({
   return (
     <div className="relative w-full h-full">
       <div ref={mapContainer} className="w-full h-full" />
-
-      {hoveredMarker && <MarkerHoverWidget markerName={hoveredMarker} onClose={() => setHoveredMarker(null)} />}
-
-      <MapInstructionWidget />
+      <div className="absolute inset-0 bg-black/25 pointer-events-none" />
 
       <AnimatedControls
-        onStyleChange={handleStyleChange}
-        currentStyle={currentStyle}
-        styles={MAPBOX_STYLES}
+        onResetView={() => {
+          if (map.current) {
+            const resetCenter = initialCenterRef.current
+
+            map.current.easeTo({
+              center: resetCenter,
+              bearing: 0,
+              pitch: 0,
+              zoom: initialZoomRef.current,
+              duration: 1500,
+              essential: true,
+              easing: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+            })
+          }
+        }}
         onToggleTerrain={onToggleTerrain}
       />
+      <div ref={tooltipRef} className="absolute pointer-events-none" style={{ display: "none" }} />
+      <MarkerHoverWidget
+        markerName={hoveredMarker || clickedMarker}
+        isVisible={!!hoveredMarker}
+        isClicked={!!clickedMarker}
+        onClickStateChange={(state) => {
+          if (!state) setClickedMarker(null)
+        }}
+      />
+      <MapInstructionWidget />
     </div>
   )
 }
