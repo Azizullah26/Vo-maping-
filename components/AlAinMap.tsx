@@ -1333,8 +1333,8 @@ export default function AlAinMap({
           case "إدارة التأهيل الشرطي - الفوعة":
             positionClass = "position-3" // Right
             break
-          case "مركز شرطة هي��ي":
-            positionClass = "position-7" // Left
+          case "مركز شرطة هيلي":
+            positionClass = "position-3" // Right
             break
           case "مركز شرطةasad":
             positionClass = "position-3" // Right
