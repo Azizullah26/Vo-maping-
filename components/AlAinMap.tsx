@@ -560,7 +560,7 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "قسم هندسة المرور",
   "مركز شرطة فلج هزاع",
   "إدارة الأسلحة والمتفجرات",
-  "��بنى التحريات والمخدرات",
+  "��بنى التحريات والم��درات",
   "ادارة المهام الخاصة العين",
   "الضبط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
@@ -587,7 +587,7 @@ const EXCLUDED_MARKERS: string[] = [
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
   "فلل فلج هزاع",
-  "ف��ل للادرات الشرطية عشارج",
+  "ف��ل للادرات الشرط��ة عشارج",
   "مركز شرطة المقام",
   "مركز شرطةasad",
   "ساحة حجز المركبات -asad",
@@ -1303,6 +1303,9 @@ export default function AlAinMap({
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
         "مركز شرطةasad",
+        "ميدان الشرطة بدع بنت سعود",
+        "مركز شرطة الساد",
+        "ساحة حجز المركبات - الساد",
       ]
 
       if (labeledMarkers.includes(name)) {
@@ -1335,6 +1338,15 @@ export default function AlAinMap({
             break
           case "مركز شرطةasad":
             positionClass = "position-3" // Right
+            break
+          case "ميدان الشرطة بدع بنت سعود":
+            positionClass = "position-7" // Left
+            break
+          case "مركز شرطة الساد":
+            positionClass = "position-3" // Right
+            break
+          case "ساحة حجز المركبات - الساد":
+            positionClass = "position-5" // Bottom
             break
           default:
             positionClass = "position-1" // Default to Top
@@ -1480,6 +1492,9 @@ export default function AlAinMap({
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
         "مركز شرطةasad",
+        "ميدان الشرطة بدع بنت سعود",
+        "مركز شرطة الساد",
+        "ساحة حجز المركبات - الساد",
       ]
 
       if (labeledMarkersArray.includes(name)) {
