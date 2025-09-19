@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-// Enhanced marker styles with circular label positioning and mask overlay
+// Enhanced marker styles with circular label positioning
 const markerStyles = `
 @keyframes pulse {
   0% {
@@ -27,22 +27,6 @@ const markerStyles = `
   100% {
     box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
   }
-}
-
-.map-mask-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url('/images/mask-dark.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 0.6;
-  z-index: 5;
-  pointer-events: none;
-  mix-blend-mode: multiply;
 }
 
 .marker-container {
@@ -100,13 +84,6 @@ const markerStyles = `
   }
 }
 
-.marker-vector {
-  position: absolute;
-  transition: all 0.3s ease;
-  z-index: 13;
-  pointer-events: none;
-}
-
 .marker-shadow {
   position: absolute;
   left: 50%;
@@ -137,7 +114,6 @@ const markerStyles = `
   }
 }
 
-/* Circular label positioning - no overlapping */
 .marker-label {
   position: absolute;
   padding: 8px 16px;
@@ -164,162 +140,19 @@ const markerStyles = `
   transform: scale(1.05);
 }
 
-/* Circular positioning system - 8 positions around the circle */
-/* Position 1: Top (0°) */
-.marker-container.position-1 .marker-label {
-  bottom: calc(100% + 80px);
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* Position 2: Top-Right (45°) */
-.marker-container.position-2 .marker-label {
-  bottom: calc(100% + 60px);
-  left: calc(100% + 60px);
-  transform: translate(-30%, 30%);
-}
-
-/* Position 3: Right (90°) */
-.marker-container.position-3 .marker-label {
-  top: 50%;
-  left: calc(100% + 80px);
-  transform: translateY(-50%);
-}
-
-/* Position 4: Bottom-Right (135°) */
-.marker-container.position-4 .marker-label {
-  top: calc(100% + 60px);
-  left: calc(100% + 60px);
-  transform: translate(-30%, -30%);
-}
-
-/* Position 5: Bottom (180°) */
-.marker-container.position-5 .marker-label {
-  top: calc(100% + 80px);
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* Position 6: Bottom-Left (225°) */
-.marker-container.position-6 .marker-label {
-  top: calc(100% + 60px);
-  right: calc(100% + 60px);
-  transform: translate(30%, -30%);
-}
-
-/* Position 7: Left (270°) */
-.marker-container.position-7 .marker-label {
-  top: 50%;
-  right: calc(100% + 80px);
-  transform: translateY(-50%);
-}
-
-/* Position 8: Top-Left (315°) */
-.marker-container.position-8 .marker-label {
-  bottom: calc(100% + 60px);
-  right: calc(100% + 60px);
-  transform: translate(30%, 30%);
-}
-
-/* Simple connecting lines - straight lines only */
+/* Single dotted line connecting to center point */
 .marker-line {
   position: absolute;
-  background: rgba(255, 255, 255, 0.8);
-  transition: all 0.3s ease;
-  z-index: 11;
-}
-
-/* Top line */
-.marker-container.position-1 .marker-line {
-  left: 50%;
-  bottom: 100%;
   width: 2px;
-  height: 80px;
-  transform: translateX(-50%);
   background: linear-gradient(0deg, #ffffff 50%, transparent 50%);
   background-size: 2px 6px;
   background-repeat: repeat-y;
-}
-
-/* Top-Right line */
-.marker-container.position-2 .marker-line {
-  left: 100%;
-  bottom: 100%;
-  width: 60px;
-  height: 60px;
-  border-top: 2px dotted #ffffff;
-  border-right: 2px dotted #ffffff;
-}
-
-/* Right line */
-.marker-container.position-3 .marker-line {
-  left: 100%;
-  top: 50%;
-  width: 80px;
-  height: 2px;
-  transform: translateY(-50%);
-  background: linear-gradient(90deg, #ffffff 50%, transparent 50%);
-  background-size: 6px 2px;
-  background-repeat: repeat-x;
-}
-
-/* Bottom-Right line */
-.marker-container.position-4 .marker-line {
-  left: 100%;
-  top: 100%;
-  width: 60px;
-  height: 60px;
-  border-bottom: 2px dotted #ffffff;
-  border-right: 2px dotted #ffffff;
-}
-
-/* Bottom line */
-.marker-container.position-5 .marker-line {
-  left: 50%;
-  top: 100%;
-  width: 2px;
-  height: 80px;
-  transform: translateX(-50%);
-  background: linear-gradient(0deg, #ffffff 50%, transparent 50%);
-  background-size: 2px 6px;
-  background-repeat: repeat-y;
-}
-
-/* Bottom-Left line */
-.marker-container.position-6 .marker-line {
-  right: 100%;
-  top: 100%;
-  width: 60px;
-  height: 60px;
-  border-bottom: 2px dotted #ffffff;
-  border-left: 2px dotted #ffffff;
-}
-
-/* Left line */
-.marker-container.position-7 .marker-line {
-  right: 100%;
-  top: 50%;
-  width: 80px;
-  height: 2px;
-  transform: translateY(-50%);
-  background: linear-gradient(90deg, #ffffff 50%, transparent 50%);
-  background-size: 6px 2px;
-  background-repeat: repeat-x;
-}
-
-/* Top-Left line */
-.marker-container.position-8 .marker-line {
-  right: 100%;
-  bottom: 100%;
-  width: 60px;
-  height: 60px;
-  border-top: 2px dotted #ffffff;
-  border-left: 2px dotted #ffffff;
+  z-index: 9;
+  transform-origin: bottom center;
 }
 
 .marker-container:hover .marker-line {
-  background: rgba(0, 204, 255, 0.8);
-  border-color: rgba(0, 204, 255, 0.8);
+  background: linear-gradient(0deg, rgba(0, 204, 255, 0.8) 50%, transparent 50%);
 }
 
 .marker-container:hover .marker-circle {
@@ -333,65 +166,10 @@ const markerStyles = `
 
 .mapboxgl-ctrl-bottom-right { display: none !important; }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .marker-label {
     font-size: 12px;
     padding: 6px 12px;
-  }
-  
-  .marker-container.position-1 .marker-line,
-  .marker-container.position-5 .marker-line {
-    height: 60px;
-  }
-  
-  .marker-container.position-1 .marker-label {
-    bottom: calc(100% + 60px);
-  }
-  
-  .marker-container.position-5 .marker-label {
-    top: calc(100% + 60px);
-  }
-  
-  .marker-container.position-3 .marker-line,
-  .marker-container.position-7 .marker-line {
-    width: 60px;
-  }
-  
-  .marker-container.position-3 .marker-label {
-    left: calc(100% + 60px);
-  }
-  
-  .marker-container.position-7 .marker-label {
-    right: calc(100% + 60px);
-  }
-  
-  .marker-container.position-2 .marker-line,
-  .marker-container.position-4 .marker-line,
-  .marker-container.position-6 .marker-line,
-  .marker-container.position-8 .marker-line {
-    width: 45px;
-    height: 45px;
-  }
-  
-  .marker-container.position-2 .marker-label,
-  .marker-container.position-8 .marker-label {
-    bottom: calc(100% + 45px);
-  }
-  
-  .marker-container.position-4 .marker-label,
-  .marker-container.position-6 .marker-label {
-    top: calc(100% + 45px);
-  }
-  
-  .marker-container.position-2 .marker-label,
-  .marker-container.position-4 .marker-label {
-    left: calc(100% + 45px);
-  }
-  
-  .marker-container.position-6 .marker-label,
-  .marker-container.position-8 .marker-label {
-    right: calc(100% + 45px);
   }
 }
 
@@ -400,195 +178,77 @@ const markerStyles = `
     font-size: 11px;
     padding: 4px 8px;
   }
-  
-  .marker-container.position-1 .marker-line,
-  .marker-container.position-5 .marker-line {
-    height: 45px;
-  }
-  
-  .marker-container.position-1 .marker-label {
-    bottom: calc(100% + 45px);
-  }
-  
-  .marker-container.position-5 .marker-label {
-    top: calc(100% + 45px);
-  }
-  
-  .marker-container.position-3 .marker-line,
-  .marker-container.position-7 .marker-line {
-    width: 45px;
-  }
-  
-  .marker-container.position-3 .marker-label {
-    left: calc(100% + 45px);
-  }
-  
-  .marker-container.position-7 .marker-label {
-    right: calc(100% + 45px);
-  }
-  
-  .marker-container.position-2 .marker-line,
-  .marker-container.position-4 .marker-line,
-  .marker-container.position-6 .marker-line,
-  .marker-container.position-8 .marker-line {
-    width: 35px;
-    height: 35px;
-  }
-  
-  .marker-container.position-2 .marker-label,
-  .marker-container.position-8 .marker-label {
-    bottom: calc(100% + 35px);
-  }
-  
-  .marker-container.position-4 .marker-label,
-  .marker-container.position-6 .marker-label {
-    top: calc(100% + 35px);
-  }
-  
-  .marker-container.position-2 .marker-label,
-  .marker-container.position-4 .marker-label {
-    left: calc(100% + 35px);
-  }
-  
-  .marker-container.position-6 .marker-label,
-  .marker-container.position-8 .marker-label {
-    right: calc(100% + 35px);
-  }
 }
 `
 
-// Location data with Pentagon-style directional configurations and SVG icons
 interface LocationFeature {
   place: string
   coordinates: [number, number]
-  direction:
-    | "position-1"
-    | "position-2"
-    | "position-3"
-    | "position-4"
-    | "position-5"
-    | "position-6"
-    | "position-7"
-    | "position-8"
-  vectorIcon: string
-  vectorSize: { width: number; height: number }
-  vectorPosition: { top: number; left: number }
 }
 
-const locationData: LocationFeature[] = [
+const locations: LocationFeature[] = [
   {
     place: "ادارة المهام الخاصة العين",
     coordinates: [55.724096640469895, 24.1956108396531],
-    direction: "position-1", // Top
-    vectorIcon: "/vector-21.svg",
-    vectorSize: { width: 56, height: 56 },
-    vectorPosition: { top: -28, left: -28 },
   },
   {
     place: "مركز شرطة فلج هزاع",
     coordinates: [55.72710955627929, 24.19954145588217],
-    direction: "position-2", // Top-Right
-    vectorIcon: "/vector-35.svg",
-    vectorSize: { width: 37, height: 26 },
-    vectorPosition: { top: -35, left: -18 },
   },
   {
     place: "إدارة المرور والترخيص",
     coordinates: [55.727851797240874, 24.19304931881034],
-    direction: "position-3", // Right
-    vectorIcon: "/vector-24.svg",
-    vectorSize: { width: 38, height: 17 },
-    vectorPosition: { top: -25, left: -19 },
   },
   {
     place: "قسم هندسة المرور",
     coordinates: [55.7225168640654, 24.19328471799456],
-    direction: "position-4", // Bottom-Right
-    vectorIcon: "/vector-26.svg",
-    vectorSize: { width: 20, height: 17 },
-    vectorPosition: { top: -22, left: -10 },
   },
   {
     place: "المتابعة الشرطية والرعاية اللاحقة",
     coordinates: [55.722557288830416, 24.19360483409058],
-    direction: "position-5", // Bottom
-    vectorIcon: "/vector-31.svg",
-    vectorSize: { width: 35, height: 35 },
-    vectorPosition: { top: -30, left: -17 },
   },
   {
     place: "إدارة الأسلحة والمتفجرات",
     coordinates: [55.72427804325733, 24.19797500690261],
-    direction: "position-6", // Bottom-Left
-    vectorIcon: "/vector-43.svg",
-    vectorSize: { width: 21, height: 30 },
-    vectorPosition: { top: -28, left: -10 },
   },
   {
     place: "فلل فلج هزاع",
     coordinates: [55.72680131200215, 24.186317410709492],
-    direction: "position-7", // Left
-    vectorIcon: "/vector-32.svg",
-    vectorSize: { width: 6, height: 42 },
-    vectorPosition: { top: -34, left: -3 },
   },
   {
     place: "الضبط المروري والمراسم",
     coordinates: [55.7286784476679, 24.191336582641284],
-    direction: "position-8", // Top-Left
-    vectorIcon: "/vector-36.svg",
-    vectorSize: { width: 35, height: 36 },
-    vectorPosition: { top: -31, left: -17 },
   },
   {
     place: "إدارة الدوريات الخاصة",
     coordinates: [55.723325119991586, 24.191513430459977],
-    direction: "position-1", // Top
-    vectorIcon: "/vector-27.svg",
-    vectorSize: { width: 6, height: 32 },
-    vectorPosition: { top: -29, left: -3 },
   },
   {
     place: "قسم التفتيش الأمني K9",
     coordinates: [55.72352938898794, 24.18905139894737],
-    direction: "position-2", // Top-Right
-    vectorIcon: "/vector-42.svg",
-    vectorSize: { width: 35, height: 17 },
-    vectorPosition: { top: -22, left: -17 },
   },
   {
     place: "سكن أفراد المرور",
     coordinates: [55.724324255872546, 24.193154596995498],
-    direction: "position-3", // Right
-    vectorIcon: "/vector-30.svg",
-    vectorSize: { width: 6, height: 30 },
-    vectorPosition: { top: -28, left: -3 },
   },
   {
     place: "ساحة حجز المركبات فلج هزاع",
     coordinates: [55.726040750462175, 24.19089476054195],
-    direction: "position-4", // Bottom-Right
-    vectorIcon: "/vector-48.svg",
-    vectorSize: { width: 30, height: 60 },
-    vectorPosition: { top: -43, left: -15 },
   },
   {
     place: "مبنى التحريات والمخدرات",
     coordinates: [55.71923885266557, 24.196245342189755],
-    direction: "position-5", // Bottom
-    vectorIcon: "/vector-51.svg",
-    vectorSize: { width: 54, height: 48 },
-    vectorPosition: { top: -37, left: -27 },
   },
 ]
 
-// Constants
+const CENTER_POINT: [number, number] = [55.72443, 24.1925] // Central point of all facilities
+const LABEL_RADIUS = 0.003 // Distance from center to labels (~300m)
+
 const INITIAL_CENTER: [number, number] = [55.72043546440918, 24.192517454170684]
 const ZOOM_LEVEL = 13.5
 const MIN_ZOOM = 12
 const MAX_ZOOM = 18
 
-// Helper functions from AlAinMap
 function areCoordinatesEqual(coord1: [number, number], coord2: [number, number], tolerance = 0.0001): boolean {
   return Math.abs(coord1[0] - coord2[0]) < tolerance && Math.abs(coord1[1] - coord2[1]) < tolerance
 }
@@ -604,6 +264,13 @@ function isValidCoordinate(coord: [number, number]): boolean {
   )
 }
 
+function getRadialPosition(index: number, total: number): [number, number] {
+  const angle = ((2 * Math.PI) / total) * index
+  const lng = CENTER_POINT[0] + LABEL_RADIUS * Math.cos(angle)
+  const lat = CENTER_POINT[1] + LABEL_RADIUS * Math.sin(angle)
+  return [lng, lat]
+}
+
 export default function SixteenProjectsPage() {
   const router = useRouter()
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
@@ -617,7 +284,6 @@ export default function SixteenProjectsPage() {
   const { token, loading, error } = useMapboxToken()
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Optimized navigation handler
   const handleLocationClick = useCallback(
     (location: LocationFeature) => {
       setSelectedLocation(location)
@@ -629,7 +295,6 @@ export default function SixteenProjectsPage() {
     [router],
   )
 
-  // Optimized map click handler
   const handleMapClick = useCallback(() => {
     setSelectedLocation(null)
     setHoveredLocation(null)
@@ -669,7 +334,6 @@ export default function SixteenProjectsPage() {
     }, 100)
   }
 
-  // Load Mapbox GL JS and CSS from CDN - optimized
   useEffect(() => {
     if (typeof window === "undefined" || window.mapboxgl) {
       if (window.mapboxgl) setMapboxLoaded(true)
@@ -677,13 +341,11 @@ export default function SixteenProjectsPage() {
     }
 
     const loadMapbox = () => {
-      // Load CSS
       const cssLink = document.createElement("link")
       cssLink.rel = "stylesheet"
       cssLink.href = "https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css"
       document.head.appendChild(cssLink)
 
-      // Load JS
       const script = document.createElement("script")
       script.src = "https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"
       script.onload = () => setMapboxLoaded(true)
@@ -703,7 +365,6 @@ export default function SixteenProjectsPage() {
     return loadMapbox()
   }, [])
 
-  // Add marker styles - optimized
   useEffect(() => {
     const styleEl = document.createElement("style")
     styleEl.textContent = markerStyles
@@ -711,7 +372,6 @@ export default function SixteenProjectsPage() {
     return () => styleEl.remove()
   }, [])
 
-  // Initialize map - optimized
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current || loading || error || !token || !mapboxLoaded || !window.mapboxgl) {
       if (error) console.error("Mapbox token error:", error)
@@ -737,18 +397,15 @@ export default function SixteenProjectsPage() {
         doubleClickZoom: true,
       })
 
-      // Enable interactions
       mapRef.current.scrollZoom.enable()
       mapRef.current.dragPan.enable()
       mapRef.current.touchZoomRotate.enable()
 
-      // Map load handler
       mapRef.current.on("load", () => {
         setMapLoaded(true)
         mapRef.current.getCanvas().style.filter = "contrast(1.15) saturate(1.2) brightness(0.95)"
       })
 
-      // Zoom event handler
       mapRef.current.on("zoom", () => {
         try {
           debouncedUpdateMarkers()
@@ -757,7 +414,6 @@ export default function SixteenProjectsPage() {
         }
       })
 
-      // Click handler
       mapRef.current.on("click", handleMapClick)
 
       return () => {
@@ -806,31 +462,27 @@ export default function SixteenProjectsPage() {
     }
   }, [mapboxLoaded, token, loading, error, handleMapClick])
 
-  // Create markers with fixed positioning exactly like AlAinMap - removed tooltip functionality
   useEffect(() => {
     if (!mapLoaded || !mapRef.current) return
 
-    // Clear existing markers
     Object.values(markersRef.current).forEach((marker) => marker?.remove?.())
     markersRef.current = {}
 
-    // Create markers using the same structure as AlAinMap
     const markers: { [key: string]: any } = {}
 
-    locationData.forEach((location) => {
+    locations.forEach((location, index) => {
       try {
         if (!isValidCoordinate(location.coordinates)) {
           console.error(`Invalid coordinates for ${location.place}:`, location.coordinates)
           return
         }
 
+        const labelPosition = getRadialPosition(index, locations.length)
+
         markers[location.place] = createMarker({
           name: location.place,
           coordinates: location.coordinates,
-          direction: location.direction,
-          vectorIcon: location.vectorIcon,
-          vectorSize: location.vectorSize,
-          vectorPosition: location.vectorPosition,
+          labelPosition: labelPosition,
           map: mapRef.current!,
         })
       } catch (error) {
@@ -852,18 +504,12 @@ export default function SixteenProjectsPage() {
   function createMarker({
     name,
     coordinates,
-    direction,
-    vectorIcon,
-    vectorSize,
-    vectorPosition,
+    labelPosition,
     map,
   }: {
     name: string
     coordinates: [number, number]
-    direction: string
-    vectorIcon: string
-    vectorSize: { width: number; height: number }
-    vectorPosition: { top: number; left: number }
+    labelPosition: [number, number]
     map: any
   }) {
     try {
@@ -873,48 +519,51 @@ export default function SixteenProjectsPage() {
       }
 
       const markerElement = document.createElement("div")
-      markerElement.className = `marker-container direction-${direction}`
+      markerElement.className = "marker-container"
       markerElement.style.position = "absolute"
       markerElement.style.pointerEvents = "auto"
       markerElement.style.willChange = "transform"
 
-      // Add responsive classes
       markerElement.classList.add("w-12", "h-12", "sm:w-14", "sm:h-14", "md:w-16", "md:h-16")
 
-      // Create marker shadow using mask image
       const shadow = document.createElement("div")
       shadow.className = "marker-shadow"
 
-      // Create connecting line (dotted line from circle to label)
-      const line = document.createElement("div")
-      line.className = "marker-line"
-
-      // Create circle
       const circleElement = document.createElement("div")
       circleElement.className = "marker-circle"
 
-      // Create SVG vector icon
-      const vector = document.createElement("img")
-      vector.src = vectorIcon
-      vector.className = "marker-vector"
-      vector.style.width = `${vectorSize.width}px`
-      vector.style.height = `${vectorSize.height}px`
-      vector.style.top = `${vectorPosition.top}px`
-      vector.style.left = `${vectorPosition.left}px`
-      vector.alt = "Marker icon"
-      vector.onerror = () => {
-        console.warn(`Failed to load SVG: ${vectorIcon}`)
-        vector.style.display = "none"
-      }
-
-      // Create label
       const label = document.createElement("button")
       label.className = "marker-label"
       label.textContent = name
       label.setAttribute("aria-label", name)
 
-      // Event handlers - removed tooltip functionality
-      markerElement.addEventListener("mouseenter", (e) => {
+      const labelDx = labelPosition[0] - coordinates[0]
+      const labelDy = labelPosition[1] - coordinates[1]
+      const labelDistance = Math.sqrt(labelDx * labelDx + labelDy * labelDy)
+      const labelAngle = Math.atan2(labelDy, labelDx)
+
+      // Convert to pixel offset
+      const pixelDistance = labelDistance * 100000 // Rough conversion
+      let offsetX = Math.cos(labelAngle) * Math.min(pixelDistance, 120)
+      const offsetY = Math.sin(labelAngle) * Math.min(pixelDistance, 120)
+
+      if (name === "إدارة الدوريات الخاصة") {
+        offsetX -= 15
+      }
+
+      if (name === "الضبط المروري والمراسم") {
+        offsetX -= 30
+      }
+
+      if (name === "ساحة حجز المركبات فلج هزاع") {
+        offsetX += 60
+      }
+
+      label.style.left = `calc(50% + ${offsetX}px)`
+      label.style.top = `calc(50% + ${offsetY}px)`
+      label.style.transform = "translate(-50%, -50%)"
+
+      label.addEventListener("mouseenter", (e) => {
         e.stopPropagation()
         setHoveredLocation(name)
 
@@ -932,7 +581,7 @@ export default function SixteenProjectsPage() {
         })
       })
 
-      markerElement.addEventListener("mouseleave", (e) => {
+      label.addEventListener("mouseleave", (e) => {
         e.stopPropagation()
         if (clickedMarker !== name) {
           setHoveredLocation(null)
@@ -948,12 +597,12 @@ export default function SixteenProjectsPage() {
         }
       })
 
-      markerElement.addEventListener("click", (e) => {
+      label.addEventListener("click", (e) => {
         e.stopPropagation()
         setHoveredLocation(name)
         setClickedMarker(name)
 
-        const location = locationData.find((loc) => loc.place === name)
+        const location = locations.find((loc) => loc.place === name)
         if (location) {
           handleLocationClick(location)
         }
@@ -972,11 +621,8 @@ export default function SixteenProjectsPage() {
         })
       })
 
-      // Append elements in correct z-index order
       markerElement.appendChild(shadow)
-      markerElement.appendChild(line)
       markerElement.appendChild(circleElement)
-      markerElement.appendChild(vector)
       markerElement.appendChild(label)
       markerElement.setAttribute("data-marker-name", name)
 
@@ -999,11 +645,9 @@ export default function SixteenProjectsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 relative overflow-hidden">
-      {/* Background Effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.08),transparent_70%)] pointer-events-none" />
       <div className="absolute inset-0 bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,rgba(59,130,246,0.05)_60deg,transparent_120deg)] pointer-events-none" />
 
-      {/* Back Button */}
       <Button
         onClick={() => router.back()}
         variant="outline"
@@ -1015,17 +659,12 @@ export default function SixteenProjectsPage() {
       </Button>
 
       <div className="flex h-screen">
-        {/* Map Area */}
         <div className="flex-1 relative">
           <div ref={mapContainerRef} className="relative w-full h-full overflow-hidden" />
 
-          {/* Map Mask Overlay */}
-          <div className="map-mask-overlay" />
-
-          <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-900/30 via-slate-800/10 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-800/30 via-slate-800/10 to-transparent pointer-events-none" />
         </div>
 
-        {/* Mobile Bottom Panel */}
         {selectedLocation && (
           <div className="md:hidden absolute bottom-0 left-0 right-0 z-40">
             <Card className="m-4 bg-gradient-to-br from-slate-800/95 to-blue-900/95 border-2 border-cyan-400/30 shadow-xl shadow-cyan-400/20 backdrop-blur-md">

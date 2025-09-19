@@ -79,7 +79,7 @@ export const alainPoliceLocations: PoliceLocation[] = [
     description: "Falaj Hazza Villas (Forensic Evidence - Community Police - Vehicle Rental - Recruitment)",
   },
   {
-    name: "قسم التفتيش الأمني K9",
+    name: "قسم هندسة المرور",
     coordinates: [55.76901, 24.19901],
     type: "k9_unit",
     description: "K9 Security Inspection Department",
@@ -175,18 +175,6 @@ export const alainPoliceLocations: PoliceLocation[] = [
     description: "Al Maqam Police Station",
   },
   {
-    name: "مركز شرطة الساد",
-    coordinates: [55.81789, 24.24789],
-    type: "police_station",
-    description: "Al Saad Police Station",
-  },
-  {
-    name: "ساحة حجز المركبات - الساد",
-    coordinates: [55.82012, 24.25012],
-    type: "impound_lot",
-    description: "Vehicle Impound Lot - Al Saad",
-  },
-  {
     name: "مركز شرطة الوقن",
     coordinates: [55.82345, 24.25345],
     type: "police_station",
@@ -248,24 +236,6 @@ export const alainProjectLocations = [
     coordinates: [55.71402343413848, 24.191945156301003] as [number, number],
     type: "development_project",
     description: "16 Development Projects Area",
-  },
-  {
-    name: "7 Projects",
-    coordinates: [55.74320587470995, 24.27937770887191] as [number, number],
-    type: "development_project",
-    description: "7 Development Projects Area",
-  },
-  {
-    name: "2 Projects",
-    coordinates: [55.79420236287404, 24.333762072745526] as [number, number],
-    type: "development_project",
-    description: "2 Development Projects Area",
-  },
-  {
-    name: "1 Project",
-    coordinates: [55.70629570288418, 24.137217372354044] as [number, number],
-    type: "development_project",
-    description: "1 Development Project Area",
   },
 ]
 

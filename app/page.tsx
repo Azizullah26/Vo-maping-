@@ -4,54 +4,30 @@ import { useState, useRef, useEffect } from "react"
 import dynamic from "next/dynamic"
 import { ErrorBoundary } from "@/app/components/ErrorBoundary"
 
-// Dynamically import components to avoid SSR issues
-const AlAinMap = dynamic(
-  () =>
-    import("../components/AlAinMap").catch((err) => {
-      console.error("Failed to load AlAinMap:", err)
-      return {
-        default: () => (
-          <div className="w-full h-full flex items-center justify-center bg-gray-200">
-            <p>Map failed to load</p>
-          </div>
-        ),
-      }
-    }),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="w-full h-full flex items-center justify-center bg-gray-200">
-        <p>Loading Map...</p>
+// Dynamically import components with better error handling
+const AlAinMap = dynamic(() => import("../components/AlAinMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-200">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+        <p className="text-gray-600">Loading Map...</p>
       </div>
-    ),
-  },
-)
+    </div>
+  ),
+})
 
-const AlAinLeftSlider = dynamic(
-  () =>
-    import("../components/AlAinLeftSlider").catch((err) => {
-      console.error("Failed to load AlAinLeftSlider:", err)
-      return { default: () => null }
-    }),
-  {
-    ssr: false,
-    loading: () => null,
-  },
-)
+const AlAinLeftSlider = dynamic(() => import("../components/AlAinLeftSlider"), {
+  ssr: false,
+  loading: () => null,
+})
 
-const RightSliderButton = dynamic(
-  () =>
-    import("../components/RightSliderButton").catch((err) => {
-      console.error("Failed to load RightSliderButton:", err)
-      return { default: () => null }
-    }),
-  {
-    ssr: false,
-    loading: () => null,
-  },
-)
+const RightSliderButton = dynamic(() => import("../components/RightSliderButton"), {
+  ssr: false,
+  loading: () => null,
+})
 
-// Default police data in case import fails
+// Default police data
 const defaultPoliceData = {
   police_stations: [
     {
@@ -76,6 +52,7 @@ export default function HomePage() {
     coordinates: [number, number]
   } | null>(null)
   const [hasError, setHasError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   const mapRef = useRef<{ toggleTerrain: (currentTerrainEnabled: boolean) => void } | null>(null)
   const rightSliderRef = useRef(null)
@@ -85,34 +62,47 @@ export default function HomePage() {
     const loadPoliceData = async () => {
       try {
         const PoliceData = await import("../data/police_locations.json")
-        if (PoliceData && Array.isArray(PoliceData.police_stations)) {
-          setPoliceLocations(PoliceData.police_stations)
-        } else if (Array.isArray(PoliceData.default)) {
+        console.log("[v0] Loaded police data:", PoliceData)
+
+        // Handle different possible JSON structures
+        if (Array.isArray(PoliceData.default)) {
           setPoliceLocations(PoliceData.default)
+        } else if (PoliceData && Array.isArray(PoliceData.police_stations)) {
+          setPoliceLocations(PoliceData.police_stations)
+        } else if (Array.isArray(PoliceData)) {
+          setPoliceLocations(PoliceData)
         } else {
           console.warn("Police data not in expected format, using default")
           setPoliceLocations(defaultPoliceData.police_stations)
         }
       } catch (error) {
-        console.error("Failed to load police data:", error)
+        console.error("Error loading police data:", error)
         setPoliceLocations(defaultPoliceData.police_stations)
+      } finally {
+        setIsLoading(false)
       }
     }
 
     loadPoliceData()
   }, [])
 
-  // Add global error handler for unhandled script errors
+  // Global error handler
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
-      console.error("Global script error:", event.error)
-      setHasError(true)
-      return true // Prevent default browser error handling
+      console.error("Global error:", event.error || event.message)
+      // Don't set hasError for minor script errors
+      if (event.message !== "Script error.") {
+        setHasError(true)
+      }
+      return true
     }
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       console.error("Unhandled promise rejection:", event.reason)
-      setHasError(true)
+      // Only set error for critical rejections
+      if (event.reason && event.reason.message && !event.reason.message.includes("Loading chunk")) {
+        setHasError(true)
+      }
       event.preventDefault()
     }
 
@@ -130,7 +120,6 @@ export default function HomePage() {
       setIsLeftSliderOpen(!isLeftSliderOpen)
     } catch (error) {
       console.error("Error toggling left slider:", error)
-      setHasError(true)
     }
   }
 
@@ -139,7 +128,6 @@ export default function HomePage() {
       setIsRightSliderOpen(!isRightSliderOpen)
     } catch (error) {
       console.error("Error toggling right slider:", error)
-      setHasError(true)
     }
   }
 
@@ -148,7 +136,6 @@ export default function HomePage() {
       setIsRightSliderOpen(false)
     } catch (error) {
       console.error("Error closing right slider:", error)
-      setHasError(true)
     }
   }
 
@@ -158,7 +145,6 @@ export default function HomePage() {
       setIsLeftSliderOpen(true)
     } catch (error) {
       console.error("Error opening left slider:", error)
-      setHasError(true)
     }
   }
 
@@ -172,17 +158,30 @@ export default function HomePage() {
       }
     } catch (error) {
       console.error("Error toggling terrain:", error)
-      setHasError(true)
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gray-200">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-lg font-semibold">Loading application...</p>
+        </div>
+      </div>
+    )
   }
 
   if (hasError) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-gray-200">
+      <div className="w-full h-screen flex items-center justify-center bg-gray-200">
         <div className="text-center">
           <p className="text-lg font-semibold mb-2">Something went wrong</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              setHasError(false)
+              window.location.reload()
+            }}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             Refresh Page
@@ -192,62 +191,45 @@ export default function HomePage() {
     )
   }
 
-  try {
-    return (
-      <div className="relative h-screen w-screen">
-        <ErrorBoundary
-          fallback={
-            <div className="w-full h-full flex items-center justify-center bg-gray-200">
-              <div className="text-center">
-                <p className="text-lg font-semibold mb-2">Map failed to load</p>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                  Refresh Page
-                </button>
-              </div>
+  return (
+    <div className="relative h-screen w-screen overflow-hidden">
+      <ErrorBoundary
+        fallback={
+          <div className="w-full h-full flex items-center justify-center bg-gray-200">
+            <div className="text-center">
+              <p className="text-lg font-semibold mb-2">Map failed to load</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Refresh Page
+              </button>
             </div>
-          }
-        >
-          <AlAinMap
-            policeLocations={policeLocations}
-            onToggleTerrain={setTerrainEnabled}
-            mapRef={mapRef}
-            rightSliderRef={rightSliderRef}
-          />
+          </div>
+        }
+      >
+        <AlAinMap
+          policeLocations={policeLocations}
+          onToggleTerrain={setTerrainEnabled}
+          mapRef={mapRef}
+          rightSliderRef={rightSliderRef}
+        />
 
-          <AlAinLeftSlider
-            isOpen={isLeftSliderOpen}
-            toggleSlider={toggleLeftSlider}
-            selectedProject={selectedProject}
-            setSelectedProject={setSelectedProject}
-          />
+        <AlAinLeftSlider
+          isOpen={isLeftSliderOpen}
+          toggleSlider={toggleLeftSlider}
+          selectedProject={selectedProject}
+          setSelectedProject={setSelectedProject}
+        />
 
-          <RightSliderButton
-            isOpen={isRightSliderOpen}
-            onClose={closeRightSlider}
-            toggleProjects={toggleRightSlider}
-            openLeftSlider={openLeftSlider}
-            ref={rightSliderRef}
-          />
-        </ErrorBoundary>
-      </div>
-    )
-  } catch (error) {
-    console.error("Critical error in HomePage:", error)
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-gray-200">
-        <div className="text-center">
-          <p className="text-lg font-semibold mb-2">Critical error occurred</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Refresh Page
-          </button>
-        </div>
-      </div>
-    )
-  }
+        <RightSliderButton
+          isOpen={isRightSliderOpen}
+          onClose={closeRightSlider}
+          toggleProjects={toggleRightSlider}
+          openLeftSlider={openLeftSlider}
+          ref={rightSliderRef}
+        />
+      </ErrorBoundary>
+    </div>
+  )
 }

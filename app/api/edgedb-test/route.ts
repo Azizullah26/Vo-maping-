@@ -5,9 +5,27 @@ export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
+    // Check if EdgeDB is configured
+    const edgedbInstance = process.env.EDGEDB_INSTANCE
+    const edgedbSecretKey = process.env.EDGEDB_SECRET_KEY
+
+    if (!edgedbInstance || !edgedbSecretKey) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "EdgeDB environment variables not configured",
+          error: "Missing EDGEDB_INSTANCE or EDGEDB_SECRET_KEY",
+        },
+        { status: 500 },
+      )
+    }
+
     // The environment variables EDGEDB_INSTANCE and EDGEDB_SECRET_KEY
     // are automatically picked up by createClient() when running on Vercel.
-    const client = edgedb.createClient()
+    const client = edgedb.createClient({
+      instanceName: edgedbInstance,
+      secretKey: edgedbSecretKey,
+    })
 
     await client.ensureConnected()
 
@@ -21,6 +39,7 @@ export async function GET() {
         success: true,
         message: "Successfully connected to EdgeDB and executed a query.",
         queryResult: result,
+        instance: edgedbInstance.split("/").pop(), // Only show the database name, not full path
       })
     } else {
       throw new Error("Query execution returned an unexpected result.")

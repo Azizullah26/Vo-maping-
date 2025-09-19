@@ -1,40 +1,8 @@
 "use client"
-
-import React from "react"
-import { useFrame } from "@react-three/fiber"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, CuboidIcon as Cube, Maximize2, RotateCcw, Search, AlertCircle, ImageIcon } from "lucide-react"
-import { useGLTF, Html } from "@react-three/drei"
-import type { Group } from "three"
-import dynamic from "next/dynamic"
+import { ArrowLeft, Maximize2, RotateCcw, Search, ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Suspense } from "react"
-
-// Custom Error Boundary component
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode; fallback: React.ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode; fallback: React.ReactNode }) {
-    super(props)
-    this.state = { hasError: false }
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true }
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback
-    }
-    return this.props.children
-  }
-}
-
-// Update the models object to include more realistic building 3D models
-// Replace the models object with this updated version:
 
 const models = {
   buildings: [
@@ -42,40 +10,28 @@ const models = {
       id: 1,
       name: "Al Ain Police Headquarters",
       thumbnail: "/al-ain-grand-entrance.png",
-      url: "/assets/3d/duck.glb", // Replace with actual building model when available
-      type: "glb",
-      scale: 0.5,
-      position: [0, -1, 0],
+      type: "info",
       description: "Modern police headquarters with advanced security features",
     },
     {
       id: 2,
       name: "Al Saad Police Station",
       thumbnail: "/al-ain-street-surveillance.png",
-      url: "/assets/3d/duck.glb", // Replace with actual building model when available
-      type: "glb",
-      scale: 0.4,
-      position: [0, -1, 0],
+      type: "info",
       description: "Community police station serving the Al Saad district",
     },
     {
       id: 3,
       name: "Al Ain Smart City Center",
       thumbnail: "/al-ain-oasis-cityscape.png",
-      url: "/assets/3d/duck.glb", // Replace with actual building model when available
-      type: "glb",
-      scale: 0.6,
-      position: [0, -1, 0],
+      type: "info",
       description: "Central monitoring facility for city-wide surveillance",
     },
     {
       id: 4,
       name: "Surveillance Command Center",
       thumbnail: "/al-ain-city-traffic.png",
-      url: "/assets/3d/duck.glb", // Replace with actual building model when available
-      type: "glb",
-      scale: 0.45,
-      position: [0, -1, 0],
+      type: "info",
       description: "Main command center for coordinating security operations",
     },
   ],
@@ -108,132 +64,22 @@ const models = {
       id: 6,
       name: "Security Camera",
       thumbnail: "/al-ain-street-surveillance.png",
-      url: "/assets/3d/duck.glb",
-      type: "glb",
-      scale: 0.8,
-      position: [0, -1, 0],
+      type: "info",
     },
     {
       id: 7,
       name: "Security Gate",
       thumbnail: "/al-ain-grand-entrance.png",
-      url: "/assets/3d/duck.glb",
-      type: "glb",
-      scale: 1.7,
-      position: [0, -1, 0],
+      type: "info",
     },
   ],
 }
-
-// Update the Model component to handle building-specific rendering
-// Replace the Model component with this enhanced version:
-
-function Model({ url }: { url: string }) {
-  const modelRef = useRef<Group>(null)
-  const { scene } = useGLTF(url)
-
-  // Find the model data to get scale and position
-  const modelData = Object.values(models)
-    .flat()
-    .find((model) => model.url === url)
-
-  const scale = modelData?.scale || 0.01
-  const position = modelData?.position || [0, -1, 0]
-
-  useFrame((state, delta) => {
-    if (modelRef.current) {
-      // Slower rotation for buildings
-      modelRef.current.rotation.y += delta * 0.2
-    }
-  })
-
-  // If the URL contains duck.glb, render a building shape instead
-  if (url.includes("duck.glb")) {
-    return (
-      <group ref={modelRef} position={[0, 0, 0]} scale={1}>
-        {/* Main building body */}
-        <mesh position={[0, 0, 0]}>
-          <boxGeometry args={[2, 3, 2]} />
-          <meshStandardMaterial color="#0891b2" />
-        </mesh>
-
-        {/* Building top */}
-        <mesh position={[0, 2, 0]}>
-          <boxGeometry args={[1.5, 0.5, 1.5]} />
-          <meshStandardMaterial color="#0e7490" />
-        </mesh>
-
-        {/* Windows */}
-        <mesh position={[0, 0.5, 1.01]}>
-          <planeGeometry args={[1.5, 0.8]} />
-          <meshStandardMaterial color="#164e63" metalness={0.8} roughness={0.2} />
-        </mesh>
-
-        <mesh position={[0, 0.5, -1.01]}>
-          <planeGeometry args={[1.5, 0.8]} />
-          <meshStandardMaterial color="#164e63" metalness={0.8} roughness={0.2} />
-        </mesh>
-
-        <mesh position={[1.01, 0.5, 0]}>
-          <planeGeometry args={[1.5, 0.8]} />
-          <meshStandardMaterial color="#164e63" metalness={0.8} roughness={0.2} />
-        </mesh>
-
-        <mesh position={[-1.01, 0.5, 0]}>
-          <planeGeometry args={[1.5, 0.8]} />
-          <meshStandardMaterial color="#164e63" metalness={0.8} roughness={0.2} />
-        </mesh>
-
-        {/* Door */}
-        <mesh position={[0, -1.25, 1.01]}>
-          <planeGeometry args={[0.6, 1]} />
-          <meshStandardMaterial color="#1e293b" />
-        </mesh>
-      </group>
-    )
-  }
-
-  // For other models, load them normally
-  return <primitive ref={modelRef} object={scene} scale={scale} position={position} />
-}
-
-// Fallback component to display when model loading fails
-function ModelFallback() {
-  return (
-    <>
-      <mesh>
-        <boxGeometry args={[2, 2, 2]} />
-        <meshStandardMaterial color="#0891b2" wireframe />
-      </mesh>
-      <Html position={[0, 0, 0]} center>
-        <div className="bg-red-900/80 text-white p-3 rounded-md text-center w-48">
-          <AlertCircle className="h-5 w-5 mx-auto mb-2" />
-          <p className="text-sm">Error loading model</p>
-        </div>
-      </Html>
-    </>
-  )
-}
-
-// Dynamically import the 3D component to avoid SSR issues
-const AlAinTerrainViewer = dynamic(() => import("@/components/AlAinTerrainViewer"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-screen flex items-center justify-center bg-gray-900">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mb-4"></div>
-        <p className="text-white text-lg">Loading 3D Terrain...</p>
-      </div>
-    </div>
-  ),
-})
 
 export default function ThreeDPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("buildings")
   const [selectedModel, setSelectedModel] = useState<string | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [modelLoadError, setModelLoadError] = useState<string | null>(null)
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [imageRotation, setImageRotation] = useState(0)
 
@@ -245,8 +91,6 @@ export default function ThreeDPage() {
   // Get current models based on active tab
   const currentModels = models[activeTab as keyof typeof models] || []
 
-  // Check if the selected model is a Sketchfab model or an image
-  const isSketchfabModel = selectedModel?.includes("sketchfab.com")
   const isImageModel =
     selectedModel?.match(/\.(jpg|jpeg|png|gif|webp)$/i) ||
     selectedModel?.includes("/al-ain-") ||
@@ -257,23 +101,6 @@ export default function ThreeDPage() {
         .flat()
         .find((model) => model.url === selectedModel)
     : null
-
-  // Function to handle model loading errors
-  const handleModelError = (error: Error) => {
-    console.error("Model loading error:", error)
-    setModelLoadError(error.message)
-  }
-
-  // Create a fallback for when model loading fails
-  const ViewerFallback = (
-    <div className="w-full h-full flex items-center justify-center bg-slate-800">
-      <div className="bg-red-900/20 backdrop-blur-sm p-4 rounded-lg border border-red-500/30 text-center w-64">
-        <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-        <p className="text-white text-sm">Failed to load 3D model</p>
-        <p className="text-red-300 text-xs mt-2">{modelLoadError || "Unknown error"}</p>
-      </div>
-    </div>
-  )
 
   // Set the 2D view as the default active tab and select the floor plan by default
   useEffect(() => {
@@ -301,20 +128,6 @@ export default function ThreeDPage() {
           Back to Al Ain
         </Button>
       </div>
-
-      {/* 3D Terrain Viewer */}
-      <Suspense
-        fallback={
-          <div className="w-full h-screen flex items-center justify-center bg-gray-900">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white mb-4"></div>
-              <p className="text-white text-lg">Loading 3D Terrain...</p>
-            </div>
-          </div>
-        }
-      >
-        <AlAinTerrainViewer />
-      </Suspense>
 
       {/* Header */}
       <div className="bg-slate-800 p-3 sm:p-4 md:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 md:gap-0 border-b border-cyan-500/30 mx-2 sm:mx-4 md:mx-6 lg:mx-8 rounded-lg shadow-lg">
@@ -361,22 +174,17 @@ export default function ThreeDPage() {
         >
           <div className="flex justify-between items-center p-3 border-b border-slate-700">
             <h2 className="text-cyan-400 font-medium flex items-center gap-2">
-              {isImageModel ? <ImageIcon className="h-4 w-4" /> : <Cube className="h-4 w-4" />}
+              <ImageIcon className="h-4 w-4" />
               {selectedModelData?.name || "Viewer"}
             </h2>
             <div className="flex gap-2">
               <button
                 className="p-1.5 rounded bg-slate-700 hover:bg-slate-600 transition-colors"
                 onClick={() => {
-                  if (isImageModel) {
-                    // For images, rotate by 90 degrees
-                    setImageRotation((prev) => prev + 90)
-                  } else {
-                    // For 3D models, reset camera position
-                    setSelectedModel(selectedModel)
-                  }
+                  // For images, rotate by 90 degrees
+                  setImageRotation((prev) => prev + 90)
                 }}
-                title={isImageModel ? "Rotate Image" : "Reset Model"}
+                title="Rotate Image"
               >
                 <RotateCcw className="h-4 w-4 text-cyan-400" />
               </button>
@@ -405,10 +213,7 @@ export default function ThreeDPage() {
             <h3 className="text-cyan-400 text-sm font-medium mb-1">About this building</h3>
             <p className="text-slate-200 text-xs">{selectedModelData.description || "No description available."}</p>
             <div className="mt-2 text-xs text-slate-400">
-              <span className="inline-block px-2 py-0.5 bg-slate-800 rounded mr-2">3D Model</span>
-              <span className="inline-block px-2 py-0.5 bg-slate-800 rounded">
-                Scale: {selectedModelData.scale || "Default"}
-              </span>
+              <span className="inline-block px-2 py-0.5 bg-slate-800 rounded mr-2">2D View</span>
             </div>
           </div>
         )}
@@ -457,9 +262,7 @@ export default function ThreeDPage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-white">{model.name}</h3>
-                      <p className="text-xs text-slate-400">
-                        {model.type === "image" ? "2D Image" : `3D Model • ${model.type.toUpperCase()}`}
-                      </p>
+                      <p className="text-xs text-slate-400">{model.type === "image" ? "2D Image" : "Information"}</p>
                       <div className="flex items-center gap-1 mt-1">
                         <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
                         <span className="text-xs text-green-400">Ready to view</span>

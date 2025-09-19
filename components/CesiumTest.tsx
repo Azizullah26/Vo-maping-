@@ -6,101 +6,111 @@ import { useCesiumToken } from "@/hooks/useCesiumToken"
 export default function CesiumTest() {
   const containerRef = useRef<HTMLDivElement>(null)
   const viewerRef = useRef<any>(null)
-  const [cesiumLoaded, setCesiumLoaded] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { token, loading, error: tokenError } = useCesiumToken()
+  const { token, loading: tokenLoading, error: tokenError } = useCesiumToken()
 
   useEffect(() => {
-    if (typeof window === "undefined") return
+    if (tokenLoading || !token) return
 
-    if (window.Cesium) {
-      setCesiumLoaded(true)
+    if (tokenError) {
+      setError(tokenError)
+      setIsLoading(false)
       return
     }
 
-    const cssLink = document.createElement("link")
-    cssLink.rel = "stylesheet"
-    cssLink.href = "https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Widgets/widgets.css"
-    document.head.appendChild(cssLink)
+    let isMounted = true
 
-    const script = document.createElement("script")
-    script.src = "https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Cesium.js"
-    script.onload = () => setCesiumLoaded(true)
-    script.onerror = () => setError("Failed to load Cesium from CDN")
-    document.head.appendChild(script)
-
-    return () => {
+    const initializeCesiumTest = async () => {
       try {
-        if (document.head.contains(cssLink)) document.head.removeChild(cssLink)
-        if (document.head.contains(script)) document.head.removeChild(script)
-      } catch (e) {
-        console.warn("Cleanup error:", e)
-      }
-    }
-  }, [])
+        // Dynamically import Cesium
+        const Cesium = await import("cesium")
 
-  useEffect(() => {
-    if (!cesiumLoaded || !token || !containerRef.current || viewerRef.current) return
+        // Set the access token
+        Cesium.Ion.defaultAccessToken = token
 
-    try {
-      window.Cesium.Ion.defaultAccessToken = token
+        if (!isMounted || !containerRef.current) return
 
-      viewerRef.current = new window.Cesium.Viewer(containerRef.current, {
-        terrainProvider: window.Cesium.createWorldTerrain(),
-      })
+        // Create a simple test viewer
+        const viewer = new Cesium.Viewer(containerRef.current, {
+          terrainProvider: Cesium.createWorldTerrain(),
+          homeButton: false,
+          sceneModePicker: false,
+          baseLayerPicker: false,
+          navigationHelpButton: false,
+          animation: false,
+          timeline: false,
+          fullscreenButton: false,
+          geocoder: false,
+          infoBox: false,
+          selectionIndicator: false,
+        })
 
-      // Test: Add a simple entity
-      viewerRef.current.entities.add({
-        name: "Test Point",
-        position: window.Cesium.Cartesian3.fromDegrees(55.2708, 25.2048),
-        point: {
-          pixelSize: 10,
-          color: window.Cesium.Color.YELLOW,
-          outlineColor: window.Cesium.Color.BLACK,
-          outlineWidth: 2,
-        },
-        label: {
-          text: "Abu Dhabi Test Point",
-          font: "14pt monospace",
-          style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
-          outlineWidth: 2,
-          verticalOrigin: window.Cesium.VerticalOrigin.BOTTOM,
-          pixelOffset: new window.Cesium.Cartesian2(0, -9),
-        },
-      })
+        viewerRef.current = viewer
 
-      viewerRef.current.camera.setView({
-        destination: window.Cesium.Cartesian3.fromDegrees(55.2708, 25.2048, 10000),
-      })
-    } catch (err) {
-      console.error("Error initializing Cesium test viewer:", err)
-      setError("Failed to initialize Cesium test viewer")
-    }
+        // Test view - UAE region
+        viewer.camera.setView({
+          destination: Cesium.Cartesian3.fromDegrees(54.3773, 24.4539, 200000),
+        })
 
-    return () => {
-      if (viewerRef.current) {
-        try {
-          viewerRef.current.destroy()
-          viewerRef.current = null
-        } catch (e) {
-          console.warn("Error destroying Cesium viewer:", e)
+        // Add a test entity
+        viewer.entities.add({
+          position: Cesium.Cartesian3.fromDegrees(54.3773, 24.4539),
+          point: {
+            pixelSize: 10,
+            color: Cesium.Color.YELLOW,
+            outlineColor: Cesium.Color.BLACK,
+            outlineWidth: 2,
+          },
+          label: {
+            text: "UAE Test Point",
+            font: "14pt monospace",
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            outlineWidth: 2,
+            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+            pixelOffset: new Cesium.Cartesian2(0, -9),
+          },
+        })
+
+        setIsLoading(false)
+      } catch (err) {
+        console.error("Error initializing Cesium Test:", err)
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : "Failed to initialize Cesium Test")
+          setIsLoading(false)
         }
       }
     }
-  }, [cesiumLoaded, token])
 
-  if (loading) {
+    initializeCesiumTest()
+
+    return () => {
+      isMounted = false
+      if (viewerRef.current) {
+        viewerRef.current.destroy()
+        viewerRef.current = null
+      }
+    }
+  }, [token, tokenLoading, tokenError])
+
+  if (tokenLoading || isLoading) {
     return (
-      <div className="w-full h-96 flex items-center justify-center bg-gray-200">
-        <p>Loading Cesium Test...</p>
+      <div className="flex items-center justify-center bg-gray-100 h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">Loading Cesium test viewer...</p>
+        </div>
       </div>
     )
   }
 
-  if (tokenError || error) {
+  if (error || tokenError) {
     return (
-      <div className="w-full h-96 flex items-center justify-center bg-red-100 text-red-600">
-        <p>Error: {tokenError || error}</p>
+      <div className="flex items-center justify-center bg-red-50 h-96">
+        <div className="text-center text-red-600">
+          <p>Error loading Cesium test viewer</p>
+          <p className="text-sm mt-1">{error || tokenError}</p>
+        </div>
       </div>
     )
   }
