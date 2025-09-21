@@ -144,6 +144,12 @@ const markerStyles = `
   display: none !important;
 }
 
+/* Ensure markers are above in-container overlays */
+.mapboxgl-marker {
+  position: absolute;
+  z-index: 20 !important;
+}
+
 /* Added sophisticated label system from 16 projects page */
 .marker-label {
   position: absolute;
@@ -579,7 +585,7 @@ const EXCLUDED_MARKERS: string[] = [
   "إدارة الأسلحة والمتفجرات",
   "مبنى التحريات والمخدرات",
   "ادارة المهام الخاصة العين",
-  "الضبط المروري والمراسم",
+  "الضبط المروري والمرا��م",
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
   "المعهد المروري",
@@ -620,7 +626,7 @@ const PROJECT_NUMBERS: { [key: string]: string } = {
   "2Projects": "2",
   "Alamerah 2 Projects": "2 al",
   "نقطة ثبات الروضة": "1",
-  "فرع الضبط المروري (الخزنة)": "1",
+  "فرع ال��بط المروري (الخزنة)": "1",
   "مركز شرطة القوع (فلل صحة)": "1",
   "ساحة حجز المركبات -asad": "1",
   "مركز شرطة سويحان": "1",
@@ -1049,6 +1055,23 @@ export default function AlAinMap({
         const canvas = map.current.getCanvas()
         if (canvas) {
           canvas.style.filter = "contrast(1.2) saturate(1.5) brightness(0.9)"
+        }
+
+        // Add in-container dark mask below markers but above map canvas
+        try {
+          const container = mapContainer.current
+          if (container && !container.querySelector('#alainmap-dark-mask')) {
+            const mask = document.createElement('div')
+            mask.id = 'alainmap-dark-mask'
+            mask.style.position = 'absolute'
+            mask.style.inset = '0'
+            mask.style.background = 'rgba(0, 0, 0, 0.45)'
+            mask.style.pointerEvents = 'none'
+            mask.style.zIndex = '5'
+            container.appendChild(mask)
+          }
+        } catch (e) {
+          console.warn('Failed to add dark mask overlay:', e)
         }
 
         // Create markers for police locations
@@ -1585,7 +1608,7 @@ export default function AlAinMap({
 
   const getMarkerAlignment = (markerName: string): string => {
     const leftAligned = ["مركز شرطة زاخر", "ساحة حجز المركبات -asad"]
-    const rightAligned = ["16 Projects", "7 Projects", "2 Projects", "مركز شرطة المربعة", "مركز شرطة هيلي"]
+    const rightAligned = ["16 Projects", "7 Projects", "2 Projects", "مركز شرطة المربعة", "مركز شرطة هيل��"]
     const topAligned = ["فلل للادرات الشرطية عشارج"]
 
     if (leftAligned.includes(markerName)) {
@@ -1657,8 +1680,7 @@ export default function AlAinMap({
 
   return (
     <div className="relative w-full h-full">
-      <div ref={mapContainer} className="w-full h-full" />
-      <div className="absolute inset-0 bg-black/25 pointer-events-none" />
+      <div ref={mapContainer} className="relative w-full h-full" />
 
       <AnimatedControls
         onResetView={() => {
