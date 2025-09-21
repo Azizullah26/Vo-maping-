@@ -170,6 +170,8 @@ const markerStyles = `
 .map-tinted canvas {
   filter: brightness(0.6) saturate(0.85) hue-rotate(35deg) contrast(0.92);
   transition: filter 0.2s ease;
+  left: 7px;
+  position: absolute;
 }
 
 @media (max-width: 768px) {
@@ -214,7 +216,7 @@ const locations: LocationFeature[] = [
     coordinates: [55.722557288830416, 24.19360483409058],
   },
   {
-    place: "إدارة الأسلحة والمتفجرات",
+    place: "إدارة الأسلحة والمت��جرات",
     coordinates: [55.72427804325733, 24.19797500690261],
   },
   {
@@ -252,7 +254,7 @@ const manualLabelOffsets: Record<string, { left?: number; top?: number }> = {
   "مركز شرطة فلج هزاع": { left: 13, top: -139 },
   "إدارة المرور والترخيص": { left: 240, top: 171 },
   "قسم هندسة المرور": { left: 354, top: 83 },
-  "المتابعة الشرطية والرعاية اللاحقة": { left: -161, top: 163 },
+  "المتابعة الشر��ية والرعاية اللاحقة": { left: -161, top: 163 },
   "إدار�� الأسلحة والمتفجرات": { left: -130, top: -99 },
   "فلل فلج هزاع": { left: -100, top: 127 },
   "الضبط المروري والمراسم": { left: -321 },
@@ -602,6 +604,21 @@ export default function SixteenProjectsPage() {
       }
       label.style.transform = "translate(-50%, -50%)"
 
+      // Add dashed connection line from center to label
+      const line = document.createElement("div")
+      line.className = "marker-line"
+      const lineLength = Math.max(0, Math.sqrt(offsetX * offsetX + offsetY * offsetY) - 16)
+      const angleDeg = (labelAngle * 180) / Math.PI
+      line.style.left = "50%"
+      line.style.top = "50%"
+      line.style.width = `${lineLength}px`
+      line.style.height = "2px"
+      line.style.transform = `translate(-50%, -50%) rotate(${angleDeg}deg)`
+      line.style.background = "linear-gradient(90deg, rgba(255,255,255,0.9) 50%, transparent 50%)"
+      line.style.backgroundSize = "8px 2px"
+      line.style.backgroundRepeat = "repeat-x"
+      line.style.zIndex = "9"
+
       label.addEventListener("mouseenter", (e) => {
         e.stopPropagation()
         setHoveredLocation(name)
@@ -662,6 +679,7 @@ export default function SixteenProjectsPage() {
 
       markerElement.appendChild(shadow)
       markerElement.appendChild(circleElement)
+      markerElement.appendChild(line)
       markerElement.appendChild(label)
       markerElement.setAttribute("data-marker-name", name)
 
