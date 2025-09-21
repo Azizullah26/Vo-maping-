@@ -434,6 +434,15 @@ export default function SixteenProjectsPage() {
         mapRef.current.getCanvas().style.filter = "contrast(1.15) saturate(1.2) brightness(0.95)"
       })
 
+      // Ignore benign AbortError from tile cancellations
+      mapRef.current.on("error", (e: any) => {
+        const err = e?.error
+        const name = err?.name || ""
+        const message = err?.message || String(err || "")
+        if (name === "AbortError" || message.toLowerCase().includes("abort")) return
+        console.error("Map error:", err)
+      })
+
       mapRef.current.on("zoom", () => {
         try {
           debouncedUpdateMarkers()
