@@ -151,7 +151,7 @@ const markerStyles = `
   background: rgba(255, 255, 255, 0.95);
   border: 2px solid rgba(0, 0, 0, 0.1);
   border-radius: 25px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #000;
   white-space: nowrap;
@@ -334,7 +334,7 @@ const markerStyles = `
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .marker-label {
-    font-size: 12px;
+    font-size: 11px;
     padding: 6px 12px;
   }
   
@@ -395,7 +395,7 @@ const markerStyles = `
 
 @media (max-width: 640px) {
   .marker-label {
-    font-size: 11px;
+    font-size: 10px;
     padding: 4px 8px;
   }
   
@@ -566,7 +566,7 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
   "المعهد المروري",
-  "إدارة المرور والترخيص",
+  "إدارة المرور والترخ��ص",
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
@@ -848,7 +848,7 @@ export default function AlAinMap({
     const nameMap: { [key: string]: string } = {
       "قسم موسيقى شرطة أبوظبي": "Abu Dhabi Police Music Department",
       "إدارة التأهيل الشرطي - الفوعة": "Police Rehabilitation Department - Al Foua",
-      "مركز شرطة هيلي": "Hili Police Station",
+      "��ركز شرطة هيلي": "Hili Police Station",
       "1 Project": "Al Ain Development Project",
       "مركز شرطة الوقن": "Al Wagan Police Station",
       "ساحة حجز المركبات -asad": "Vehicle Impound Facility - Asad",
@@ -1333,7 +1333,7 @@ export default function AlAinMap({
           case "إدارة التأهيل الشرطي - الفوعة":
             positionClass = "position-3" // Right
             break
-          case "مركز شرطة هيلي":
+          case "مركز شر��ة هيلي":
             positionClass = "position-3" // Right
             break
           case "مركز شرطةasad":
