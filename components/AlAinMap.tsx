@@ -565,7 +565,7 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "الضبط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
-  "المعهد المروري",
+  "المعهد المر��ري",
   "إدارة المرور والترخ��ص",
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
@@ -598,12 +598,12 @@ const EXCLUDED_MARKERS: string[] = [
 ]
 
 const HIDDEN_AT_START = [
-  "مركز شرطةasad",
+  "م��كز شرطةasad",
   "متحف شرطة المربعة",
   "مركز شرطة المربعة",
   "مديرية شرطة ا��عين",
   "فرع النقل والمشاغل",
-  "نادي ضباط الشرطة",
+  "نادي ض��اط الشرطة",
   "فلل فلج هزاع",
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
@@ -640,7 +640,7 @@ const HOVERABLE_MARKERS = [
   "نادي ضباط الشرطة",
   "مركز شرطةasad",
   "متحف شرطة المربعة",
-  "مركز شرطة المربعة",
+  "مركز شرطة المرب��ة",
   "مديرية شرطة العين",
   "فرع النقل والمشاغل",
   "نادي ضباط الشرطة",
@@ -1333,7 +1333,7 @@ export default function AlAinMap({
           case "إدارة التأهيل الشرطي - الفوعة":
             positionClass = "position-3" // Right
             break
-          case "مركز شر��ة هيلي":
+          case "مركز شرطة هيلي":
             positionClass = "position-3" // Right
             break
           case "مركز شرطةasad":
@@ -1585,7 +1585,7 @@ export default function AlAinMap({
 
   const getMarkerAlignment = (markerName: string): string => {
     const leftAligned = ["مركز شرطة زاخر", "ساحة حجز المركبات -asad"]
-    const rightAligned = ["16 Projects", "7 Projects", "2 Projects", "مركز شرطة المربعة"]
+    const rightAligned = ["16 Projects", "7 Projects", "2 Projects", "مركز شرطة المربعة", "مركز شرطة هيلي"]
     const topAligned = ["فلل للادرات الشرطية عشارج"]
 
     if (leftAligned.includes(markerName)) {
