@@ -704,7 +704,7 @@ export default function SixteenProjectsPage() {
         <div className="flex-1 relative">
           <div ref={mapContainerRef} className="relative w-full h-full overflow-hidden map-tinted" />
 
-          <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-800/30 via-slate-800/10 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 z-9 bg-black/45 pointer-events-none" />
         </div>
 
         {selectedLocation && (
