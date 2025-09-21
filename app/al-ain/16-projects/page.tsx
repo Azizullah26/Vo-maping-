@@ -604,20 +604,6 @@ export default function SixteenProjectsPage() {
       }
       label.style.transform = "translate(-50%, -50%)"
 
-      // Add dashed connection line from center to label
-      const line = document.createElement("div")
-      line.className = "marker-line"
-      const lineLength = Math.max(0, Math.sqrt(offsetX * offsetX + offsetY * offsetY) - 16)
-      const angleDeg = (labelAngle * 180) / Math.PI
-      line.style.left = "50%"
-      line.style.top = "50%"
-      line.style.width = `${lineLength}px`
-      line.style.height = "2px"
-      line.style.transform = `translate(-50%, -50%) rotate(${angleDeg}deg)`
-      line.style.background = "linear-gradient(90deg, rgba(255,255,255,0.9) 50%, transparent 50%)"
-      line.style.backgroundSize = "8px 2px"
-      line.style.backgroundRepeat = "repeat-x"
-      line.style.zIndex = "9"
 
       label.addEventListener("mouseenter", (e) => {
         e.stopPropagation()
@@ -679,7 +665,6 @@ export default function SixteenProjectsPage() {
 
       markerElement.appendChild(shadow)
       markerElement.appendChild(circleElement)
-      markerElement.appendChild(line)
       markerElement.appendChild(label)
       markerElement.setAttribute("data-marker-name", name)
 
