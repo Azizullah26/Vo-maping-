@@ -31,6 +31,20 @@ interface DocumentFilters {
 
 // Add this style block
 const styleBlock = `
+/* Dashboard visual enhancements */
+.vue-card {
+  background: linear-gradient(180deg, rgba(15,23,42,0.6), rgba(2,6,23,0.6));
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  border: 1px solid rgba(34,211,238,0.15);
+  box-shadow: 0 12px 40px -20px rgba(14,165,233,0.35);
+}
+
+.vue-env-card { backdrop-filter: blur(8px); }
+
+.vue-camera-thumbnail { border-radius: 10px; overflow: hidden; box-shadow: 0 10px 30px -20px rgba(14,165,233,0.4); }
+
+.vue-video-container { border-radius: 12px; }
 @keyframes scan {
   0% { transform: translateY(-100%); }
   100% { transform: translateY(100%); }
@@ -595,19 +609,20 @@ export default function DashboardPage() {
   })
 
   return (
-    <div className="min-h-screen bg-black/90 backdrop-blur-sm">
+    <div className="min-h-screen relative bg-gradient-to-b from-slate-950 via-slate-900 to-[#0b1020] text-white">
       {/* Background grid pattern - z-index adjusted to ensure it doesn't block scrolling */}
       <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-20 pointer-events-none z-0"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(14,165,233,0.08),transparent_60%)] pointer-events-none z-0"></div>
 
       {/* Main content area - scrollable with enhanced vertical scrolling */}
       <div
-        className="h-[95%] overflow-y-auto overflow-x-hidden pr-2 no-scrollbar relative z-20 text-white mx-auto max-w-[800px] p-4"
+        className="h-[95%] overflow-y-auto overflow-x-hidden pr-2 no-scrollbar relative z-20 mx-auto max-w-[900px] p-5"
         style={{
           maxHeight: "calc(100vh - 6rem)",
           overflowY: "auto",
         }}
       >
-        <div className="flex flex-col p-4 space-y-6 w-full bg-slate-800/30 rounded-xl border border-cyan-500/10 shadow-inner shadow-cyan-900/20">
+        <div className="flex flex-col p-4 space-y-6 w-full rounded-2xl bg-white/5 backdrop-blur-md ring-1 ring-white/10 shadow-[0_10px_40px_-15px_rgba(14,165,233,0.25)]">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-cyan-400">
               {selectedProject ? selectedProject.projectNameEn : "Al Ain"}
@@ -639,7 +654,7 @@ export default function DashboardPage() {
                       router.push("/al-ain/documents")
                     }
                   }}
-                  className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
+                  className="flex flex-col items-center justify-center p-3 rounded-full bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-cyan-400/40 transition-all hover:scale-105 group relative overflow-hidden ring-1 ring-white/5 hover:from-cyan-500/10 hover:to-cyan-500/5"
                   aria-label="View documents"
                 >
                   <div className="text-cyan-400 mb-1 relative z-10">Docs</div>
@@ -663,7 +678,7 @@ export default function DashboardPage() {
                       console.error("Navigation error:", error)
                     }
                   }}
-                  className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
+                  className="flex flex-col items-center justify-center p-3 rounded-full bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-cyan-400/40 transition-all hover:scale-105 group relative overflow-hidden ring-1 ring-white/5 hover:from-cyan-500/10 hover:to-cyan-500/5"
                 >
                   <div className="text-cyan-400 mb-1 relative z-10">Media</div>
                   <div className="relative z-10">
@@ -682,7 +697,7 @@ export default function DashboardPage() {
                       console.error("Navigation error:", error)
                     }
                   }}
-                  className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
+                  className="flex flex-col items-center justify-center p-3 rounded-full bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-cyan-400/40 transition-all hover:scale-105 group relative overflow-hidden ring-1 ring-white/5 hover:from-cyan-500/10 hover:to-cyan-500/5"
                 >
                   <div className="text-cyan-400 mb-1 relative z-10">3D</div>
                   <div className="relative z-10">
@@ -701,7 +716,7 @@ export default function DashboardPage() {
                       console.error("Navigation error:", error)
                     }
                   }}
-                  className="flex flex-col items-center justify-center p-3 bg-cyan-900/30 rounded-full border border-cyan-500/30 hover:bg-cyan-800/30 transition-all hover:scale-105 group relative overflow-hidden"
+                  className="flex flex-col items-center justify-center p-3 rounded-full bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md border border-white/10 hover:border-cyan-400/40 transition-all hover:scale-105 group relative overflow-hidden ring-1 ring-white/5 hover:from-cyan-500/10 hover:to-cyan-500/5"
                 >
                   <div className="text-cyan-400 mb-1 relative z-10">Live</div>
                   <div className="h-2 w-2 bg-green-500 rounded-full animate-ping relative z-10"></div>
