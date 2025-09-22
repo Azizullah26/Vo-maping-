@@ -17,17 +17,7 @@ const router = useRouter()
 const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null)
 
 // Advanced zoom functionality
-const [zoomLevel, setZoomLevel] = useState(() => {
-  if (typeof window !== "undefined") {
-    const width = window.innerWidth
-    const height = window.innerHeight
-    // Check for specific resolutions and set 80% zoom
-    if ((width === 1920 && height === 1080) || (width === 1680 && height === 1050)) {
-      return 0.8
-    }
-  }
-  return 0.6 // Default cloud view zoom
-})
+const [zoomLevel, setZoomLevel] = useState(() => 0.8)
 const [panX, setPanX] = useState(0)
 const [panY, setPanY] = useState(0)
 const [isDragging, setIsDragging] = useState(false)
@@ -197,7 +187,7 @@ const handleZoomOut = () => {
 }
 
 const handleResetView = () => {
-  setZoomLevel(0.6)
+  setZoomLevel(0.8)
   setPanX(0)
   setPanY(0)
 }
