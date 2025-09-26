@@ -124,6 +124,9 @@ const markerStyles = `
   opacity: 0;
   transition: opacity 0.2s ease;
 }
+.marker-tooltip.visible {
+  opacity: 1;
+}
 
 @media (min-width: 640px) {
   .marker-tooltip {
@@ -648,7 +651,7 @@ const HOVERABLE_MARKERS = [
   "متحف شرطة المربعة",
   "مركز شرطة المرب��ة",
   "مديرية شرطة العين",
-  "فرع النقل والمشاغل",
+  "فرع النقل والمشاغ��",
   "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
   "فلل فلج هزاع",
@@ -673,7 +676,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة القوع (فلل صحة)",
   "نقطة ثبات الروضة",
   "فرع الضبط المروري (الخزنة)",
-  "مبنى إدارات (التربية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
+  "مبنى إدارات (التربية الرياضية - الاعلام الامني - مسرح الج��يمة - فرع البصمة)",
   "1 Project",
   "مركز شرطة سويحان",
   "مركز شرطة الهير",
@@ -1527,11 +1530,65 @@ export default function AlAinMap({
         markerElement.appendChild(line)
 
         // Create label
-        const label = document.createElement("button")
-        label.className = "marker-label"
-        label.textContent = name
-        label.setAttribute("aria-label", name)
-        markerElement.appendChild(label)
+      const label = document.createElement("button")
+      label.className = "marker-label"
+      label.textContent = name
+      label.setAttribute("aria-label", name)
+
+      // Hover behavior on label: show tooltip, highlight this marker, dim others
+      label.addEventListener("mouseenter", (e) => {
+        e.stopPropagation()
+        setHoveredMarker(name)
+
+        let tooltip = document.getElementById(`tooltip-${name}`)
+        if (!tooltip) {
+          tooltip = document.createElement("div")
+          tooltip.id = `tooltip-${name}`
+          tooltip.className = "marker-tooltip"
+          tooltip.textContent = name
+          markerElement.appendChild(tooltip)
+        }
+        tooltip.classList.add("visible")
+
+        Object.entries(markersRef.current).forEach(([markerName, marker]) => {
+          const element = marker.getElement()
+          if (element) {
+            if (markerName !== name) {
+              element.classList.add("marker-dimmed")
+              element.style.opacity = "0.2"
+            } else {
+              element.classList.add("marker-highlighted")
+              element.style.opacity = "1"
+              element.style.zIndex = "1000"
+              element.style.filter = "drop-shadow(0 0 8px rgba(0, 204, 255, 0.8))"
+            }
+          }
+        })
+      })
+
+      // Reset on label mouse leave unless clicked
+      label.addEventListener("mouseleave", (e) => {
+        e.stopPropagation()
+        if (clickedMarker !== name) {
+          setHoveredMarker(null)
+          const tooltip = document.getElementById(`tooltip-${name}`)
+          if (tooltip) {
+            tooltip.classList.remove("visible")
+          }
+          Object.entries(markersRef.current).forEach(([_, marker]) => {
+            const element = marker.getElement()
+            if (element) {
+              element.classList.remove("marker-dimmed")
+              element.classList.remove("marker-highlighted")
+              element.style.opacity = ""
+              element.style.zIndex = ""
+              element.style.filter = ""
+            }
+          })
+        }
+      })
+
+      markerElement.appendChild(label)
       }
 
       const contentWrapper = document.createElement("div")
