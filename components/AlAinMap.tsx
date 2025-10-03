@@ -569,7 +569,7 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "قسم هندسة المرور",
   "مركز شرطة فلج هزاع",
   "إدارة الأسلحة والمتفجرات",
-  "����نى التحريات والم��درات",
+  "��بنى التحريات والم��درات",
   "ادارة المهام الخاصة العين",
   "ال��بط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
@@ -651,7 +651,7 @@ const HOVERABLE_MARKERS = [
   "متحف شرطة المربعة",
   "مركز شرطة المرب��ة",
   "مديرية شرطة العين",
-  "فرع النقل والمشاغ��",
+  "فر�� النقل والمشاغ��",
   "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
   "فلل فلج هزاع",
@@ -1424,10 +1424,10 @@ export default function AlAinMap({
           Object.entries(markersRef.current).forEach(([markerName, marker]) => {
             const element = marker.getElement()
             if (element) {
-            if (markerName !== name) {
-              element.classList.add("marker-dimmed")
-              element.style.opacity = "0.2"
-            } else {
+              if (markerName !== name) {
+                element.classList.add("marker-dimmed")
+                element.style.opacity = "0.2"
+              } else {
                 element.classList.add("marker-highlighted")
                 element.style.opacity = "1"
                 element.style.zIndex = "1000"
@@ -1483,7 +1483,7 @@ export default function AlAinMap({
         "مركز شرطة هيلي",
         "مركز شرطةasad",
         "ميدان الشرطة بدع بنت سعود",
-        "مركز شرطة الساد",
+        "مر��ز شرطة الساد",
         "ساحة حجز المركبات - الساد",
       ]
 
