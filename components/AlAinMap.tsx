@@ -105,43 +105,6 @@ const markerStyles = `
   }
 }
 
-.marker-tooltip {
-  position: absolute;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 1000;
-  transform: translate(-50%, -130%);
-  white-space: nowrap;
-  box-shadow: 0 0 10px rgba(0, 204, 255, 0.5);
-  border: 1px solid rgba(0, 204, 255, 0.3);
-  backdrop-filter: blur(4px);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-.marker-tooltip.visible {
-  opacity: 1;
-}
-
-@media (min-width: 640px) {
-  .marker-tooltip {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.875rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .marker-tooltip {
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-  }
-}
-
 /* Hide Mapbox attribution */
 .mapboxgl-ctrl-bottom-right {
   display: none !important;
