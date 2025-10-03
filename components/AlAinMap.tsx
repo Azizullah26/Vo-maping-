@@ -571,7 +571,7 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "إدارة الأسلحة والمتفجرات",
   "��بنى التحريات والم��درات",
   "ادارة المهام الخاصة العين",
-  "الضبط المروري والمراسم",
+  "ال��بط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
   "المعهد المر��ري",
@@ -591,14 +591,14 @@ const EXCLUDED_MARKERS: string[] = [
   "الضبط المروري والمرا��م",
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
-  "المعهد ال��روري",
+  "المعهد المروري",
   "إدارة المرور والترخيص",
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
   "فلل فلج هزاع",
   "ف��ل للادرات الشرط��ة عشارج",
   "مركز شرطة المقام",
-  "مركز شرطةasad",
+  "��ركز شرطةasad",
   "ساحة حجز المركبات -asad",
   "16 Projects",
   "7 Projects",
@@ -1219,13 +1219,6 @@ export default function AlAinMap({
       map.current.on("click", () => {
         setClickedMarker(null)
 
-        Object.keys(markersRef.current).forEach((markerName) => {
-          const tooltip = document.getElementById(`tooltip-${markerName}`)
-          if (tooltip) {
-            tooltip.classList.remove("visible")
-          }
-        })
-
         Object.entries(markersRef.current).forEach(([_, marker]) => {
           const element = marker.getElement()
           if (element) {
@@ -1356,7 +1349,7 @@ export default function AlAinMap({
           case "ساحة حجز المركبات -asad":
             positionClass = "position-7" // Left
             break
-          case "إدارة التأهيل الش��طي - الفوعة":
+          case "إدارة التأهيل الشرطي - الفوعة":
             positionClass = "position-3" // Right
             break
           case "مركز شرطة هيلي":
@@ -1621,7 +1614,7 @@ export default function AlAinMap({
   }
 
   const getMarkerAlignment = (markerName: string): string => {
-    const leftAligned = ["مركز شرطة زاخر", "ساحة حجز ا��مركبات -asad"]
+    const leftAligned = ["مركز شرطة زاخر", "ساحة حجز المركبات -asad"]
     const rightAligned = ["16 Projects", "7 Projects", "2 Projects", "مركز شرطة المربعة", "مركز شرطة هيل��"]
     const topAligned = ["فلل للادرات الشرطية عشارج"]
 
