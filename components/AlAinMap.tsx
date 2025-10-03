@@ -591,7 +591,7 @@ const EXCLUDED_MARKERS: string[] = [
   "الضبط المروري والمرا��م",
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
-  "المعهد المروري",
+  "المعهد ال��روري",
   "إدارة المرور والترخيص",
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
@@ -1356,7 +1356,7 @@ export default function AlAinMap({
           case "ساحة حجز المركبات -asad":
             positionClass = "position-7" // Left
             break
-          case "إدارة التأهيل الشرطي - الفوعة":
+          case "إدارة التأهيل الش��طي - الفوعة":
             positionClass = "position-3" // Right
             break
           case "مركز شرطة هيلي":
@@ -1389,16 +1389,6 @@ export default function AlAinMap({
           e.stopPropagation()
           setHoveredMarker(name)
 
-          let tooltip = document.getElementById(`tooltip-${name}`)
-          if (!tooltip) {
-            tooltip = document.createElement("div")
-            tooltip.id = `tooltip-${name}`
-            tooltip.className = "marker-tooltip"
-            tooltip.textContent = name
-            markerElement.appendChild(tooltip)
-          }
-          tooltip.classList.add("visible")
-
           Object.entries(markersRef.current).forEach(([markerName, marker]) => {
             const element = marker.getElement()
             if (element) {
@@ -1420,11 +1410,6 @@ export default function AlAinMap({
           if (clickedMarker !== name) {
             setHoveredMarker(null)
 
-            const tooltip = document.getElementById(`tooltip-${name}`)
-            if (tooltip) {
-              tooltip.classList.remove("visible")
-            }
-
             Object.entries(markersRef.current).forEach(([_, marker]) => {
               const element = marker.getElement()
               if (element) {
@@ -1443,27 +1428,13 @@ export default function AlAinMap({
           setHoveredMarker(name)
           setClickedMarker(name)
 
-          let tooltip = document.getElementById(`tooltip-${name}`)
-          if (!tooltip) {
-            tooltip = document.createElement("div")
-            tooltip.id = `tooltip-${name}`
-            tooltip.className = "marker-tooltip"
-            tooltip.textContent = name
-            markerElement.appendChild(tooltip)
-          }
-          tooltip.classList.add("visible")
-
           Object.entries(markersRef.current).forEach(([markerName, marker]) => {
             const element = marker.getElement()
             if (element) {
-              if (markerName !== name) {
-                element.classList.add("marker-dimmed")
-                element.style.opacity = "0.2"
-                const otherTooltip = document.getElementById(`tooltip-${markerName}`)
-                if (otherTooltip) {
-                  otherTooltip.classList.remove("visible")
-                }
-              } else {
+            if (markerName !== name) {
+              element.classList.add("marker-dimmed")
+              element.style.opacity = "0.2"
+            } else {
                 element.classList.add("marker-highlighted")
                 element.style.opacity = "1"
                 element.style.zIndex = "1000"
@@ -1540,16 +1511,6 @@ export default function AlAinMap({
         e.stopPropagation()
         setHoveredMarker(name)
 
-        let tooltip = document.getElementById(`tooltip-${name}`)
-        if (!tooltip) {
-          tooltip = document.createElement("div")
-          tooltip.id = `tooltip-${name}`
-          tooltip.className = "marker-tooltip"
-          tooltip.textContent = name
-          markerElement.appendChild(tooltip)
-        }
-        tooltip.classList.add("visible")
-
         Object.entries(markersRef.current).forEach(([markerName, marker]) => {
           const element = marker.getElement()
           if (element) {
@@ -1571,10 +1532,6 @@ export default function AlAinMap({
         e.stopPropagation()
         if (clickedMarker !== name) {
           setHoveredMarker(null)
-          const tooltip = document.getElementById(`tooltip-${name}`)
-          if (tooltip) {
-            tooltip.classList.remove("visible")
-          }
           Object.entries(markersRef.current).forEach(([_, marker]) => {
             const element = marker.getElement()
             if (element) {
@@ -1664,7 +1621,7 @@ export default function AlAinMap({
   }
 
   const getMarkerAlignment = (markerName: string): string => {
-    const leftAligned = ["مركز شرطة زاخر", "ساحة حجز المركبات -asad"]
+    const leftAligned = ["مركز شرطة زاخر", "ساحة حجز ا��مركبات -asad"]
     const rightAligned = ["16 Projects", "7 Projects", "2 Projects", "مركز شرطة المربعة", "مركز شرطة هيل��"]
     const topAligned = ["فلل للادرات الشرطية عشارج"]
 
