@@ -123,7 +123,7 @@ const markerStyles = `
   background: rgba(255, 255, 255, 0.95);
   border: 2px solid rgba(0, 0, 0, 0.1);
   border-radius: 25px;
-  font-size: 13px;
+  font-size: 11px; /* Reduced from 13px to 11px */
   font-weight: 600;
   color: #000;
   white-space: nowrap;
@@ -306,7 +306,7 @@ const markerStyles = `
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .marker-label {
-    font-size: 11px;
+    font-size: 9px; /* Reduced from 11px to 9px */
     padding: 6px 12px;
   }
   
@@ -357,7 +357,7 @@ const markerStyles = `
 
 @media (max-width: 640px) {
   .marker-label {
-    font-size: 10px;
+    font-size: 8px; /* Reduced from 10px to 8px */
     padding: 4px 8px;
   }
   
