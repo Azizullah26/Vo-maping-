@@ -613,7 +613,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطةasad",
   "متحف شرطة المربعة",
   "مركز شرطة المرب��ة",
-  "مديرية شرطة العين",
+  "مد��رية شرطة العين",
   "فر�� النقل والمشاغ��",
   "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
@@ -639,7 +639,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة القوع (فلل صحة)",
   "نقطة ثبات الروضة",
   "فرع الضبط المروري (الخزنة)",
-  "مبنى إدارات (التربية الرياضية - الاعلام الامني - مسرح الج��يمة - فرع البصمة)",
+  "مبنى إدارات (ا��تربية الرياضية - الاعلام الامني - مسرح الج��يمة - فرع البصمة)",
   "1 Project",
   "مركز شرطة سويحان",
   "مركز شرطة الهير",
@@ -676,6 +676,7 @@ export default function AlAinMap({
   const [currentStyle, setCurrentStyle] = useState<keyof typeof MAPBOX_STYLES>("style2")
   const router = useRouter()
   const markersRef = useRef<{ [key: string]: any }>({})
+  const markerStyleSheetRef = useRef<HTMLStyleElement | null>(null)
   const [lng] = useState(55.74)
   const [lat] = useState(24.13)
   const [zoom] = useState(10)
@@ -998,7 +999,9 @@ export default function AlAinMap({
 
       const styleSheet = document.createElement("style")
       styleSheet.textContent = markerStyles
+      styleSheet.setAttribute("data-al-ain-marker-style", "true")
       document.head.appendChild(styleSheet)
+      markerStyleSheetRef.current = styleSheet
 
       map.current.on("load", () => {
         setMapLoaded(true)
@@ -1205,41 +1208,38 @@ export default function AlAinMap({
         }
 
         // Safer cleanup to prevent AbortError
-        if (map.current) {
+        const mapInstance = map.current
+        if (mapInstance) {
           try {
-            // Remove all event listeners first
-            map.current.off()
-
-            // Stop any ongoing operations
-            map.current.stop()
-
-            // Set a minimal style to clear existing sources without triggering aborts
-            map.current.setStyle({
-              version: 8,
-              sources: {},
-              layers: [],
-            })
-
-            // Small delay to allow style to clear, then remove
-            setTimeout(() => {
-              try {
-                if (map.current) {
-                  map.current.remove()
-                  map.current = null
-                }
-              } catch (e) {
-                console.warn("Map already removed or error during removal:", e)
-              }
-            }, 50)
-          } catch (e) {
-            // If setStyle fails, try immediate removal
-            try {
-              map.current.remove()
-              map.current = null
-            } catch (removeError) {
-              console.warn("Error during map removal:", removeError)
-            }
+            mapInstance.off()
+          } catch (listenerError) {
+            console.warn("Error removing map listeners:", listenerError)
           }
+
+          try {
+            mapInstance.stop()
+          } catch (stopError) {
+            console.warn("Error stopping map rendering:", stopError)
+          }
+
+          if (mapRef && mapRef.current === mapInstance) {
+            mapRef.current = null
+          }
+
+          map.current = null
+
+          requestAnimationFrame(() => {
+            try {
+              mapInstance.remove()
+            } catch (removeError) {
+              console.warn("Map already removed or error during removal:", removeError)
+            }
+          })
+        }
+
+        if (markerStyleSheetRef.current && document.head.contains(markerStyleSheetRef.current)) {
+          document.head.removeChild(markerStyleSheetRef.current)
+          markerStyleSheetRef.current = null
         }
 
         document.querySelectorAll("style[data-marker-style]").forEach((el) => el.remove())
