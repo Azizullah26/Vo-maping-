@@ -105,43 +105,15 @@ const markerStyles = `
   }
 }
 
-.marker-tooltip {
-  position: absolute;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 1000;
-  transform: translate(-50%, -130%);
-  white-space: nowrap;
-  box-shadow: 0 0 10px rgba(0, 204, 255, 0.5);
-  border: 1px solid rgba(0, 204, 255, 0.3);
-  backdrop-filter: blur(4px);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-@media (min-width: 640px) {
-  .marker-tooltip {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.875rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .marker-tooltip {
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-  }
-}
-
 /* Hide Mapbox attribution */
 .mapboxgl-ctrl-bottom-right {
   display: none !important;
+}
+
+/* Ensure markers are above in-container overlays */
+.mapboxgl-marker {
+  position: absolute;
+  z-index: 20 !important;
 }
 
 /* Added sophisticated label system from 16 projects page */
@@ -151,7 +123,7 @@ const markerStyles = `
   background: rgba(255, 255, 255, 0.95);
   border: 2px solid rgba(0, 0, 0, 0.1);
   border-radius: 25px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #000;
   white-space: nowrap;
@@ -334,7 +306,7 @@ const markerStyles = `
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .marker-label {
-    font-size: 12px;
+    font-size: 11px;
     padding: 6px 12px;
   }
   
@@ -395,7 +367,7 @@ const markerStyles = `
 
 @media (max-width: 640px) {
   .marker-label {
-    font-size: 11px;
+    font-size: 10px;
     padding: 4px 8px;
   }
   
@@ -560,13 +532,13 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "قسم هندسة المرور",
   "مركز شرطة فلج هزاع",
   "إدارة الأسلحة والمتفجرات",
-  "مبنى التحريات والمخدرات",
+  "��بنى التحريات والم��درات",
   "ادارة المهام الخاصة العين",
-  "الضبط المروري والمراسم",
+  "ال��بط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
-  "المعهد المروري",
-  "إدارة المرور والترخيص",
+  "المعهد المر��ري",
+  "إدارة المرور والترخ��ص",
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
@@ -579,7 +551,7 @@ const EXCLUDED_MARKERS: string[] = [
   "إدارة الأسلحة والمتفجرات",
   "مبنى التحريات والمخدرات",
   "ادارة المهام الخاصة العين",
-  "الضبط المروري والمراسم",
+  "الضبط المروري والمرا��م",
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
   "المعهد المروري",
@@ -587,9 +559,9 @@ const EXCLUDED_MARKERS: string[] = [
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
   "فلل فلج هزاع",
-  "فلل للادرات الشرطية عشارج",
+  "ف��ل للادرات الشرط��ة عشارج",
   "مركز شرطة المقام",
-  "مركز شرطةasad",
+  "��ركز شرطةasad",
   "ساحة حجز المركبات -asad",
   "16 Projects",
   "7 Projects",
@@ -598,12 +570,12 @@ const EXCLUDED_MARKERS: string[] = [
 ]
 
 const HIDDEN_AT_START = [
-  "مركز شرطةasad",
+  "م��كز شرطةasad",
   "متحف شرطة المربعة",
   "مركز شرطة المربعة",
-  "مديرية شرطة العين",
+  "مديرية شرطة ا��عين",
   "فرع النقل والمشاغل",
-  "نادي ضباط الشرطة",
+  "نادي ض��اط الشرطة",
   "فلل فلج هزاع",
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
@@ -620,7 +592,7 @@ const PROJECT_NUMBERS: { [key: string]: string } = {
   "2Projects": "2",
   "Alamerah 2 Projects": "2 al",
   "نقطة ثبات الروضة": "1",
-  "فرع الضبط المروري (الخزنة)": "1",
+  "فرع ال��بط المروري (الخزنة)": "1",
   "مركز شرطة القوع (فلل صحة)": "1",
   "ساحة حجز المركبات -asad": "1",
   "مركز شرطة سويحان": "1",
@@ -634,15 +606,15 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة هيلي",
   "ميدان الشرطة بدع بنت سعود",
   "متحف شرطة المربعة",
-  "مركز شرطة المربعة",
+  "مركز شرطة ا��مربعة",
   "مديرية شرطة العين",
   "فرع النقل والمشاغل",
   "نادي ضباط الشرطة",
   "مركز شرطةasad",
   "متحف شرطة المربعة",
-  "مركز شرطة المربعة",
-  "مديرية شرطة العين",
-  "فرع النقل والمشاغل",
+  "مركز شرطة المرب��ة",
+  "مد��رية شرطة العين",
+  "فر�� النقل والمشاغ��",
   "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
   "فلل فلج هزاع",
@@ -667,7 +639,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة القوع (فلل صحة)",
   "نقطة ثبات الروضة",
   "فرع الضبط المروري (الخزنة)",
-  "مبنى إدارات (التربية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
+  "مبنى إدارات (ا��تربية الرياضية - الاعلام الامني - مسرح الج��يمة - فرع البصمة)",
   "1 Project",
   "مركز شرطة سويحان",
   "مركز شرطة الهير",
@@ -704,6 +676,7 @@ export default function AlAinMap({
   const [currentStyle, setCurrentStyle] = useState<keyof typeof MAPBOX_STYLES>("style2")
   const router = useRouter()
   const markersRef = useRef<{ [key: string]: any }>({})
+  const markerStyleSheetRef = useRef<HTMLStyleElement | null>(null)
   const [lng] = useState(55.74)
   const [lat] = useState(24.13)
   const [zoom] = useState(10)
@@ -815,9 +788,10 @@ export default function AlAinMap({
           coordinates: getMarkerCoordinates(markerName),
         }
 
-        if (rightSliderRef?.current?.openLeftSlider) {
-          rightSliderRef.current.openLeftSlider(projectData)
-        }
+        const leftSliderEvent = new CustomEvent("openLeftSlider", {
+          detail: { project: projectData, source: "map", timestamp: Date.now() },
+        })
+        window.dispatchEvent(leftSliderEvent)
 
         const event = new CustomEvent("markerHovered", {
           detail: { project: projectData },
@@ -847,7 +821,7 @@ export default function AlAinMap({
     const nameMap: { [key: string]: string } = {
       "قسم موسيقى شرطة أبوظبي": "Abu Dhabi Police Music Department",
       "إدارة التأهيل الشرطي - الفوعة": "Police Rehabilitation Department - Al Foua",
-      "مركز شرطة هيلي": "Hili Police Station",
+      "��ركز شرطة هيلي": "Hili Police Station",
       "1 Project": "Al Ain Development Project",
       "مركز شرطة الوقن": "Al Wagan Police Station",
       "ساحة حجز المركبات -asad": "Vehicle Impound Facility - Asad",
@@ -1025,7 +999,9 @@ export default function AlAinMap({
 
       const styleSheet = document.createElement("style")
       styleSheet.textContent = markerStyles
+      styleSheet.setAttribute("data-al-ain-marker-style", "true")
       document.head.appendChild(styleSheet)
+      markerStyleSheetRef.current = styleSheet
 
       map.current.on("load", () => {
         setMapLoaded(true)
@@ -1048,6 +1024,23 @@ export default function AlAinMap({
         const canvas = map.current.getCanvas()
         if (canvas) {
           canvas.style.filter = "contrast(1.2) saturate(1.5) brightness(0.9)"
+        }
+
+        // Add in-container dark mask below markers but above map canvas
+        try {
+          const container = mapContainer.current
+          if (container && !container.querySelector('#alainmap-dark-mask')) {
+            const mask = document.createElement('div')
+            mask.id = 'alainmap-dark-mask'
+            mask.style.position = 'absolute'
+            mask.style.inset = '0'
+            mask.style.background = 'rgba(0, 0, 0, 0.45)'
+            mask.style.pointerEvents = 'none'
+            mask.style.zIndex = '5'
+            container.appendChild(mask)
+          }
+        } catch (e) {
+          console.warn('Failed to add dark mask overlay:', e)
         }
 
         // Create markers for police locations
@@ -1137,10 +1130,16 @@ export default function AlAinMap({
         }
       })
 
-      // Error handler for map
+      // Error handler for map (ignore benign AbortError from tile cancellations)
       map.current.on("error", (e: any) => {
-        console.error("Map error:", e.error)
-        setMapError("Map rendering error occurred")
+        const err = e?.error
+        const name = err?.name || ""
+        const message = err?.message || String(err || "")
+        if (name === "AbortError" || message.toLowerCase().includes("abort")) {
+          return
+        }
+        console.error("Map error:", err)
+        setMapError(`Map rendering error occurred: ${message}`)
       })
 
       // Zoom event handler
@@ -1186,13 +1185,6 @@ export default function AlAinMap({
       map.current.on("click", () => {
         setClickedMarker(null)
 
-        Object.keys(markersRef.current).forEach((markerName) => {
-          const tooltip = document.getElementById(`tooltip-${markerName}`)
-          if (tooltip) {
-            tooltip.classList.remove("visible")
-          }
-        })
-
         Object.entries(markersRef.current).forEach(([_, marker]) => {
           const element = marker.getElement()
           if (element) {
@@ -1216,41 +1208,38 @@ export default function AlAinMap({
         }
 
         // Safer cleanup to prevent AbortError
-        if (map.current) {
+        const mapInstance = map.current
+        if (mapInstance) {
           try {
-            // Remove all event listeners first
-            map.current.off()
-
-            // Stop any ongoing operations
-            map.current.stop()
-
-            // Set a minimal style to clear existing sources without triggering aborts
-            map.current.setStyle({
-              version: 8,
-              sources: {},
-              layers: [],
-            })
-
-            // Small delay to allow style to clear, then remove
-            setTimeout(() => {
-              try {
-                if (map.current) {
-                  map.current.remove()
-                  map.current = null
-                }
-              } catch (e) {
-                console.warn("Map already removed or error during removal:", e)
-              }
-            }, 50)
-          } catch (e) {
-            // If setStyle fails, try immediate removal
-            try {
-              map.current.remove()
-              map.current = null
-            } catch (removeError) {
-              console.warn("Error during map removal:", removeError)
-            }
+            mapInstance.off()
+          } catch (listenerError) {
+            console.warn("Error removing map listeners:", listenerError)
           }
+
+          try {
+            mapInstance.stop()
+          } catch (stopError) {
+            console.warn("Error stopping map rendering:", stopError)
+          }
+
+          if (mapRef && mapRef.current === mapInstance) {
+            mapRef.current = null
+          }
+
+          map.current = null
+
+          requestAnimationFrame(() => {
+            try {
+              mapInstance.remove()
+            } catch (removeError) {
+              console.warn("Map already removed or error during removal:", removeError)
+            }
+          })
+        }
+
+        if (markerStyleSheetRef.current && document.head.contains(markerStyleSheetRef.current)) {
+          document.head.removeChild(markerStyleSheetRef.current)
+          markerStyleSheetRef.current = null
         }
 
         document.querySelectorAll("style[data-marker-style]").forEach((el) => el.remove())
@@ -1291,11 +1280,14 @@ export default function AlAinMap({
         "2 Projects",
         "مركز شرطة زاخر",
         "مركز شرطة المربعة",
-        "ساحة حجز المركبات -asad",
+        "ساحة حجز ال��ركبات -asad",
         "ساحة حجز المركبات -asad",
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
         "مركز شرطةasad",
+        "ميدان الشرطة بدع بنت سعود",
+        "مركز شرطة الساد",
+        "ساحة حجز المركبات - الساد",
       ]
 
       if (labeledMarkers.includes(name)) {
@@ -1324,10 +1316,19 @@ export default function AlAinMap({
             positionClass = "position-3" // Right
             break
           case "مركز شرطة هيلي":
-            positionClass = "position-7" // Left
+            positionClass = "position-3" // Right
             break
           case "مركز شرطةasad":
             positionClass = "position-3" // Right
+            break
+          case "ميدان الشرطة بدع بنت سعود":
+            positionClass = "position-7" // Left
+            break
+          case "مركز شرطة الساد":
+            positionClass = "position-3" // Right
+            break
+          case "ساحة حجز المركبات - الساد":
+            positionClass = "position-5" // Bottom
             break
           default:
             positionClass = "position-1" // Default to Top
@@ -1343,16 +1344,6 @@ export default function AlAinMap({
         markerElement.addEventListener("mouseenter", (e) => {
           e.stopPropagation()
           setHoveredMarker(name)
-
-          let tooltip = document.getElementById(`tooltip-${name}`)
-          if (!tooltip) {
-            tooltip = document.createElement("div")
-            tooltip.id = `tooltip-${name}`
-            tooltip.className = "marker-tooltip"
-            tooltip.textContent = name
-            markerElement.appendChild(tooltip)
-          }
-          tooltip.classList.add("visible")
 
           Object.entries(markersRef.current).forEach(([markerName, marker]) => {
             const element = marker.getElement()
@@ -1375,11 +1366,6 @@ export default function AlAinMap({
           if (clickedMarker !== name) {
             setHoveredMarker(null)
 
-            const tooltip = document.getElementById(`tooltip-${name}`)
-            if (tooltip) {
-              tooltip.classList.remove("visible")
-            }
-
             Object.entries(markersRef.current).forEach(([_, marker]) => {
               const element = marker.getElement()
               if (element) {
@@ -1398,26 +1384,12 @@ export default function AlAinMap({
           setHoveredMarker(name)
           setClickedMarker(name)
 
-          let tooltip = document.getElementById(`tooltip-${name}`)
-          if (!tooltip) {
-            tooltip = document.createElement("div")
-            tooltip.id = `tooltip-${name}`
-            tooltip.className = "marker-tooltip"
-            tooltip.textContent = name
-            markerElement.appendChild(tooltip)
-          }
-          tooltip.classList.add("visible")
-
           Object.entries(markersRef.current).forEach(([markerName, marker]) => {
             const element = marker.getElement()
             if (element) {
               if (markerName !== name) {
                 element.classList.add("marker-dimmed")
                 element.style.opacity = "0.2"
-                const otherTooltip = document.getElementById(`tooltip-${markerName}`)
-                if (otherTooltip) {
-                  otherTooltip.classList.remove("visible")
-                }
               } else {
                 element.classList.add("marker-highlighted")
                 element.style.opacity = "1"
@@ -1468,11 +1440,14 @@ export default function AlAinMap({
         "7 Projects",
         "2 Projects",
         "مركز شرطة زاخر",
-        "مركز شرطة المربعة",
+        "مركز شرطة ��لمربعة",
         "ساحة حجز المركبات -asad",
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
         "مركز شرطةasad",
+        "ميدان الشرطة بدع بنت سعود",
+        "مر��ز شرطة الساد",
+        "ساحة حجز المركبات - الساد",
       ]
 
       if (labeledMarkersArray.includes(name)) {
@@ -1486,6 +1461,46 @@ export default function AlAinMap({
         label.className = "marker-label"
         label.textContent = name
         label.setAttribute("aria-label", name)
+
+        // Hover behavior on label: highlight this marker and dim others
+        label.addEventListener("mouseenter", (e) => {
+          e.stopPropagation()
+          setHoveredMarker(name)
+
+          Object.entries(markersRef.current).forEach(([markerName, marker]) => {
+            const element = marker.getElement()
+            if (element) {
+              if (markerName !== name) {
+                element.classList.add("marker-dimmed")
+                element.style.opacity = "0.2"
+              } else {
+                element.classList.add("marker-highlighted")
+                element.style.opacity = "1"
+                element.style.zIndex = "1000"
+                element.style.filter = "drop-shadow(0 0 8px rgba(0, 204, 255, 0.8))"
+              }
+            }
+          })
+        })
+
+        // Reset on label mouse leave unless clicked
+        label.addEventListener("mouseleave", (e) => {
+          e.stopPropagation()
+          if (clickedMarker !== name) {
+            setHoveredMarker(null)
+            Object.entries(markersRef.current).forEach(([_, marker]) => {
+              const element = marker.getElement()
+              if (element) {
+                element.classList.remove("marker-dimmed")
+                element.classList.remove("marker-highlighted")
+                element.style.opacity = ""
+                element.style.zIndex = ""
+                element.style.filter = ""
+              }
+            })
+          }
+        })
+
         markerElement.appendChild(label)
       }
 
@@ -1563,7 +1578,7 @@ export default function AlAinMap({
 
   const getMarkerAlignment = (markerName: string): string => {
     const leftAligned = ["مركز شرطة زاخر", "ساحة حجز المركبات -asad"]
-    const rightAligned = ["16 Projects", "7 Projects", "2 Projects", "مركز شرطة المربعة"]
+    const rightAligned = ["16 Projects", "7 Projects", "2 Projects", "مركز شرطة المربعة", "مركز شرطة هيل��"]
     const topAligned = ["فلل للادرات الشرطية عشارج"]
 
     if (leftAligned.includes(markerName)) {
@@ -1635,8 +1650,7 @@ export default function AlAinMap({
 
   return (
     <div className="relative w-full h-full">
-      <div ref={mapContainer} className="w-full h-full" />
-      <div className="absolute inset-0 bg-black/25 pointer-events-none" />
+      <div ref={mapContainer} className="relative w-full h-full" />
 
       <AnimatedControls
         onResetView={() => {

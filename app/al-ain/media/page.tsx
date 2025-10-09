@@ -181,9 +181,11 @@ export default function MediaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white pb-20 md:pb-6">
+    <div className="min-h-screen relative bg-gradient-to-b from-slate-950 via-slate-900 to-[#0b1020] text-white pb-20 md:pb-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-purple-900 border-b border-cyan-400 shadow-lg shadow-cyan-400/20">
+      <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-20 pointer-events-none z-0"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(14,165,233,0.08),transparent_60%)] pointer-events-none z-0"></div>
+      <div className="relative z-10">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
             <Button
@@ -207,9 +209,9 @@ export default function MediaPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 relative z-10">
         {/* Filters */}
-        <Card className="mb-4 sm:mb-6 bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 border-cyan-400 border-2 shadow-lg shadow-cyan-400/20">
+        <Card className="mb-4 sm:mb-6 bg-white/5 backdrop-blur-md ring-1 ring-white/10 shadow-[0_10px_40px_-15px_rgba(14,165,233,0.25)]">
           <CardContent className="p-3 sm:p-4">
             <div className="flex flex-col gap-3 sm:gap-4">
               {/* Search */}
@@ -220,7 +222,7 @@ export default function MediaPage() {
                     placeholder="Search media..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 h-10 sm:h-9 bg-gradient-to-r from-slate-800 to-blue-900 border-cyan-400 text-cyan-100 placeholder-cyan-300 focus:border-cyan-300 focus:ring-cyan-300 transition-all duration-300 text-base sm:text-sm"
+                    className="pl-10 h-10 sm:h-9 bg-white/10 border-white/10 text-white placeholder-white/60 focus:border-cyan-400 focus:ring-cyan-400 transition-all duration-300 text-base sm:text-sm"
                   />
                 </div>
               </div>
@@ -228,31 +230,31 @@ export default function MediaPage() {
               {/* Type Filter */}
               <div className="w-full sm:w-48">
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="h-10 sm:h-9 bg-gradient-to-r from-slate-800 to-blue-900 border-cyan-400 text-cyan-100 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300 text-base sm:text-sm">
+                  <SelectTrigger className="h-10 sm:h-9 bg-white/10 border-white/10 text-white hover:border-cyan-400/40 transition-all duration-300 text-base sm:text-sm">
                     <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
-                  <SelectContent className="bg-gradient-to-br from-slate-900 to-blue-900 border-cyan-400">
+                  <SelectContent className="bg-slate-900/90 backdrop-blur-md border-white/10">
                     <SelectItem
                       value="all"
-                      className="text-cyan-100 hover:bg-cyan-600/20 text-base sm:text-sm"
+                      className="text-white hover:bg-white/10 text-base sm:text-sm"
                     >
                       All Types
                     </SelectItem>
                     <SelectItem
                       value="image"
-                      className="text-cyan-100 hover:bg-cyan-600/20 text-base sm:text-sm"
+                      className="text-white hover:bg-white/10 text-base sm:text-sm"
                     >
                       Images
                     </SelectItem>
                     <SelectItem
                       value="video"
-                      className="text-cyan-100 hover:bg-cyan-600/20 text-base sm:text-sm"
+                      className="text-white hover:bg-white/10 text-base sm:text-sm"
                     >
                       Videos
                     </SelectItem>
                     <SelectItem
                       value="document"
-                      className="text-cyan-100 hover:bg-cyan-600/20 text-base sm:text-sm"
+                      className="text-white hover:bg-white/10 text-base sm:text-sm"
                     >
                       Documents
                     </SelectItem>
@@ -273,7 +275,7 @@ export default function MediaPage() {
           {filteredItems.map((item) => (
             <Card
               key={item.id}
-              className="bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 border-cyan-400 border-2 shadow-lg shadow-cyan-400/20 hover:shadow-xl hover:shadow-cyan-400/30 transition-all duration-300"
+              className="bg-white/5 backdrop-blur-md ring-1 ring-white/10 hover:ring-cyan-400/40 shadow-[0_10px_40px_-15px_rgba(14,165,233,0.35)] transition-all duration-300"
             >
               <CardHeader className="pb-2 sm:pb-4">
                 <CardTitle className="flex items-start sm:items-center gap-2 text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text font-bold text-sm sm:text-base leading-tight">
@@ -287,7 +289,7 @@ export default function MediaPage() {
                 {/* Thumbnail */}
                 {item.thumbnail && (
                   <div className="mb-3 sm:mb-4">
-                    <div className="relative w-full h-32 sm:h-40 rounded-lg overflow-hidden border border-cyan-400/30">
+                    <div className="relative w-full h-32 sm:h-40 rounded-lg overflow-hidden border border-white/10">
                       <img
                         src={item.thumbnail}
                         alt={item.name}
@@ -331,14 +333,14 @@ export default function MediaPage() {
                 <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2">
                   <Button
                     variant="outline"
-                    className="flex-1 h-9 sm:h-8 bg-gradient-to-r from-cyan-600 to-blue-600 border-cyan-400 text-white hover:from-cyan-500 hover:to-blue-500 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300 text-sm"
+                    className="flex-1 h-9 sm:h-8 bg-gradient-to-r from-cyan-600 to-blue-600 border-white/10 text-white hover:from-cyan-500 hover:to-blue-500 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300 text-sm"
                   >
                     <Eye className="w-4 h-4 mr-2" />
                     View
                   </Button>
                   <Button
                     variant="outline"
-                    className="flex-1 h-9 sm:h-8 bg-gradient-to-r from-purple-600 to-blue-600 border-purple-400 text-white hover:from-purple-500 hover:to-blue-500 hover:shadow-lg hover:shadow-purple-400/30 transition-all duration-300 text-sm"
+                    className="flex-1 h-9 sm:h-8 bg-gradient-to-r from-purple-600 to-blue-600 border-white/10 text-white hover:from-purple-500 hover:to-blue-500 hover:shadow-lg hover:shadow-purple-400/30 transition-all duration-300 text-sm"
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Download

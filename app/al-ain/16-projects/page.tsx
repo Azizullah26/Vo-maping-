@@ -166,6 +166,14 @@ const markerStyles = `
 
 .mapboxgl-ctrl-bottom-right { display: none !important; }
 
+/* Subtle dark-greenish tint to map canvas only (keeps HTML markers/labels bright) */
+.map-tinted canvas {
+  filter: brightness(0.6) saturate(0.85) hue-rotate(35deg) contrast(0.92);
+  transition: filter 0.2s ease;
+  left: 7px;
+  position: absolute;
+}
+
 @media (max-width: 768px) {
   .marker-label {
     font-size: 12px;
@@ -208,7 +216,7 @@ const locations: LocationFeature[] = [
     coordinates: [55.722557288830416, 24.19360483409058],
   },
   {
-    place: "إدارة الأسلحة والمتفجرات",
+    place: "إدارة الأسلحة والمت��جرات",
     coordinates: [55.72427804325733, 24.19797500690261],
   },
   {
@@ -240,6 +248,26 @@ const locations: LocationFeature[] = [
     coordinates: [55.71923885266557, 24.196245342189755],
   },
 ]
+
+const manualLabelOffsets: Record<string, { left?: number; top?: number }> = {
+  "ادارة المهام الخاصة العين": { left: 334 },
+  "مركز شرطة فلج هزاع": { left: 13, top: -139 },
+  "إدارة المرور والترخيص": { left: 218, top: 171 },
+  "قسم هندسة المرور": { left: 335, top: 83 },
+  "المتابعة الشرطية والرعاية اللاحقة": { left: -131, top: 169 },
+  "إدار�� الأسلحة والمتفجرات": { left: -130, top: -99 },
+  "فلل فلج هزاع": { left: -100, top: 127 },
+  "الضبط المروري والمراسم": { left: -321 },
+  "إدارة الدوريات الخاصة": { left: -273 },
+  "قسم التفتيش الأمني K9": { left: 196, top: 165 },
+  "سكن أفراد المرور": { left: 226, top: -178 },
+  "ساحة حجز المركبات فلج هزاع": { left: 301 },
+  "مبنى التحريات والمخدرات": { left: -160, top: -41 },
+}
+
+const manualCircleOffsets: Record<string, { left: number; top: number }> = {
+  "المتابعة الشرطية والرعاية اللاحقة": { left: 30, top: 20 },
+}
 
 const CENTER_POINT: [number, number] = [55.72443, 24.1925] // Central point of all facilities
 const LABEL_RADIUS = 0.003 // Distance from center to labels (~300m)
@@ -406,6 +434,15 @@ export default function SixteenProjectsPage() {
         mapRef.current.getCanvas().style.filter = "contrast(1.15) saturate(1.2) brightness(0.95)"
       })
 
+      // Ignore benign AbortError from tile cancellations
+      mapRef.current.on("error", (e: any) => {
+        const err = e?.error
+        const name = err?.name || ""
+        const message = err?.message || String(err || "")
+        if (name === "AbortError" || message.toLowerCase().includes("abort")) return
+        console.error("Map error:", err)
+      })
+
       mapRef.current.on("zoom", () => {
         try {
           debouncedUpdateMarkers()
@@ -530,7 +567,12 @@ export default function SixteenProjectsPage() {
       shadow.className = "marker-shadow"
 
       const circleElement = document.createElement("div")
-      circleElement.className = "marker-circle"
+  circleElement.className = "marker-circle"
+  const circleManual = manualCircleOffsets[name]
+  if (circleManual) {
+    circleElement.style.left = `${circleManual.left}px`
+    circleElement.style.top = `${circleManual.top}px`
+  }
 
       const label = document.createElement("button")
       label.className = "marker-label"
@@ -559,9 +601,18 @@ export default function SixteenProjectsPage() {
         offsetX += 60
       }
 
-      label.style.left = `calc(50% + ${offsetX}px)`
-      label.style.top = `calc(50% + ${offsetY}px)`
+      const manual = manualLabelOffsets[name]
+      if (manual) {
+        if (typeof manual.left === "number") label.style.left = `${manual.left}px`
+        else label.style.left = `calc(50% + ${offsetX}px)`
+        if (typeof manual.top === "number") label.style.top = `${manual.top}px`
+        else label.style.top = `calc(50% + ${offsetY}px)`
+      } else {
+        label.style.left = `calc(50% + ${offsetX}px)`
+        label.style.top = `calc(50% + ${offsetY}px)`
+      }
       label.style.transform = "translate(-50%, -50%)"
+
 
       label.addEventListener("mouseenter", (e) => {
         e.stopPropagation()
@@ -660,9 +711,9 @@ export default function SixteenProjectsPage() {
 
       <div className="flex h-screen">
         <div className="flex-1 relative">
-          <div ref={mapContainerRef} className="relative w-full h-full overflow-hidden" />
+          <div ref={mapContainerRef} className="relative w-full h-full overflow-hidden map-tinted" />
 
-          <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-800/30 via-slate-800/10 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 z-9 bg-black/45 pointer-events-none" />
         </div>
 
         {selectedLocation && (

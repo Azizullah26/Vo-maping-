@@ -250,9 +250,15 @@ export default function AbuDhabiMap({
         setMarkers(newMarkers)
       })
 
-      map.current.on("error", (e) => {
-        console.error("Mapbox error:", e)
-        setMapError(`Map error: ${e.error?.message || "Unknown error"}`)
+      map.current.on("error", (e: any) => {
+        const err = e?.error
+        const name = err?.name || ""
+        const message = err?.message || String(err || "")
+        if (name === "AbortError" || message.toLowerCase().includes("abort")) {
+          return
+        }
+        console.error("Mapbox error:", err)
+        setMapError(`Map error: ${message || "Unknown error"}`)
       })
     } catch (err) {
       console.error("Error initializing map:", err)

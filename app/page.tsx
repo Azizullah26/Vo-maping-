@@ -227,7 +227,6 @@ export default function HomePage() {
           onClose={closeRightSlider}
           toggleProjects={toggleRightSlider}
           openLeftSlider={openLeftSlider}
-          ref={rightSliderRef}
         />
       </ErrorBoundary>
     </div>
