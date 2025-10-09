@@ -1344,7 +1344,7 @@ export default function AlAinMap({
             positionClass = "position-3" // Right
             break
           case "نادي ضباط الشرطة":
-            positionClass = "position-1" // Top
+            positionClass = "position-7" // Left
             break
           case "فرع النقل والمشاغل":
             positionClass = "position-5" // Bottom
