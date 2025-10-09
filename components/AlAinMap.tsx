@@ -345,16 +345,6 @@ const markerStyles = `
   }
   
   .marker-container.position-2 .marker-label,
-  .marker-container.position-8 .marker-label {
-    bottom: calc(100% + 45px);
-  }
-  
-  .marker-container.position-4 .marker-label,
-  .marker-container.position-6 .marker-label {
-    top: calc(100% + 45px);
-  }
-  
-  .marker-container.position-2 .marker-label,
   .marker-container.position-4 .marker-label {
     left: calc(100% + 45px);
   }
@@ -606,7 +596,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة هيلي",
   "ميدان الشرطة بدع بنت سعود",
   "متحف شرطة المربعة",
-  "مركز شرطة ا��مربعة",
+  "مركز شرطة المربعة",
   "مديرية شرطة العين",
   "فرع النقل والمشاغل",
   "نادي ضباط الشرطة",
@@ -1029,18 +1019,18 @@ export default function AlAinMap({
         // Add in-container dark mask below markers but above map canvas
         try {
           const container = mapContainer.current
-          if (container && !container.querySelector('#alainmap-dark-mask')) {
-            const mask = document.createElement('div')
-            mask.id = 'alainmap-dark-mask'
-            mask.style.position = 'absolute'
-            mask.style.inset = '0'
-            mask.style.background = 'rgba(0, 0, 0, 0.45)'
-            mask.style.pointerEvents = 'none'
-            mask.style.zIndex = '5'
+          if (container && !container.querySelector("#alainmap-dark-mask")) {
+            const mask = document.createElement("div")
+            mask.id = "alainmap-dark-mask"
+            mask.style.position = "absolute"
+            mask.style.inset = "0"
+            mask.style.background = "rgba(0, 0, 0, 0.45)"
+            mask.style.pointerEvents = "none"
+            mask.style.zIndex = "5"
             container.appendChild(mask)
           }
         } catch (e) {
-          console.warn('Failed to add dark mask overlay:', e)
+          console.warn("Failed to add dark mask overlay:", e)
         }
 
         // Create markers for police locations
@@ -1280,7 +1270,6 @@ export default function AlAinMap({
         "2 Projects",
         "مركز شرطة زاخر",
         "مركز شرطة المربعة",
-        "ساحة حجز ال��ركبات -asad",
         "ساحة حجز المركبات -asad",
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
@@ -1288,6 +1277,15 @@ export default function AlAinMap({
         "ميدان الشرطة بدع بنت سعود",
         "مركز شرطة الساد",
         "ساحة حجز المركبات - الساد",
+        "قسم موسيقى شرطة أبوظبي",
+        "مركز شرطة الهير",
+        "مركز شرطة سويحان",
+        "متحف شرطة المربعة",
+        "مديرية شرطة العين",
+        "نادي ضباط الشرطة",
+        "فرع النقل والمشاغل",
+        "مركز شرطة الوقن",
+        "مركز شرطة الجيمي",
       ]
 
       if (labeledMarkers.includes(name)) {
@@ -1316,7 +1314,7 @@ export default function AlAinMap({
             positionClass = "position-3" // Right
             break
           case "مركز شرطة هيلي":
-            positionClass = "position-3" // Right
+            positionClass = "position-7" // Left (changed from position-3)
             break
           case "مركز شرطةasad":
             positionClass = "position-3" // Right
@@ -1329,6 +1327,33 @@ export default function AlAinMap({
             break
           case "ساحة حجز المركبات - الساد":
             positionClass = "position-5" // Bottom
+            break
+          case "قسم موسيقى شرطة أبوظبي":
+            positionClass = "position-3" // Right
+            break
+          case "مركز شرطة الهير":
+            positionClass = "position-3" // Right
+            break
+          case "مركز شرطة سويحان":
+            positionClass = "position-7" // Left
+            break
+          case "متحف شرطة المربعة":
+            positionClass = "position-1" // Top
+            break
+          case "مديرية شرطة العين":
+            positionClass = "position-3" // Right
+            break
+          case "نادي ضباط الشرطة":
+            positionClass = "position-1" // Top
+            break
+          case "فرع النقل والمشاغل":
+            positionClass = "position-5" // Bottom
+            break
+          case "مركز شرطة الوقن":
+            positionClass = "position-3" // Right
+            break
+          case "مركز شرطة الجيمي":
+            positionClass = "position-7" // Left
             break
           default:
             positionClass = "position-1" // Default to Top
@@ -1435,19 +1460,29 @@ export default function AlAinMap({
         circleElement.appendChild(numberElement)
       }
 
+      // Updated labeledMarkersArray to include new markers
       const labeledMarkersArray = [
         "16 Projects",
         "7 Projects",
         "2 Projects",
         "مركز شرطة زاخر",
-        "مركز شرطة ��لمربعة",
+        "مركز شرطة المربعة",
         "ساحة حجز المركبات -asad",
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
         "مركز شرطةasad",
         "ميدان الشرطة بدع بنت سعود",
-        "مر��ز شرطة الساد",
+        "مركز شرطة الساد",
         "ساحة حجز المركبات - الساد",
+        "قسم موسيقى شرطة أبوظبي",
+        "مركز شرطة الهير",
+        "مركز شرطة سويحان",
+        "متحف شرطة المربعة",
+        "مديرية شرطة العين",
+        "نادي ضباط الشرطة",
+        "فرع النقل والمشاغل",
+        "مركز شرطة الوقن",
+        "مركز شرطة الجيمي",
       ]
 
       if (labeledMarkersArray.includes(name)) {
@@ -1578,8 +1613,23 @@ export default function AlAinMap({
 
   const getMarkerAlignment = (markerName: string): string => {
     const leftAligned = ["مركز شرطة زاخر", "ساحة حجز المركبات -asad"]
-    const rightAligned = ["16 Projects", "7 Projects", "2 Projects", "مركز شرطة المربعة", "مركز شرطة هيل��"]
-    const topAligned = ["فلل للادرات الشرطية عشارج"]
+    // Updated rightAligned to include new markers and adjusted 'مركز شرطة هيلي'
+    const rightAligned = [
+      "16 Projects",
+      "7 Projects",
+      "2 Projects",
+      "مركز شرطة المربعة",
+      "مركز شرطة هيلي",
+      "مركز شرطةasad",
+      "مركز شرطة الجيمي",
+      "مركز شرطة الوقن",
+      "مديرية شرطة العين",
+      "مركز شرطة الهير",
+      "قسم موسيقى شرطة أبوظبي",
+      "مركز شرطة الساد",
+    ]
+    const topAligned = ["فلل للادرات الشرطية عشارج", "نادي ضباط الشرطة", "متحف شرطة المربعة"]
+    const bottomAligned = ["فرع النقل والمشاغل", "ساحة حجز المركبات - الساد"]
 
     if (leftAligned.includes(markerName)) {
       return "left-aligned"
@@ -1587,6 +1637,8 @@ export default function AlAinMap({
       return "right-aligned"
     } else if (topAligned.includes(markerName)) {
       return "top-aligned"
+    } else if (bottomAligned.includes(markerName)) {
+      return "bottom-aligned"
     }
     return "center-aligned"
   }
