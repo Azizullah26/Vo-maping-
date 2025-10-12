@@ -1,39 +1,25 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import {
-  ArrowLeft,
-  Search,
-  ImageIcon,
-  Video,
-  FileText,
-  Download,
-  Eye,
-} from "lucide-react";
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
+import { ArrowLeft, Search, ImageIcon, Video, FileText, Download, Eye } from "lucide-react"
 
 interface MediaItem {
-  id: string;
-  name: string;
-  type: "image" | "video" | "document";
-  url: string;
-  thumbnail?: string;
-  size: number;
-  uploadDate: string;
-  project?: string;
-  tags: string[];
-  description?: string;
+  id: string
+  name: string
+  type: "image" | "video" | "document"
+  url: string
+  thumbnail?: string
+  size: number
+  uploadDate: string
+  project?: string
+  tags: string[]
+  description?: string
 }
 
 const mockMediaItems: MediaItem[] = [
@@ -48,8 +34,7 @@ const mockMediaItems: MediaItem[] = [
     uploadDate: "2024-01-15",
     project: "16-projects",
     tags: ["architecture", "exterior", "cultural-center"],
-    description:
-      "Exterior architectural view of the Al Ain Cultural Center showing modern design elements",
+    description: "Exterior architectural view of the Al Ain Cultural Center showing modern design elements",
   },
   {
     id: "2",
@@ -88,8 +73,7 @@ const mockMediaItems: MediaItem[] = [
     uploadDate: "2024-01-08",
     project: "1-project",
     tags: ["aerial", "oasis", "landscape"],
-    description:
-      "Drone photography of Al Ain Oasis showing the natural landscape",
+    description: "Drone photography of Al Ain Oasis showing the natural landscape",
   },
   {
     id: "5",
@@ -104,20 +88,19 @@ const mockMediaItems: MediaItem[] = [
     tags: ["interior", "police", "design"],
     description: "Interior design concept for Al Saad Police Center",
   },
-];
+]
 
 export default function MediaPage() {
-  const router = useRouter();
-  const [mediaItems, setMediaItems] = useState<MediaItem[]>(mockMediaItems);
-  const [filteredItems, setFilteredItems] =
-    useState<MediaItem[]>(mockMediaItems);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
-  const [projectFilter, setProjectFilter] = useState<string>("all");
-  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
+  const router = useRouter()
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>(mockMediaItems)
+  const [filteredItems, setFilteredItems] = useState<MediaItem[]>(mockMediaItems)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [typeFilter, setTypeFilter] = useState<string>("all")
+  const [projectFilter, setProjectFilter] = useState<string>("all")
+  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null)
 
   useEffect(() => {
-    let filtered = mediaItems;
+    let filtered = mediaItems
 
     // Apply search filter
     if (searchTerm) {
@@ -125,60 +108,56 @@ export default function MediaPage() {
         (item) =>
           item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.tags.some((tag) =>
-            tag.toLowerCase().includes(searchTerm.toLowerCase()),
-          ),
-      );
+          item.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase())),
+      )
     }
 
     // Apply type filter
     if (typeFilter !== "all") {
-      filtered = filtered.filter((item) => item.type === typeFilter);
+      filtered = filtered.filter((item) => item.type === typeFilter)
     }
 
     // Apply project filter
     if (projectFilter !== "all") {
-      filtered = filtered.filter((item) => item.project === projectFilter);
+      filtered = filtered.filter((item) => item.project === projectFilter)
     }
 
-    setFilteredItems(filtered);
-  }, [searchTerm, typeFilter, projectFilter, mediaItems]);
+    setFilteredItems(filtered)
+  }, [searchTerm, typeFilter, projectFilter, mediaItems])
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return (
-      Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
-    );
-  };
+    if (bytes === 0) return "0 Bytes"
+    const k = 1024
+    const sizes = ["Bytes", "KB", "MB", "GB"]
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+  }
 
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "image":
-        return <ImageIcon className="w-4 h-4" />;
+        return <ImageIcon className="w-4 h-4" />
       case "video":
-        return <Video className="w-4 h-4" />;
+        return <Video className="w-4 h-4" />
       case "document":
-        return <FileText className="w-4 h-4" />;
+        return <FileText className="w-4 h-4" />
       default:
-        return <FileText className="w-4 h-4" />;
+        return <FileText className="w-4 h-4" />
     }
-  };
+  }
 
   const getTypeColor = (type: string) => {
     switch (type) {
       case "image":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800"
       case "video":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 text-blue-800"
       case "document":
-        return "bg-purple-100 text-purple-800";
+        return "bg-purple-100 text-purple-800"
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800"
     }
-  };
+  }
 
   return (
     <div className="min-h-screen relative bg-gradient-to-b from-slate-950 via-slate-900 to-[#0b1020] text-white pb-20 md:pb-6">
@@ -234,28 +213,16 @@ export default function MediaPage() {
                     <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-900/90 backdrop-blur-md border-white/10">
-                    <SelectItem
-                      value="all"
-                      className="text-white hover:bg-white/10 text-base sm:text-sm"
-                    >
+                    <SelectItem value="all" className="text-white hover:bg-white/10 text-base sm:text-sm">
                       All Types
                     </SelectItem>
-                    <SelectItem
-                      value="image"
-                      className="text-white hover:bg-white/10 text-base sm:text-sm"
-                    >
+                    <SelectItem value="image" className="text-white hover:bg-white/10 text-base sm:text-sm">
                       Images
                     </SelectItem>
-                    <SelectItem
-                      value="video"
-                      className="text-white hover:bg-white/10 text-base sm:text-sm"
-                    >
+                    <SelectItem value="video" className="text-white hover:bg-white/10 text-base sm:text-sm">
                       Videos
                     </SelectItem>
-                    <SelectItem
-                      value="document"
-                      className="text-white hover:bg-white/10 text-base sm:text-sm"
-                    >
+                    <SelectItem value="document" className="text-white hover:bg-white/10 text-base sm:text-sm">
                       Documents
                     </SelectItem>
                   </SelectContent>
@@ -263,9 +230,7 @@ export default function MediaPage() {
               </div>
 
               {/* Project Filter */}
-              <div className="w-full md:w-48">
-                {/* Project filter implementation goes here */}
-              </div>
+              <div className="w-full md:w-48">{/* Project filter implementation goes here */}</div>
             </div>
           </CardContent>
         </Card>
@@ -279,9 +244,7 @@ export default function MediaPage() {
             >
               <CardHeader className="pb-2 sm:pb-4">
                 <CardTitle className="flex items-start sm:items-center gap-2 text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text font-bold text-sm sm:text-base leading-tight">
-                  <span className="flex-shrink-0 mt-1 sm:mt-0">
-                    {getTypeIcon(item.type)}
-                  </span>
+                  <span className="flex-shrink-0 mt-1 sm:mt-0">{getTypeIcon(item.type)}</span>
                   <span className="break-words">{item.name}</span>
                 </CardTitle>
               </CardHeader>
@@ -291,13 +254,12 @@ export default function MediaPage() {
                   <div className="mb-3 sm:mb-4">
                     <div className="relative w-full h-32 sm:h-40 rounded-lg overflow-hidden border border-white/10">
                       <img
-                        src={item.thumbnail}
+                        src={item.thumbnail || "/placeholder.svg"}
                         alt={item.name}
                         className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                         onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src =
-                            "/placeholder.svg?height=200&width=300&text=Image+Not+Found";
+                          const target = e.target as HTMLImageElement
+                          target.src = "/placeholder.svg?height=200&width=300&text=Image+Not+Found"
                         }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -307,19 +269,11 @@ export default function MediaPage() {
 
                 <div className="flex flex-col gap-3 sm:gap-4">
                   <div className="space-y-1">
-                    <p className="text-xs sm:text-sm text-cyan-300">
-                      Uploaded on {item.uploadDate}
-                    </p>
-                    <p className="text-xs sm:text-sm text-cyan-300">
-                      Size: {formatFileSize(item.size)}
-                    </p>
-                    {item.project && (
-                      <p className="text-xs sm:text-sm text-purple-300">
-                        Project: {item.project}
-                      </p>
-                    )}
+                    <p className="text-xs sm:text-sm text-cyan-300">Uploaded on {item.uploadDate}</p>
+                    <p className="text-xs sm:text-sm text-cyan-300">Size: {formatFileSize(item.size)}</p>
+                    {item.project && <p className="text-xs sm:text-sm text-purple-300">Project: {item.project}</p>}
                   </div>
-                  <div className="flex flex-wrap gap-1 sm:gap-2">
+                  <div className="flex flex-wrap gap-1 sm:gap-2 p-3 rounded-xl bg-gradient-to-br from-white/10 via-cyan-500/5 to-blue-500/10 backdrop-blur-md border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_4px_12px_rgba(14,165,233,0.15)]">
                     {item.tags.map((tag) => (
                       <Badge
                         key={tag}
@@ -352,5 +306,5 @@ export default function MediaPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }
