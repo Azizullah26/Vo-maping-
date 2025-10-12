@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Maximize2, RotateCcw, Search, ImageIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
 
 const models = {
   buildings: [
@@ -116,21 +115,8 @@ export default function ThreeDPage() {
 
   return (
     <div className="relative w-full h-screen bg-gray-900">
-      {/* Back Button */}
-      <div className="absolute top-4 left-4 z-50">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.back()}
-          className="text-white hover:bg-black/50 bg-black/30 backdrop-blur-sm"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Al Ain
-        </Button>
-      </div>
-
       {/* Header */}
-      <div className="bg-slate-800 p-3 sm:p-4 md:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 md:gap-0 border-b border-cyan-500/30 mx-2 sm:mx-4 md:mx-6 lg:mx-8 rounded-lg shadow-lg mt-16">
+      <div className="bg-slate-800 p-3 sm:p-4 md:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 md:gap-0 border-b border-cyan-500/30 mx-2 sm:mx-4 md:mx-6 lg:mx-8 rounded-lg shadow-lg mt-4">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
