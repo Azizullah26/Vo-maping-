@@ -3,352 +3,263 @@
 import type React from "react"
 import mapboxgl from "mapbox-gl"
 import { useEffect } from "react"
+import { cn } from "@/lib/utils"
 
 interface MapMarkerProps {
-  id: string
-  position: { top: number; left: number }
-  size?: { width: number; height: number }
-  onClick: () => void
-  onHover: (id: string | null) => void
-  hoveredLabel: string | null
-  children: React.ReactNode
-  className?: string
+  x: number
+  y: number
   isActive?: boolean
   name: string
+  size?: "small" | "medium" | "large"
   colorIndex: number
-  direction?: "default" | "left" | "right"
-  coordinates?: [number, number]
+  coordinates: [number, number]
 }
 
 const colorCombinations = [
-  ["#ffffff", "#000000"],
-  ["#ffffff", "#000000"],
-  ["#ffffff", "#000000"],
-  ["#ffffff", "#000000"],
+  ["#ffbc00", "#ff0058"],
+  ["#03a9f4", "#ff0058"],
+  ["#4dff03", "#00d0ff"],
 ]
 
-// Replace the existing getMarkerPositionClasses function with this responsive version
-const getMarkerPositionClasses = (name: string) => {
-  if (
-    name.includes("Abu Dhabi") ||
-    name.includes("Al Ain") ||
-    name.includes("Dubai") ||
-    name.includes("West Region") ||
-    name.includes("Other Cities") ||
-    name.includes("Western Region")
-  ) {
-    return "transform -translate-x-2/3 -translate-y-full -mt-2 sm:-mt-4 -ml-2 sm:-ml-4" // Responsive margins
+const MapMarker: React.FC<MapMarkerProps> = ({ isActive = false, name, size = "medium", colorIndex, coordinates }) => {
+  const sizes = {
+    small: {
+      width: "w-16 sm:w-20",
+      height: "h-6 sm:h-7",
+      text: "text-xs sm:text-sm",
+      offset: "translate-y-0",
+    },
+    medium: {
+      width: "w-20 sm:w-24",
+      height: "h-7 sm:h-8",
+      text: "text-sm",
+      offset: "translate-y-2 sm:translate-y-4",
+    },
+    large: {
+      width: "w-24 sm:w-28",
+      height: "h-8 sm:h-9",
+      text: "text-sm sm:text-base",
+      offset: "translate-y-4 sm:translate-y-8",
+    },
   }
-  return "transform -translate-x-1/2 -translate-y-full -mt-1" // Responsive positioning
-}
 
-// Add keyframes for the animations
-const animationKeyframes = `
-@keyframes pulsate {
-  0% {
-    transform: scale(0.1, 0.1);
-    opacity: 0.0;
-  }
-  50% {
-    opacity: 1.0;
-  }
-  100% {
-    transform: scale(1.2, 1.2);
-    opacity: 0;
-  }
-}
-
-@keyframes bounce {
-  0% {
-    opacity: 0;
-    transform: translateY(-2000px);
-  }
-  60% {
-    opacity: 1;
-    transform: translateY(30px);
-  }
-  80% {
-    transform: translateY(-10px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
-@keyframes flow {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.4;
-  }
-}
-`
-
-const MapMarker: React.FC<MapMarkerProps> = ({
-  id,
-  position,
-  size = { width: 50, height: 50 },
-  onClick,
-  onHover,
-  hoveredLabel,
-  children,
-  className = "",
-  isActive = false,
-  name,
-  colorIndex,
-  direction = "default",
-  coordinates,
-}) => {
   const [color1, color2] = colorCombinations[colorIndex % colorCombinations.length]
 
-  // Add the keyframes to the document
   useEffect(() => {
-    // Check if the style already exists
-    if (!document.getElementById("marker-animations")) {
-      const styleElement = document.createElement("style")
-      styleElement.id = "marker-animations"
-      styleElement.innerHTML = animationKeyframes
-      document.head.appendChild(styleElement)
+    const handleProjectHover = (event: CustomEvent) => {
+      const hoveredName = event.detail
+      const markerElement = document.querySelector(`[data-marker-name="${name}"]`)
 
-      return () => {
-        // Clean up on unmount
-        const element = document.getElementById("marker-animations")
-        if (element) {
-          element.remove()
+      if (markerElement) {
+        if (hoveredName === null) {
+          // Reset all markers
+          markerElement.classList.remove("marker-dimmed", "marker-highlighted")
+        } else if (hoveredName === name) {
+          // Highlight this marker
+          markerElement.classList.add("marker-highlighted")
+          markerElement.classList.remove("marker-dimmed")
+        } else {
+          // Dim other markers
+          markerElement.classList.add("marker-dimmed")
+          markerElement.classList.remove("marker-highlighted")
         }
       }
     }
-  }, [])
 
-  const getElementOpacity = (elementId?: string) => {
-    if (!hoveredLabel) return "opacity-100"
-    return hoveredLabel === elementId ? "opacity-100" : "opacity-30"
-  }
+    window.addEventListener("projectHover", handleProjectHover as EventListener)
+    return () => {
+      window.removeEventListener("projectHover", handleProjectHover as EventListener)
+    }
+  }, [name])
 
-  const getElementScale = (elementId?: string) => {
-    if (!hoveredLabel) return "scale-100"
-    return hoveredLabel === elementId ? "scale-110" : "scale-95"
-  }
-
-  return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => onHover(id)}
-      onMouseLeave={() => onHover(null)}
-      className={`absolute transition-all duration-300 cursor-pointer hover:scale-110 hover:shadow-lg hover:shadow-blue-500/30 ${getElementOpacity(id)} ${getElementScale(id)} ${className}`}
-      style={{
-        width: `${size.width}px`,
-        height: `${size.height}px`,
-        top: `${position.top}px`,
-        left: `${position.left}px`,
-        transform: `translate(${position.left}px, ${position.top}px)`,
-        position: "absolute",
-        willChange: "transform",
-        transformOrigin: "center center",
-        zIndex: isActive ? "20" : "10",
-      }}
-    >
+  // Special case for مركز شرطة الجيمي - only show circle
+  if (name === "مركز شرطة الجيمي") {
+    return (
       <div
-        className={`relative ${getMarkerPositionClasses(name)}`}
+        className={cn("absolute pointer-events-auto cursor-pointer transition-all duration-300", "marker-container")}
         style={{
-          transform: "translateY(-30px)",
-          animation: "bounce 1s both",
+          zIndex: isActive ? 2 : 1,
+          marginTop: "-4px",
         }}
+        data-lat={coordinates[1]}
+        data-lng={coordinates[0]}
+        data-marker-name={name}
       >
+        <div className="relative -translate-x-1/2 -translate-y-full">
+          <div
+            className={`
+              w-4 h-4 rounded-full
+              transition-all duration-200
+              animate-pulse
+              relative overflow-hidden
+              ${isActive ? "scale-110" : "scale-100"}
+            `}
+            style={{
+              background: `conic-gradient(rgb(0 0 0 / 0.75) 0 0) padding-box, 
+                         linear-gradient(45deg, ${color1}, ${color2}) border-box`,
+              border: "solid 2px transparent",
+            }}
+          >
+            <div
+              className="absolute inset-0 -z-10 opacity-75 blur-sm"
+              style={{
+                background: `linear-gradient(45deg, ${color1}, ${color2})`,
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Regular marker rendering for all other locations
+  return (
+    <div
+      className={cn("absolute pointer-events-auto cursor-pointer transition-all duration-300", "marker-container")}
+      style={{
+        zIndex: isActive ? 2 : 1,
+        marginTop: "-4px",
+      }}
+      data-lat={coordinates[1]}
+      data-lng={coordinates[0]}
+      data-marker-name={name}
+    >
+      <div className={`relative -translate-x-1/2 -translate-y-full ${sizes[size].offset}`}>
         <div
           className={`
-rounded-lg
-transition-all duration-300 flex items-center justify-center
-relative overflow-visible
-${isActive ? "scale-110" : "scale-100"}
-group
-`}
+            ${sizes[size].width} ${sizes[size].height} rounded-full
+            transition-all duration-200 flex items-center justify-center
+            animate-float relative overflow-hidden
+            ${isActive ? "scale-110" : "scale-100"}
+          `}
           style={{
-            backgroundColor: color1,
-            color: color2,
-            transition: "all 0.3s ease",
-            position: "relative",
-            boxShadow: "0 0 10px rgba(255, 255, 255, 0.5)",
-            border: "1px solid rgba(255, 255, 255, 0.3)",
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = color2
-            e.currentTarget.style.color = color1
-            const arrow = e.currentTarget.querySelector(".pointer-arrow")
-            if (arrow) arrow.style.borderTopColor = color2
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = color1
-            e.currentTarget.style.color = color2
-            const arrow = e.currentTarget.querySelector(".pointer-arrow")
-            if (arrow) arrow.style.borderTopColor = color1
+            background: `conic-gradient(rgb(0 0 0 / 0.75) 0 0) padding-box, 
+                       linear-gradient(45deg, ${color1}, ${color2}) border-box`,
+            border: "solid 4px transparent",
           }}
         >
-          <span className={`font-bold font-calvin truncate px-2 relative z-10`}>{name}</span>
           <div
-            className="pointer-arrow absolute w-0 h-0 left-1/2 -bottom-2 -translate-x-1/2"
+            className="absolute inset-0 -z-10 opacity-75 blur-md"
             style={{
-              borderLeft: "8px solid transparent",
-              borderRight: "8px solid transparent",
-              borderTop: `8px solid ${color1}`,
-              zIndex: 5,
-              filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))",
+              background: `linear-gradient(45deg, ${color1}, ${color2})`,
             }}
           />
+
+          <span className={`${sizes[size].text} font-semibold text-white truncate px-2 relative z-10`}>{name}</span>
         </div>
 
-        {/* Add dashed lines with direction support - FUTURISTIC VERSION */}
-        {direction === "left" ? (
-          <>
-            {/* Left-pointing dashed line - FUTURISTIC */}
-            <div
-              className="absolute right-full top-1/2 -translate-y-1/2 h-[2px] w-[50px]"
-              style={{
-                background: "linear-gradient(90deg, #00f2fe, #4facfe, #00f2fe)",
-                backgroundSize: "200% auto",
-                animation: "flow 3s linear infinite",
-                boxShadow: "0 0 8px rgba(0, 242, 254, 0.7)",
-                opacity: 0.8,
-              }}
-            ></div>
-            {/* Circle at the end of the line with pulse effect */}
-            <div
-              className="absolute right-[calc(100%+50px)] top-1/2 -translate-y-1/2 w-2 h-2 rounded-full"
-              style={{
-                background: "radial-gradient(circle, #4facfe 0%, #00f2fe 100%)",
-                boxShadow: "0 0 10px #00f2fe, 0 0 20px rgba(0, 242, 254, 0.5)",
-              }}
-            >
-              {/* Pulse effect for the endpoint */}
-              <div
-                style={{
-                  position: "absolute",
-                  width: "14px",
-                  height: "14px",
-                  borderRadius: "50%",
-                  background: "rgba(1,4,2,0.2)",
-                  transform: "translate(-50%, -50%) rotateX(55deg)",
-                  top: "50%",
-                  left: "50%",
-                  zIndex: -1,
-                }}
-              >
-                <div
-                  style={{
-                    content: '""',
-                    position: "absolute",
-                    borderRadius: "50%",
-                    height: "20px",
-                    width: "20px",
-                    margin: "-10px 0 0 -10px",
-                    background:
-                      "radial-gradient(circle, rgba(0, 247, 255, 0.92) 0%, rgba(136, 227, 252, 1) 38%, rgba(0, 55, 207, 1) 53%, rgba(217, 0, 0, 1) 100%)",
-                    boxShadow: "0 0 1px 2px #FFFFFF",
-                    animation: "pulsate 1s ease-out infinite",
-                    animationDelay: "1.1s",
-                    opacity: 0,
-                  }}
-                />
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Circle at the end of the line with pulse effect */}
-            <div
-              className="absolute left-1/2 top-[calc(100%+50px)] -translate-x-1/2 w-2 h-2 rounded-full"
-              style={{
-                background: "radial-gradient(circle, #4facfe 0%, #00f2fe 100%)",
-                boxShadow: "0 0 10px #00f2fe, 0 0 20px rgba(0, 242, 254, 0.5)",
-              }}
-            >
-              {/* Pulse effect for the endpoint */}
-              <div
-                style={{
-                  position: "absolute",
-                  width: "14px",
-                  height: "14px",
-                  borderRadius: "50%",
-                  background: "rgba(1,4,2,0.2)",
-                  transform: "translate(-50%, -50%) rotateX(55deg)",
-                  top: "50%",
-                  left: "50%",
-                  zIndex: -1,
-                }}
-              >
-                <div
-                  style={{
-                    content: '""',
-                    position: "absolute",
-                    borderRadius: "50%",
-                    height: "20px",
-                    width: "20px",
-                    margin: "-10px 0 0 -10px",
-                    background:
-                      "radial-gradient(circle, rgba(0, 247, 255, 0.92) 0%, rgba(136, 227, 252, 1) 38%, rgba(0, 55, 207, 1) 53%, rgba(217, 0, 0, 1) 100%)",
-                    boxShadow: "0 0 1px 2px #FFFFFF",
-                    animation: "pulsate 1s ease-out infinite",
-                    animationDelay: "1.1s",
-                    opacity: 0,
-                  }}
-                />
-              </div>
-            </div>
-          </>
-        )}
+        <div className="absolute left-1/2 top-full -translate-x-1/2">
+          <div className="w-[2px] h-4 bg-white rounded-full" />
+        </div>
       </div>
-      {children}
-    </button>
+    </div>
   )
 }
 
-const markerAlignments = {
-  "Saadiyat Island": "bottom-right-aligned",
-  "Louvre Abu Dhabi": "top-right-aligned",
-  "Zayed National Museum": "bottom-left-aligned",
-  "Guggenheim Abu Dhabi": "top-aligned",
-  "New York University Abu Dhabi": "left-aligned",
+interface MarkerProps {
+  name: string
+  coordinates: [number, number]
+  alignment?: "left" | "right" | "top" | "bottom" | "bottom-left" | "top-right" | "bottom-right"
+  onClick?: (name: string) => void
+  map: mapboxgl.Map
 }
 
-export const createMapMarker = ({ name, coordinates, alignment, onClick, map }) => {
-  const el = document.createElement("div")
-  el.className = "marker"
-  el.style.backgroundColor = "white"
-  el.style.width = "10px"
-  el.style.height = "10px"
-  el.style.borderRadius = "50%"
-  el.style.cursor = "pointer"
+export function createMapMarker({ name, coordinates, alignment = "right", onClick, map }: MarkerProps) {
+  // Create marker container
+  const markerElement = document.createElement("div")
+  markerElement.className = "marker-container"
 
-  el.addEventListener("click", () => {
-    onClick(name)
+  // Special case for مركز شرطة الجيمي - only create circle
+  if (name === "مركز شرطة الجيمي") {
+    const circleElement = document.createElement("div")
+    circleElement.className = "w-4 h-4 rounded-full bg-[#E31E24] animate-pulse"
+    markerElement.appendChild(circleElement)
+
+    return new mapboxgl.Marker({
+      element: markerElement,
+      anchor: "center",
+    })
+      .setLngLat(coordinates)
+      .addTo(map)
+  }
+
+  // Regular marker creation for all other locations
+  const circleElement = document.createElement("div")
+  circleElement.className = "marker-circle"
+  markerElement.appendChild(circleElement)
+
+  const contentWrapper = document.createElement("div")
+  contentWrapper.className = "marker-content-wrapper"
+
+  const lineElement = document.createElement("div")
+  lineElement.className = "marker-dotted-line"
+  contentWrapper.appendChild(lineElement)
+
+  const textContainer = document.createElement("div")
+  textContainer.className = "marker-text-container"
+  contentWrapper.appendChild(textContainer)
+
+  const buttonElement = document.createElement("button")
+  buttonElement.className = "marker-button"
+  buttonElement.textContent = name
+  buttonElement.setAttribute("type", "button")
+  buttonElement.setAttribute("aria-label", `View details for ${name}`)
+  buttonElement.onclick = (e) => {
+    e.stopPropagation()
+    if (onClick) {
+      onClick(name)
+    }
+  }
+  textContainer.appendChild(buttonElement)
+
+  markerElement.appendChild(contentWrapper)
+  markerElement.className += ` ${alignment}-aligned`
+
+  return new mapboxgl.Marker({
+    element: markerElement,
+    anchor: "center",
   })
-
-  new mapboxgl.Marker(el).setLngLat(coordinates).addTo(map)
+    .setLngLat(coordinates)
+    .addTo(map)
 }
 
-export const getMarkerAlignment = (name: string) => {
-  return markerAlignments[name] || "right-aligned"
-}
+// Helper function to determine marker alignment
+export function getMarkerAlignment(
+  name: string,
+): "left" | "right" | "top" | "bottom" | "bottom-left" | "top-right" | "bottom-right" {
+  switch (name) {
+    // Police Stations with left alignment
+    case "مركز شرطة رماح":
+    case "مركز شرطة سويحان":
+    case "مركز شرطة زاخر":
+    case "مركز شرطة الوقن":
+      return "left"
 
-export const CUSTOM_MARKER_COORDINATES = {
-  latitude: 24.566557378557178,
-  longitude: 54.707019986771485,
+    // Police Stations with bottom alignment
+    case "مركز شرطة الساد":
+    case "ميدان الشرطة بدع بنت سعود":
+      return "bottom"
+
+    // Police Stations with top alignment
+    case "نادي ضباط الشرطة":
+    case "قسم موسيقى شرطة أبوظبي":
+    case "مديرية شرطة العين":
+    case "مركز شرطة الهير":
+      return "top"
+
+    // Police Stations with bottom-left alignment
+    case "قسم التفتيش الأمني K9":
+      return "bottom-left"
+
+    // Police Stations with bottom-right alignment
+    case "إدارة المرور والترخيص":
+    case "فرع النقل والمشاغل":
+      return "bottom-right"
+
+    // All other markers default to right alignment
+    default:
+      return "right"
+  }
 }
 
 export default MapMarker

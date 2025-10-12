@@ -1,11 +1,16 @@
-import { createClient } from "@supabase/supabase-js"
+import { Pool, type PoolClient } from "pg"
 
 // Configuration
 const MAX_RETRIES = 3
 const RETRY_DELAY_MS = 1000
+const CONNECTION_TIMEOUT_MS = 5000
 
-// Supabase client
-let supabaseClient: ReturnType<typeof createClient> | null = null
+// Create a singleton pool
+const pool = new Pool({
+  connectionString: process.env.NILEDB_POSTGRES_URL,
+  ssl: process.env.VERCEL_ENV === "production" ? { rejectUnauthorized: false } : false,
+  connectionTimeoutMillis: CONNECTION_TIMEOUT_MS,
+})
 
 // Circuit breaker state
 let circuitOpen = false
@@ -13,24 +18,6 @@ let lastFailureTime = 0
 const CIRCUIT_RESET_TIMEOUT_MS = 30000 // 30 seconds
 
 export class RobustDbClient {
-  /**
-   * Get or create the Supabase client
-   */
-  private static getSupabaseClient() {
-    if (!supabaseClient) {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-      if (!supabaseUrl || !supabaseKey) {
-        throw new Error("Missing Supabase environment variables")
-      }
-
-      supabaseClient = createClient(supabaseUrl, supabaseKey)
-    }
-
-    return supabaseClient
-  }
-
   /**
    * Execute a database query with retry logic and circuit breaker pattern
    */
@@ -57,24 +44,20 @@ export class RobustDbClient {
       }
     }
 
+    let client: PoolClient | null = null
     let attempts = 0
 
     while (attempts < retries) {
       attempts++
       try {
-        // Get Supabase client
-        const supabase = this.getSupabaseClient()
+        // Get client from pool
+        client = await pool.connect()
 
-        // Execute query using RPC
-        const { data, error } = await supabase.rpc("execute_sql", {
-          query_text: queryText,
-          query_params: params,
-        })
-
-        if (error) throw error
+        // Execute query
+        const result = await client.query(queryText, params)
 
         // Success - return the result
-        return { success: true, data: data as T }
+        return { success: true, data: result.rows as T }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Unknown database error"
         console.error(`Database query error (attempt ${attempts}/${retries}):`, errorMessage)
@@ -88,6 +71,9 @@ export class RobustDbClient {
 
         // Wait before retrying
         await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS))
+      } finally {
+        // Always release the client back to the pool
+        if (client) client.release()
       }
     }
 
@@ -100,14 +86,12 @@ export class RobustDbClient {
    */
   static async testConnection(): Promise<{ success: boolean; message: string }> {
     try {
-      const supabase = this.getSupabaseClient()
-      const { data, error } = await supabase.rpc("get_db_version")
-
-      if (error) {
-        return { success: false, message: error.message }
+      const result = await this.query("SELECT NOW() as time", [], { forceCircuit: true })
+      if (result.success) {
+        return { success: true, message: "Database connection successful" }
+      } else {
+        return { success: false, message: result.error || "Unknown error" }
       }
-
-      return { success: true, message: "Database connection successful" }
     } catch (error) {
       return {
         success: false,

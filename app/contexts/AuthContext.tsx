@@ -1,43 +1,48 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useState, useEffect, useCallback } from "react"
 
 interface AuthContextType {
   isAuthenticated: boolean
   login: (username: string, password: string) => Promise<boolean>
   logout: () => void
-  user: string | null
 }
 
-// Create a default value for the context to avoid undefined
-const defaultAuthContext: AuthContextType = {
-  isAuthenticated: true, // Always authenticated
-  login: async () => false,
-  logout: () => {},
-  user: "Guest User", // Default user
-}
-
-const AuthContext = createContext<AuthContextType>(defaultAuthContext)
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(true) // Always authenticated
-  const [user, setUser] = useState<string | null>("Guest User") // Default user
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  return (
-    <AuthContext.Provider
-      value={{ isAuthenticated, login: defaultAuthContext.login, logout: defaultAuthContext.logout, user }}
-    >
-      {children}
-    </AuthContext.Provider>
-  )
+  useEffect(() => {
+    const storedAuth = localStorage.getItem("isAuthenticated")
+    if (storedAuth === "true") {
+      setIsAuthenticated(true)
+    }
+  }, [])
+
+  const login = useCallback(async (username: string, password: string): Promise<boolean> => {
+    // In a real application, you would validate credentials against a backend
+    if (username === "ELRACE" && password === "EL1234") {
+      setIsAuthenticated(true)
+      localStorage.setItem("isAuthenticated", "true")
+      return true
+    }
+    return false
+  }, [])
+
+  const logout = useCallback(() => {
+    setIsAuthenticated(false)
+    localStorage.removeItem("isAuthenticated")
+  }, [])
+
+  return <AuthContext.Provider value={{ isAuthenticated, login, logout }}>{children}</AuthContext.Provider>
 }
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
-  if (!context) {
-    console.error("useAuth must be used within an AuthProvider")
-    return defaultAuthContext
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider")
   }
   return context
 }

@@ -1,6 +1,6 @@
-import { createClient } from "@supabase/supabase-js"
+import { Pool } from "pg"
 
-// Demo data for when database is not configured or fails
+// Demo data for when database is not configured
 const DEMO_DOCUMENTS = [
   {
     id: "doc-1",
@@ -28,138 +28,112 @@ const DEMO_DOCUMENTS = [
   },
 ]
 
-/**
- * Get the Supabase client for server-side operations.
- * Uses SUPABASE_SERVICE_ROLE_KEY for elevated privileges.
- */
-export const getSupabaseServerClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    console.warn("Missing Supabase server environment variables")
-    return null
-  }
-
-  return createClient(supabaseUrl, supabaseServiceKey)
-}
+// Database connection pool
+let pool: Pool | null = null
 
 /**
- * Get the Supabase client for client-side operations.
- * Uses NEXT_PUBLIC_SUPABASE_ANON_KEY for public access.
+ * Initialize the database connection pool
  */
-export const getSupabaseClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn("Missing Supabase client environment variables")
-    return null
-  }
-
-  return createClient(supabaseUrl, supabaseAnonKey)
-}
-
-/**
- * Check if the Supabase database connection is configured and accessible.
- */
-export async function checkDatabaseConnection(): Promise<boolean> {
+export async function initializeDatabase(): Promise<boolean> {
   try {
-    const supabase = getSupabaseServerClient()
-    if (!supabase) {
-      return false
+    if (!pool) {
+      const connectionString = process.env.NILEDB_POSTGRES_URL
+
+      if (!connectionString) {
+        console.error("Database connection string not found in environment variables")
+        return false
+      }
+
+      pool = new Pool({
+        connectionString,
+        ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 5000,
+      })
+
+      // Test the connection
+      const client = await pool.connect()
+      client.release()
+      console.log("Database connection initialized successfully")
+      return true
     }
-
-    // Perform a simple query to check connection
-    const { error } = await supabase.from("documents").select("id").limit(1)
-
-    if (error && error.code !== "42P01") {
-      // 42P01 is "undefined_table", which means table doesn't exist yet, but connection is fine
-      console.error("Supabase connection error:", error.message)
-      return false
-    }
-
     return true
   } catch (error) {
-    console.error("Database check error:", error)
+    console.error("Failed to initialize database connection:", error)
     return false
   }
 }
 
 /**
- * Initialize the database (e.g., create tables if they don't exist).
+ * Check if the database connection is working
  */
-export async function initializeDatabase(): Promise<{ success: boolean; message: string }> {
-  const isConnected = await checkDatabaseConnection()
-  if (isConnected) {
-    return { success: true, message: "Supabase database is connected and ready." }
-  } else {
-    return {
-      success: false,
-      message: "Failed to connect to Supabase database. Please ensure it's configured and tables are set up.",
+export async function checkDatabaseConnection(): Promise<boolean> {
+  try {
+    if (!pool) {
+      await initializeDatabase()
     }
+
+    if (pool) {
+      const client = await pool.connect()
+      try {
+        await client.query("SELECT 1")
+        return true
+      } finally {
+        client.release()
+      }
+    }
+    return false
+  } catch (error) {
+    console.error("Database connection check failed:", error)
+    return false
   }
 }
 
 /**
- * Execute a generic database query using Supabase RPC.
+ * Execute a database query
  */
-export async function executeQuery(
-  query: string,
-  params: any[] = [],
-): Promise<{ success: boolean; data?: any; error?: string }> {
-  const supabase = getSupabaseServerClient()
-  if (!supabase) {
-    return { success: false, error: "Supabase client not initialized." }
-  }
-
+export async function executeQuery(query: string, params: any[] = []): Promise<any> {
   try {
-    const { data, error } = await supabase.rpc("execute_sql", {
-      query_text: query,
-      query_params: params,
-    })
-
-    if (error) {
-      console.error("Supabase RPC query error:", error)
-      return { success: false, error: error.message }
+    if (!pool) {
+      const initialized = await initializeDatabase()
+      if (!initialized) {
+        throw new Error("Failed to initialize database connection")
+      }
     }
-    return { success: true, data }
+
+    const client = await pool!.connect()
+    try {
+      const result = await client.query(query, params)
+      return { success: true, data: result.rows }
+    } finally {
+      client.release()
+    }
   } catch (error) {
-    console.error("Error executing Supabase RPC query:", error)
+    console.error("Query execution failed:", error)
     return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
 /**
- * Get all documents from the database.
+ * Get all documents from the database
  */
-export async function getAllDocuments(): Promise<any[]> {
+export async function getAllDocuments() {
   const dbConfigured = await checkDatabaseConnection()
 
   if (!dbConfigured) {
-    console.warn("Database not configured, returning demo data for getAllDocuments.")
     return DEMO_DOCUMENTS
   }
 
   try {
-    const supabase = getSupabaseServerClient()
-    if (!supabase) {
-      throw new Error("Supabase client not initialized.")
-    }
+    const result = await executeQuery("SELECT * FROM documents ORDER BY created_at DESC")
 
-    const { data, error } = await supabase.from("documents").select("*").order("created_at", { ascending: false })
-
-    if (error) {
-      console.error("Error fetching all documents from Supabase:", error)
-      return DEMO_DOCUMENTS // Fallback to demo data on error
-    }
-
-    if (!data || data.length === 0) {
-      console.log("No documents found in Supabase, returning demo data.")
+    if (!result.success) {
+      console.error("Error fetching all documents:", result.error)
       return DEMO_DOCUMENTS
     }
 
-    return data.map((row: any) => ({
+    return (result.data || []).map((row: any) => ({
       id: row.id,
       title: row.title || row.name,
       description: row.description,
@@ -168,45 +142,32 @@ export async function getAllDocuments(): Promise<any[]> {
       projectId: row.project_id,
     }))
   } catch (error) {
-    console.error("Error in getAllDocuments:", error)
+    console.error("Error getting all documents:", error)
     return DEMO_DOCUMENTS
   }
 }
 
 /**
- * Get documents for a specific project.
+ * Get documents for a specific project
  */
-export async function getDocumentsByProject(projectId: string): Promise<any[]> {
+export async function getDocumentsByProject(projectId: string) {
   const dbConfigured = await checkDatabaseConnection()
 
   if (!dbConfigured) {
-    console.warn("Database not configured, returning demo data for getDocumentsByProject.")
     return DEMO_DOCUMENTS.filter((doc) => doc.projectId === projectId)
   }
 
   try {
-    const supabase = getSupabaseServerClient()
-    if (!supabase) {
-      throw new Error("Supabase client not initialized.")
-    }
+    const result = await executeQuery("SELECT * FROM documents WHERE project_id = $1 ORDER BY created_at DESC", [
+      projectId,
+    ])
 
-    const { data, error } = await supabase
-      .from("documents")
-      .select("*")
-      .eq("project_id", projectId)
-      .order("created_at", { ascending: false })
-
-    if (error) {
-      console.error("Error fetching documents by project from Supabase:", error)
-      return DEMO_DOCUMENTS.filter((doc) => doc.projectId === projectId) // Fallback to demo data on error
-    }
-
-    if (!data || data.length === 0) {
-      console.log("No documents found for project in Supabase, returning demo data.")
+    if (!result.success) {
+      console.error("Error fetching documents by project:", result.error)
       return DEMO_DOCUMENTS.filter((doc) => doc.projectId === projectId)
     }
 
-    return data.map((row: any) => ({
+    return (result.data || []).map((row: any) => ({
       id: row.id,
       title: row.title || row.name,
       description: row.description,
@@ -215,102 +176,87 @@ export async function getDocumentsByProject(projectId: string): Promise<any[]> {
       projectId: row.project_id,
     }))
   } catch (error) {
-    console.error("Error in getDocumentsByProject:", error)
+    console.error("Error getting documents by project:", error)
     return DEMO_DOCUMENTS.filter((doc) => doc.projectId === projectId)
   }
 }
 
 /**
- * Add a new document to the database.
+ * Add a new document to the database
  */
 export async function addDocument(document: {
-  name: string
-  type: string
-  size: number
-  file_path: string
-  project_id: string
-  project_name: string
-  document_type: string
-}): Promise<{ success: boolean; data?: any; error?: string }> {
+  title: string
+  description: string
+  url: string
+  projectId?: string
+}) {
   const dbConfigured = await checkDatabaseConnection()
 
   if (!dbConfigured) {
-    console.warn("Database not configured, cannot add document.")
+    console.warn("Database not configured, cannot add document")
     return { success: false, error: "Database not configured" }
   }
 
   try {
-    const supabase = getSupabaseServerClient()
-    if (!supabase) {
-      throw new Error("Supabase client not initialized.")
+    const { title, description, url, projectId } = document
+    const result = await executeQuery(
+      "INSERT INTO documents (title, description, url, project_id, created_at) VALUES ($1, $2, $3, $4, NOW()) RETURNING *",
+      [title, description, url, projectId || null],
+    )
+
+    if (!result.success) {
+      console.error("Error adding document:", result.error)
+      return { success: false, error: result.error }
     }
 
-    const { data, error } = await supabase
-      .from("documents")
-      .insert([
-        {
-          name: document.name,
-          type: document.type,
-          size: document.size,
-          file_path: document.file_path,
-          project_id: document.project_id,
-          project_name: document.project_name,
-          document_type: document.document_type,
-        },
-      ])
-      .select("id, name, file_path") // Select relevant fields to return
-
-    if (error) {
-      console.error("Error adding document to Supabase:", error)
-      return { success: false, error: error.message }
-    }
-
-    return { success: true, data: data[0] }
+    return { success: true, data: result.data[0] }
   } catch (error) {
-    console.error("Error in addDocument:", error)
+    console.error("Error adding document:", error)
     return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
 /**
- * Delete a document from the database.
+ * Delete a document from the database
  */
-export async function deleteDocument(documentId: string): Promise<{ success: boolean; data?: any; error?: string }> {
+export async function deleteDocument(documentId: string) {
   const dbConfigured = await checkDatabaseConnection()
 
   if (!dbConfigured) {
-    console.warn("Database not configured, cannot delete document.")
+    console.warn("Database not configured, cannot delete document")
     return { success: false, error: "Database not configured" }
   }
 
   try {
-    const supabase = getSupabaseServerClient()
-    if (!supabase) {
-      throw new Error("Supabase client not initialized.")
+    const result = await executeQuery("DELETE FROM documents WHERE id = $1 RETURNING *", [documentId])
+
+    if (!result.success) {
+      console.error("Error deleting document:", result.error)
+      return { success: false, error: result.error }
     }
 
-    const { data, error } = await supabase.from("documents").delete().eq("id", documentId).select("id") // Select ID to confirm deletion
-
-    if (error) {
-      console.error("Error deleting document from Supabase:", error)
-      return { success: false, error: error.message }
+    if (result.data.length === 0) {
+      return { success: false, error: "Document not found" }
     }
 
-    if (!data || data.length === 0) {
-      return { success: false, error: "Document not found or already deleted." }
-    }
-
-    return { success: true, data: data[0], message: "Document deleted successfully." }
+    return { success: true, data: result.data[0] }
   } catch (error) {
-    console.error("Error in deleteDocument:", error)
+    console.error("Error deleting document:", error)
     return { success: false, error: error instanceof Error ? error.message : "Unknown error" }
   }
 }
 
 /**
- * Get documents for a specific project (alias for getDocumentsByProject).
+ * Check if the database is configured and accessible
  */
-export async function getProjectDocuments(projectId?: string): Promise<any[]> {
+export async function isDatabaseConfigured(): Promise<boolean> {
+  return await checkDatabaseConnection()
+}
+
+/**
+ * Get documents for a specific project
+ */
+export async function getProjectDocuments(projectId?: string) {
   if (projectId) {
     return getDocumentsByProject(projectId)
   }

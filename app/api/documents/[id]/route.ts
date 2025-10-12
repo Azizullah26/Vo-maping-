@@ -1,69 +1,31 @@
-import { NextResponse } from "next/server"
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
-import type { Database } from "@/types/supabase"
+import { type NextRequest, NextResponse } from "next/server"
+import { supabase } from "@/lib/supabaseClient"
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+// GET /api/documents/[id] - Get a specific document
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const id = params.id
 
-    // Use Supabase client instead of direct pg connection
-    const supabase = createServerComponentClient<Database>({ cookies })
+    // Get document metadata from Supabase
+    const { data: document, error } = await supabase.from("documents").select("*").eq("id", id).single()
 
-    // First get the document to find the file path
-    const { data: document, error: fetchError } = await supabase.from("documents").select("*").eq("id", id).single()
-
-    if (fetchError || !document) {
-      console.error("Error fetching document:", fetchError)
-      return NextResponse.json(
-        {
-          success: false,
-          error: fetchError?.message || "Document not found",
-        },
-        { status: fetchError ? 500 : 404 },
-      )
+    if (error || !document) {
+      return NextResponse.json({ success: false, error: "Document not found" }, { status: 404 })
     }
 
-    // Delete the document from the database
-    const { error: deleteError } = await supabase.from("documents").delete().eq("id", id)
+    // Get the signed URL for the document
+    const { data: urlData, error: urlError } = await supabase.storage
+      .from("project-documents")
+      .createSignedUrl(`${document.project_id}/${document.file_path}`, 60 * 60) // 1 hour expiry
 
-    if (deleteError) {
-      console.error("Error deleting document:", deleteError)
-      return NextResponse.json(
-        {
-          success: false,
-          error: deleteError.message,
-        },
-        { status: 500 },
-      )
+    if (urlError || !urlData) {
+      return NextResponse.json({ success: false, error: "Failed to generate document URL" }, { status: 500 })
     }
 
-    // If the document has a file in storage, delete it too
-    if (document.file_path) {
-      try {
-        const { error: storageError } = await supabase.storage.from("documents").remove([document.file_path])
-
-        if (storageError) {
-          console.warn("Could not delete file from storage:", storageError)
-          // Continue anyway as the database record is deleted
-        }
-      } catch (storageErr) {
-        console.warn("Error when trying to delete file from storage:", storageErr)
-        // Continue anyway as the database record is deleted
-      }
-    }
-
-    return NextResponse.json({
-      success: true,
-    })
+    // Redirect to the signed URL
+    return NextResponse.redirect(urlData.signedUrl)
   } catch (error) {
-    console.error("Error deleting document:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    )
+    console.error("Error fetching document:", error)
+    return NextResponse.json({ success: false, error: "Failed to fetch document" }, { status: 500 })
   }
 }

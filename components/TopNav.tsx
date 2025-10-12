@@ -2,45 +2,14 @@
 
 import type React from "react"
 import Link from "next/link"
-import { MapPin, Building2, Home, Warehouse, LayoutDashboard, Building, LogOut } from "lucide-react"
+import Image from "next/image"
+import { MapPin, Building2, Filter, Home, Building, Warehouse, Shield } from "lucide-react"
 import styles from "@/styles/nav-button.module.css"
 import glowStyles from "@/styles/glow-button.module.css"
 import { cn } from "@/lib/utils"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { useState, useEffect } from "react"
-import { useAuth } from "@/app/contexts/AuthContext"
-import { PageSwipingPanel } from "@/components/PageSwipingPanel"
-import { useLoginAuth } from "@/app/contexts/LoginAuthContext"
-
-// Add this import for the scrollbar-hide utility
-import "tailwind-scrollbar-hide"
-
-// Add these styles for better mobile touch targets
-const mobileStyles = `
-  @media (max-width: 640px) {
-    .touch-target {
-      min-height: 44px;
-      min-width: 44px;
-    }
-    
-    .active-nav-item::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background-color: #06b6d4;
-    }
-
-    .active-nav-item span:last-child {
-      width: 100%;
-    }
-  }
-`
+import { useState } from "react"
 
 const navigationItems = [
   {
@@ -87,32 +56,11 @@ interface TopNavProps {
 }
 
 // Update the TopNav component to include the admin button
-function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin }: TopNavProps) {
-  const pathname = usePathname() || ""
+export function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin }: TopNavProps) {
+  const pathname = usePathname()
   const isAlAinPage = pathname === "/al-ain"
-  const isAbuDhabiPage = pathname === "/abu-dhabi" || pathname.startsWith("/abu-dhabi/")
-  const isDocumentsPage = pathname === "/al-ain/documents" || (pathname && pathname.startsWith("/al-ain/documents/"))
-  const isLivePage = pathname === "/al-ain/live"
   const [showFilters, setShowFilters] = useState(false)
   const [selectedFilters, setSelectedFilters] = useState<Record<string, boolean>>({})
-  const [isAuthReady, setIsAuthReady] = useState(false)
-  const [isPageSwipingOpen, setIsPageSwipingOpen] = useState(false)
-  const auth = useAuth()
-  const router = useRouter()
-  const isProjectsPage = pathname === "/projects-details" || pathname === "/abu-dhabi/projects"
-  const { logout, isAuthenticated } = useLoginAuth()
-
-  // Wait for auth to be ready before accessing its properties
-  useEffect(() => {
-    // Add mobile styles to head
-    const styleElement = document.createElement("style")
-    styleElement.textContent = mobileStyles
-    document.head.appendChild(styleElement)
-
-    return () => {
-      document.head.removeChild(styleElement)
-    }
-  }, [])
 
   const handleFilterChange = (categoryName: string, filterId: string) => {
     setSelectedFilters((current) => ({
@@ -123,163 +71,206 @@ function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin }: Top
 
   return (
     <>
-      {/* Logout button positioned on the map - only show on main page */}
-      {!isDocumentsPage && pathname === "/" && (
-        <button
-          onClick={logout}
-          className="fixed top-2 right-2 z-50 flex items-center space-x-1 px-2 py-1 rounded-lg bg-red-600/80 hover:bg-red-700 text-white transition-colors text-xs shadow-md"
-          title="Logout"
-        >
-          <LogOut className="h-3 w-3" />
-          <span className="hidden sm:inline">Logout</span>
-        </button>
-      )}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-white/10">
+        <div className="w-full max-w-[2000px] mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+          <div className="flex items-center justify-between min-h-[3.5rem] sm:min-h-[4rem] md:min-h-[4.5rem]">
+            {/* Left section */}
+            <div className="flex items-center gap-x-2 sm:gap-x-3 md:gap-x-4">
+              <Link
+                href="/"
+                className={cn("flex items-center gap-x-4", "rounded-md transition-transform duration-200")}
+              >
+                {isAlAinPage ? (
+                  // Special styling for Al Ain page logo
+                  <div className="logo-container-alain">
+                    <div className="logo-inner">
+                      <Image
+                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/remove%20bg%20rcc-police-logo-animation--2LfRrKuENgA7jmdeasfaIkgAiw4m3V.gif"
+                        alt="RCC Logo"
+                        width={60}
+                        height={60}
+                        className="logo-image"
+                        priority
+                      />
+                    </div>
+                    <div className="logo-glow"></div>
+                  </div>
+                ) : (
+                  // Default logo for other pages
+                  <Image
+                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/abu-dhabi-police-logo-21AF543362-nwLnkElCePIGxnmxG49FlWYFtViagS.png"
+                    alt="Abu Dhabi Police Logo"
+                    width={60}
+                    height={60}
+                    className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
+                    priority
+                  />
+                )}
+                {isAlAinPage && (
+                  <div className="flex flex-col">
+                    <span className="text-white font-bold text-base sm:text-lg md:text-xl">AL AIN POLICE</span>
+                    <span className="text-white/70 text-sm sm:text-base md:text-lg font-semibold">شرطة العين</span>
+                  </div>
+                )}
+              </Link>
+              <nav className="flex items-center">
+                <ul className="flex items-center gap-x-1 sm:gap-x-2 md:gap-x-3">
+                  {navigationItems.map((item) => (
+                    <li key={item.title}>
+                      <Link
+                        href={item.href}
+                        className={cn(
+                          styles.btn,
+                          glowStyles.glowOnHover,
+                          "flex items-center gap-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2",
+                          "text-white transition-colors text-xs sm:text-sm md:text-base",
+                          "rounded-md",
+                        )}
+                      >
+                        <item.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 flex-shrink-0" />
+                        <span className="hidden xs:inline">{item.title}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </div>
 
-      {/* Filter buttons row - only show when showFilters is true */}
+            {/* Center section - New Project Links */}
+            <div className="flex items-center gap-x-6 absolute left-1/2 transform -translate-x-1/2">
+              <Link
+                href="#"
+                className={cn(
+                  "text-white transition-colors text-sm sm:text-base font-medium",
+                  glowStyles.glowOnHover,
+                  "px-3 py-1.5 rounded-md",
+                )}
+              >
+                Construction Project
+              </Link>
+              <Link
+                href="#"
+                className={cn(
+                  "text-white transition-colors text-sm sm:text-base font-medium",
+                  glowStyles.glowOnHover,
+                  "px-3 py-1.5 rounded-md",
+                )}
+              >
+                Maintenance Project
+              </Link>
+            </div>
+
+            {/* Right section */}
+            <div className="flex items-center gap-x-2">
+              {/* Filter button - Only show on Al Ain page */}
+              {isAlAinPage && (
+                <>
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className={cn(
+                      styles.btn,
+                      glowStyles.glowOnHover,
+                      "flex items-center gap-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2",
+                      "text-white transition-colors text-xs sm:text-sm md:text-base",
+                      "rounded-md",
+                      showFilters && "bg-white/20",
+                    )}
+                  >
+                    <Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 flex-shrink-0" />
+                    <span className="hidden xs:inline">Filter</span>
+                  </button>
+                  {/* Add Projects Toggle Button */}
+                  <button
+                    onClick={onToggleProjects}
+                    className={cn(
+                      styles.btn,
+                      glowStyles.glowOnHover,
+                      "flex items-center gap-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2",
+                      "text-white transition-colors text-xs sm:text-sm md:text-base",
+                      "rounded-md",
+                      showProjects && "bg-white/20",
+                    )}
+                  >
+                    <Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 flex-shrink-0" />
+                    <span className="hidden xs:inline">Police Projects</span>
+                  </button>
+                  {/* Add Admin Button */}
+                  <button
+                    onClick={onAdminClick}
+                    className={cn(
+                      styles.btn,
+                      glowStyles.glowOnHover,
+                      "flex items-center gap-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2",
+                      "text-white transition-colors text-xs sm:text-sm md:text-base",
+                      "rounded-md",
+                      showAdmin ? "bg-[#E31E24]/30 border border-[#E31E24]/50" : "",
+                    )}
+                  >
+                    <Shield
+                      className={`h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 flex-shrink-0 ${showAdmin ? "text-[#E31E24]" : ""}`}
+                    />
+                    <span className="hidden xs:inline">Admin</span>
+                  </button>
+                </>
+              )}
+              {!isAlAinPage && (
+                <Link
+                  href={projectItem.href}
+                  className={cn(
+                    styles.btn,
+                    glowStyles.glowOnHover,
+                    "flex items-center gap-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2",
+                    "text-white transition-colors text-xs sm:text-sm md:text-base",
+                    "rounded-md",
+                  )}
+                >
+                  <projectItem.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 flex-shrink-0" />
+                  <span className="hidden xs:inline">{projectItem.title}</span>
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter buttons row */}
       {isAlAinPage && showFilters && (
         <div
           className={cn(
-            "fixed top-[1.5rem] xxs:top-[1.6rem] xs:top-[1.75rem] sm:top-[2rem] md:top-[2.25rem] left-0 right-0 z-40",
+            "fixed top-[3.5rem] sm:top-16 md:top-[4.5rem] left-0 right-0 z-40",
             "transform transition-all duration-200 ease-in-out",
+            showFilters ? "translate-y-0" : "-translate-y-full",
           )}
         >
-          <div className="w-full max-w-[1800px] mx-auto px-1 sm:px-2 md:px-3 lg:px-4 py-1 sm:py-2">
-            {/* Mobile view - scrollable horizontal container */}
-            <div className="flex items-center overflow-x-auto scrollbar-hide pb-1 justify-start sm:justify-center">
-              <div className="flex items-center gap-1 xxs:gap-1.5 xs:gap-1.5 sm:gap-2 md:gap-3 px-1">
-                {filterButtons.map((button) => {
-                  const Icon = button.icon
-                  return (
-                    <Button
-                      key={button.id}
-                      variant="ghost"
-                      className={cn(
-                        glowStyles.glowOnHover,
-                        "text-white whitespace-nowrap",
-                        "border border-white/20 rounded-md min-w-[50px] xxs:min-w-[55px] xs:min-w-[60px] px-1 xxs:px-1.5 xs:px-2 sm:px-4 md:px-6 py-0.5 xs:py-1 sm:py-1.5",
-                        "transition-colors duration-200",
-                        "flex items-center gap-0.5 xxs:gap-1 sm:gap-2",
-                        "text-[7px] xxs:text-[8px] xs:text-[10px] sm:text-xs",
-                        selectedFilters[button.id] ? "bg-white text-black hover:text-black" : "",
-                      )}
-                      onClick={() => handleFilterChange("category", button.id)}
-                    >
-                      <Icon
-                        className={cn(
-                          "h-2 w-2 xxs:h-2.5 xxs:w-2.5 xs:h-3 xs:w-3 sm:h-4 sm:w-4",
-                          selectedFilters[button.id] ? "text-black" : "text-white",
-                        )}
-                      />
-                      {button.label}
-                    </Button>
-                  )
-                })}
-              </div>
+          <div className="w-full max-w-[2000px] mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-2">
+            <div className="flex items-center gap-3 justify-center">
+              {filterButtons.map((button) => {
+                const Icon = button.icon
+                return (
+                  <Button
+                    key={button.id}
+                    variant="ghost"
+                    className={cn(
+                      glowStyles.glowOnHover,
+                      "text-white",
+                      "border border-white/20 rounded-md px-6",
+                      "transition-colors duration-200",
+                      "flex items-center gap-2",
+                      selectedFilters[button.id] ? "bg-white text-black hover:text-black" : "",
+                    )}
+                    onClick={() => handleFilterChange("category", button.id)}
+                  >
+                    <Icon className={cn("h-4 w-4", selectedFilters[button.id] ? "text-black" : "text-white")} />
+                    {button.label}
+                  </Button>
+                )
+              })}
             </div>
           </div>
         </div>
       )}
-
-      {/* Footer Navigation - hide on documents page */}
-      {!isDocumentsPage &&
-        !isLivePage &&
-        !pathname.includes("/dashboard/") &&
-        !pathname.startsWith("/work-order/") &&
-        pathname !== "/work-order" &&
-        pathname !== "/login" &&
-        pathname !== "/al-ain/16-projects" && (
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900 border-t border-white/10 rounded-t-[20px] xxs:rounded-t-[25px] sm:rounded-t-[30px]">
-            <div className="w-full max-w-[1800px] mx-auto px-1 xxs:px-2">
-              <div className="flex items-center justify-between py-2 xxs:py-2.5 xs:py-3 sm:py-2">
-                {/* Dashboard button */}
-                <Link
-                  href={
-                    pathname.startsWith("/abu-dhabi") || pathname.includes("abu-dhabi")
-                      ? "/dashboard/abu-dhabi"
-                      : "/dashboard"
-                  }
-                  className={`flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white relative group touch-target ${pathname === "/dashboard" || pathname === "/dashboard/abu-dhabi" ? "active-nav-item" : ""}`}
-                >
-                  <LayoutDashboard className="h-4 w-4 xxs:h-4.5 xxs:w-4.5 xs:h-5 xs:w-5 mb-0.5" />
-                  <span className="text-[9px] xxs:text-[10px] xs:text-[11px]">Dashboard</span>
-                  <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
-                </Link>
-
-                {/* Projects Details button */}
-                <Link
-                  href={pathname.startsWith("/abu-dhabi") ? "/abu-dhabi/projects" : "/projects-details"}
-                  className={`flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white relative group touch-target ${isProjectsPage ? "active-nav-item" : ""}`}
-                >
-                  <Building2 className="h-4 w-4 xxs:h-4.5 xxs:w-4.5 xs:h-5 xs:w-5 sm:h-5.5 sm:w-5.5 mb-0.5" />
-                  <span className="text-[9px] xxs:text-[10px] xs:text-[11px] sm:text-sm whitespace-nowrap">
-                    Projects
-                  </span>
-                  <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
-                </Link>
-
-                {/* Cities button */}
-                <button
-                  onClick={() => setIsPageSwipingOpen(true)}
-                  className="flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white relative group touch-target"
-                >
-                  <Building className="h-4 w-4 xxs:h-4.5 xxs:w-4.5 xs:h-5 xs:w-5 mb-0.5" />
-                  <span className="text-[9px] xxs:text-[10px] xs:text-[11px]">Cities</span>
-                  <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
-                </button>
-
-                {/* Manage button */}
-                <Link
-                  href="/manage"
-                  className={`flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white relative group touch-target ${pathname === "/manage" ? "active-nav-item" : ""}`}
-                >
-                  <svg
-                    className="h-4 w-4 xxs:h-4.5 xxs:w-4.5 xs:h-5 xs:w-5 mb-0.5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <circle cx="12" cy="12" r="3" />
-                    <path
-                      d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 1.82-.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <span className="text-[9px] xxs:text-[10px] xs:text-[11px]">Manage</span>
-                  <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
-                </Link>
-
-                {/* Admin button */}
-                {showAdmin && (
-                  <button
-                    className="flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white relative group touch-target"
-                    onClick={onAdminClick}
-                  >
-                    <svg
-                      className="h-4 w-4 xxs:h-4.5 xxs:w-4.5 xs:h-5 xs:w-5 mb-0.5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path d="M12 2L2 22h20L12 2z" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <span className="text-[9px] xxs:text-[10px] xs:text-[11px]">Admin</span>
-                    <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-      {/* Page Swiping Panel */}
-      <PageSwipingPanel isOpen={isPageSwipingOpen} onClose={() => setIsPageSwipingOpen(false)} />
     </>
   )
 }
 
-// Export both named and default exports
-export { TopNav }
 export default TopNav

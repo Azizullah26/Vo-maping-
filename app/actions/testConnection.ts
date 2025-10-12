@@ -1,58 +1,34 @@
 "use server"
 
-import { getSupabaseServerClient } from "@/lib/db"
+import { getNileServerSingleton } from "@/lib/nile"
+import { getPool } from "@/lib/nileDb"
 
 export async function testNileConnection() {
   try {
-    // Test Supabase connection
-    const supabase = getSupabaseServerClient()
-    const { data, error } = await supabase.from("projects").select("count").limit(1)
+    // Test Nile SDK connection
+    const nile = await getNileServerSingleton()
+    const tenants = await nile.api("/v1/tenants", { method: "GET" })
 
-    if (error) {
+    // Test direct Postgres connection
+    const pool = await getPool()
+    const client = await pool.connect()
+    try {
+      const result = await client.query("SELECT NOW() as current_time")
       return {
-        success: false,
-        error: `Database connection failed: ${error.message}`,
-        details: error,
+        success: true,
+        message: "Successfully connected to Nile database",
+        time: result.rows[0].current_time,
+        tenants: tenants,
       }
-    }
-
-    return {
-      success: true,
-      message: "Database connection successful",
-      data,
+    } finally {
+      client.release()
     }
   } catch (error) {
+    console.error("Error testing Nile connection:", error)
     return {
       success: false,
-      error: `Connection test failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      details: error,
-    }
-  }
-}
-
-export async function testSupabaseConnection() {
-  try {
-    const supabase = getSupabaseServerClient()
-    const { data, error } = await supabase.from("projects").select("*").limit(1)
-
-    if (error) {
-      return {
-        success: false,
-        error: error.message,
-        details: error,
-      }
-    }
-
-    return {
-      success: true,
-      message: "Supabase connection successful",
-      data,
-    }
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-      details: error,
+      message: "Failed to connect to Nile database",
+      error: error instanceof Error ? error.message : String(error),
     }
   }
 }

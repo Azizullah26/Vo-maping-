@@ -1,81 +1,43 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getDocumentsByProject } from "@/lib/db"
+import { getProjectDocuments } from "@/lib/db"
 
+// GET handler to get documents for a specific project
 export async function GET(request: NextRequest, { params }: { params: { projectId: string } }) {
   try {
-    // Check if we're in build environment
-    if (process.env.NODE_ENV === "production" && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      return NextResponse.json({
-        documents: [],
-        message: "Database not configured",
-      })
-    }
-
-    const { projectId } = params
+    const projectId = params.projectId
 
     if (!projectId) {
-      return NextResponse.json({ error: "Project ID is required" }, { status: 400 })
-    }
-
-    const documents = await getDocumentsByProject(projectId)
-
-    return NextResponse.json({
-      documents,
-      count: documents.length,
-    })
-  } catch (error) {
-    console.error("Error fetching project documents:", error)
-
-    // Return empty array instead of error during build
-    if (process.env.NODE_ENV === "production" && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      return NextResponse.json({
-        documents: [],
-        message: "Database not configured",
-      })
-    }
-
-    return NextResponse.json(
-      {
-        error: "Failed to fetch documents",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    )
-  }
-}
-
-export async function POST(request: NextRequest, { params }: { params: { projectId: string } }) {
-  try {
-    // Check if we're in build environment
-    if (process.env.NODE_ENV === "production" && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
       return NextResponse.json(
         {
-          error: "Database not configured",
+          success: false,
+          message: "Missing project ID",
         },
-        { status: 503 },
+        { status: 400 },
       )
     }
 
-    const { projectId } = params
-    const body = await request.json()
+    const result = await getProjectDocuments(projectId)
 
-    if (!projectId) {
-      return NextResponse.json({ error: "Project ID is required" }, { status: 400 })
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: result.message || "Failed to get project documents",
+        },
+        { status: 500 },
+      )
     }
 
-    // Here you would typically add document creation logic
-    // For now, return a placeholder response
     return NextResponse.json({
-      message: "Document creation endpoint",
-      projectId,
-      body,
+      success: true,
+      data: result.data,
     })
   } catch (error) {
-    console.error("Error creating project document:", error)
+    console.error("Error getting project documents:", error)
     return NextResponse.json(
       {
-        error: "Failed to create document",
-        details: error instanceof Error ? error.message : "Unknown error",
+        success: false,
+        message: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     )

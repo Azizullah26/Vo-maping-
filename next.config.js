@@ -1,57 +1,61 @@
 /** @type {import('next').NextConfig} */
+const path = require("path")
+const CopyWebpackPlugin = require("copy-webpack-plugin")
+
 const nextConfig = {
-  reactStrictMode: true,
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   images: {
-    domains: [
-      "localhost",
-      "example.com",
-      "pbqfgjzvclwgxgvuzmul.supabase.co",
-      "hebbkx1anhila5yf.public.blob.vercel-storage.com",
-    ],
-    unoptimized: true,
+    domains: ["hebbkx1anhila5yf.public.blob.vercel-storage.com"],
+    unoptimized: process.env.NODE_ENV === "development",
   },
-  // Environment variables for build time - make sure they're prefixed with NEXT_PUBLIC_
-  env: {
-    NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE || process.env.DEMO_MODE || "true",
-    NEXT_PUBLIC_STATIC_MODE: process.env.NEXT_PUBLIC_STATIC_MODE || process.env.STATIC_MODE || "true",
-    NEXT_PUBLIC_VERCEL: process.env.VERCEL || "0",
-  },
-  // Simplified webpack configuration that doesn't require additional dependencies
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      // Replace Node.js modules with empty objects or false
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
-        net: false,
-        tls: false,
-        crypto: false,
-        stream: false,
-        util: false,
-        buffer: false,
-        assert: false,
         http: false,
         https: false,
-        os: false,
-        path: false,
         zlib: false,
+        url: false,
       }
     }
 
+    config.plugins.push(
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: path.join(path.dirname(require.resolve("cesium")), "Build/Cesium/Workers"),
+            to: "static/Workers",
+          },
+          {
+            from: path.join(path.dirname(require.resolve("cesium")), "Build/Cesium/ThirdParty"),
+            to: "static/ThirdParty",
+          },
+          {
+            from: path.join(path.dirname(require.resolve("cesium")), "Build/Cesium/Assets"),
+            to: "static/Assets",
+          },
+          {
+            from: path.join(path.dirname(require.resolve("cesium")), "Build/Cesium/Widgets"),
+            to: "static/Widgets",
+          },
+        ],
+      }),
+    )
+
     return config
   },
-  // Add output configuration for standalone deployment
-  output: "standalone",
-  // Ensure trailing slashes are handled correctly
-  trailingSlash: false,
-  experimental: {
-    // Updated experimental features for Next.js 15.2.4
+  // Add CORS headers for Cesium assets
+  async headers() {
+    return [
+      {
+        source: "/static/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
+        ],
+      },
+    ]
   },
 }
 

@@ -1,75 +1,75 @@
 "use client"
 
-import type React from "react"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import mapboxgl from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
-import { useMapboxToken } from "../hooks/useMapboxToken"
+import { useRouter } from "next/navigation"
+import { createMapMarker, getMarkerAlignment } from "@/components/MapMarker"
+import { mapStyles } from "@/lib/map-styles"
 
-interface AnyMapComponentProps {
-  center: [number, number]
-  zoom: number
-  style?: string
-  children?: React.ReactNode
-  onMapLoad?: (map: mapboxgl.Map) => void
-  className?: string
-  mapStyle?: string
+interface Location {
+  name: string
+  coordinates: [number, number]
+  // ... other properties
 }
 
-export default function AnyMapComponent({
-  center,
-  zoom,
-  style = "mapbox://styles/mapbox/streets-v11",
-  children,
-  onMapLoad,
-  className = "",
-  mapStyle,
-}: AnyMapComponentProps) {
+interface MapProps {
+  locations: Location[]
+  // ... other props
+}
+
+export default function MapComponent({ locations }: MapProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
-  const [mapLoaded, setMapLoaded] = useState(false)
-  const { token, loading, error } = useMapboxToken()
+  const router = useRouter()
 
   useEffect(() => {
-    if (loading || error || !token || !mapContainer.current) return
+    if (map.current) return
 
-    if (map.current) return // already initialized
+    const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
+    if (!accessToken) {
+      console.error("Mapbox access token is missing")
+      return
+    }
 
+    mapboxgl.accessToken = accessToken
+
+    // Initialize map
     map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: mapStyle || style,
-      center: center,
-      zoom: zoom,
-      accessToken: token,
+      container: mapContainer.current!,
+      style: "mapbox://styles/mapbox/dark-v11", // Use your preferred style
+      center: [55.74523, 24.21089], // Set your default center
+      zoom: 11.5,
     })
 
+    // Add styles to document
+    const styleSheet = document.createElement("style")
+    styleSheet.textContent = mapStyles
+    document.head.appendChild(styleSheet)
+
     map.current.on("load", () => {
-      setMapLoaded(true)
-      if (onMapLoad && map.current) {
-        onMapLoad(map.current)
-      }
+      // Add markers
+      locations.forEach((location) => {
+        createMapMarker({
+          name: location.name,
+          coordinates: location.coordinates,
+          alignment: getMarkerAlignment(location.name),
+          onClick: (name) => {
+            // Handle click event
+            console.log(`Clicked ${name}`)
+          },
+          map: map.current!,
+        })
+      })
     })
 
     return () => {
       if (map.current) {
         map.current.remove()
-        map.current = null
       }
+      document.head.removeChild(styleSheet)
     }
-  }, [center, zoom, style, mapStyle, onMapLoad, token, loading, error])
+  }, [locations])
 
-  if (error) {
-    return <div className="text-red-500">Error loading map: {error.message}</div>
-  }
-
-  if (loading) {
-    return <div className="flex items-center justify-center h-full">Loading map...</div>
-  }
-
-  return (
-    <div className={`relative h-full w-full ${className}`}>
-      <div ref={mapContainer} className="h-full w-full" />
-      {mapLoaded && map.current && children}
-    </div>
-  )
+  return <div ref={mapContainer} className="w-full h-full" />
 }

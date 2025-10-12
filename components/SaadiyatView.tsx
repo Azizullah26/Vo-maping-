@@ -175,7 +175,7 @@ export function SaadiyatView({ className, isVisible }: SaadiyatViewProps) {
   if (!isVisible) return null
 
   return (
-    <div className={cn("fixed left-4 top-4 z-40 w-[90%] sm:w-[400px] bg-white rounded-lg shadow-lg", className)}>
+    <div className={cn("fixed left-4 top-4 z-40 w-[400px] bg-white rounded-lg shadow-lg", className)}>
       <Card>
         <CardContent className="p-4">
           <Carousel className="w-full" onSelect={(index) => setActiveIndex(index)}>
@@ -189,7 +189,7 @@ export function SaadiyatView({ className, isVisible }: SaadiyatViewProps) {
                         alt={image.alt}
                         fill
                         className="object-cover"
-                        sizes="(max-width: 640px) 90vw, (max-width: 768px) 400px, 400px"
+                        sizes="(max-width: 400px) 100vw, 400px"
                         priority={index === 0}
                       />
                     ) : (

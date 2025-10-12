@@ -1,116 +1,88 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
-import type { Database } from "@/types/supabase" // Import the updated Database type
+import { supabase } from "@/lib/supabaseClient"
 
-// Initialize Supabase client with service role key to bypass RLS
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error("Missing Supabase credentials in environment variables for /api/documents/upload")
-  console.error("NEXT_PUBLIC_SUPABASE_URL:", supabaseUrl ? "present" : "missing")
-  console.error("SUPABASE_SERVICE_ROLE_KEY:", supabaseServiceKey ? "present" : "missing")
-}
-
-// Only create client if both environment variables are present
-const supabaseAdmin = supabaseUrl && supabaseServiceKey 
-  ? createClient<Database>(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        persistSession: false,
-      },
-    })
-  : null
-
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    // Check if Supabase client is available
-    if (!supabaseAdmin) {
-      console.error("Supabase client not initialized - missing environment variables")
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: "Server configuration error: Missing Supabase credentials. Please check environment variables." 
-        },
-        { status: 500 }
-      )
-    }
-
-    const formData = await request.formData()
+    const formData = await req.formData()
     const file = formData.get("file") as File
-    const projectName = formData.get("projectName") as string // Use projectName directly
+    const projectId = formData.get("projectId") as string
+    const projectName = formData.get("projectName") as string
+    const documentType = formData.get("documentType") as string
 
-    if (!file || !projectName) {
-      return NextResponse.json(
-        { success: false, error: "Missing required fields: file or projectName" },
-        { status: 400 },
-      )
+    if (!file) {
+      return NextResponse.json({ success: false, error: "No file provided" }, { status: 400 })
     }
 
-    // Generate unique filename and path within the project-documents bucket
-    const fileName = `${Date.now()}_${file.name.replace(/\s+/g, "-")}`
-    const filePath = `projects/${projectName}/${fileName}` // Organize by project name
+    if (!projectId) {
+      return NextResponse.json({ success: false, error: "No project ID provided" }, { status: 400 })
+    }
 
-    // Convert File to ArrayBuffer for upload
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = new Uint8Array(arrayBuffer)
+    // Generate a unique file path
+    const fileExtension = file.name.split(".").pop() || ""
+    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`
+    const filePath = `${projectId}/${fileName}`
 
-    // 1. Upload file to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
-      .from("project-documents") // Use the specified bucket name
-      .upload(filePath, buffer, {
+    // Upload file to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("project-documents")
+      .upload(filePath, file, {
         cacheControl: "3600",
         upsert: false,
-        contentType: file.type,
       })
 
     if (uploadError) {
-      console.error("Error uploading file to Supabase Storage:", uploadError)
-      return NextResponse.json({ success: false, error: uploadError.message }, { status: 500 })
+      throw uploadError
     }
 
-    // 2. Get the public URL for the uploaded file
-    const { data: urlData } = await supabaseAdmin.storage.from("project-documents").getPublicUrl(filePath)
+    // Get file metadata
+    const fileType = file.name.split(".").pop()?.toUpperCase() || ""
+    const fileSize = file.size
 
-    if (!urlData?.publicUrl) {
-      return NextResponse.json(
-        { success: false, error: "Failed to get public URL for the uploaded file" },
-        { status: 500 },
-      )
-    }
-
-    const fileUrl = urlData.publicUrl
-
-    // 3. Save metadata to project_documents table in Supabase
-    const { data: insertedData, error: documentError } = await supabaseAdmin
-      .from("project_documents") // Use the new table name
+    // Insert document metadata into Supabase
+    const { data: documentData, error: documentError } = await supabase
+      .from("documents")
       .insert({
+        name: file.name,
+        type: fileType,
+        size: fileSize,
+        file_path: fileName,
+        project_id: projectId,
         project_name: projectName,
-        file_name: file.name,
-        file_url: fileUrl,
-        uploaded_at: new Date().toISOString(), // Set uploaded_at
+        document_type: documentType,
       })
       .select()
+      .single()
 
     if (documentError) {
-      // If metadata insertion fails, delete the uploaded file from storage
-      await supabaseAdmin.storage.from("project-documents").remove([filePath])
-      console.error("Error inserting document metadata:", documentError)
-      return NextResponse.json({ success: false, error: documentError.message }, { status: 500 })
+      // If metadata insertion fails, delete the uploaded file
+      await supabase.storage.from("project-documents").remove([filePath])
+
+      throw documentError
     }
+
+    // Get the URL for the uploaded file
+    const { data: urlData } = await supabase.storage.from("project-documents").createSignedUrl(filePath, 60 * 60) // 1 hour expiry
 
     return NextResponse.json({
       success: true,
-      document: {
-        id: insertedData?.[0]?.id || `temp-${Date.now()}`,
-        file_url: fileUrl,
-        file_name: file.name,
-      },
+      message: "Document uploaded successfully",
+      fileId: documentData.id,
+      url: urlData?.signedUrl || null,
     })
   } catch (error) {
-    console.error("Error in document upload API:", error)
+    console.error("Error uploading document:", error)
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : "Unknown error" },
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to upload document",
+      },
       { status: 500 },
     )
   }
+}
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
 }

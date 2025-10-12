@@ -1,259 +1,265 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import * as Cesium from "cesium"
+import "cesium/Build/Cesium/Widgets/widgets.css"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Loader2, RotateCcw, ZoomIn, ZoomOut, Home, Play, Pause } from "lucide-react"
-import * as THREE from "three"
+import { ZoomIn, ZoomOut, Maximize2, RotateCw, Home, X } from "lucide-react"
 
 interface AlAinTerrainViewerProps {
-  className?: string
+  onError?: (error: Error) => void
+  onClose?: () => void
 }
 
-export default function AlAinTerrainViewer({ className = "" }: AlAinTerrainViewerProps) {
-  const viewerRef = useRef<HTMLDivElement>(null)
-  const sceneRef = useRef<any>(null)
-  const rendererRef = useRef<any>(null)
-  const cameraRef = useRef<any>(null)
+export default function AlAinTerrainViewer({ onError, onClose }: AlAinTerrainViewerProps) {
+  const viewerContainer = useRef<HTMLDivElement>(null)
+  const viewer = useRef<Cesium.Viewer | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [loadingMessage, setLoadingMessage] = useState("Initializing 3D viewer...")
-  const [isPlaying, setIsPlaying] = useState(false)
-
-  const initializeThreeJSViewer = async () => {
-    if (!viewerRef.current) return
-
-    try {
-      setLoadingMessage("Setting up 3D scene...")
-
-      const scene = new THREE.Scene()
-      scene.background = new THREE.Color(0x87ceeb)
-
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        viewerRef.current.clientWidth / viewerRef.current.clientHeight,
-        0.1,
-        1000,
-      )
-      camera.position.set(0, 50, 100)
-      camera.lookAt(0, 0, 0)
-
-      const renderer = new THREE.WebGLRenderer({ antialias: true })
-      renderer.setSize(viewerRef.current.clientWidth, viewerRef.current.clientHeight)
-      renderer.shadowMap.enabled = true
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap
-      viewerRef.current.appendChild(renderer.domElement)
-
-      const ambientLight = new THREE.AmbientLight(0x404040, 0.6)
-      scene.add(ambientLight)
-
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8)
-      directionalLight.position.set(50, 50, 50)
-      directionalLight.castShadow = true
-      directionalLight.shadow.mapSize.width = 2048
-      directionalLight.shadow.mapSize.height = 2048
-      scene.add(directionalLight)
-
-      setLoadingMessage("Creating terrain...")
-
-      const terrainGeometry = new THREE.PlaneGeometry(200, 200, 50, 50)
-      const vertices = terrainGeometry.attributes.position.array
-
-      for (let i = 0; i < vertices.length; i += 3) {
-        const x = vertices[i]
-        const z = vertices[i + 2]
-        vertices[i + 1] = Math.sin(x * 0.1) * Math.cos(z * 0.1) * 5 + Math.random() * 2
-      }
-
-      terrainGeometry.attributes.position.needsUpdate = true
-      terrainGeometry.computeVertexNormals()
-
-      const terrainMaterial = new THREE.MeshLambertMaterial({
-        color: 0x8b7355,
-        wireframe: false,
-      })
-
-      const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial)
-      terrain.rotation.x = -Math.PI / 2
-      terrain.receiveShadow = true
-      scene.add(terrain)
-
-      setLoadingMessage("Adding 3D structures...")
-
-      for (let i = 0; i < 10; i++) {
-        const buildingGeometry = new THREE.BoxGeometry(
-          Math.random() * 5 + 2,
-          Math.random() * 10 + 5,
-          Math.random() * 5 + 2,
-        )
-        const buildingMaterial = new THREE.MeshLambertMaterial({
-          color: new THREE.Color().setHSL(Math.random() * 0.1 + 0.1, 0.5, 0.7),
-        })
-        const building = new THREE.Mesh(buildingGeometry, buildingMaterial)
-
-        building.position.set(
-          (Math.random() - 0.5) * 80,
-          buildingGeometry.parameters.height / 2,
-          (Math.random() - 0.5) * 80,
-        )
-        building.castShadow = true
-        building.receiveShadow = true
-        scene.add(building)
-      }
-
-      sceneRef.current = scene
-      rendererRef.current = renderer
-      cameraRef.current = camera
-
-      const animate = () => {
-        requestAnimationFrame(animate)
-
-        if (isPlaying) {
-          camera.position.x = Math.sin(Date.now() * 0.001) * 100
-          camera.position.z = Math.cos(Date.now() * 0.001) * 100
-          camera.lookAt(0, 0, 0)
-        }
-
-        renderer.render(scene, camera)
-      }
-      animate()
-
-      const handleResize = () => {
-        if (viewerRef.current && cameraRef.current && rendererRef.current) {
-          cameraRef.current.aspect = viewerRef.current.clientWidth / viewerRef.current.clientHeight
-          cameraRef.current.updateProjectionMatrix()
-          rendererRef.current.setSize(viewerRef.current.clientWidth, viewerRef.current.clientHeight)
-        }
-      }
-      window.addEventListener("resize", handleResize)
-
-      setIsLoading(false)
-      setError(null)
-    } catch (err) {
-      console.error("Error initializing Three.js viewer:", err)
-      setError("Failed to initialize 3D viewer. Please try again.")
-      setIsLoading(false)
-    }
-  }
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
-    const initViewer = async () => {
-      try {
-        await initializeThreeJSViewer()
-      } catch (err) {
-        console.error("Error initializing Three.js viewer:", err)
-        setError("Failed to load 3D viewer. Please refresh the page.")
-        setIsLoading(false)
-      }
-    }
+    if (!viewerContainer.current) return
 
-    initViewer()
+    try {
+      // Initialize Cesium ion access token
+      Cesium.Ion.defaultAccessToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0NzE2MDk0Ny0xZDEwLTRkNGItODRhYi03ZWFkZjVkZTY3NjIiLCJpZCI6MTg3NDY0LCJpYXQiOjE3MDc0ODQ4Nzl9.RrPd0yOBqEPOlLu-TGjGj-DvBAlp3WfUzhnJ0n7OYb0"
+
+      // Initialize the Cesium Viewer with high-resolution terrain
+      viewer.current = new Cesium.Viewer(viewerContainer.current, {
+        terrainProvider: Cesium.createWorldTerrain({
+          requestVertexNormals: true,
+          requestWaterMask: true,
+        }),
+        imageryProvider: new Cesium.IonImageryProvider({ assetId: 3 }),
+        baseLayerPicker: false,
+        timeline: false,
+        animation: false,
+        homeButton: false,
+        navigationHelpButton: false,
+        sceneModePicker: false,
+        geocoder: false,
+        fullscreenButton: false,
+        scene3DOnly: true,
+        infoBox: false,
+        selectionIndicator: false,
+        contextOptions: {
+          webgl: {
+            alpha: true,
+            depth: true,
+            stencil: true,
+            antialias: true,
+            powerPreference: "high-performance",
+          },
+        },
+      })
+
+      // Set initial camera position to Al Ain
+      viewer.current.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(55.74523, 24.21089, 5000.0),
+        orientation: {
+          heading: Cesium.Math.toRadians(0.0),
+          pitch: Cesium.Math.toRadians(-45.0),
+          roll: 0.0,
+        },
+        duration: 3,
+      })
+
+      // Enable terrain features
+      viewer.current.scene.globe.enableLighting = true
+      viewer.current.scene.globe.depthTestAgainstTerrain = true
+      viewer.current.scene.globe.terrainExaggeration = 1.5
+
+      // Add atmosphere and fog effects
+      viewer.current.scene.skyAtmosphere.show = true
+      viewer.current.scene.fog.enabled = true
+      viewer.current.scene.fog.density = 0.0001
+      viewer.current.scene.fog.minimumBrightness = 0.1
+
+      setIsLoading(false)
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error("Failed to initialize terrain viewer")
+      console.error("Terrain viewer initialization error:", error)
+      setError(error)
+      onError?.(error)
+    }
 
     return () => {
-      if (rendererRef.current && viewerRef.current) {
-        viewerRef.current.removeChild(rendererRef.current.domElement)
-        rendererRef.current.dispose()
+      if (viewer.current) {
+        try {
+          viewer.current.destroy()
+          viewer.current = null
+        } catch (err) {
+          console.error("Error cleaning up viewer:", err)
+        }
       }
-      sceneRef.current = null
-      rendererRef.current = null
-      cameraRef.current = null
     }
-  }, [])
+  }, [onError])
 
   const handleZoomIn = () => {
-    if (cameraRef.current) {
-      const camera = cameraRef.current
-      const direction = new THREE.Vector3()
-      camera.getWorldDirection(direction)
-      camera.position.add(direction.multiplyScalar(5))
+    if (viewer.current) {
+      try {
+        const cameraHeight = viewer.current.camera.positionCartographic.height
+        viewer.current.camera.zoomIn(cameraHeight * 0.5)
+      } catch (err) {
+        console.error("Error handling zoom in:", err)
+      }
     }
   }
 
   const handleZoomOut = () => {
-    if (cameraRef.current) {
-      const camera = cameraRef.current
-      const direction = new THREE.Vector3()
-      camera.getWorldDirection(direction)
-      camera.position.add(direction.multiplyScalar(-5))
+    if (viewer.current) {
+      try {
+        const cameraHeight = viewer.current.camera.positionCartographic.height
+        viewer.current.camera.zoomOut(cameraHeight * 0.5)
+      } catch (err) {
+        console.error("Error handling zoom out:", err)
+      }
     }
   }
 
-  const handleReset = () => {
-    if (cameraRef.current) {
-      cameraRef.current.position.set(0, 50, 100)
-      cameraRef.current.lookAt(0, 0, 0)
+  const handleRotate = () => {
+    if (viewer.current) {
+      try {
+        const currentHeading = viewer.current.camera.heading
+        viewer.current.camera.setView({
+          orientation: {
+            heading: currentHeading + Cesium.Math.toRadians(45.0),
+            pitch: viewer.current.camera.pitch,
+            roll: viewer.current.camera.roll,
+          },
+        })
+      } catch (err) {
+        console.error("Error handling rotation:", err)
+      }
     }
   }
 
   const handleHome = () => {
-    handleReset()
+    if (viewer.current) {
+      try {
+        viewer.current.camera.flyTo({
+          destination: Cesium.Cartesian3.fromDegrees(55.74523, 24.21089, 5000.0),
+          orientation: {
+            heading: Cesium.Math.toRadians(0.0),
+            pitch: Cesium.Math.toRadians(-45.0),
+            roll: 0.0,
+          },
+          duration: 2,
+        })
+      } catch (err) {
+        console.error("Error handling home view:", err)
+      }
+    }
   }
 
-  const toggleAnimation = () => {
-    setIsPlaying(!isPlaying)
+  const toggleFullscreen = () => {
+    try {
+      if (!document.fullscreenElement) {
+        viewerContainer.current?.requestFullscreen()
+        setIsFullscreen(true)
+      } else {
+        document.exitFullscreen()
+        setIsFullscreen(false)
+      }
+    } catch (err) {
+      console.error("Error toggling fullscreen:", err)
+    }
   }
 
   if (error) {
     return (
-      <Card className={`w-full h-[600px] ${className}`}>
-        <CardContent className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <p className="text-red-500 mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()}>
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Retry
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="w-full h-full flex items-center justify-center bg-red-50 text-red-500">
+        <div className="text-center p-4">
+          <p className="font-semibold mb-2">Failed to load terrain viewer</p>
+          <p className="text-sm text-red-400 mb-4">{error.message}</p>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              setError(null)
+              window.location.reload()
+            }}
+          >
+            Try Again
+          </Button>
+        </div>
+      </div>
     )
   }
 
   return (
-    <div className={`relative w-full h-[600px] ${className}`}>
-      {isLoading && (
-        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
-          <Card className="p-6">
-            <CardContent className="flex items-center space-x-4">
-              <Loader2 className="w-6 h-6 animate-spin" />
-              <span>{loadingMessage}</span>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+    <div className="relative w-full h-full">
+      <div ref={viewerContainer} className="w-full h-full">
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-lg font-semibold text-gray-700">Loading 3D terrain...</p>
+            </div>
+          </div>
+        )}
+      </div>
 
-      <div ref={viewerRef} className="w-full h-full" />
+      {/* Controls overlay */}
+      <div className="fixed bottom-4 right-4 sm:top-4 sm:bottom-auto z-20 flex flex-row sm:flex-col gap-2">
+        <Button
+          variant="secondary"
+          size="icon"
+          className="bg-white/90 hover:bg-white shadow-md w-10 h-10"
+          onClick={handleHome}
+          title="Reset view"
+        >
+          <Home className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="secondary"
+          size="icon"
+          className="bg-white/90 hover:bg-white shadow-md w-10 h-10"
+          onClick={handleZoomIn}
+          title="Zoom in"
+        >
+          <ZoomIn className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="secondary"
+          size="icon"
+          className="bg-white/90 hover:bg-white shadow-md w-10 h-10"
+          onClick={handleZoomOut}
+          title="Zoom out"
+        >
+          <ZoomOut className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="secondary"
+          size="icon"
+          className="bg-white/90 hover:bg-white shadow-md w-10 h-10"
+          onClick={handleRotate}
+          title="Rotate view"
+        >
+          <RotateCw className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="secondary"
+          size="icon"
+          className="bg-white/90 hover:bg-white shadow-md w-10 h-10"
+          onClick={toggleFullscreen}
+          title="Toggle fullscreen"
+        >
+          <Maximize2 className="h-4 w-4" />
+        </Button>
+      </div>
 
-      {!isLoading && (
-        <div className="absolute top-4 right-4 flex flex-col space-y-2 z-10">
-          <Button size="sm" variant="secondary" onClick={handleZoomIn} className="bg-white/90 hover:bg-white">
-            <ZoomIn className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="secondary" onClick={handleZoomOut} className="bg-white/90 hover:bg-white">
-            <ZoomOut className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="secondary" onClick={handleReset} className="bg-white/90 hover:bg-white">
-            <RotateCcw className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="secondary" onClick={handleHome} className="bg-white/90 hover:bg-white">
-            <Home className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="secondary" onClick={toggleAnimation} className="bg-white/90 hover:bg-white">
-            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-          </Button>
-        </div>
-      )}
-
-      {!isLoading && (
-        <div className="absolute bottom-4 left-4 z-10">
-          <Card className="bg-white/90">
-            <CardContent className="p-3">
-              <h3 className="font-semibold text-sm">Al Ain 3D Terrain</h3>
-              <p className="text-xs text-gray-600">Interactive 3D visualization</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {/* Close button */}
+      <Button
+        variant="secondary"
+        size="icon"
+        className="fixed top-4 left-4 z-20 bg-white/90 hover:bg-white shadow-md w-10 h-10"
+        onClick={onClose}
+        title="Close terrain viewer"
+      >
+        <X className="h-4 w-4" />
+      </Button>
     </div>
   )
 }

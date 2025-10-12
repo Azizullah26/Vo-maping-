@@ -4,6 +4,11 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
+;<style jsx>{`
+     .text-shadow {
+       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+     }
+   `}</style>
 
 interface Project {
   id: number
@@ -303,11 +308,11 @@ const projects: Project[] = [
   },
 ]
 
-export default function AbuDhabiProjects() {
+export function AbuDhabiProjects() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
   return (
-    <>
+    <div className="h-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-teal-300/50 via-orange-300/50 to-fuchsia-900/50">
       <h2 className="text-2xl font-bold mb-4 text-black text-shadow">Abu Dhabi Projects</h2>
       <div className="flex-grow flex flex-col items-center w-full max-w-3xl overflow-hidden">
         <ScrollArea className="w-full mb-4 bg-white/5 backdrop-filter backdrop-blur-sm rounded-lg">
@@ -385,6 +390,6 @@ export default function AbuDhabiProjects() {
           )}
         </div>
       </div>
-    </>
+    </div>
   )
 }

@@ -1,28 +1,19 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
+// This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
-  // Get the pathname of the request
-  const path = request.nextUrl.pathname
-
-  // Add security headers to all responses
-  const response = NextResponse.next()
-  response.headers.set("X-Content-Type-Options", "nosniff")
-  response.headers.set("X-Frame-Options", "DENY")
-  response.headers.set("X-XSS-Protection", "1; mode=block")
-
-  // For API routes, add cache control headers
+  // Only apply to API routes
   if (request.nextUrl.pathname.startsWith("/api/")) {
-    response.headers.set("Cache-Control", "no-store, max-age=0")
+    // Continue with the request, but catch any errors in the response
+    return NextResponse.next()
   }
 
-  return response
+  // For non-API routes, just continue
+  return NextResponse.next()
 }
 
-// Configure middleware to run for specific routes, not all routes
+// Configure middleware to run only for API routes
 export const config = {
-  matcher: [
-    // Apply to all routes except static files
-    "/((?!_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: "/api/:path*",
 }

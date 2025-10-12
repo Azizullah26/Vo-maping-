@@ -1,170 +1,48 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Download, Loader2, AlertCircle } from "lucide-react"
+import { ChevronLeft, ChevronRight, Download } from "lucide-react"
 
 interface PDFViewerProps {
   fileUrl: string
-  height?: string
-  width?: string
 }
 
-export function PDFViewer({ fileUrl, height = "600px", width = "100%" }: PDFViewerProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [isLoading, setIsLoading] = useState(true)
+export function PDFViewer({ fileUrl }: PDFViewerProps) {
+  const [pageNumber, setPageNumber] = useState(1)
   const [error, setError] = useState<string | null>(null)
-  const [isNutrientLoaded, setIsNutrientLoaded] = useState(false)
 
-  // Load Nutrient Web SDK script
-  useEffect(() => {
-    const loadNutrientSDK = () => {
-      if (window.NutrientViewer) {
-        setIsNutrientLoaded(true)
-        return
-      }
-
-      const script = document.createElement("script")
-      script.src = "https://cdn.nutrient.io/web-sdk/latest/nutrient-web-sdk.js"
-      script.async = true
-      script.onload = () => {
-        setIsNutrientLoaded(true)
-      }
-      script.onerror = () => {
-        setError("Failed to load Nutrient Web SDK")
-        setIsLoading(false)
-      }
-      document.head.appendChild(script)
-
-      return () => {
-        document.head.removeChild(script)
-      }
-    }
-
-    loadNutrientSDK()
-  }, [])
-
-  // Initialize PDF viewer when SDK is loaded
-  useEffect(() => {
-    if (!isNutrientLoaded || !containerRef.current || !fileUrl) return
-
-    const container = containerRef.current
-    const { NutrientViewer } = window
-
-    if (container && NutrientViewer) {
-      setIsLoading(true)
-      setError(null)
-
-      NutrientViewer.load({
-        container,
-        document: fileUrl,
-        // Additional configuration options
-        licenseKey: "YOUR_LICENSE_KEY", // Replace with your actual license key
-        toolbarItems: [
-          "sidebar-thumbnails",
-          "sidebar-document-outline",
-          "sidebar-annotations",
-          "pager",
-          "pan",
-          "zoom-out",
-          "zoom-in",
-          "zoom-mode",
-          "spacer",
-          "search",
-          "export-pdf",
-          "print",
-        ],
-        theme: "light",
-        initialViewState: {
-          zoom: "FIT_TO_WIDTH",
-        },
-      })
-        .then(() => {
-          setIsLoading(false)
-        })
-        .catch((loadError: Error) => {
-          console.error("Error loading PDF:", loadError)
-          setError(`Failed to load PDF: ${loadError.message}`)
-          setIsLoading(false)
-        })
-    }
-
-    // Cleanup function
-    return () => {
-      if (NutrientViewer && container) {
-        try {
-          NutrientViewer.unload(container)
-        } catch (unloadError) {
-          console.warn("Error unloading PDF viewer:", unloadError)
-        }
-      }
-    }
-  }, [isNutrientLoaded, fileUrl])
-
-  const handleDownload = () => {
-    if (fileUrl) {
-      const link = document.createElement("a")
-      link.href = fileUrl
-      link.download = fileUrl.split("/").pop() || "document.pdf"
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    }
-  }
-
-  const handleRetry = () => {
-    setError(null)
-    setIsLoading(true)
-    // Force re-render by updating a state
-    setIsNutrientLoaded(false)
-    setTimeout(() => setIsNutrientLoaded(true), 100)
-  }
-
+  // Simple web-based PDF viewer
   return (
-    <Card className="w-full max-w-5xl mx-auto bg-white/10 backdrop-filter backdrop-blur-md">
+    <Card className="w-full max-w-3xl mx-auto bg-white/10 backdrop-filter backdrop-blur-md">
       <CardContent className="p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-white">PDF Document Viewer</h3>
-          <div className="flex gap-2">
-            {error && (
-              <Button onClick={handleRetry} variant="outline" size="sm">
-                Retry
+        {error ? (
+          <div className="text-red-500">
+            <p>{error}</p>
+            <p>File URL: {fileUrl}</p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-4">
+            <iframe
+              src={`${fileUrl}#page=${pageNumber}`}
+              className="w-full h-[600px] border-0 rounded-lg"
+              title="PDF Viewer"
+            />
+            <div className="flex justify-between items-center w-full">
+              <Button onClick={() => setPageNumber((page) => Math.max(page - 1, 1))}>
+                <ChevronLeft className="mr-2 h-4 w-4" /> Previous
               </Button>
-            )}
-            <Button onClick={handleDownload} variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" /> Download
+              <p>Page {pageNumber}</p>
+              <Button onClick={() => setPageNumber((page) => page + 1)}>
+                Next <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+            <Button onClick={() => window.open(fileUrl, "_blank")}>
+              <Download className="mr-2 h-4 w-4" /> Download PDF
             </Button>
           </div>
-        </div>
-
-        {isLoading && (
-          <div className="flex items-center justify-center p-8">
-            <Loader2 className="h-8 w-8 animate-spin text-white mr-2" />
-            <span className="text-white">Loading PDF viewer...</span>
-          </div>
         )}
-
-        {error && (
-          <div className="flex items-center justify-center p-8 text-red-400">
-            <AlertCircle className="h-8 w-8 mr-2" />
-            <div>
-              <p className="font-semibold">Error loading PDF</p>
-              <p className="text-sm">{error}</p>
-              <p className="text-xs mt-2">File URL: {fileUrl}</p>
-            </div>
-          </div>
-        )}
-
-        <div
-          ref={containerRef}
-          style={{
-            height: height,
-            width: width,
-            display: isLoading || error ? "none" : "block",
-          }}
-          className="rounded-lg overflow-hidden border border-white/20"
-        />
       </CardContent>
     </Card>
   )

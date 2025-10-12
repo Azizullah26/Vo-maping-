@@ -1,50 +1,38 @@
-"use client"
+import type React from "react"
 
-import { useState, useEffect } from "react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
-import { X, Info } from "lucide-react"
+interface DemoBannerProps {
+  message?: string
+}
 
-export default function DemoBanner() {
-  const [isVisible, setIsVisible] = useState(false)
-  const [isDemoMode, setIsDemoMode] = useState(false)
-
-  useEffect(() => {
-    // Check if we're in demo mode
-    const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true"
-    setIsDemoMode(demoMode)
-
-    // Check if banner was previously dismissed
-    const dismissed = localStorage.getItem("demo-banner-dismissed")
-    setIsVisible(demoMode && !dismissed)
-  }, [])
-
-  const dismissBanner = () => {
-    setIsVisible(false)
-    localStorage.setItem("demo-banner-dismissed", "true")
-  }
-
-  if (!isVisible || !isDemoMode) {
-    return null
-  }
-
+const DemoBanner: React.FC<DemoBannerProps> = ({
+  message = "You're currently in demo mode. Database connection is not configured.",
+}) => {
   return (
-    <Alert className="mb-4 border-blue-200 bg-blue-50">
-      <Info className="h-4 w-4 text-blue-600" />
-      <AlertDescription className="flex items-center justify-between">
-        <span className="text-blue-800">
-          <strong>Demo Mode:</strong> You are viewing a demonstration version of the Al Ain Admin Panel. Some features
-          may be limited or simulated.
-        </span>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={dismissBanner}
-          className="text-blue-600 hover:text-blue-800 hover:bg-blue-100"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      </AlertDescription>
-    </Alert>
+    <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded">
+      <div className="flex items-center">
+        <div className="py-1">
+          <svg
+            className="h-6 w-6 text-yellow-500 mr-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+        </div>
+        <div>
+          <p className="font-bold">Demo Mode</p>
+          <p className="text-sm">{message}</p>
+        </div>
+      </div>
+    </div>
   )
 }
+
+export default DemoBanner

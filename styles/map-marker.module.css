@@ -1,19 +1,9 @@
-/* Add these styles to the top of the file */
-.marker-fixed {
-  position: absolute !important;
-  z-index: 10;
-  pointer-events: auto;
-  will-change: transform;
-}
-
 .marker-container {
-  position: absolute;
-  width: 300px;
+  position: relative;
+  width: 400px;
   height: 70px;
   pointer-events: auto;
   transform: translate(-50%, -50%);
-  z-index: 1;
-  will-change: transform;
 }
 
 .marker-circle {
@@ -244,70 +234,5 @@
   .marker-container.bottom-left-aligned .marker-dotted-line {
     width: 60px;
     height: 60px;
-  }
-}
-
-/* Add new styles for Abu Dhabi marker dashed lines */
-.abu-dhabi-marker-lines {
-  position: absolute;
-  left: 50%;
-  top: 100%;
-  transform: translateX(-50%);
-}
-
-.dashed-line {
-  position: absolute;
-  background-repeat: repeat;
-}
-
-.dashed-line-horizontal {
-  height: 2px;
-  background-image: linear-gradient(90deg, #ffffff 50%, transparent 50%);
-  background-size: 8px 2px;
-}
-
-.dashed-line-vertical {
-  width: 2px;
-  background-image: linear-gradient(0deg, #ffffff 50%, transparent 50%);
-  background-size: 2px 8px;
-}
-
-.dashed-line-diagonal {
-  height: 2px;
-  background-image: linear-gradient(90deg, #ffffff 50%, transparent 50%);
-  background-size: 8px 2px;
-  transform-origin: left center;
-}
-
-.marker-endpoint {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-  transform: translate(-50%, -50%);
-}
-
-/* Add these new styles for better mobile visibility */
-@media (max-width: 480px) {
-  .mapboxgl-marker {
-    z-index: 10 !important;
-  }
-
-  .mapboxgl-marker:hover {
-    z-index: 20 !important;
-  }
-
-  /* Ensure markers are visible on mobile */
-  .custom-marker {
-    transform-origin: center bottom !important;
-  }
-
-  /* Ensure text is readable on mobile */
-  .marker-button {
-    font-size: 0.9em !important;
-    padding: 6px 12px !important;
-    white-space: nowrap !important;
   }
 }

@@ -1,1576 +1,665 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect, useCallback } from "react"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { useRef } from "react"
-import type { JSX } from "react"
+import { useEffect, useRef, useState } from "react"
+import mapboxgl from "mapbox-gl"
+import "mapbox-gl/dist/mapbox-gl.css"
+import { abuDhabiCityBoundary } from "@/data/abuDhabiCityCoordinates"
+import styles from "@/styles/nav-button.module.css"
+import { cn } from "@/lib/utils"
+import { TopNav } from "@/components/TopNav"
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Building2,
+  X,
+  CuboidIcon as Cube,
+  Radio,
+  FileText,
+  MapIcon,
+} from "lucide-react"
 import { useRouter } from "next/navigation"
+import { AbuDhabiProjects } from "@/components/AbuDhabiProjects"
+import { Card, CardContent } from "@/components/ui/card"
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
+import Image from "next/image"
+import saadiyatStyles from "@/styles/saadiyat-view.module.css"
+import dynamic from "next/dynamic"
+import { Canvas } from "@react-three/fiber"
+import { OrbitControls, Environment } from "@react-three/drei"
+import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-export const Map = (): JSX.Element => {
-const [hoveredLabel, setHoveredLabel] = useState<string | null>(null)
-const mapContainerRef = useRef<HTMLDivElement>(null)
-const [showSliders, setShowSliders] = useState(true)
-const router = useRouter()
-const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null)
+const Model = dynamic(() => import("@/components/Model"), { ssr: false })
+const MapillaryViewer = dynamic(() => import("@/components/MapillaryViewer"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-gray-800">
+      <div className="text-white text-center">
+        <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin mx-auto mb-4"></div>
+        <p>Loading street view component...</p>
+      </div>
+    </div>
+  ),
+})
 
-// Advanced zoom functionality
-const [zoomLevel, setZoomLevel] = useState(() => 0.8)
-const [panX, setPanX] = useState(0)
-const [panY, setPanY] = useState(0)
-const [isDragging, setIsDragging] = useState(false)
-const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-const [lastPan, setLastPan] = useState({ x: 0, y: 0 })
-const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-
-useEffect(() => {
-  // Center the map when component loads - cloud view (very zoomed out)
-  if (mapContainerRef.current) {
-    // Reset to center position for cloud view
-    setPanX(0)
-    setPanY(0)
-  }
-}, [])
-
-useEffect(() => {
-  // Add wave animation styles to the document
-  if (!document.getElementById("wave-animations")) {
-    const styleElement = document.createElement("style")
-    styleElement.id = "wave-animations"
-    styleElement.innerHTML = `
-@keyframes waterWave {
-0% {
-  transform: scale(1);
-  opacity: 0.8;
-}
-25% {
-  transform: scale(1.3);
-  opacity: 0.6;
-}
-50% {
-  transform: scale(1.6);
-  opacity: 0.4;
-}
-75% {
-  transform: scale(1.9);
-  opacity: 0.2;
-}
-100% {
-  transform: scale(2.2);
-  opacity: 0;
-}
+interface Marker {
+  coordinates: [number, number]
+  name: string
+  images: string[]
+  description: string
+  glbFile: string
+  mapillaryId?: string
 }
 
-@keyframes rippleWave {
-0% {
-  transform: scale(1);
-  opacity: 0.9;
-}
-30% {
-  transform: scale(1.4);
-  opacity: 0.7;
-}
-60% {
-  transform: scale(1.8);
-  opacity: 0.3;
-}
-100% {
-  transform: scale(2.5);
-  opacity: 0;
-}
-}
+// Update the MAPILLARY_ACCESS_TOKEN constant
+const MAPILLARY_ACCESS_TOKEN = "MLY|9267215679981311|cc97a57ac7f20f4cc140dd4663de9bf7"
 
-.wave-circle {
-position: relative;
-overflow: visible;
-}
+// Update the customMarkers array with the new Abu Dhabi image ID
+const customMarkers: Marker[] = [
+  {
+    coordinates: [54.4221, 24.4539], // Abu Dhabi City Center
+    name: "Saadiyat Island",
+    images: [
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saa1-NkZAQnNzz2YzyUhZhNsdjFPb8BzQND.png",
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saa2-erCkjj1UQbZs2RUmFUlu8kr3GKg2g0.png",
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saad3-ZwTbRl501bMabKi9Sgc70ipIt6cEjv.png",
+    ],
+    description:
+      "Saadiyat Island is a natural island and a tourism-cultural environmentally friendly project for Emirati heritage and culture that is located in Abu Dhabi, United Arab Emirates.",
+    glbFile:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/large_low_poly_building-ncHZO7s2JMHKlbec7mqi1FlKfCTm9k.glb",
+    // Using the new Abu Dhabi image ID
+    mapillaryId: "958596254871529",
+  },
+  {
+    coordinates: [54.4008, 24.5361], // Correct Louvre Abu Dhabi coordinates
+    name: "Louvre Abu Dhabi",
+    images: [
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/louvre1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/louvre2-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/louvre3-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+    ],
+    description:
+      "The Louvre Abu Dhabi is an art and civilization museum, located on the Saadiyat Island Cultural District.",
+    glbFile:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/large_low_poly_building-ncHZO7s2JMHKlbec7mqi1FlKfCTm9k.glb",
+    // Using the new Abu Dhabi image ID
+    mapillaryId: "958596254871529",
+  },
+  {
+    coordinates: [54.4041, 24.5328], // Correct Zayed National Museum coordinates
+    name: "Zayed National Museum",
+    images: [
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/zayed1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/zayed2-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/zayed3-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+    ],
+    description:
+      "The Zayed National Museum is a planned museum showcasing the history, culture, and socio-economic transformation of the United Arab Emirates.",
+    glbFile:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/large_low_poly_building-ncHZO7s2JMHKlbec7mqi1FlKfCTm9k.glb",
+    // Using the new Abu Dhabi image ID
+    mapillaryId: "958596254871529",
+  },
+  {
+    coordinates: [54.4141, 24.5361], // Correct Guggenheim Abu Dhabi coordinates
+    name: "Guggenheim Abu Dhabi",
+    images: [
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/guggenheim1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/guggenheim2-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/guggenheim3-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+    ],
+    description:
+      "The Guggenheim Abu Dhabi is a planned museum of modern and contemporary art, to be located in Abu Dhabi, UAE.",
+    glbFile:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/large_low_poly_building-ncHZO7s2JMHKlbec7mqi1FlKfCTm9k.glb",
+    // Using the new Abu Dhabi image ID
+    mapillaryId: "958596254871529",
+  },
+  {
+    coordinates: [54.4376, 24.5225], // Correct NYU Abu Dhabi coordinates
+    name: "NYU Abu Dhabi",
+    images: [
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/nyu1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/nyu2-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/nyu3-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+    ],
+    description:
+      "New York University Abu Dhabi (NYUAD) is a private liberal arts college in Abu Dhabi, United Arab Emirates.",
+    glbFile:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/large_low_poly_building-ncHZO7s2JMHKlbec7mqi1FlKfCTm9k.glb",
+    // Using the new Abu Dhabi image ID
+    mapillaryId: "958596254871529",
+  },
+  {
+    coordinates: [54.4285, 24.5312], // Correct Cranleigh Abu Dhabi coordinates
+    name: "Cranleigh Abu Dhabi",
+    images: [
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/cranleigh1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/cranleigh2-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/cranleigh3-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+    ],
+    description: "Cranleigh Abu Dhabi is a British international school in Abu Dhabi, United Arab Emirates.",
+    glbFile:
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/large_low_poly_building-ncHZO7s2JMHKlbec7mqi1FlKfCTm9k.glb",
+    // Using the new Abu Dhabi image ID
+    mapillaryId: "958596254871529",
+  },
+]
 
-.wave-circle::before,
-.wave-circle::after {
-content: '';
-position: absolute;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-border-radius: 50%;
-background: rgba(255, 255, 255, 0.7);
-border: 1px solid rgba(255, 255, 255, 0.3);
-animation: waterWave 3s infinite ease-out;
-pointer-events: none;
-}
+// Update the center coordinates to better focus on all markers
+const center: [number, number] = [54.4221, 24.4939] // Updated center coordinates
 
-.wave-circle::after {
-animation: rippleWave 3s infinite ease-out;
-animation-delay: 1.5s;
-background: rgba(255, 255, 255, 0.5);
-border: 1px solid rgba(255, 255, 255, 0.2);
-}
+export default function AbuDhabiPage() {
+  const mapContainer = useRef<HTMLDivElement>(null)
+  const map = useRef<mapboxgl.Map | null>(null)
+  const [mapLoaded, setMapLoaded] = useState(false)
+  const [showProjects, setShowProjects] = useState(false)
+  const [selectedMarker, setSelectedMarker] = useState<Marker | null>(null)
+  const [showingImage, setShowingImage] = useState(true)
+  const router = useRouter()
 
-@keyframes cloudMove {
-0% {
-  transform: translateX(-100px);
-}
-100% {
-  transform: translateX(calc(100vw + 100px));
-}
-}
+  // Add state for the viewer modal
+  const [showViewerModal, setShowViewerModal] = useState(false)
+  const [activeTab, setActiveTab] = useState("cesium")
 
-.cloud-1 {
-animation: cloudMove 20s linear infinite;
-animation-delay: 0s;
-}
+  useEffect(() => {
+    if (!map.current) {
+      initializeMap()
+    }
+  }, [])
 
-.cloud-2 {
-animation: cloudMove 25s linear infinite;
-animation-delay: -5s;
-}
-
-.cloud-3 {
-animation: cloudMove 30s linear infinite;
-animation-delay: -10s;
-}
-
-.cloud-4 {
-animation: cloudMove 22s linear infinite;
-animation-delay: -15s;
-}
-
-.cloud-5 {
-animation: cloudMove 28s linear infinite;
-animation-delay: -8s;
-}
-`
-    document.head.appendChild(styleElement)
-
-    return () => {
-      const element = document.getElementById("wave-animations")
-      if (element) {
-        element.remove()
+  const initializeMap = () => {
+    try {
+      const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
+      if (!accessToken) {
+        throw new Error("Mapbox access token is missing")
       }
+
+      const initialZoom = 12 // Increased initial zoom for better marker visibility
+
+      mapboxgl.accessToken = accessToken
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current!,
+        style: "mapbox://styles/azizullah2611/cm6okbhyo000301qz5q58gdud",
+        center: center,
+        zoom: initialZoom,
+        minZoom: 10, // Updated minimum zoom
+        maxZoom: 16,
+        dragPan: true, // Enable drag pan for better navigation
+        pitch: 45, // Add some tilt for better 3D perspective
+        bearing: -17.6, // Slight rotation for better view
+      })
+
+      console.log("Abu Dhabi map initialized with custom style")
+
+      map.current.on("load", () => {
+        setMapLoaded(true)
+
+        if (!map.current) return
+
+        addRegion("abu-dhabi-city", abuDhabiCityBoundary, "#D3D3D3")
+        addHoverEffect("abu-dhabi-city-fill", "#D3D3D3", "#A9A9A9", 0.5, 0.7)
+
+        // Fit map to show all markers
+        const bounds = new mapboxgl.LngLatBounds()
+        customMarkers.forEach((marker) => {
+          bounds.extend(marker.coordinates)
+        })
+
+        map.current.fitBounds(bounds, {
+          padding: 50,
+          duration: 0,
+        })
+
+        addCustomMarkers()
+      })
+
+      // Add navigation controls with more options
+      map.current.addControl(
+        new mapboxgl.NavigationControl({
+          visualizePitch: true,
+          showZoom: true,
+          showCompass: true,
+        }),
+        "bottom-right",
+      )
+    } catch (error) {
+      console.error("Error initializing map:", error)
     }
   }
-}, [])
 
-// Add screen size detection for specific resolutions
-useEffect(() => {
-  const handleResize = () => {
-    const width = window.innerWidth
-    const height = window.innerHeight
+  const addRegion = (id: string, data: any, color: string) => {
+    if (!map.current) return
 
-    // Check for 1920x1080 or 1680x1050 resolutions
-    if ((width === 1920 && height === 1080) || (width === 1680 && height === 1050)) {
-      setZoomLevel(0.8) // Set zoom to 80%
+    if (!map.current.getSource(id)) {
+      map.current.addSource(id, {
+        type: "geojson",
+        data: data,
+      })
+    }
+
+    if (!map.current.getLayer(`${id}-fill`)) {
+      map.current.addLayer({
+        id: `${id}-fill`,
+        type: "fill",
+        source: id,
+        paint: {
+          "fill-color": color,
+          "fill-opacity": 0.5,
+        },
+      })
+    }
+
+    if (!map.current.getLayer(`${id}-outline`)) {
+      map.current.addLayer({
+        id: `${id}-outline`,
+        type: "line",
+        source: id,
+        paint: {
+          "line-color": color,
+          "line-width": 2,
+        },
+      })
     }
   }
 
-  // Check on mount
-  handleResize()
+  const addHoverEffect = (
+    layerId: string,
+    defaultColor: string,
+    hoverColor: string,
+    defaultOpacity: number,
+    hoverOpacity: number,
+  ) => {
+    map.current?.on("mouseenter", layerId, () => {
+      if (map.current) {
+        map.current.getCanvas().style.cursor = "pointer"
+        map.current.setPaintProperty(layerId, "fill-color", hoverColor)
+        map.current.setPaintProperty(layerId, "fill-opacity", hoverOpacity)
+      }
+    })
 
-  // Add resize listener
-  window.addEventListener("resize", handleResize)
-
-  return () => {
-    window.removeEventListener("resize", handleResize)
-  }
-}, [])
-
-// Zoom functionality
-const handleZoomIn = () => {
-  setZoomLevel((prev) => Math.min(prev + 0.2, 3))
-}
-
-const handleZoomOut = () => {
-  setZoomLevel((prev) => Math.max(prev - 0.2, 0.58))
-}
-
-const handleResetView = () => {
-  setZoomLevel(0.8)
-  setPanX(0)
-  setPanY(0)
-}
-
-// Pan functionality
-const handleMouseDown = (e: React.MouseEvent) => {
-  setIsDragging(true)
-  setDragStart({ x: e.clientX, y: e.clientY })
-  setLastPan({ x: panX, y: panY })
-}
-
-const handleMouseMove = (e: React.MouseEvent) => {
-  // Track mouse position for zoom functionality
-  if (mapContainerRef.current) {
-    const rect = mapContainerRef.current.getBoundingClientRect()
-    setMousePosition({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+    map.current?.on("mouseleave", layerId, () => {
+      if (map.current) {
+        map.current.getCanvas().style.cursor = ""
+        map.current.setPaintProperty(layerId, "fill-color", defaultColor)
+        map.current.setPaintProperty(layerId, "fill-opacity", defaultOpacity)
+      }
     })
   }
 
-  if (!isDragging) return
+  const addCustomMarkers = () => {
+    if (!map.current) return
 
-  const deltaX = e.clientX - dragStart.x
-  const deltaY = e.clientY - dragStart.y
-
-  // Calculate new pan positions
-  let newPanX = lastPan.x + deltaX
-  let newPanY = lastPan.y + deltaY
-
-  // Get container dimensions (viewport)
-  const containerWidth = window.innerWidth
-  const containerHeight = window.innerHeight
-
-  // Image dimensions
-  const imageWidth = 2370
-  const imageHeight = 2370
-
-  // Calculate scaled image dimensions
-  const scaledImageWidth = imageWidth * zoomLevel
-  const scaledImageHeight = imageHeight * zoomLevel
-
-  // Calculate maximum pan limits
-  const maxPanX = Math.max(0, (scaledImageWidth - containerWidth) / 2)
-  const maxPanY = Math.max(0, (scaledImageHeight - containerHeight) / 2)
-
-  // Apply constraints
-  newPanX = Math.max(-maxPanX, Math.min(maxPanX, newPanX))
-  newPanY = Math.max(-maxPanY, Math.min(maxPanY, newPanY))
-
-  setPanX(newPanX)
-  setPanY(newPanY)
-}
-
-const handleMouseUp = () => {
-  setIsDragging(false)
-}
-
-// Wheel zoom
-const handleWheel = (e: React.WheelEvent) => {
-  e.preventDefault()
-
-  const delta = e.deltaY > 0 ? -0.1 : 0.1
-  const newZoomLevel = Math.max(0.58, Math.min(3, zoomLevel + delta))
-
-  if (newZoomLevel !== zoomLevel && mapContainerRef.current) {
-    // Get mouse position relative to the container
-    const rect = mapContainerRef.current.getBoundingClientRect()
-    const mouseX = e.clientX - rect.left
-    const mouseY = e.clientY - rect.top
-
-    // Get container center
-    const containerCenterX = rect.width / 2
-    const containerCenterY = rect.height / 2
-
-    // Calculate offset from center
-    const offsetX = mouseX - containerCenterX
-    const offsetY = mouseY - containerCenterY
-
-    // Calculate zoom factor
-    const zoomFactor = newZoomLevel / zoomLevel
-
-    // Adjust pan to zoom towards mouse position
-    const newPanX = panX - (offsetX * (zoomFactor - 1)) / newZoomLevel
-    const newPanY = panY - (offsetY * (zoomFactor - 1)) / newZoomLevel
-
-    // Apply constraints to new pan positions
-    const containerWidth = rect.width
-    const containerHeight = rect.height
-    const imageWidth = 2370
-    const imageHeight = 2370
-    const scaledImageWidth = imageWidth * newZoomLevel
-    const scaledImageHeight = imageHeight * newZoomLevel
-
-    const maxPanX = Math.max(0, (scaledImageWidth - containerWidth) / 2)
-    const maxPanY = Math.max(0, (scaledImageHeight - containerHeight) / 2)
-
-    const constrainedPanX = Math.max(-maxPanX, Math.min(maxPanX, newPanX))
-    const constrainedPanY = Math.max(-maxPanY, Math.min(maxPanY, newPanY))
-
-    setZoomLevel(newZoomLevel)
-    setPanX(constrainedPanX)
-    setPanY(constrainedPanY)
+    customMarkers.forEach((marker) => {
+      addVideoMarker(marker)
+    })
   }
-}
 
-const handleLabelHover = useCallback(
-  (labelId: string | null) => {
-    if (hoverTimeout) {
-      clearTimeout(hoverTimeout)
+  // Replace the addVideoMarker function with this optimized version
+  const addVideoMarker = (marker: Marker) => {
+    if (!map.current) return
+
+    // Create marker container with hardware acceleration
+    const el = document.createElement("div")
+    el.className = "video-marker"
+    el.style.cssText = `
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    position: relative;
+  `
+
+    // Create optimized video element
+    const video = document.createElement("video")
+    video.muted = true
+    video.loop = true
+    video.playsInline = true
+    video.preload = "auto"
+    video.style.cssText = `
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+  `
+
+    // Create a low-resolution version for mobile
+    const isMobile = window.innerWidth < 768
+    const videoUrl = isMobile
+      ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo%20map-mobile-eTyBG07WXbspqZDOaFfP1CVgJPdZP3.mp4"
+      : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo%20map-eTyBG07WXbspqZDOaFfP1CVgJPdZP3.mp4"
+
+    // Create a blob URL for better performance
+    fetch(videoUrl)
+      .then((response) => response.blob())
+      .then((blob) => {
+        const blobUrl = URL.createObjectURL(blob)
+        video.src = blobUrl
+
+        // Clean up blob URL when video is loaded
+        video.onloadeddata = () => {
+          URL.revokeObjectURL(blobUrl)
+        }
+      })
+      .catch(() => {
+        // Fallback to direct URL if blob creation fails
+        video.src = videoUrl
+      })
+
+    // Create fallback image
+    const fallbackImage = document.createElement("img")
+    fallbackImage.src =
+      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/abu-dhabi-police-logo-21AF543362-nwLnkElCePIGxnmxG49FlWYFtViagS.png"
+    fallbackImage.alt = "Abu Dhabi Police Logo"
+    fallbackImage.style.cssText = `
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 6px;
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    transform: translate3d(0, 0, 0);
+  `
+
+    // Add elements to marker
+    el.appendChild(video)
+    el.appendChild(fallbackImage)
+
+    // Create the marker
+    const mapboxMarker = new mapboxgl.Marker({
+      element: el,
+      anchor: "center",
+    })
+      .setLngLat(marker.coordinates)
+      .addTo(map.current)
+
+    // Optimize hover effects with hardware acceleration
+    let isHovered = false
+    el.addEventListener("mouseenter", () => {
+      if (!isHovered) {
+        isHovered = true
+        el.style.transform = "scale(1.1) translate3d(0, 0, 0)"
+        el.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.2)"
+      }
+    })
+
+    el.addEventListener("mouseleave", () => {
+      if (isHovered) {
+        isHovered = false
+        el.style.transform = "scale(1) translate3d(0, 0, 0)"
+        el.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.1)"
+      }
+    })
+
+    // Update the click handler in the addVideoMarker function to handle the new format
+    el.addEventListener("click", () => {
+      if (marker.name === "Zayed National Museum") {
+        router.push("/abu-dhabi/zayed-national-museum")
+      } else {
+        setSelectedMarker(marker)
+        setShowingImage(true)
+
+        map.current?.flyTo({
+          center: marker.coordinates,
+          zoom: 14,
+          duration: 1000,
+        })
+      }
+    })
+
+    // Optimized video playback management
+    const playVideo = () => {
+      const playPromise = video.play()
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Show fallback if video fails to play
+          video.style.display = "none"
+          fallbackImage.style.display = "block"
+        })
+      }
     }
 
-    const timeout = setTimeout(() => {
-      setHoveredLabel(labelId)
-    }, 50) // Small delay for smoother transitions
+    // Play video when it's in viewport
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            playVideo()
+          } else {
+            video.pause()
+          }
+        })
+      },
+      {
+        root: null,
+        rootMargin: "50px",
+        threshold: 0.1,
+      },
+    )
 
-    setHoverTimeout(timeout)
-  },
-  [hoverTimeout],
-)
+    observer.observe(el)
 
-const getElementOpacity = (elementId?: string) => {
-  if (!hoveredLabel) return "opacity-100 transition-opacity duration-500 ease-out"
-  return hoveredLabel === elementId
-    ? "opacity-100 transition-opacity duration-300 ease-out"
-    : "opacity-40 transition-opacity duration-500 ease-out"
-}
+    // Handle visibility changes
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        playVideo()
+      } else {
+        video.pause()
+      }
+    })
 
-const getElementScale = (elementId?: string) => {
-  if (!hoveredLabel) return "scale-100 transition-transform duration-300 ease-out"
-  return hoveredLabel === elementId
-    ? "scale-110 transition-transform duration-200 ease-out"
-    : "scale-95 transition-transform duration-300 ease-out"
-}
-
-const getElementBrightness = () => {
-  return hoveredLabel ? "brightness-75" : "brightness-100"
-}
-
-const getLabelClasses = (labelId: string) => {
-  const baseClasses =
-    "group flex items-center justify-center px-3 py-2 bg-white hover:bg-black rounded-full border-2 border-solid transition-all duration-300 ease-out cursor-pointer font-sans font-medium transform-gpu"
-  const isHovered = hoveredLabel === labelId
-
-  if (isHovered) {
-    return `${baseClasses} shadow-lg shadow-blue-500/50 ring-2 ring-blue-400 z-50 scale-110 brightness-110`
-  }
-
-  return `${baseClasses} ${getElementOpacity(labelId)} ${getElementScale(labelId)} hover:shadow-md hover:shadow-blue-500/30`
-}
-
-const getTextClasses = () => {
-  return "text-black group-hover:text-white tracking-normal leading-snug whitespace-nowrap overflow-hidden text-ellipsis font-sans font-semibold antialiased"
-}
-
-const getDotClasses = (elementId?: string) => {
-  return `flex w-[26px] h-[26px] items-center justify-center gap-[2.83px] p-[4.24px] absolute bg-[#ffffff1a] rounded-[13px] transition-all duration-300 ${getElementOpacity(elementId)} ${getElementScale(elementId)}`
-}
-
-const getVectorClasses = (elementId?: string) => {
-  return `absolute transition-all duration-300 ${getElementOpacity(elementId)} ${getElementScale(elementId)}`
-}
-
-useEffect(() => {
-  return () => {
-    if (hoverTimeout) {
-      clearTimeout(hoverTimeout)
+    // Memory management
+    const cleanup = () => {
+      observer.disconnect()
+      if (mapboxMarker) {
+        mapboxMarker.remove()
+      }
+      video.pause()
+      video.removeAttribute("src")
+      video.load()
     }
-  }
-}, [hoverTimeout])
 
-return (
-  <div className="w-full h-screen overflow-hidden bg-black relative">
-    {/* Animated Clouds */}
-    <div className="absolute inset-0 pointer-events-none z-30">
-      <Image
-        src="/cloud-7.png"
-        alt="Cloud"
-        width={120}
-        height={80}
-        className="absolute top-[10%] opacity-30 cloud-1"
-      />
-      <Image
-        src="/cloud-7.png"
-        alt="Cloud"
-        width={100}
-        height={70}
-        className="absolute top-[20%] opacity-25 cloud-2"
-      />
-      <Image
-        src="/cloud-7.png"
-        alt="Cloud"
-        width={140}
-        height={90}
-        className="absolute top-[15%] opacity-35 cloud-3"
-      />
-      <Image
-        src="/cloud-7.png"
-        alt="Cloud"
-        width={90}
-        height={65}
-        className="absolute top-[25%] opacity-20 cloud-4"
-      />
-      <Image
-        src="/cloud-7.png"
-        alt="Cloud"
-        width={110}
-        height={80}
-        className="absolute top-[8%] opacity-30 cloud-5"
-      />
-    </div>
-    {/* Full screen map container with zoom and pan */}
-    <div
-      ref={mapContainerRef}
-      className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-      onWheel={handleWheel}
-      style={{
-        transform: `scale(${zoomLevel}) translate(${panX / zoomLevel}px, ${panY / zoomLevel}px)`,
-        transformOrigin: "center center",
-        transition: isDragging ? "none" : "transform 0.3s ease-out",
-      }}
-    >
+    return cleanup
+  }
+
+  const toggleView = () => {
+    setShowingImage((prev) => !prev)
+  }
+
+  // Add a function to select different Mapillary locations based on the selected marker
+  const getMapillaryIdForMarker = () => {
+    // Always return the known working Abu Dhabi image ID
+    return "958596254871529"
+  }
+
+  return (
+    <div className="relative w-full h-screen overflow-hidden">
+      <TopNav />
+
+      <button
+        onClick={() => router.push("/")}
+        className={cn(
+          styles.btn,
+          "fixed bottom-4 left-4 z-50 p-2 bg-[#1B1464]/10 backdrop-blur-sm rounded-full hover:bg-[#1B1464]/20 transition-colors",
+        )}
+        aria-label="Back to Map"
+      >
+        <ArrowLeft className="h-6 w-6" />
+      </button>
+
+      <button
+        onClick={() => setShowProjects(!showProjects)}
+        className={cn(
+          styles.btn,
+          "fixed top-20 left-4 z-50 p-2 bg-[#1B1464]/10 backdrop-blur-sm rounded-full hover:bg-[#1B1464]/20 transition-colors flex items-center space-x-2",
+          showProjects ? "left-1/2 -translate-x-1/2" : "",
+        )}
+        aria-label={showProjects ? "Hide Projects" : "Show Projects"}
+      >
+        <Building2 className="h-6 w-6" />
+        {showProjects ? <ChevronLeft className="h-6 w-6" /> : <ChevronRight className="h-6 w-6" />}
+      </button>
+
+      <div ref={mapContainer} className="absolute inset-0 w-full h-full" />
+
       <div
-        className="relative w-[100vw] h-[100vh] bg-cover bg-center transition-all duration-300 min-w-full min-h-full"
-        style={{
-          backgroundImage: "url('/images/abu-dhabi-satellite-map.jpg')",
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center center",
-          width: "2370px",
-          height: "2370px",
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-        }}
+        className={cn(
+          "absolute top-16 left-0 w-1/2 h-[calc(100vh-4rem)] overflow-auto bg-gradient-to-br from-teal-300/50 via-orange-300/50 to-fuchsia-900/50 backdrop-filter backdrop-blur-md text-black transition-transform duration-300 ease-in-out",
+          showProjects ? "translate-x-0" : "-translate-x-full",
+        )}
       >
-        <div className={`w-full h-full transition-all duration-300 ${getElementBrightness()}`}>
-          {/* Hospital markers */}
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-hospital-1?name=${encodeURIComponent("Hospital - Location 1")}&nameAr=${encodeURIComponent("مستشفى - الموقع 1")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("hospital-1")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={`flex flex-col w-[50px] h-[50px] items-center justify-center gap-[7.58px] p-[11.36px] absolute top-[1103px] left-[1347px] bg-[#252525cc] hover:bg-[#1a1a1acc] rounded-[25px] transition-all duration-300 cursor-pointer hover:scale-110 hover:shadow-lg hover:shadow-blue-500/30 ${getElementOpacity("hospital-1")} ${getElementScale("hospital-1")}`}
-          >
-            <Image
-              className="relative w-[27.27px] h-[27.27px] transition-all duration-300 group-hover:brightness-110"
-              alt="Hospital"
-              src="/hospital-icons.svg"
-              width={27.27}
-              height={27.27}
-            />
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-hospital-2?name=${encodeURIComponent("Hospital - Location 2")}&nameAr=${encodeURIComponent("مستشفى - الموقع 2")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("hospital-2")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={`flex flex-col w-[50px] h-[50px] items-center justify-center gap-[7.58px] p-[11.36px] absolute top-[978px] left-[1095px] bg-[#252525cc] hover:bg-[#1a1a1acc] rounded-[25px] transition-all duration-300 cursor-pointer hover:scale-110 hover:shadow-lg hover:shadow-blue-500/30 ${getElementOpacity("hospital-2")} ${getElementScale("hospital-2")}`}
-          >
-            <Image
-              className="relative w-[27.27px] h-[27.27px] transition-all duration-300 group-hover:brightness-110"
-              alt="Hospital"
-              src="/hospital-icons.svg"
-              width={27.27}
-              height={27.27}
-            />
-          </Button>
-
-          {/* Police station markers */}
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-police-1?name=${encodeURIComponent("Police Station - Location 1")}&nameAr=${encodeURIComponent("مركز الشرطة - الموقع 1")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("police-1")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={`absolute w-[60px] h-[60px] top-[1118px] left-[1068px] transition-all duration-300 cursor-pointer hover:scale-110 hover:shadow-lg hover:shadow-blue-500/30 rounded-full ${getElementOpacity("police-1")} ${getElementScale("police-1")}`}
-          >
-            <Image
-              className="w-full h-full transition-all duration-300 hover:brightness-110"
-              alt="Police station"
-              src="/police-icons.svg"
-              width={60}
-              height={60}
-            />
-          </Button>
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-police-2?name=${encodeURIComponent("Police Station - Location 2")}&nameAr=${encodeURIComponent("مركز الشرطة - الموقع 2")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("police-2")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={`absolute w-[60px] h-[60px] top-[1178px] left-[1178px] transition-all duration-300 cursor-pointer hover:scale-110 hover:shadow-lg hover:shadow-blue-500/30 rounded-full ${getElementOpacity("police-2")} ${getElementScale("police-2")}`}
-          >
-            <Image
-              className="w-full h-full transition-all duration-300 hover:brightness-110"
-              alt="Police station"
-              src="/police-icons.svg"
-              width={60}
-              height={60}
-            />
-          </Button>
-
-          {/* Marker 1 - Al Aliah */}
-          <div
-            className={`absolute w-[69px] h-[68px] top-[589px] left-[1134px] transition-all duration-300 transform-gpu ${getElementOpacity("urgent-point-al-aliah")} ${getElementScale("urgent-point-al-aliah")}`}
-          >
-            <div className={`${getDotClasses("urgent-point-al-aliah")} top-[42px] left-0`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("urgent-point-al-aliah")} w-14 h-14 top-0 left-[13px]`}
-              alt="Vector"
-              src="/vector-21.svg"
-              width={14}
-              height={14}
-            />
-          </div>
-
-          {/* Marker 2 - Al Nahdha */}
-          <div
-            className={`absolute w-[51px] h-[39px] top-[1502px] left-[1328px] transition-all duration-300 transform-gpu ${getElementOpacity("urgent-point-al-nahdha")} ${getElementScale("urgent-point-al-nahdha")}`}
-          >
-            <div className={`${getDotClasses("urgent-point-al-nahdha")} top-[13px] left-[25px]`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("urgent-point-al-nahdha")} w-[37px] h-[26px] top-0 left-0`}
-              alt="Vector"
-              src="/vector-35.svg"
-              width={37}
-              height={26}
-            />
-          </div>
-
-          {/* Marker 3 - Shooting Range */}
-          <div
-            className={`absolute w-[51px] h-[39px] top-[1753px] left-[2015px] transition-all duration-300 transform-gpu ${getElementOpacity("shooting-range-ad-police-rcc")} ${getElementScale("shooting-range-ad-police-rcc")}`}
-          >
-            <div className={`${getDotClasses("shooting-range-ad-police-rcc")} top-[13px] left-[25px]`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("shooting-range-ad-police-rcc")} w-[37px] h-[26px] top-0 left-0`}
-              alt="Vector"
-              src="/vector-35.svg"
-              width={37}
-              height={26}
-            />
-          </div>
-
-          {/* Complex marker group - Urgent Points Al Riyad & Rabdan 2 + NGC MBZ */}
-          <div
-            className={`absolute w-[411px] h-[121px] top-[1248px] left-[1048px] transition-all duration-300 transform-gpu ${getElementOpacity("urgent-point-al-riyad")} ${getElementScale("urgent-point-al-riyad")}`}
-          >
-            <div className="absolute w-[332px] h-[92px] top-[23px] left-[62px]">
-              {/* Urgent Point - Al Riyad */}
-              <div className="absolute w-[216px] h-12 top-11 left-[116px]">
-                <div className={`${getDotClasses("urgent-point-al-riyad")} top-[22px] left-[190px]`}>
-                  <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-                </div>
-                <Image
-                  className={`${getVectorClasses("urgent-point-al-riyad")} w-[38px] h-[17px] top-[17px] left-[163px]`}
-                  alt="Vector"
-                  src="/vector-24.svg"
-                  width={38}
-                  height={17}
-                />
-                <Button
-                  onClick={() =>
-                    router.push(
-                      `/dashboard/abu-dhabi-urgent-point-al-riyad?name=${encodeURIComponent("Urgent Point - Al Riyad")}&nameAr=${encodeURIComponent("نقطة عاجلة - الرياض")}`,
-                    )
-                  }
-                  onMouseEnter={() => handleLabelHover("urgent-point-al-riyad")}
-                  onMouseLeave={() => handleLabelHover(null)}
-                  className={getLabelClasses("urgent-point-al-riyad")}
-                  style={{ width: "163px", height: "26px", position: "absolute", top: "0", left: "0" }}
-                >
-                  <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Al Riyad</span>
-                </Button>
-              </div>
-
-              {/* Urgent Point - Rabdan 2 */}
-              <div className="absolute w-[187px] h-[54px] top-0 left-0">
-                <div className={`${getDotClasses("urgent-point-rabdan-2")} top-7 left-0`}>
-                  <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-                </div>
-                <Image
-                  className={`${getVectorClasses("urgent-point-rabdan-2")} w-5 h-[17px] top-6 left-[11px]`}
-                  alt="Vector"
-                  src="/vector-26.svg"
-                  width={5}
-                  height={17}
-                />
-                <Button
-                  onClick={() =>
-                    router.push(
-                      `/dashboard/abu-dhabi-urgent-point-rabdan-2?name=${encodeURIComponent("Urgent Point - Rabdan 2")}&nameAr=${encodeURIComponent("نقطة عاجلة - ربدان 2")}`,
-                    )
-                  }
-                  onMouseEnter={() => handleLabelHover("urgent-point-rabdan-2")}
-                  onMouseLeave={() => handleLabelHover(null)}
-                  className={getLabelClasses("urgent-point-rabdan-2")}
-                  style={{ width: "163px", height: "26px", position: "absolute", top: "0", left: "24" }}
-                >
-                  <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Rabdan 2</span>
-                </Button>
-              </div>
-            </div>
-
-            {/* NGC MBZ Ambulance */}
-            <div className="absolute w-[50px] h-[49px] top-0 left-[361px]">
-              <div className={`${getDotClasses("ngc-mbz-ambulance")} top-[23px] left-6`}>
-                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-              </div>
-              <Image
-                className={`${getVectorClasses("ngc-mbz-ambulance")} w-[35px] h-[35px] top-0 left-0`}
-                alt="Vector"
-                src="/vector-31.svg"
-                width={35}
-                height={35}
-              />
-            </div>
-
-            <Button
-              onClick={() =>
-                router.push(
-                  `/dashboard/abu-dhabi-ngc-mbz-ambulance?name=${encodeURIComponent("NGC MBZ Ambulance")}&nameAr=${encodeURIComponent("إسعاف مركز الإدارة البيئية")}`,
-                )
-              }
-              onMouseEnter={() => handleLabelHover("ngc-mbz-ambulance")}
-              onMouseLeave={() => handleLabelHover(null)}
-              className={getLabelClasses("ngc-mbz-ambulance")}
-              style={{ width: "163px", height: "26px", position: "absolute", top: "95px", left: "0" }}
-            >
-              <span className={`text-[14px] ${getTextClasses()}`}>NGC MBZ Ambulance</span>
-            </Button>
-          </div>
-
-          {/* Shakboot Civil Defense */}
-          <div
-            className={`absolute w-[35px] h-11 top-[1381px] left-[1466px] transition-all duration-300 transform-gpu ${getElementOpacity("shakboot-civil-defense")} ${getElementScale("shakboot-civil-defense")}`}
-          >
-            <div className={`${getDotClasses("shakboot-civil-defense")} top-[18px] left-0`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("shakboot-civil-defense")} w-[21px] h-[30px] top-0 left-3.5`}
-              alt="Vector"
-              src="/vector-43.svg"
-              width={21}
-              height={30}
-            />
-          </div>
-
-          {/* NGC Abu Dhabi Airport */}
-          <div
-            className={`absolute w-[26px] h-[55px] top-[1369px] left-[1152px] transition-all duration-300 transform-gpu ${getElementOpacity("ngc-abu-dhabi-airport")} ${getElementScale("ngc-abu-dhabi-airport")}`}
-          >
-            <div className={`${getDotClasses("ngc-abu-dhabi-airport")} top-[29px] left-0`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("ngc-abu-dhabi-airport")} w-1.5 h-[42px] top-0 left-2.5`}
-              alt="Vector"
-              src="/vector-32.svg"
-              width={1.5}
-              height={42}
-            />
-          </div>
-
-          {/* Police Center Musaffah */}
-          <div
-            className={`absolute w-12 h-[49px] top-[1427px] left-[1103px] transition-all duration-300 transform-gpu ${getElementOpacity("police-center-musaffah")} ${getElementScale("police-center-musaffah")}`}
-          >
-            <div className={`${getDotClasses("police-center-musaffah")} top-[23px] left-[22px]`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("police-center-musaffah")} w-[35px] h-9 top-0 left-0`}
-              alt="Vector"
-              src="/vector-36.svg"
-              width={35}
-              height={9}
-            />
-          </div>
-
-          {/* Rebdan Police Points & Disciplinary Department Complex */}
-          <div
-            className={`absolute w-[235px] h-[132px] top-[1208px] left-[814px] transition-all duration-300 transform-gpu`}
-          >
-            <div className="absolute w-[195px] h-[82px] top-[51px] left-10">
-              <div className="absolute w-[26px] h-11 top-0 left-[169px]">
-                <div
-                  className={`${getDotClasses("rebdan-police-points")} top-[18px] left-0`}
-                  onMouseEnter={() => handleLabelHover("rebdan-police-points")}
-                  onMouseLeave={() => handleLabelHover(null)}
-                >
-                  <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-                </div>
-                <Image
-                  className={`${getVectorClasses("rebdan-police-points")} w-1.5 h-8 top-0 left-[11px]`}
-                  alt="Vector"
-                  src="/vector-27.svg"
-                  width={1.5}
-                  height={8}
-                  onMouseEnter={() => handleLabelHover("rebdan-police-points")}
-                  onMouseLeave={() => handleLabelHover(null)}
-                />
-              </div>
-
-              <div
-                className={`absolute w-[195px] h-[52px] top-[30px] left-0 transition-all duration-300 transform-gpu ${getElementOpacity("rebdan-police-points")} ${getElementScale("rebdan-police-points")}`}
-              >
-                <div
-                  className={`${getDotClasses("rebdan-police-points")} top-[26px] left-[169px]`}
-                  onMouseEnter={() => handleLabelHover("rebdan-police-points")}
-                  onMouseLeave={() => handleLabelHover(null)}
-                >
-                  <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-                </div>
-                <Image
-                  className={`${getVectorClasses("rebdan-police-points")} w-[35px] h-[17px] top-[23px] left-[148px]`}
-                  alt="Vector"
-                  src="/vector-42.svg"
-                  width={35}
-                  height={17}
-                  onMouseEnter={() => handleLabelHover("rebdan-police-points")}
-                  onMouseLeave={() => handleLabelHover(null)}
-                />
-                <Button
-                  onClick={() =>
-                    router.push(
-                      `/dashboard/abu-dhabi-rebdan-police-points?name=${encodeURIComponent("Rebdan Police Points")}&nameAr=${encodeURIComponent("نقاط شرطة ربدان")}`,
-                    )
-                  }
-                  onMouseEnter={() => handleLabelHover("rebdan-police-points")}
-                  onMouseLeave={() => handleLabelHover(null)}
-                  className={getLabelClasses("rebdan-police-points")}
-                  style={{ width: "150px", height: "29px", position: "absolute", top: "0", left: "0" }}
-                >
-                  <span className={`text-[14px] ${getTextClasses()}`}>Rebdan Police Points</span>
-                </Button>
-              </div>
-            </div>
-
-            <div
-              className={`absolute w-[139px] h-[65px] top-0 left-0 transition-all duration-300 transform-gpu ${getElementOpacity("disciplinary-department")} ${getElementScale("disciplinary-department")}`}
-            >
-              <div
-                className={`${getDotClasses("disciplinary-department")} top-[39px] left-[57px]`}
-                onMouseEnter={() => handleLabelHover("disciplinary-department")}
-                onMouseLeave={() => handleLabelHover(null)}
-              >
-                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-              </div>
-              <Image
-                className={`${getVectorClasses("disciplinary-department")} w-1.5 h-[30px] top-[21px] left-[68px]`}
-                alt="Vector"
-                src="/vector-30.svg"
-                width={1.5}
-                height={30}
-                onMouseEnter={() => handleLabelHover("disciplinary-department")}
-                onMouseLeave={() => handleLabelHover(null)}
-              />
-              <Button
-                onClick={() =>
-                  router.push(
-                    `/dashboard/abu-dhabi-disciplinary-department?name=${encodeURIComponent("Disciplinary Department")}&nameAr=${encodeURIComponent("قسم التأديب")}`,
-                  )
-                }
-                onMouseEnter={() => handleLabelHover("disciplinary-department")}
-                onMouseLeave={() => handleLabelHover(null)}
-                className={getLabelClasses("disciplinary-department")}
-                style={{ width: "139px", height: "22px", position: "absolute", top: "0", left: "0" }}
-              >
-                <span className={`text-[13px] ${getTextClasses()}`}>Disciplinary Department</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* Special Task Sector */}
-          <div
-            onMouseEnter={() => handleLabelHover("special-task-sector")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={`absolute w-[26px] h-[81px] top-[991px] left-[670px] transition-all duration-300 cursor-pointer transform-gpu ${getElementOpacity("special-task-sector")} ${getElementScale("special-task-sector")}`}
-          >
-            <div className={`${getDotClasses("special-task-sector")} top-[55px] left-0`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("special-task-sector")} w-1.5 h-[65px] top-0 left-[11px]`}
-              alt="Vector"
-              src="/vector-29.svg"
-              width={1.5}
-              height={65}
-            />
-          </div>
-
-          {/* Clinics - Al Bateen */}
-          <div
-            className={`absolute w-[180px] h-24 top-[1044px] left-[488px] transition-all duration-300 transform-gpu ${getElementOpacity("clinics-al-bateen")} ${getElementScale("clinics-al-bateen")}`}
-          >
-            <div className={`${getDotClasses("clinics-al-bateen")} top-[70px] left-[154px]`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("clinics-al-bateen")} w-[30px] h-[60px] top-[23px] left-[137px]`}
-              alt="Vector"
-              src="/vector-48.svg"
-              width={30}
-              height={60}
-            />
-            <Button
-              onClick={() =>
-                router.push(
-                  `/dashboard/abu-dhabi-clinics-al-bateen?name=${encodeURIComponent("Clinics - Al Bateen")}&nameAr=${encodeURIComponent("عيادات - البطين")}`,
-                )
-              }
-              onMouseEnter={() => handleLabelHover("clinics-al-bateen")}
-              onMouseLeave={() => handleLabelHover(null)}
-              className={getLabelClasses("clinics-al-bateen")}
-              style={{ width: "141px", height: "28px", position: "absolute", top: "0", left: "0" }}
-            >
-              <span className={`text-[14px] ${getTextClasses()}`}>Clinics - Al Bateen</span>
-            </Button>
-          </div>
-
-          {/* Al Mushrif Children Speciality Centre */}
-          <div
-            className={`absolute w-[68px] h-12 top-[1162px] left-[734px] transition-all duration-300 transform-gpu ${getElementOpacity("al-mushrif-children")} ${getElementScale("al-mushrif-children")}`}
-          >
-            <div className={`${getDotClasses("al-mushrif-children")} top-4 left-[42px]`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("al-mushrif-children")} w-[54px] h-12 top-0 left-0`}
-              alt="Vector"
-              src="/vector-51.svg"
-              width={54}
-              height={12}
-            />
-          </div>
-
-          {/* Sadyat Civil Defense */}
-          <div
-            className={`absolute w-[26px] h-[59px] top-[850px] left-[881px] transition-all duration-300 transform-gpu ${getElementOpacity("sadyat-civil-defense")} ${getElementScale("sadyat-civil-defense")}`}
-          >
-            <div className={`${getDotClasses("sadyat-civil-defense")} top-[33px] left-0`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("sadyat-civil-defense")} w-[5px] h-[47px] top-0 left-[11px]`}
-              alt="Vector"
-              src="/vector-44.svg"
-              width={5}
-              height={47}
-            />
-          </div>
-
-          {/* Additional markers with proper positioning */}
-          <div
-            className={`absolute w-[26px] h-[46px] top-[1128px] left-[923px] transition-all duration-300 transform-gpu transition-all duration-300`}
-          >
-            <div className={`${getDotClasses()} top-5 left-0`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses()} w-1.5 h-[30px] top-0 left-2.5`}
-              alt="Vector"
-              src="/vector-30.svg"
-              width={1.5}
-              height={30}
-            />
-          </div>
-
-          <div
-            className={`absolute w-[26px] h-[46px] top-[1156px] left-[853px] transition-all duration-300 transform-gpu transition-all duration-300`}
-          >
-            <div className={`${getDotClasses()} top-5 left-0`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses()} w-1.5 h-[30px] top-0 left-2.5`}
-              alt="Vector"
-              src="/vector-30.svg"
-              width={1.5}
-              height={30}
-            />
-          </div>
-
-          {/* Urgent Point - Shahkbout */}
-          <div
-            className={`absolute w-[50px] h-[49px] top-[1200px] left-[1465px] transition-all duration-300 transform-gpu ${getElementOpacity("urgent-point-shahkbout")} ${getElementScale("urgent-point-shahkbout")}`}
-            onMouseEnter={() => handleLabelHover("urgent-point-shahkbout")}
-            onMouseLeave={() => handleLabelHover(null)}
-          >
-            <div className={`${getDotClasses("urgent-point-shahkbout")} top-[23px] left-6`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("urgent-point-shahkbout")} w-[35px] h-[35px] top-0 left-0 hover:scale-110 transition-transform duration-300`}
-              alt="Vector"
-              src="/vector-31.svg"
-              width={35}
-              height={35}
-            />
-
-            {/* Connection line to NGC Abu Dhabi Airport */}
-            <div
-              className={`absolute w-[2px] h-[169px] bg-gradient-to-b from-white/70 to-white/30 transition-opacity duration-300 ${hoveredLabel === "urgent-point-shahkbout" ? "opacity-100" : "opacity-0"}`}
-              style={{
-                top: "49px",
-                left: "25px",
-                boxShadow: "0 0 4px rgba(255, 255, 255, 0.5)",
-              }}
-            />
-
-            {/* Hover label */}
-            {hoveredLabel === "urgent-point-shahkbout" && (
-              <div
-                className="absolute bg-black/90 text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap z-50 animate-in fade-in duration-200"
-                style={{
-                  top: "-40px",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
-                }}
-              >
-                <span>NGC Abu Dhabi - Urgent Point Shahkbout</span>
-                <div
-                  className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0"
-                  style={{
-                    borderLeft: "6px solid transparent",
-                    borderRight: "6px solid transparent",
-                    borderTop: "6px solid rgba(0, 0, 0, 0.9)",
-                  }}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Traffic And Patrol + Clinics Al Shamkha Complex */}
-          <div
-            onMouseEnter={() => handleLabelHover("traffic-patrol-general")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={`absolute w-[321px] h-[111px] top-[1258px] left-[1618px] transition-all duration-300 cursor-pointer transform-gpu ${getElementOpacity("traffic-patrol-general")} ${getElementScale("traffic-patrol-general")}`}
-          >
-            <div className="absolute w-[321px] h-[104px] top-0 left-0">
-              <div className="absolute w-[321px] h-[104px] top-0 left-0">
-                <div
-                  onMouseEnter={() => handleLabelHover("traffic-patrol-general")}
-                  onMouseLeave={() => handleLabelHover(null)}
-                  className={`${getDotClasses("traffic-patrol-general")} top-[19px] left-[30px] cursor-pointer`}
-                >
-                  <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-                </div>
-
-                <div
-                  onMouseEnter={() => handleLabelHover("clinics-al-shamkha")}
-                  onMouseLeave={() => handleLabelHover(null)}
-                  className={`${getDotClasses("clinics-al-shamkha")} top-[57px] left-0 cursor-pointer`}
-                >
-                  <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-                </div>
-
-                {/* Precise dotted connector lines drawn with SVG */}
-                <svg
-                  width="321"
-                  height="104"
-                  className="absolute top-0 left-0 pointer-events-none"
-                  aria-hidden="true"
-                >
-                  {/* From dot center (43,32) to label left-center (76,28) */}
-                  <line
-                    x1={43}
-                    y1={32}
-                    x2={76}
-                    y2={28}
-                    stroke="white"
-                    strokeWidth={hoveredLabel === "traffic-patrol-general" ? 2.5 : 1.5}
-                    strokeDasharray="4 4"
-                    strokeLinecap="round"
-                    opacity={hoveredLabel && hoveredLabel !== "traffic-patrol-general" ? 0.4 : 0.9}
-                  />
-
-                  {/* From dot center (13,70) to label left-center (130,90) */}
-                  <line
-                    x1={13}
-                    y1={70}
-                    x2={130}
-                    y2={90}
-                    stroke="white"
-                    strokeWidth={hoveredLabel === "clinics-al-shamkha" ? 2.5 : 1.5}
-                    strokeDasharray="4 4"
-                    strokeLinecap="round"
-                    opacity={hoveredLabel && hoveredLabel !== "clinics-al-shamkha" ? 0.4 : 0.9}
-                  />
-                </svg>
-
-                <Button
-                  onClick={() =>
-                    router.push(
-                      `/dashboard/abu-dhabi-traffic-patrol-general?name=${encodeURIComponent(
-                        "Traffic And Patrol + General Maintenance",
-                      )}&nameAr=${encodeURIComponent("المرور والدوريات + الصيانة العامة")}`,
-                    )
-                  }
-                  onMouseEnter={() => handleLabelHover("traffic-patrol-general")}
-                  onMouseLeave={() => handleLabelHover(null)}
-                  className={getLabelClasses("traffic-patrol-general")}
-                  style={{ width: "245px", height: "27px", position: "absolute", top: "14px", left: "76px" }}
-                >
-                  <span className={`text-[13px] ${getTextClasses()}`}>Traffic And Patrol + General Maintenance</span>
-                </Button>
-              </div>
-
-              <Button
-                onClick={() =>
-                  router.push(
-                    `/dashboard/abu-dhabi-clinics-al-shamkha?name=${encodeURIComponent(
-                      "Clinics - Al Shamkha",
-                    )}&nameAr=${encodeURIComponent("عيادات - الشامخة")}`,
-                  )
-                }
-                onMouseEnter={() => handleLabelHover("clinics-al-shamkha")}
-                onMouseLeave={() => handleLabelHover(null)}
-                className={`group flex items-center justify-center px-3 py-2 bg-white hover:bg-black rounded-full border-2 border-solid transition-all duration-300 cursor-pointer font-sans font-medium ${
-                  hoveredLabel === "clinics-al-shamkha"
-                    ? "shadow-lg shadow-blue-500/50 ring-2 ring-blue-400 z-50 scale-110"
-                    : `${getElementOpacity("clinics-al-shamkha")} ${getElementScale("clinics-al-shamkha")}`
-                }`}
-                style={{ width: "145px", height: "29px", position: "absolute", top: "75px", left: "130px" }}
-              >
-                <span className={`text-[14px] ${getTextClasses()}`}>Clinics - Al Shamkha</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* New Alfalah Civil Defense */}
-          <div
-            className={`absolute w-[35px] h-11 top-[1116px] left-[1699px] transition-all duration-300 transform-gpu ${getElementOpacity("new-alfalah-civil-defense")} ${getElementScale("new-alfalah-civil-defense")}`}
-          >
-            <div className={`${getDotClasses("new-alfalah-civil-defense")} top-[18px] left-[9px]`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("new-alfalah-civil-defense")} w-[23px] h-[31px] top-0 left-0`}
-              alt="Vector"
-              src="/vector-38.svg"
-              width={23}
-              height={31}
-            />
-          </div>
-
-          {/* Haggana Offices */}
-          <div
-            className={`absolute w-[70px] h-[54px] top-[1715px] left-[1514px] transition-all duration-300 transform-gpu ${getElementOpacity("haggana-offices")} ${getElementScale("haggana-offices")}`}
-          >
-            <div className={`${getDotClasses("haggana-offices")} top-7 left-0`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("haggana-offices")} w-[58px] h-[41px] top-0 left-3`}
-              alt="Vector"
-              src="/vector-40.svg"
-              width={58}
-              height={41}
-            />
-          </div>
-
-          {/* Al Wathba Civil Defense Gym */}
-          <div
-            className={`absolute w-[70px] h-[54px] top-[1616px] left-[1492px] transition-all duration-300 transform-gpu ${getElementOpacity("al-wathba-civil-defense")} ${getElementScale("al-wathba-civil-defense")}`}
-          >
-            <div className={`${getDotClasses("al-wathba-civil-defense")} top-7 left-0`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("al-wathba-civil-defense")} w-[58px] h-[41px] top-0 left-3`}
-              alt="Vector"
-              src="/vector-40.svg"
-              width={58}
-              height={41}
-            />
-          </div>
-
-          {/* Sih Shoaib Civil Defense */}
-          <div
-            className={`absolute w-[53px] h-12 top-[819px] left-[1475px] transition-all duration-300 transform-gpu ${getElementOpacity("sih-shoaib-civil-defense")} ${getElementScale("sih-shoaib-civil-defense")}`}
-          >
-            <div className={`${getDotClasses("sih-shoaib-civil-defense")} top-[22px] left-[27px]`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("sih-shoaib-civil-defense")} w-[38px] h-[35px] top-0 left-0`}
-              alt="Vector"
-              src="/vector-23.svg"
-              width={38}
-              height={35}
-            />
-          </div>
-
-          {/* DPSC Al Shahama Clinic */}
-          <div
-            className={`absolute w-[42px] h-[70px] top-[777px] left-[1606px] transition-all duration-300 transform-gpu ${getElementOpacity("dpsc-al-shahama-clinic")} ${getElementScale("dpsc-al-shahama-clinic")}`}
-          >
-            <div className={`${getDotClasses("dpsc-al-shahama-clinic")} top-11 left-0`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("dpsc-al-shahama-clinic")} w-[30px] h-[57px] top-0 left-3`}
-              alt="Vector"
-              src="/vector-49.svg"
-              width={30}
-              height={57}
-            />
-          </div>
-
-          {/* Urgent Point - Al Rahbah */}
-          <div
-            className={`absolute w-[163px] h-[85px] top-[640px] left-[1474px] transition-all duration-300 transform-gpu ${getElementOpacity("urgent-point-al-rahbah")} ${getElementScale("urgent-point-al-rahbah")}`}
-          >
-            <div className={`${getDotClasses("urgent-point-al-rahbah")} top-[59px] left-[68px]`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses("urgent-point-al-rahbah")} w-1.5 h-[43px] top-6 left-[78px]`}
-              alt="Vector"
-              src="/vector-33.svg"
-              width={1.5}
-              height={43}
-            />
-            <Button
-              onClick={() =>
-                router.push(
-                  `/dashboard/abu-dhabi-urgent-point-al-rahbah?name=${encodeURIComponent("Urgent Point - Al Rahbah")}&nameAr=${encodeURIComponent("نقطة عاجلة - الرحبة")}`,
-                )
-              }
-              onMouseEnter={() => handleLabelHover("urgent-point-al-rahbah")}
-              onMouseLeave={() => handleLabelHover(null)}
-              className={getLabelClasses("urgent-point-al-rahbah")}
-              style={{ width: "163px", height: "26px", position: "absolute", top: "0", left: "0" }}
-            >
-              <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Al Rahbah</span>
-            </Button>
-          </div>
-
-          {/* Al Rahba Police Station Complex */}
-          <div
-            className={`absolute w-[316px] h-[104px] top-[438px] left-[1651px] transition-all duration-300 transform-gpu ${getElementOpacity("al-rahba-police-hcni")} ${getElementScale("al-rahba-police-hcni")}`}
-          >
-            <div className="absolute w-[163px] h-[70px] top-0 left-0">
-              <div className={`${getDotClasses("al-rahba-police-hcni")} top-11 left-[69px]`}>
-                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-              </div>
-              <Image
-                className={`${getVectorClasses("al-rahba-police-hcni")} w-1.5 h-[43px] top-3.5 left-[79px]`}
-                alt="Vector"
-                src="/vector-33.svg"
-                width={1.5}
-                height={43}
-              />
-              <Button
-                onClick={() =>
-                  router.push(
-                    `/dashboard/abu-dhabi-al-rahba-police-hcni?name=${encodeURIComponent("Al Rahba Police Station - AD Police HCNI")}&nameAr=${encodeURIComponent("مركز شرطة الرحبة - شرطة أبوظبي HCNI")}`,
-                  )
-                }
-                onMouseEnter={() => handleLabelHover("al-rahba-police-hcni")}
-                onMouseLeave={() => handleLabelHover(null)}
-                className={getLabelClasses("al-rahba-police-hcni")}
-                style={{ width: "163px", height: "17px", position: "absolute", top: "0", left: "0" }}
-              >
-                <span className={`text-[11px] ${getTextClasses()}`}>Al Rahba Police Station - AD Police HCNI</span>
-              </Button>
-            </div>
-
-            <div className="absolute w-[190px] h-[75px] top-[29px] left-[126px]">
-              <div className={`${getDotClasses("al-rahba-police-rcc")} top-[49px] left-[21px]`}>
-                <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-              </div>
-              <Image
-                className={`${getVectorClasses("al-rahba-police-rcc")} w-1.5 h-[43px] top-[19px] left-[31px]`}
-                alt="Vector"
-                src="/vector-33.svg"
-                width={1.5}
-                height={43}
-              />
-              <Button
-                onClick={() =>
-                  router.push(
-                    `/dashboard/abu-dhabi-al-rahba-police-rcc?name=${encodeURIComponent("Al Rahba Police Station - AD Police RCC")}&nameAr=${encodeURIComponent("مركز شرطة الرحبة - شرطة أبوظبي RCC")}`,
-                  )
-                }
-                onMouseEnter={() => handleLabelHover("al-rahba-police-rcc")}
-                onMouseLeave={() => handleLabelHover(null)}
-                className={getLabelClasses("al-rahba-police-rcc")}
-                style={{ width: "190px", height: "20px", position: "absolute", top: "0", left: "0" }}
-              >
-                <span className={`text-[12px] ${getTextClasses()}`}>Al Rahba Police Station - AD Police RCC</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* Additional vector marker */}
-          <div
-            className={`absolute w-[26px] h-14 top-[475px] left-[1507px] transition-all duration-300 transform-gpu transition-all duration-300`}
-          >
-            <div className={`${getDotClasses()} top-[30px] left-0`}>
-              <div className="relative w-[11.3px] h-[11.3px] bg-white rounded-[5.65px] wave-circle" />
-            </div>
-            <Image
-              className={`${getVectorClasses()} w-1.5 h-[43px] top-0 left-2.5`}
-              alt="Vector"
-              src="/vector-33.svg"
-              width={1.5}
-              height={43}
-            />
-          </div>
-
-          {/* All standalone label buttons */}
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-urgent-point-al-bahyah?name=${encodeURIComponent("Urgent Point - Al Bahyah")}&nameAr=${encodeURIComponent("نقطة عاجلة - الباهية")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("urgent-point-al-bahyah")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("urgent-point-al-bahyah")}
-            style={{ width: "163px", height: "29px", position: "absolute", top: "787px", left: "1389px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Al Bahyah</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-urgent-point-al-aliah?name=${encodeURIComponent("Urgent Point - Al Aliah")}&nameAr=${encodeURIComponent("نقطة عاجلة - العالية")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("urgent-point-al-aliah")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("urgent-point-al-aliah")}
-            style={{ width: "164px", height: "26px", position: "absolute", top: "562px", left: "1190px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Al Aliah</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-urgent-point-al-nahdha?name=${encodeURIComponent("Urgent Point - Al Nahdha")}&nameAr=${encodeURIComponent("نقطة عاجلة - النهضة")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("urgent-point-al-nahdha")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("urgent-point-al-nahdha")}
-            style={{ width: "161px", height: "25px", position: "absolute", top: "1474px", left: "1252px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Al Nahdha</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-urgent-point-shahkbout?name=${encodeURIComponent("Urgent Point - Shahkbout")}&nameAr=${encodeURIComponent("نقطة عاجلة - الشهامة")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("urgent-point-shahkbout")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("urgent-point-shahkbout")}
-            style={{ width: "170px", height: "27px", position: "absolute", top: "1217px", left: "1279px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Shahkbout</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-urgent-point-rabdan-1?name=${encodeURIComponent("Urgent Point - Rabdan 1")}&nameAr=${encodeURIComponent("نقطة عاجلة - ربدان 1")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("urgent-point-rabdan-1")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("urgent-point-rabdan-1")}
-            style={{ width: "163px", height: "26px", position: "absolute", top: "1232px", left: "958px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Rabdan 1</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-urgent-point-al-bateen?name=${encodeURIComponent("Urgent Point - Al Bateen")}&nameAr=${encodeURIComponent("نقطة عاجلة - البطين")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("urgent-point-al-bateen")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("urgent-point-al-bateen")}
-            style={{ width: "162px", height: "25px", position: "absolute", top: "964px", left: "607px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>Urgent Point - Al Bateen</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-urgent-point-al-muntazah?name=${encodeURIComponent("Urgent Point - Al Muntazah")}&nameAr=${encodeURIComponent("نقطة عاجلة - المنتزه")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("urgent-point-al-muntazah")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("urgent-point-al-muntazah")}
-            style={{ width: "162px", height: "24px", position: "absolute", top: "1103px", left: "865px" }}
-          >
-            <span className={`text-[13px] ${getTextClasses()}`}>Urgent Point - Al Muntazah</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-ngc-abu-dhabi-airport?name=${encodeURIComponent("NGC Abu Dhabi Airport")}&nameAr=${encodeURIComponent("مركز أبوظبي للملاحة الجوية")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("ngc-abu-dhabi-airport")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("ngc-abu-dhabi-airport")}
-            style={{ width: "171px", height: "27px", position: "absolute", top: "1168px", left: "1382px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>NGC Abu Dhabi Airport</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-shooting-range-ad-police-rcc?name=${encodeURIComponent("Shooting Range - AD Police RCC")}&nameAr=${encodeURIComponent("ميدان الرماية - شرطة أبوظبي")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("shooting-range-ad-police-rcc")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("shooting-range-ad-police-rcc")}
-            style={{ width: "206px", height: "27px", position: "absolute", top: "1725px", left: "1858px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>Shooting Range - AD Police RCC</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-police-center-musaffah?name=${encodeURIComponent("Police Center Musaffah - AD Police RCC")}&nameAr=${encodeURIComponent("مركز شرطة مصفح - شرطة أبوظبي")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("police-center-musaffah")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("police-center-musaffah")}
-            style={{ width: "255px", height: "27px", position: "absolute", top: "1400px", left: "860px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>Police Center Musaffah - AD Police RCC</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-special-task-sector?name=${encodeURIComponent("Special Task Sector - AD Police RCC")}&nameAr=${encodeURIComponent("قطاع المهام الخاصة - شرطة أبوظبي")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("special-task-sector")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("special-task-sector")}
-            style={{ width: "190px", height: "22px", position: "absolute", top: "1133px", left: "732px" }}
-          >
-            <span className={`text-[13px] ${getTextClasses()}`}>Special Task Sector - AD Police RCC</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-shamkha-community-police?name=${encodeURIComponent("Shamkha Community Police")}&nameAr=${encodeURIComponent("شرطة مجتمع الشامخة")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("shamkha-community-police")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("shamkha-community-police")}
-            style={{ width: "159px", height: "25px", position: "absolute", top: "1229px", left: "1571px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>Shamkha Community Police</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-haggana-offices?name=${encodeURIComponent("Haggana Offices")}&nameAr=${encodeURIComponent("مكاتب الهجانة")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("haggana-offices")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("haggana-offices")}
-            style={{ width: "151px", height: "33px", position: "absolute", top: "1680px", left: "1516px" }}
-          >
-            <span className={`text-[15px] ${getTextClasses()}`}>Haggana Offices</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-shakboot-civil-defense?name=${encodeURIComponent("Shakboot Civil Defense")}&nameAr=${encodeURIComponent("دفاع مدني الشخبوط")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("shakboot-civil-defense")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("shakboot-civil-defense")}
-            style={{ width: "138px", height: "22px", position: "absolute", top: "1357px", left: "1463px" }}
-          >
-            <span className={`text-[13px] ${getTextClasses()}`}>Shakboot Civil Defense</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-sadyat-civil-defense?name=${encodeURIComponent("Sadyat Civil Defense")}&nameAr=${encodeURIComponent("دفاع مدني السعديات")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("sadyat-civil-defense")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("sadyat-civil-defense")}
-            style={{ width: "162px", height: "25px", position: "absolute", top: "821px", left: "798px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>Sadyat Civil Defense</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-new-alfalah-civil-defense?name=${encodeURIComponent("New Alfalah Civil Defense")}&nameAr=${encodeURIComponent("دفاع مدني الفلاح الجديد")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("new-alfalah-civil-defense")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("new-alfalah-civil-defense")}
-            style={{ width: "180px", height: "28px", position: "absolute", top: "1084px", left: "1611px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>New Alfalah Civil Defense</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-sih-shoaib-civil-defense?name=${encodeURIComponent("Sih Shoaib Civil Defense")}&nameAr=${encodeURIComponent("دفاع مدني سيح شعيب")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("sih-shoaib-civil-defense")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("sih-shoaib-civil-defense")}
-            style={{ width: "164px", height: "26px", position: "absolute", top: "449px", left: "1427px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>Sih Shoaib Civil Defense</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-al-wathba-civil-defense?name=${encodeURIComponent("Al Wathba Civil Defense Gym")}&nameAr=${encodeURIComponent("صالة دفاع مدني الوثبة")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("al-wathba-civil-defense")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("al-wathba-civil-defense")}
-            style={{ width: "219px", height: "32px", position: "absolute", top: "1582px", left: "1455px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>Al Wathba Civil Defense Gym</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-dpsc-al-shahama-clinic?name=${encodeURIComponent("DPSC Al Shahama Clinic")}&nameAr=${encodeURIComponent("عيادة مركز شرطة الشهامة")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("dpsc-al-shahama-clinic")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("dpsc-al-shahama-clinic")}
-            style={{ width: "212px", height: "31px", position: "absolute", top: "745px", left: "1581px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>DPSC Al Shahama Clinic</span>
-          </Button>
-
-          <Button
-            onClick={() =>
-              router.push(
-                `/dashboard/abu-dhabi-al-mushrif-children?name=${encodeURIComponent("Al Mushrif Children Speciality Centre")}&nameAr=${encodeURIComponent("مركز المشرف التخصصي للأطفال")}`,
-              )
-            }
-            onMouseEnter={() => handleLabelHover("al-mushrif-children")}
-            onMouseLeave={() => handleLabelHover(null)}
-            className={getLabelClasses("al-mushrif-children")}
-            style={{ width: "275px", height: "29px", position: "absolute", top: "1162px", left: "454px" }}
-          >
-            <span className={`text-[14px] ${getTextClasses()}`}>Al Mushrif Children Speciality Centre</span>
-          </Button>
-        </div>
+        <AbuDhabiProjects />
       </div>
-    </div>
 
-    {/* Advanced Zoom Controls */}
-    <div className="fixed top-4 left-4 z-50 flex flex-col gap-2">
-      <button
-        onClick={handleZoomIn}
-        className="w-12 h-12 bg-black/80 hover:bg-black text-white rounded-lg flex items-center justify-center transition-colors shadow-lg border border-white/20"
-        title="Zoom In"
+      {/* Abu Dhabi View Button */}
+      <Button
+        onClick={() => setShowViewerModal(true)}
+        className="fixed top-20 right-4 z-50 bg-[#1B1464]/80 hover:bg-[#1B1464] text-white shadow-lg px-4 py-2 flex items-center gap-2 rounded-lg transition-all duration-300 hover:scale-105"
+        aria-label="Open Abu Dhabi 3D viewer"
       >
-        <span className="text-xl font-bold">+</span>
-      </button>
-      <button
-        onClick={handleZoomOut}
-        className="w-12 h-12 bg-black/80 hover:bg-black text-white rounded-lg flex items-center justify-center transition-colors shadow-lg border border-white/20"
-        title="Zoom Out"
-      >
-        <span className="text-xl font-bold">−</span>
-      </button>
-      <button
-        onClick={handleResetView}
-        className="w-12 h-12 bg-black/80 hover:bg-black text-white rounded-lg flex items-center justify-center transition-colors shadow-lg border border-white/20"
-        title="Reset View"
-      >
-        <span className="text-sm">⌂</span>
-      </button>
-    </div>
+        <MapIcon className="h-5 w-5" />
+        <span className="font-medium">Abu Dhabi View</span>
+      </Button>
 
-    {/* Zoom Level Indicator */}
-    <div className="fixed top-4 left-20 z-50 bg-black/80 text-white px-3 py-2 rounded-lg shadow-lg border border-white/20">
-      <span className="text-sm font-medium">{Math.round(zoomLevel * 100)}%</span>
-    </div>
+      {/* Viewer Modal with Tabs */}
+      {showViewerModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="relative w-[95vw] h-[90vh] bg-white rounded-lg shadow-2xl overflow-hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowViewerModal(false)}
+              className="absolute top-2 right-2 z-10 bg-white/90 hover:bg-white shadow-md"
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close Abu Dhabi viewer</span>
+            </Button>
 
-    {/* Show Controls Button */}
-    {!showSliders && (
-      <button
-        onClick={() => setShowSliders(true)}
-        className="fixed top-4 right-4 z-50 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-lg"
-      >
-        Show Controls
-      </button>
-    )}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full">
+              <TabsList className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10 bg-white/90 shadow-md">
+                <TabsTrigger value="cesium">Cesium 3D</TabsTrigger>
+                <TabsTrigger value="mapillary">Street View</TabsTrigger>
+              </TabsList>
 
-    {/* Centered Control Sliders */}
-    {showSliders && (
-      <div className="fixed inset-0 pointer-events-none z-40">
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-          <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 shadow-2xl border border-white/20">
-            <div className="flex items-center gap-4">
+              <TabsContent value="cesium" className="w-full h-full">
+                <iframe
+                  title="Abu Dhabi Projects"
+                  src="https://ion.cesium.com/stories/viewer/?id=8149f761-66f7-4da4-bef0-2535c22071ac"
+                  className="w-full h-full rounded-lg"
+                  allow="fullscreen"
+                  allowFullScreen
+                />
+              </TabsContent>
+
+              {/* Update the MapillaryViewer component usage in the Viewer Modal */}
+              <TabsContent value="mapillary" className="w-full h-full">
+                <MapillaryViewer
+                  accessToken={MAPILLARY_ACCESS_TOKEN}
+                  mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}
+                  className="w-full h-full"
+                  imageId={getMapillaryIdForMarker()}
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      )}
+
+      {selectedMarker && (
+        <div className="fixed right-4 top-20 z-50 w-[400px] bg-white rounded-lg shadow-lg">
+          <Card>
+            <CardContent className="p-4">
               <button
-                onClick={() => setShowSliders(false)}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+                onClick={() => setSelectedMarker(null)}
+                className="absolute right-2 top-2 p-1 rounded-full bg-white/80 hover:bg-white transition-colors z-10"
               >
-                Hide Controls
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close image slider</span>
               </button>
-              <div className="text-white text-sm">
-                Abu Dhabi Interactive Map - Cloud View | Advanced Zoom & Pan Controls
+              <Carousel className="w-full">
+                <CarouselContent>
+                  {selectedMarker.images.map((image, index) => (
+                    <CarouselItem key={index}>
+                      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg">
+                        {showingImage ? (
+                          <Image
+                            src={image || "/placeholder.svg"}
+                            alt={`${selectedMarker.name} image ${index + 1}`}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 400px) 100vw, 400px"
+                            priority={index === 0}
+                          />
+                        ) : (
+                          <div className="w-full h-full">
+                            <Canvas camera={{ position: [0, 0, 10], fov: 50 }}>
+                              <Environment preset="sunset" background />
+                              <ambientLight intensity={0.5} />
+                              <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
+                              <pointLight position={[-10, -10, -10]} intensity={0.5} />
+                              <Model url={selectedMarker.glbFile} />
+                              <OrbitControls />
+                            </Canvas>
+                          </div>
+                        )}
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="left-2" />
+                <CarouselNext className="right-2" />
+              </Carousel>
+              <div className="mt-4 space-y-2">
+                <h2 className="text-2xl font-bold">{selectedMarker.name}</h2>
+                <p className="text-sm text-muted-foreground">{selectedMarker.description}</p>
               </div>
-            </div>
-          </div>
+              <ul className={saadiyatStyles.iconList}>
+                <li className={saadiyatStyles.iconItem} onClick={toggleView}>
+                  {[...Array(5)].map((_, index) => (
+                    <span key={index} className={saadiyatStyles.iconSpan}>
+                      <Cube className={saadiyatStyles.icon} />
+                    </span>
+                  ))}
+                  <p className={saadiyatStyles.label}>{showingImage ? "3D" : "2D"}</p>
+                </li>
+                <li className={saadiyatStyles.iconItem}>
+                  {[...Array(5)].map((_, index) => (
+                    <span key={index} className={saadiyatStyles.iconSpan}>
+                      <Radio className={saadiyatStyles.icon} />
+                    </span>
+                  ))}
+                  <p className={saadiyatStyles.label}>Live</p>
+                </li>
+                <li className={saadiyatStyles.iconItem}>
+                  {[...Array(5)].map((_, index) => (
+                    <span key={index} className={saadiyatStyles.iconSpan}>
+                      <FileText className={saadiyatStyles.icon} />
+                    </span>
+                  ))}
+                  <p className={saadiyatStyles.label}>Document</p>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
         </div>
-      </div>
-    )}
-  </div>
-)
+      )}
+    </div>
+  )
 }
-
-export default Map
