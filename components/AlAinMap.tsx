@@ -309,33 +309,33 @@ const markerStyles = `
     font-size: 8px; /* Reduced from 9px to 8px for smaller text on tablets */
     padding: 5px 10px; /* Reduced from 6px 12px to 5px 10px for smaller height */
   }
-  
+
   .marker-container.position-1 .marker-line,
   .marker-container.position-5 .marker-line {
     height: 60px;
   }
-  
+
   .marker-container.position-1 .marker-label {
     bottom: calc(100% + 60px);
   }
-  
+
   .marker-container.position-5 .marker-label {
     top: calc(100% + 60px);
   }
-  
+
   .marker-container.position-3 .marker-line,
   .marker-container.position-7 .marker-line {
     width: 60px;
   }
-  
+
   .marker-container.position-3 .marker-label {
     left: calc(100% + 60px);
   }
-  
+
   .marker-container.position-7 .marker-label {
     right: calc(100% + 60px);
   }
-  
+
   .marker-container.position-2 .marker-line,
   .marker-container.position-4 .marker-line,
   .marker-container.position-6 .marker-line,
@@ -343,12 +343,12 @@ const markerStyles = `
     width: 45px;
     height: 45px;
   }
-  
+
   .marker-container.position-2 .marker-label,
   .marker-container.position-4 .marker-label {
     left: calc(100% + 45px);
   }
-  
+
   .marker-container.position-6 .marker-label,
   .marker-container.position-8 .marker-label {
     right: calc(100% + 45px);
@@ -360,33 +360,33 @@ const markerStyles = `
     font-size: 7px; /* Reduced from 8px to 7px for smaller text on mobile */
     padding: 4px 8px; /* Kept the same as it's already quite small */
   }
-  
+
   .marker-container.position-1 .marker-line,
   .marker-container.position-5 .marker-line {
     height: 45px;
   }
-  
+
   .marker-container.position-1 .marker-label {
     bottom: calc(100% + 45px);
   }
-  
+
   .marker-container.position-5 .marker-label {
     top: calc(100% + 45px);
   }
-  
+
   .marker-container.position-3 .marker-line,
   .marker-container.position-7 .marker-line {
     width: 45px;
   }
-  
+
   .marker-container.position-3 .marker-label {
     left: calc(100% + 45px);
   }
-  
+
   .marker-container.position-7 .marker-label {
     right: calc(100% + 45px);
   }
-  
+
   .marker-container.position-2 .marker-line,
   .marker-container.position-4 .marker-line,
   .marker-container.position-6 .marker-line,
@@ -394,12 +394,12 @@ const markerStyles = `
     width: 35px;
     height: 35px;
   }
-  
+
   .marker-container.position-2 .marker-label,
   .marker-container.position-4 .marker-label {
     left: calc(100% + 35px);
   }
-  
+
   .marker-container.position-6 .marker-label,
   .marker-container.position-8 .marker-label {
     right: calc(100% + 35px);
@@ -1174,6 +1174,16 @@ export default function AlAinMap({
       map.current.on("zoom", () => {
         try {
           const currentZoom = map.current!.getZoom()
+
+          if (currentZoom <= initialZoomRef.current) {
+            map.current!.easeTo({
+              center: initialCenterRef.current,
+              zoom: initialZoomRef.current,
+              duration: 500,
+              essential: true,
+            })
+            return
+          }
 
           if (currentZoom >= 13) {
             // Hide "3 projects" marker at zoom 13 or higher
