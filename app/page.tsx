@@ -62,7 +62,6 @@ export default function HomePage() {
     const loadPoliceData = async () => {
       try {
         const PoliceData = await import("../data/police_locations.json")
-        console.log("[v0] Loaded police data:", PoliceData)
 
         // Handle different possible JSON structures
         if (Array.isArray(PoliceData.default)) {
