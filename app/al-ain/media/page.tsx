@@ -160,9 +160,11 @@ export default function MediaPage() {
   }
 
   return (
-    <div className="min-h-screen relative bg-gradient-to-b from-slate-950 via-slate-900 to-[#0b1020] text-white pb-20 md:pb-6">
+    <div className="min-h-screen relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white pb-20 md:pb-6">
       <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-20 pointer-events-none z-0"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(14,165,233,0.08),transparent_60%)] pointer-events-none z-0"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.1),transparent_60%)] pointer-events-none z-0"></div>
+
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 z-10"></div>
 
       {/* Header */}
       <div className="relative z-10">
