@@ -1543,7 +1543,7 @@ animation-delay: -8s;
       {!showSliders && (
         <button
           onClick={() => setShowSliders(true)}
-          className="fixed top-4 right-4 z-50 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md transition-colors shadow-lg"
+          className="fixed top-4 right-4 z-50 px-4 py-2 bg-primary hover:bg-primary/90 text-black rounded-md transition-colors shadow-lg"
         >
           Show Control
         </button>
@@ -1557,7 +1557,7 @@ animation-delay: -8s;
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => setShowSliders(false)}
-                  className="px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-md transition-colors"
+                  className="px-4 py-2 bg-destructive hover:bg-destructive/90 text-black rounded-md transition-colors"
                 >
                   Hide Control
                 </button>
