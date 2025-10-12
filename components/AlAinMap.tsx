@@ -560,12 +560,9 @@ const EXCLUDED_MARKERS: string[] = [
 ]
 
 const HIDDEN_AT_START = [
-  "م��كز شرطةasad",
+  "مركز شرطةasad",
   "متحف شرطة المربعة",
   "مركز شرطة المربعة",
-  "مديرية شرطة ا��عين",
-  "فرع النقل والمشاغل",
-  "نادي ض��اط الشرطة",
   "فلل فلج هزاع",
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
@@ -573,6 +570,8 @@ const HIDDEN_AT_START = [
   "7 Projects",
   "2 Projects",
 ]
+
+const HIDDEN_UNTIL_3_PROJECTS_CLICK = ["مديرية شرطة العين", "نادي ضباط الشرطة", "فرع النقل والمشاغل"]
 
 const PROJECT_NUMBERS: { [key: string]: string } = {
   "16 Projects": "16",
@@ -1122,6 +1121,15 @@ export default function AlAinMap({
               }
             }
           })
+
+          HIDDEN_UNTIL_3_PROJECTS_CLICK.forEach((markerName) => {
+            if (markers[markerName]) {
+              const element = markers[markerName].getElement()
+              if (element) {
+                element.style.display = "none"
+              }
+            }
+          })
         } catch (error) {
           console.error("Error setting marker visibility:", error)
         }
@@ -1159,6 +1167,9 @@ export default function AlAinMap({
             } else if (HIDDEN_AT_START.includes(name)) {
               const shouldShow = currentZoom >= 8
               element.style.display = shouldShow ? "block" : "none"
+            } else if (HIDDEN_UNTIL_3_PROJECTS_CLICK.includes(name)) {
+              // They will only be shown by the click handler, not by zoom level
+              // Don't change their display here - let the click handler control it
             }
           })
 
