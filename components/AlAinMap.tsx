@@ -683,6 +683,9 @@ export default function AlAinMap({
   const threeProjectsClickedRef = useRef<boolean>(false)
   const twoProjectsClickedRef = useRef<boolean>(false)
 
+  const previousZoomRef = useRef<number>(10.0)
+  const isResettingRef = useRef<boolean>(false)
+
   // Load Mapbox GL from CDN with better error handling
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -1170,25 +1173,53 @@ export default function AlAinMap({
         setMapError(`Map rendering error occurred: ${message}`)
       })
 
-      // Zoom event handler
       map.current.on("zoom", () => {
         try {
           const currentZoom = map.current!.getZoom()
 
-          if (currentZoom <= initialZoomRef.current) {
+          // Only reset if user is actively zooming out below initial level and not already resetting
+          if (
+            currentZoom < initialZoomRef.current &&
+            previousZoomRef.current >= initialZoomRef.current &&
+            !isResettingRef.current
+          ) {
+            isResettingRef.current = true
+
             map.current!.easeTo({
               center: initialCenterRef.current,
               zoom: initialZoomRef.current,
-              duration: 500,
+              duration: 800,
               essential: true,
+              easing: (t: number) => {
+                // Smooth easing function
+                return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+              },
             })
+
+            // Reset the flag after animation completes
+            setTimeout(() => {
+              isResettingRef.current = false
+              previousZoomRef.current = initialZoomRef.current
+            }, 800)
+
             return
           }
+
+          // Update previous zoom for next comparison
+          previousZoomRef.current = currentZoom
 
           if (currentZoom >= 13) {
             // Hide "3 projects" marker at zoom 13 or higher
             if (markersRef.current["3 projects"]) {
               const element = markersRef.current["3 projects"].getElement()
+              if (element) {
+                element.style.display = "none"
+              }
+            }
+
+            // Hide "2Projects" marker at zoom 13 or higher
+            if (markersRef.current["2Projects"]) {
+              const element = markersRef.current["2Projects"].getElement()
               if (element) {
                 element.style.display = "none"
               }
@@ -1205,10 +1236,29 @@ export default function AlAinMap({
                 }
               })
             }
+
+            // Show the two Al Murabba markers if they were clicked
+            if (twoProjectsClickedRef.current) {
+              HIDDEN_UNTIL_2_PROJECTS_CLICK.forEach((markerName) => {
+                if (markersRef.current[markerName]) {
+                  const element = markersRef.current[markerName].getElement()
+                  if (element) {
+                    element.style.display = "block"
+                  }
+                }
+              })
+            }
           } else {
-            // When zoom < 13, show "3 projects" and hide the three individual markers
+            // When zoom < 13, show "3 projects" and "2Projects", hide individual markers
             if (markersRef.current["3 projects"]) {
               const element = markersRef.current["3 projects"].getElement()
+              if (element) {
+                element.style.display = "block"
+              }
+            }
+
+            if (markersRef.current["2Projects"]) {
+              const element = markersRef.current["2Projects"].getElement()
               if (element) {
                 element.style.display = "block"
               }
@@ -1224,40 +1274,7 @@ export default function AlAinMap({
               }
             })
 
-            // Reset the clicked state
-            threeProjectsClickedRef.current = false
-          }
-
-          if (currentZoom >= 13) {
-            // Hide "2Projects" marker at zoom 13 or higher
-            if (markersRef.current["2Projects"]) {
-              const element = markersRef.current["2Projects"].getElement()
-              if (element) {
-                element.style.display = "none"
-              }
-            }
-
-            // Show the two individual markers if they were clicked
-            if (twoProjectsClickedRef.current) {
-              HIDDEN_UNTIL_2_PROJECTS_CLICK.forEach((markerName) => {
-                if (markersRef.current[markerName]) {
-                  const element = markersRef.current[markerName].getElement()
-                  if (element) {
-                    element.style.display = "block"
-                  }
-                }
-              })
-            }
-          } else {
-            // When zoom < 13, show "2Projects" and hide the two individual markers
-            if (markersRef.current["2Projects"]) {
-              const element = markersRef.current["2Projects"].getElement()
-              if (element) {
-                element.style.display = "block"
-              }
-            }
-
-            // Hide the two individual markers
+            // Hide the two Al Murabba markers
             HIDDEN_UNTIL_2_PROJECTS_CLICK.forEach((markerName) => {
               if (markersRef.current[markerName]) {
                 const element = markersRef.current[markerName].getElement()
@@ -1267,7 +1284,8 @@ export default function AlAinMap({
               }
             })
 
-            // Reset the clicked state
+            // Reset the clicked states
+            threeProjectsClickedRef.current = false
             twoProjectsClickedRef.current = false
           }
 
