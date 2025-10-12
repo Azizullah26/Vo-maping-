@@ -119,11 +119,11 @@ const markerStyles = `
 /* Added sophisticated label system from 16 projects page */
 .marker-label {
   position: absolute;
-  padding: 8px 16px;
+  padding: 6px 12px; /* Reduced from 8px 16px to 6px 12px for smaller height */
   background: rgba(255, 255, 255, 0.95);
   border: 2px solid rgba(0, 0, 0, 0.1);
   border-radius: 25px;
-  font-size: 11px; /* Reduced from 13px to 11px */
+  font-size: 9px; /* Reduced from 11px to 9px for smaller text */
   font-weight: 600;
   color: #000;
   white-space: nowrap;
@@ -306,36 +306,36 @@ const markerStyles = `
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .marker-label {
-    font-size: 9px; /* Reduced from 11px to 9px */
-    padding: 6px 12px;
+    font-size: 8px; /* Reduced from 9px to 8px for smaller text on tablets */
+    padding: 5px 10px; /* Reduced from 6px 12px to 5px 10px for smaller height */
   }
-
+  
   .marker-container.position-1 .marker-line,
   .marker-container.position-5 .marker-line {
     height: 60px;
   }
-
+  
   .marker-container.position-1 .marker-label {
     bottom: calc(100% + 60px);
   }
-
+  
   .marker-container.position-5 .marker-label {
     top: calc(100% + 60px);
   }
-
+  
   .marker-container.position-3 .marker-line,
   .marker-container.position-7 .marker-line {
     width: 60px;
   }
-
+  
   .marker-container.position-3 .marker-label {
     left: calc(100% + 60px);
   }
-
+  
   .marker-container.position-7 .marker-label {
     right: calc(100% + 60px);
   }
-
+  
   .marker-container.position-2 .marker-line,
   .marker-container.position-4 .marker-line,
   .marker-container.position-6 .marker-line,
@@ -343,12 +343,12 @@ const markerStyles = `
     width: 45px;
     height: 45px;
   }
-
+  
   .marker-container.position-2 .marker-label,
   .marker-container.position-4 .marker-label {
     left: calc(100% + 45px);
   }
-
+  
   .marker-container.position-6 .marker-label,
   .marker-container.position-8 .marker-label {
     right: calc(100% + 45px);
@@ -357,36 +357,36 @@ const markerStyles = `
 
 @media (max-width: 640px) {
   .marker-label {
-    font-size: 8px; /* Reduced from 10px to 8px */
-    padding: 4px 8px;
+    font-size: 7px; /* Reduced from 8px to 7px for smaller text on mobile */
+    padding: 4px 8px; /* Kept the same as it's already quite small */
   }
-
+  
   .marker-container.position-1 .marker-line,
   .marker-container.position-5 .marker-line {
     height: 45px;
   }
-
+  
   .marker-container.position-1 .marker-label {
     bottom: calc(100% + 45px);
   }
-
+  
   .marker-container.position-5 .marker-label {
     top: calc(100% + 45px);
   }
-
+  
   .marker-container.position-3 .marker-line,
   .marker-container.position-7 .marker-line {
     width: 45px;
   }
-
+  
   .marker-container.position-3 .marker-label {
     left: calc(100% + 45px);
   }
-
+  
   .marker-container.position-7 .marker-label {
     right: calc(100% + 45px);
   }
-
+  
   .marker-container.position-2 .marker-line,
   .marker-container.position-4 .marker-line,
   .marker-container.position-6 .marker-line,
@@ -394,12 +394,12 @@ const markerStyles = `
     width: 35px;
     height: 35px;
   }
-
+  
   .marker-container.position-2 .marker-label,
   .marker-container.position-4 .marker-label {
     left: calc(100% + 35px);
   }
-
+  
   .marker-container.position-6 .marker-label,
   .marker-container.position-8 .marker-label {
     right: calc(100% + 35px);
@@ -1635,10 +1635,7 @@ export default function AlAinMap({
         }
 
         if (name === "2Projects") {
-          line.style.width = "50px" // Match the label offset exactly
-          line.style.height = "3px" // Make line thicker for better visibility
-          line.style.background = "rgba(255, 255, 255, 0.9)" // Brighter color
-          line.style.boxShadow = "0 0 4px rgba(255, 255, 255, 0.5)" // Add glow effect
+          line.style.width = "30px" // Reduced from 80px to 30px to match the 50px label offset
         }
 
         // Hover behavior on label: highlight this marker and dim others
