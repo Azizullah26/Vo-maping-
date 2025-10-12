@@ -309,33 +309,33 @@ const markerStyles = `
     font-size: 9px; /* Reduced from 11px to 9px */
     padding: 6px 12px;
   }
-  
+
   .marker-container.position-1 .marker-line,
   .marker-container.position-5 .marker-line {
     height: 60px;
   }
-  
+
   .marker-container.position-1 .marker-label {
     bottom: calc(100% + 60px);
   }
-  
+
   .marker-container.position-5 .marker-label {
     top: calc(100% + 60px);
   }
-  
+
   .marker-container.position-3 .marker-line,
   .marker-container.position-7 .marker-line {
     width: 60px;
   }
-  
+
   .marker-container.position-3 .marker-label {
     left: calc(100% + 60px);
   }
-  
+
   .marker-container.position-7 .marker-label {
     right: calc(100% + 60px);
   }
-  
+
   .marker-container.position-2 .marker-line,
   .marker-container.position-4 .marker-line,
   .marker-container.position-6 .marker-line,
@@ -343,12 +343,12 @@ const markerStyles = `
     width: 45px;
     height: 45px;
   }
-  
+
   .marker-container.position-2 .marker-label,
   .marker-container.position-4 .marker-label {
     left: calc(100% + 45px);
   }
-  
+
   .marker-container.position-6 .marker-label,
   .marker-container.position-8 .marker-label {
     right: calc(100% + 45px);
@@ -360,33 +360,33 @@ const markerStyles = `
     font-size: 8px; /* Reduced from 10px to 8px */
     padding: 4px 8px;
   }
-  
+
   .marker-container.position-1 .marker-line,
   .marker-container.position-5 .marker-line {
     height: 45px;
   }
-  
+
   .marker-container.position-1 .marker-label {
     bottom: calc(100% + 45px);
   }
-  
+
   .marker-container.position-5 .marker-label {
     top: calc(100% + 45px);
   }
-  
+
   .marker-container.position-3 .marker-line,
   .marker-container.position-7 .marker-line {
     width: 45px;
   }
-  
+
   .marker-container.position-3 .marker-label {
     left: calc(100% + 45px);
   }
-  
+
   .marker-container.position-7 .marker-label {
     right: calc(100% + 45px);
   }
-  
+
   .marker-container.position-2 .marker-line,
   .marker-container.position-4 .marker-line,
   .marker-container.position-6 .marker-line,
@@ -394,12 +394,12 @@ const markerStyles = `
     width: 35px;
     height: 35px;
   }
-  
+
   .marker-container.position-2 .marker-label,
   .marker-container.position-4 .marker-label {
     left: calc(100% + 35px);
   }
-  
+
   .marker-container.position-6 .marker-label,
   .marker-container.position-8 .marker-label {
     right: calc(100% + 35px);
@@ -1635,7 +1635,10 @@ export default function AlAinMap({
         }
 
         if (name === "2Projects") {
-          line.style.width = "30px" // Reduced from 80px to 30px to match the 50px label offset
+          line.style.width = "50px" // Match the label offset exactly
+          line.style.height = "3px" // Make line thicker for better visibility
+          line.style.background = "rgba(255, 255, 255, 0.9)" // Brighter color
+          line.style.boxShadow = "0 0 4px rgba(255, 255, 255, 0.5)" // Add glow effect
         }
 
         // Hover behavior on label: highlight this marker and dim others
