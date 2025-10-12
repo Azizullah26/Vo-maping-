@@ -149,18 +149,18 @@ export default function MediaPage() {
   const getTypeColor = (type: string) => {
     switch (type) {
       case "image":
-        return "bg-green-100 text-green-800"
+        return "bg-accent text-accent-foreground"
       case "video":
-        return "bg-blue-100 text-blue-800"
+        return "bg-primary/20 text-primary-foreground"
       case "document":
-        return "bg-purple-100 text-purple-800"
+        return "bg-secondary text-secondary-foreground"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-muted text-muted-foreground"
     }
   }
 
   return (
-    <div className="min-h-screen relative bg-gradient-to-b from-slate-950 via-slate-900 to-[#0b1020] text-white pb-20 md:pb-6">
+    <div className="min-h-screen relative bg-gradient-to-b from-background via-background to-background/95 text-foreground pb-20 md:pb-6">
       {/* Header */}
       <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-20 pointer-events-none z-0"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(14,165,233,0.08),transparent_60%)] pointer-events-none z-0"></div>
@@ -171,16 +171,16 @@ export default function MediaPage() {
               variant="ghost"
               size="sm"
               onClick={() => router.back()}
-              className="text-cyan-100 hover:bg-cyan-600/20 border border-cyan-400 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300 w-full sm:w-auto justify-center sm:justify-start"
+              className="text-primary hover:bg-primary/20 border border-primary hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 w-full sm:w-auto justify-center sm:justify-start"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Al Ain
             </Button>
             <div className="w-full sm:w-auto">
-              <h1 className="text-xl sm:text-2xl font-bold text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-center sm:text-left">
+              <h1 className="text-xl sm:text-2xl font-bold text-transparent bg-gradient-to-r from-primary via-primary to-primary bg-clip-text text-center sm:text-left">
                 Media Gallery
               </h1>
-              <p className="text-cyan-300 text-sm sm:text-base text-center sm:text-left">
+              <p className="text-primary text-sm sm:text-base text-center sm:text-left">
                 Browse project media and documents
               </p>
             </div>
@@ -190,18 +190,18 @@ export default function MediaPage() {
 
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 relative z-10">
         {/* Filters */}
-        <Card className="mb-4 sm:mb-6 bg-white/5 backdrop-blur-md ring-1 ring-white/10 shadow-[0_10px_40px_-15px_rgba(14,165,233,0.25)]">
+        <Card className="mb-4 sm:mb-6 bg-card/5 backdrop-blur-md ring-1 ring-border shadow-[0_10px_40px_-15px_rgba(14,165,233,0.25)]">
           <CardContent className="p-3 sm:p-4">
             <div className="flex flex-col gap-3 sm:gap-4">
               {/* Search */}
               <div className="w-full">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-cyan-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary" />
                   <Input
                     placeholder="Search media..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 h-10 sm:h-9 bg-white/10 border-white/10 text-white placeholder-white/60 focus:border-cyan-400 focus:ring-cyan-400 transition-all duration-300 text-base sm:text-sm"
+                    className="pl-10 h-10 sm:h-9 bg-input/10 border-border text-foreground placeholder-muted-foreground focus:border-primary focus:ring-primary transition-all duration-300 text-base sm:text-sm"
                   />
                 </div>
               </div>
@@ -209,20 +209,23 @@ export default function MediaPage() {
               {/* Type Filter */}
               <div className="w-full sm:w-48">
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="h-10 sm:h-9 bg-white/10 border-white/10 text-white hover:border-cyan-400/40 transition-all duration-300 text-base sm:text-sm">
+                  <SelectTrigger className="h-10 sm:h-9 bg-input/10 border-border text-foreground hover:border-primary/40 transition-all duration-300 text-base sm:text-sm">
                     <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-900/90 backdrop-blur-md border-white/10">
-                    <SelectItem value="all" className="text-white hover:bg-white/10 text-base sm:text-sm">
+                  <SelectContent className="bg-popover/90 backdrop-blur-md border-border">
+                    <SelectItem value="all" className="text-popover-foreground hover:bg-accent text-base sm:text-sm">
                       All Types
                     </SelectItem>
-                    <SelectItem value="image" className="text-white hover:bg-white/10 text-base sm:text-sm">
+                    <SelectItem value="image" className="text-popover-foreground hover:bg-accent text-base sm:text-sm">
                       Images
                     </SelectItem>
-                    <SelectItem value="video" className="text-white hover:bg-white/10 text-base sm:text-sm">
+                    <SelectItem value="video" className="text-popover-foreground hover:bg-accent text-base sm:text-sm">
                       Videos
                     </SelectItem>
-                    <SelectItem value="document" className="text-white hover:bg-white/10 text-base sm:text-sm">
+                    <SelectItem
+                      value="document"
+                      className="text-popover-foreground hover:bg-accent text-base sm:text-sm"
+                    >
                       Documents
                     </SelectItem>
                   </SelectContent>
@@ -240,10 +243,10 @@ export default function MediaPage() {
           {filteredItems.map((item) => (
             <Card
               key={item.id}
-              className="bg-white/5 backdrop-blur-md ring-1 ring-white/10 hover:ring-cyan-400/40 shadow-[0_10px_40px_-15px_rgba(14,165,233,0.35)] transition-all duration-300"
+              className="bg-card/5 backdrop-blur-md ring-1 ring-border hover:ring-primary/40 shadow-[0_10px_40px_-15px_rgba(14,165,233,0.35)] transition-all duration-300"
             >
               <CardHeader className="pb-2 sm:pb-4">
-                <CardTitle className="flex items-start sm:items-center gap-2 text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text font-bold text-sm sm:text-base leading-tight">
+                <CardTitle className="flex items-start sm:items-center gap-2 text-transparent bg-gradient-to-r from-primary via-primary to-primary bg-clip-text font-bold text-sm sm:text-base leading-tight">
                   <span className="flex-shrink-0 mt-1 sm:mt-0">{getTypeIcon(item.type)}</span>
                   <span className="break-words">{item.name}</span>
                 </CardTitle>
@@ -252,7 +255,7 @@ export default function MediaPage() {
                 {/* Thumbnail */}
                 {item.thumbnail && (
                   <div className="mb-3 sm:mb-4">
-                    <div className="relative w-full h-32 sm:h-40 rounded-lg overflow-hidden border border-white/10">
+                    <div className="relative w-full h-32 sm:h-40 rounded-lg overflow-hidden border border-border">
                       <img
                         src={item.thumbnail || "/placeholder.svg"}
                         alt={item.name}
@@ -269,15 +272,17 @@ export default function MediaPage() {
 
                 <div className="flex flex-col gap-3 sm:gap-4">
                   <div className="space-y-1">
-                    <p className="text-xs sm:text-sm text-cyan-300">Uploaded on {item.uploadDate}</p>
-                    <p className="text-xs sm:text-sm text-cyan-300">Size: {formatFileSize(item.size)}</p>
-                    {item.project && <p className="text-xs sm:text-sm text-purple-300">Project: {item.project}</p>}
+                    <p className="text-xs sm:text-sm text-primary">Uploaded on {item.uploadDate}</p>
+                    <p className="text-xs sm:text-sm text-primary">Size: {formatFileSize(item.size)}</p>
+                    {item.project && (
+                      <p className="text-xs sm:text-sm text-secondary-foreground">Project: {item.project}</p>
+                    )}
                   </div>
-                  <div className="flex flex-wrap gap-1 sm:gap-2 p-3 rounded-xl bg-gradient-to-br from-white/10 via-cyan-500/5 to-blue-500/10 backdrop-blur-md border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_4px_12px_rgba(14,165,233,0.15)]">
+                  <div className="flex flex-wrap gap-1 sm:gap-2 p-3 rounded-xl bg-gradient-to-br from-card/10 via-primary/5 to-primary/10 backdrop-blur-md border border-border shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_4px_12px_rgba(14,165,233,0.15)]">
                     {item.tags.map((tag) => (
                       <Badge
                         key={tag}
-                        className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white border border-cyan-400 shadow-md shadow-cyan-400/30 hover:from-cyan-400 hover:to-blue-400 transition-all duration-300 text-xs px-2 py-1"
+                        className="bg-gradient-to-r from-primary to-primary text-primary-foreground border border-primary shadow-md shadow-primary/30 hover:from-primary/80 hover:to-primary/80 transition-all duration-300 text-xs px-2 py-1"
                       >
                         {tag}
                       </Badge>
@@ -287,7 +292,7 @@ export default function MediaPage() {
                 <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2">
                   <Button
                     variant="outline"
-                    className="flex-1 h-9 sm:h-8 bg-gradient-to-r from-cyan-600 to-blue-600 border-white/10 text-white hover:from-cyan-500 hover:to-blue-500 hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300 text-sm"
+                    className="flex-1 h-9 sm:h-8 bg-gradient-to-r from-primary to-primary border-border text-primary-foreground hover:from-primary/80 hover:to-primary/80 hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 text-sm"
                   >
                     <Eye className="w-4 h-4 mr-2" />
                     View
