@@ -522,13 +522,13 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "قسم هندسة المرور",
   "مركز شرطة فلج هزاع",
   "إدارة الأسلحة والمتفجرات",
-  "��بنى التحريات والم��درات",
+  "مبنى التحريات والمخدرات",
   "ادارة المهام الخاصة العين",
-  "ال��بط المروري والمراسم",
+  "الضبط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
-  "المعهد المر��ري",
-  "إدارة المرور والترخ��ص",
+  "المعهد المروري",
+  "إدارة المرور والترخيص",
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
@@ -541,7 +541,7 @@ const EXCLUDED_MARKERS: string[] = [
   "إدارة الأسلحة والمتفجرات",
   "مبنى التحريات والمخدرات",
   "ادارة المهام الخاصة العين",
-  "الضبط المروري والمرا��م",
+  "الضبط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
   "المعهد المروري",
@@ -549,9 +549,9 @@ const EXCLUDED_MARKERS: string[] = [
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
   "فلل فلج هزاع",
-  "ف��ل للادرات الشرط��ة عشارج",
+  "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
-  "��ركز شرطةasad",
+  "مركز شرطةasad",
   "ساحة حجز المركبات -asad",
   "16 Projects",
   "7 Projects",
@@ -812,7 +812,7 @@ export default function AlAinMap({
     const nameMap: { [key: string]: string } = {
       "قسم موسيقى شرطة أبوظبي": "Abu Dhabi Police Music Department",
       "إدارة التأهيل الشرطي - الفوعة": "Police Rehabilitation Department - Al Foua",
-      "��ركز شرطة هيلي": "Hili Police Station",
+      "مركز شرطة هيلي": "Hili Police Station",
       "1 Project": "Al Ain Development Project",
       "مركز شرطة الوقن": "Al Wagan Police Station",
       "ساحة حجز المركبات -asad": "Vehicle Impound Facility - Asad",
@@ -1153,10 +1153,28 @@ export default function AlAinMap({
         try {
           const currentZoom = map.current!.getZoom()
 
-          // When zoom < 13, show "3 projects" and hide the three individual markers
-          // When zoom >= 13, hide "3 projects" and show the three individual markers (if clicked)
-          if (currentZoom < 13) {
-            // Show "3 projects" marker
+          if (currentZoom >= 13) {
+            // Hide "3 projects" marker at zoom 13 or higher
+            if (markersRef.current["3 projects"]) {
+              const element = markersRef.current["3 projects"].getElement()
+              if (element) {
+                element.style.display = "none"
+              }
+            }
+
+            // Show the three individual markers if they were clicked
+            if (threeProjectsClickedRef.current) {
+              HIDDEN_UNTIL_3_PROJECTS_CLICK.forEach((markerName) => {
+                if (markersRef.current[markerName]) {
+                  const element = markersRef.current[markerName].getElement()
+                  if (element) {
+                    element.style.display = "block"
+                  }
+                }
+              })
+            }
+          } else {
+            // When zoom < 13, show "3 projects" and hide the three individual markers
             if (markersRef.current["3 projects"]) {
               const element = markersRef.current["3 projects"].getElement()
               if (element) {
