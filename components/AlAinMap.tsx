@@ -1400,10 +1400,10 @@ export default function AlAinMap({
             positionClass = "position-1" // Top
             break
           case "مديرية شرطة العين":
-            positionClass = "position-3" // Right
+            positionClass = "position-7" // Left
             break
           case "نادي ضباط الشرطة":
-            positionClass = "position-7" // Left
+            positionClass = "position-1" // Top
             break
           case "فرع النقل والمشاغل":
             positionClass = "position-5" // Bottom
