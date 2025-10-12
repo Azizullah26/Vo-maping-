@@ -1545,7 +1545,7 @@ animation-delay: -8s;
           onClick={() => setShowSliders(true)}
           className="fixed top-4 right-4 z-50 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md transition-colors shadow-lg"
         >
-          Show Controls
+          Show Control
         </button>
       )}
 
@@ -1559,7 +1559,7 @@ animation-delay: -8s;
                   onClick={() => setShowSliders(false)}
                   className="px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-md transition-colors"
                 >
-                  Hide Controls
+                  Hide Control
                 </button>
                 <div className="text-foreground text-sm">
                   Abu Dhabi Interactive Map - Cloud View | Advanced Zoom & Pan Controls
