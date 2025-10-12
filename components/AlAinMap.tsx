@@ -560,12 +560,11 @@ const EXCLUDED_MARKERS: string[] = [
 ]
 
 const HIDDEN_AT_START = [
-  "م��كز شرطةasad",
+  "مركز شرطةasad",
   "متحف شرطة المربعة",
   "مركز شرطة المربعة",
-  "مديرية شرطة ا��عين",
+  "مديرية شرطة العين",
   "فرع النقل والمشاغل",
-  "نادي ض��اط الشرطة",
   "فلل فلج هزاع",
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
@@ -579,6 +578,7 @@ const PROJECT_NUMBERS: { [key: string]: string } = {
   "7 Projects": "7",
   "2 Projects": "2",
   "1 Project": "1",
+  "3 Projects": "3",
   "2Projects": "2",
   "Alamerah 2 Projects": "2 al",
   "نقطة ثبات الروضة": "1",
@@ -679,6 +679,7 @@ export default function AlAinMap({
   const lastCenterRef = useRef<any>(null)
   const [clickedMarker, setClickedMarker] = useState<string | null>(null)
   const [mapError, setMapError] = useState<string | null>(null)
+  const [threeProjectsExpanded, setThreeProjectsExpanded] = useState(false)
 
   // Load Mapbox GL from CDN with better error handling
   useEffect(() => {
@@ -1253,6 +1254,7 @@ export default function AlAinMap({
         "16 Projects",
         "7 Projects",
         "2 Projects",
+        "3 Projects",
         "مركز شرطة زاخر",
         "مركز شرطة المربعة",
         "ساحة حجز المركبات -asad",
@@ -1285,6 +1287,9 @@ export default function AlAinMap({
             break
           case "2 Projects":
             positionClass = "position-3" // Right
+            break
+          case "3 Projects":
+            positionClass = "position-7" // Left
             break
           case "مركز شرطة زاخر":
             positionClass = "position-7" // Left
@@ -1451,6 +1456,7 @@ export default function AlAinMap({
         "16 Projects",
         "7 Projects",
         "2 Projects",
+        "3 Projects",
         "مركز شرطة زاخر",
         "مركز شرطة المربعة",
         "ساحة حجز المركبات -asad",
@@ -1480,8 +1486,51 @@ export default function AlAinMap({
         // Create label
         const label = document.createElement("button")
         label.className = "marker-label"
-        label.textContent = name
+        label.textContent = name === "نادي ضباط الشرطة" ? "3 Projects" : name
         label.setAttribute("aria-label", name)
+
+        if (name === "نادي ضباط الشرطة") {
+          label.addEventListener("click", (e) => {
+            e.stopPropagation()
+
+            // Calculate center point between the 3 markers
+            const marker1 = markersRef.current["نادي ضباط الشرطة"]
+            const marker2 = markersRef.current["مديرية شرطة العين"]
+            const marker3 = markersRef.current["فرع النقل والمشاغل"]
+
+            if (marker1 && marker2 && marker3) {
+              const coord1 = marker1.getLngLat()
+              const coord2 = marker2.getLngLat()
+              const coord3 = marker3.getLngLat()
+
+              const centerLng = (coord1.lng + coord2.lng + coord3.lng) / 3
+              const centerLat = (coord1.lat + coord2.lat + coord3.lat) / 3
+
+              // Zoom to show all 3 markers
+              map.flyTo({
+                center: [centerLng, centerLat],
+                zoom: 14,
+                duration: 1500,
+                essential: true,
+                easing: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+              })
+
+              // Show the hidden markers
+              setThreeProjectsExpanded(true)
+
+              // Make the 3 markers visible
+              const markersToShow = ["نادي ضباط الشرطة", "مديرية شرطة العين", "فرع النقل والمشاغل"]
+              markersToShow.forEach((markerName) => {
+                if (markersRef.current[markerName]) {
+                  const element = markersRef.current[markerName].getElement()
+                  if (element) {
+                    element.style.display = "block"
+                  }
+                }
+              })
+            }
+          })
+        }
 
         // Hover behavior on label: highlight this marker and dim others
         label.addEventListener("mouseenter", (e) => {
