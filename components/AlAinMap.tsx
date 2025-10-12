@@ -572,6 +572,7 @@ const HIDDEN_AT_START = [
 ]
 
 const HIDDEN_UNTIL_3_PROJECTS_CLICK = ["مديرية شرطة العين", "نادي ضباط الشرطة", "فرع النقل والمشاغل"]
+const HIDDEN_UNTIL_2_PROJECTS_CLICK = ["مركز شرطة المربعة", "متحف شرطة المربعة"]
 
 const PROJECT_NUMBERS: { [key: string]: string } = {
   "16 Projects": "16",
@@ -680,6 +681,7 @@ export default function AlAinMap({
   const [clickedMarker, setClickedMarker] = useState<string | null>(null)
   const [mapError, setMapError] = useState<string | null>(null)
   const threeProjectsClickedRef = useRef<boolean>(false)
+  const twoProjectsClickedRef = useRef<boolean>(false)
 
   // Load Mapbox GL from CDN with better error handling
   useEffect(() => {
@@ -1088,6 +1090,17 @@ export default function AlAinMap({
             })
             markerPositions["3 projects"] = coords3Projects
           }
+
+          const coords2Projects: [number, number] = [55.776750053389094, 24.221008086930823]
+          if (isValidCoordinate(coords2Projects)) {
+            markers["2Projects"] = createMarker({
+              name: "2Projects",
+              coordinates: coords2Projects,
+              alignment: "left-aligned",
+              map: map.current!,
+            })
+            markerPositions["2Projects"] = coords2Projects
+          }
         } catch (error) {
           console.error("Error creating project markers:", error)
         }
@@ -1124,6 +1137,15 @@ export default function AlAinMap({
           })
 
           HIDDEN_UNTIL_3_PROJECTS_CLICK.forEach((markerName) => {
+            if (markers[markerName]) {
+              const element = markers[markerName].getElement()
+              if (element) {
+                element.style.display = "none"
+              }
+            }
+          })
+
+          HIDDEN_UNTIL_2_PROJECTS_CLICK.forEach((markerName) => {
             if (markers[markerName]) {
               const element = markers[markerName].getElement()
               if (element) {
@@ -1196,6 +1218,49 @@ export default function AlAinMap({
             threeProjectsClickedRef.current = false
           }
 
+          if (currentZoom >= 13) {
+            // Hide "2Projects" marker at zoom 13 or higher
+            if (markersRef.current["2Projects"]) {
+              const element = markersRef.current["2Projects"].getElement()
+              if (element) {
+                element.style.display = "none"
+              }
+            }
+
+            // Show the two individual markers if they were clicked
+            if (twoProjectsClickedRef.current) {
+              HIDDEN_UNTIL_2_PROJECTS_CLICK.forEach((markerName) => {
+                if (markersRef.current[markerName]) {
+                  const element = markersRef.current[markerName].getElement()
+                  if (element) {
+                    element.style.display = "block"
+                  }
+                }
+              })
+            }
+          } else {
+            // When zoom < 13, show "2Projects" and hide the two individual markers
+            if (markersRef.current["2Projects"]) {
+              const element = markersRef.current["2Projects"].getElement()
+              if (element) {
+                element.style.display = "block"
+              }
+            }
+
+            // Hide the two individual markers
+            HIDDEN_UNTIL_2_PROJECTS_CLICK.forEach((markerName) => {
+              if (markersRef.current[markerName]) {
+                const element = markersRef.current[markerName].getElement()
+                if (element) {
+                  element.style.display = "none"
+                }
+              }
+            })
+
+            // Reset the clicked state
+            twoProjectsClickedRef.current = false
+          }
+
           // Marker visibility logic
           Object.entries(markers).forEach(([name, marker]) => {
             const element = marker.getElement()
@@ -1206,8 +1271,12 @@ export default function AlAinMap({
               return
             }
 
-            // Skip "3 projects" and its three sub-markers as they're handled above
-            if (name === "3 projects" || HIDDEN_UNTIL_3_PROJECTS_CLICK.includes(name)) {
+            if (
+              name === "3 projects" ||
+              name === "2Projects" ||
+              HIDDEN_UNTIL_3_PROJECTS_CLICK.includes(name) ||
+              HIDDEN_UNTIL_2_PROJECTS_CLICK.includes(name)
+            ) {
               return
             }
 
@@ -1357,6 +1426,9 @@ export default function AlAinMap({
             positionClass = "position-3" // Right
             break
           case "3 projects":
+            positionClass = "position-7" // Left
+            break
+          case "2Projects":
             positionClass = "position-7" // Left
             break
           case "مركز شرطة زاخر":
@@ -1543,6 +1615,7 @@ export default function AlAinMap({
         "فرع النقل والمشاغل",
         "مركز شرطة الوقن",
         "مركز شرطة الجيمي",
+        "2Projects",
       ]
 
       if (labeledMarkersArray.includes(name)) {
@@ -1645,6 +1718,37 @@ export default function AlAinMap({
               }, 1500)
 
               console.log(`Zoomed to ${name} and showing three markers`)
+            } else if (name === "2Projects") {
+              twoProjectsClickedRef.current = true
+
+              // Hide the "2Projects" marker itself
+              const twoProjectsElement = markersRef.current["2Projects"]?.getElement()
+              if (twoProjectsElement) {
+                twoProjectsElement.style.display = "none"
+              }
+
+              map.flyTo({
+                center: coordinates,
+                zoom: 13.5,
+                duration: 1500,
+                essential: true,
+                easing: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+              })
+
+              // Show the two Al Murabba markers after zoom
+              setTimeout(() => {
+                const twoProjectMarkers = ["مركز شرطة المربعة", "متحف شرطة المربعة"]
+                twoProjectMarkers.forEach((markerName) => {
+                  if (markersRef.current[markerName]) {
+                    const element = markersRef.current[markerName].getElement()
+                    if (element) {
+                      element.style.display = "block"
+                    }
+                  }
+                })
+              }, 1500)
+
+              console.log(`Zoomed to ${name} and showing two Al Murabba markers`)
             } else {
               // Regular zoom behavior for other markers
               map.flyTo({
@@ -1685,6 +1789,34 @@ export default function AlAinMap({
             setTimeout(() => {
               const threeProjectMarkers = ["مديرية شرطة العين", "نادي ضباط الشرطة", "فرع النقل والمشاغل"]
               threeProjectMarkers.forEach((markerName) => {
+                if (markersRef.current[markerName]) {
+                  const element = markersRef.current[markerName].getElement()
+                  if (element) {
+                    element.style.display = "block"
+                  }
+                }
+              })
+            }, 1500)
+          } else if (name === "2Projects") {
+            twoProjectsClickedRef.current = true
+
+            // Hide the "2Projects" marker itself
+            const twoProjectsElement = markersRef.current["2Projects"]?.getElement()
+            if (twoProjectsElement) {
+              twoProjectsElement.style.display = "none"
+            }
+
+            map.flyTo({
+              center: coordinates,
+              zoom: 13.5,
+              duration: 1500,
+              essential: true,
+              easing: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+            })
+
+            setTimeout(() => {
+              const twoProjectMarkers = ["مركز شرطة المربعة", "متحف شرطة المربعة"]
+              twoProjectMarkers.forEach((markerName) => {
                 if (markersRef.current[markerName]) {
                   const element = markersRef.current[markerName].getElement()
                   if (element) {
