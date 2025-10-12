@@ -28,6 +28,161 @@ const markerStyles = `
   }
 }
 
+/* Added futuristic border animations */
+@keyframes borderGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgba(6, 182, 212, 0.5),
+      0 0 40px rgba(6, 182, 212, 0.3),
+      inset 0 0 20px rgba(6, 182, 212, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(6, 182, 212, 0.8),
+      0 0 60px rgba(6, 182, 212, 0.5),
+      inset 0 0 30px rgba(6, 182, 212, 0.2);
+  }
+}
+
+@keyframes scanLine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+@keyframes cornerRotate {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.futuristic-border-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 3px;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3));
+  border-radius: 4px;
+  animation: borderGlow 3s ease-in-out infinite;
+}
+
+.futuristic-border-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 25%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.4), transparent);
+  animation: scanLine 4s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.corner-accent {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 2px solid rgba(6, 182, 212, 0.8);
+  pointer-events: none;
+  z-index: 2;
+  animation: cornerRotate 2s ease-in-out infinite;
+}
+
+.corner-accent::before,
+.corner-accent::after {
+  content: '';
+  position: absolute;
+  background: rgba(6, 182, 212, 0.8);
+}
+
+.corner-accent::before {
+  width: 12px;
+  height: 2px;
+}
+
+.corner-accent::after {
+  width: 2px;
+  height: 12px;
+}
+
+.corner-top-left {
+  top: -2px;
+  left: -2px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.corner-top-left::before {
+  top: -2px;
+  left: -2px;
+}
+
+.corner-top-left::after {
+  top: -2px;
+  left: -2px;
+}
+
+.corner-top-right {
+  top: -2px;
+  right: -2px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.corner-top-right::before {
+  top: -2px;
+  right: -2px;
+}
+
+.corner-top-right::after {
+  top: -2px;
+  right: -2px;
+}
+
+.corner-bottom-left {
+  bottom: -2px;
+  left: -2px;
+  border-right: none;
+  border-top: none;
+}
+
+.corner-bottom-left::before {
+  bottom: -2px;
+  left: -2px;
+}
+
+.corner-bottom-left::after {
+  bottom: -2px;
+  left: -2px;
+}
+
+.corner-bottom-right {
+  bottom: -2px;
+  right: -2px;
+  border-left: none;
+  border-top: none;
+}
+
+.corner-bottom-right::before {
+  bottom: -2px;
+  right: -2px;
+}
+
+.corner-bottom-right::after {
+  bottom: -2px;
+  right: -2px;
+}
+
 .marker-container {
   position: absolute !important;
   transform: translate(-50%, -50%);
@@ -1989,37 +2144,45 @@ export default function AlAinMap({
   }
 
   return (
-    <div className="relative w-full h-full">
-      <div ref={mapContainer} className="relative w-full h-full" />
+    /* Added futuristic border wrapper with corner accents */
+    <div className="futuristic-border-wrapper">
+      <div className="corner-accent corner-top-left"></div>
+      <div className="corner-accent corner-top-right"></div>
+      <div className="corner-accent corner-bottom-left"></div>
+      <div className="corner-accent corner-bottom-right"></div>
 
-      <AnimatedControls
-        onResetView={() => {
-          if (map.current) {
-            const resetCenter = initialCenterRef.current
+      <div className="relative w-full h-full">
+        <div ref={mapContainer} className="relative w-full h-full" />
 
-            map.current.easeTo({
-              center: resetCenter,
-              bearing: 0,
-              pitch: 0,
-              zoom: initialZoomRef.current,
-              duration: 1500,
-              essential: true,
-              easing: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
-            })
-          }
-        }}
-        onToggleTerrain={onToggleTerrain}
-      />
-      <div ref={tooltipRef} className="absolute pointer-events-none" style={{ display: "none" }} />
-      <MarkerHoverWidget
-        markerName={hoveredMarker || clickedMarker}
-        isVisible={!!hoveredMarker}
-        isClicked={!!clickedMarker}
-        onClickStateChange={(state) => {
-          if (!state) setClickedMarker(null)
-        }}
-      />
-      <MapInstructionWidget />
+        <AnimatedControls
+          onResetView={() => {
+            if (map.current) {
+              const resetCenter = initialCenterRef.current
+
+              map.current.easeTo({
+                center: resetCenter,
+                bearing: 0,
+                pitch: 0,
+                zoom: initialZoomRef.current,
+                duration: 1500,
+                essential: true,
+                easing: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+              })
+            }
+          }}
+          onToggleTerrain={onToggleTerrain}
+        />
+        <div ref={tooltipRef} className="absolute pointer-events-none" style={{ display: "none" }} />
+        <MarkerHoverWidget
+          markerName={hoveredMarker || clickedMarker}
+          isVisible={!!hoveredMarker}
+          isClicked={!!clickedMarker}
+          onClickStateChange={(state) => {
+            if (!state) setClickedMarker(null)
+          }}
+        />
+        <MapInstructionWidget />
+      </div>
     </div>
   )
 }
