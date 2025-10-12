@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Search, ImageIcon, Video, FileText, Download, Eye } from "lucide-react"
+import { ArrowLeft, Search, ImageIcon, Video, FileText, Eye } from "lucide-react"
 
 interface MediaItem {
   id: string
@@ -291,13 +291,6 @@ export default function MediaPage() {
                   >
                     <Eye className="w-4 h-4 mr-2" />
                     View
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1 h-9 sm:h-8 bg-gradient-to-r from-purple-600 to-blue-600 border-white/10 text-white hover:from-purple-500 hover:to-blue-500 hover:shadow-lg hover:shadow-purple-400/30 transition-all duration-300 text-sm"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
                   </Button>
                 </div>
               </CardContent>
