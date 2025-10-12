@@ -679,6 +679,7 @@ export default function AlAinMap({
   const lastCenterRef = useRef<any>(null)
   const [clickedMarker, setClickedMarker] = useState<string | null>(null)
   const [mapError, setMapError] = useState<string | null>(null)
+  const threeProjectsClickedRef = useRef<boolean>(false)
 
   // Load Mapbox GL from CDN with better error handling
   useEffect(() => {
@@ -1152,6 +1153,31 @@ export default function AlAinMap({
         try {
           const currentZoom = map.current!.getZoom()
 
+          // When zoom < 13, show "3 projects" and hide the three individual markers
+          // When zoom >= 13, hide "3 projects" and show the three individual markers (if clicked)
+          if (currentZoom < 13) {
+            // Show "3 projects" marker
+            if (markersRef.current["3 projects"]) {
+              const element = markersRef.current["3 projects"].getElement()
+              if (element) {
+                element.style.display = "block"
+              }
+            }
+
+            // Hide the three individual markers
+            HIDDEN_UNTIL_3_PROJECTS_CLICK.forEach((markerName) => {
+              if (markersRef.current[markerName]) {
+                const element = markersRef.current[markerName].getElement()
+                if (element) {
+                  element.style.display = "none"
+                }
+              }
+            })
+
+            // Reset the clicked state
+            threeProjectsClickedRef.current = false
+          }
+
           // Marker visibility logic
           Object.entries(markers).forEach(([name, marker]) => {
             const element = marker.getElement()
@@ -1162,14 +1188,16 @@ export default function AlAinMap({
               return
             }
 
+            // Skip "3 projects" and its three sub-markers as they're handled above
+            if (name === "3 projects" || HIDDEN_UNTIL_3_PROJECTS_CLICK.includes(name)) {
+              return
+            }
+
             if (ALWAYS_VISIBLE_MARKERS.includes(name)) {
               element.style.display = currentZoom >= 10 ? "none" : "block"
             } else if (HIDDEN_AT_START.includes(name)) {
               const shouldShow = currentZoom >= 8
               element.style.display = shouldShow ? "block" : "none"
-            } else if (HIDDEN_UNTIL_3_PROJECTS_CLICK.includes(name)) {
-              // They will only be shown by the click handler, not by zoom level
-              // Don't change their display here - let the click handler control it
             }
           })
 
@@ -1569,6 +1597,14 @@ export default function AlAinMap({
               // Single click on 16 Projects goes directly to the detailed view
               router.push("/al-ain/16-projects")
             } else if (name === "3 projects") {
+              threeProjectsClickedRef.current = true
+
+              // Hide the "3 projects" marker itself
+              const threeProjectsElement = markersRef.current["3 projects"]?.getElement()
+              if (threeProjectsElement) {
+                threeProjectsElement.style.display = "none"
+              }
+
               map.flyTo({
                 center: coordinates,
                 zoom: 13.5,
@@ -1612,6 +1648,14 @@ export default function AlAinMap({
             // Double click also goes to detailed view
             router.push("/al-ain/16-projects")
           } else if (name === "3 projects") {
+            threeProjectsClickedRef.current = true
+
+            // Hide the "3 projects" marker itself
+            const threeProjectsElement = markersRef.current["3 projects"]?.getElement()
+            if (threeProjectsElement) {
+              threeProjectsElement.style.display = "none"
+            }
+
             map.flyTo({
               center: coordinates,
               zoom: 13.5,
