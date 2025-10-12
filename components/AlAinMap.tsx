@@ -1630,6 +1630,10 @@ export default function AlAinMap({
         label.textContent = name
         label.setAttribute("aria-label", name)
 
+        if (name === "2Projects") {
+          label.style.transform = "translateY(-50%) translateX(10px)"
+        }
+
         // Hover behavior on label: highlight this marker and dim others
         label.addEventListener("mouseenter", (e) => {
           e.stopPropagation()
