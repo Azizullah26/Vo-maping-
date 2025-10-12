@@ -1634,6 +1634,10 @@ export default function AlAinMap({
           label.style.transform = "translateY(-50%) translateX(50px)"
         }
 
+        if (name === "2Projects") {
+          line.style.width = "30px" // Reduced from 80px to 30px to match the 50px label offset
+        }
+
         // Hover behavior on label: highlight this marker and dim others
         label.addEventListener("mouseenter", (e) => {
           e.stopPropagation()
