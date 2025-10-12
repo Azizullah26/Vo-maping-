@@ -958,7 +958,7 @@ export default function AlAinMap({
         ],
         minZoom: minimumZoom,
         maxZoom: 16,
-        dragPan: true,
+        dragPan: false,
         scrollZoom: true,
         renderWorldCopies: false,
         preserveDrawingBuffer: true,
@@ -970,18 +970,13 @@ export default function AlAinMap({
         touchZoomRotate: true,
       })
 
-      // Enable all interactions
       map.current.scrollZoom.enable()
       map.current.boxZoom.enable()
       map.current.dragRotate.enable()
-      map.current.dragPan.enable()
+      // dragPan remains disabled - users cannot pan the map
       map.current.keyboard.enable()
       map.current.doubleClickZoom.enable()
       map.current.touchZoomRotate.enable()
-
-      // Set zoom rates for smooth interaction
-      map.current.scrollZoom.setWheelZoomRate(0.01)
-      map.current.scrollZoom.setZoomRate(0.005)
 
       if (mapRef) {
         mapRef.current = map.current
