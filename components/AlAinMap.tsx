@@ -891,48 +891,55 @@ export default function AlAinMap({
       const centerLng = baseCenterLng + lngOffset
       const centerLat = baseCenterLat - latOffset
 
+      // Calculate the center of the bounded area for all devices to show all markers
       const getInitialCenter = () => {
         if (typeof window === "undefined") return [centerLng, centerLat]
 
-        // Use a more centered position that allows access to all markers
-        // Centered between Sweihan (55.33), Al Hayer (55.74), and other markers
-        const boundedCenterLng = 55.55 // More centered to accommodate Sweihan in the west
-        const boundedCenterLat = 24.25 // Slightly north to accommodate Al Hayer
+        // Use a more centered position for Al Ain area
+        const boundedCenterLng = 55.7 // Center around Al Ain city
+        const boundedCenterLat = 24.2 // Center around Al Ain city
         return [boundedCenterLng, boundedCenterLat]
       }
 
       const initialCenter = getInitialCenter()
       initialCenterRef.current = initialCenter
 
+      // Device-specific minimum zoom levels (prevents zooming out beyond these levels)
       const getMinimumZoom = () => {
-        if (typeof window === "undefined") return 9.0
+        if (typeof window === "undefined") return 10.0
         const width = window.innerWidth
 
-        // Lower minimum zoom levels to allow users to see more area
+        // Minimum zoom levels for different device types
         if (width <= 480) {
-          return 8.5 // Mobile: can zoom out more
+          // Mobile: Minimum zoom 9.5 (can't zoom out beyond this)
+          return 9.5
         }
 
         if (width >= 481 && width <= 768) {
-          return 9.0 // Tablet: can zoom out more
+          // Tablet: Minimum zoom 10.0 (can't zoom out beyond this)
+          return 10.0
         }
 
-        return 9.5 // Desktop: can zoom out more
+        return 10.5 // Desktop: Minimum zoom 10.5 (can't zoom out beyond this)
       }
 
+      // Initial zoom levels (same as minimum zoom levels)
       const getInitialZoom = () => {
-        if (typeof window === "undefined") return 9.5
+        if (typeof window === "undefined") return 10.0
         const width = window.innerWidth
 
+        // Initial zoom levels for all device types
         if (width <= 480) {
-          return 9.0 // Mobile: start more zoomed out
+          // Mobile: Initial zoom 9.5
+          return 9.5
         }
 
         if (width >= 481 && width <= 768) {
-          return 9.5 // Tablet: start more zoomed out
+          // Tablet: Initial zoom 10.0
+          return 10.0
         }
 
-        return 10.0 // Desktop: start at reasonable zoom
+        return 10.5 // Desktop: Initial zoom 10.5
       }
 
       const minimumZoom = getMinimumZoom()
@@ -972,8 +979,9 @@ export default function AlAinMap({
       map.current.doubleClickZoom.enable()
       map.current.touchZoomRotate.enable()
 
-      map.current.scrollZoom.setWheelZoomRate(0.02) // Increased from 0.01 for faster wheel zoom
-      map.current.scrollZoom.setZoomRate(0.01) // Increased from 0.005 for faster zoom
+      // Set zoom rates for smooth interaction
+      map.current.scrollZoom.setWheelZoomRate(0.01)
+      map.current.scrollZoom.setZoomRate(0.005)
 
       if (mapRef) {
         mapRef.current = map.current
@@ -1128,8 +1136,6 @@ export default function AlAinMap({
       map.current.on("zoom", () => {
         try {
           const currentZoom = map.current!.getZoom()
-
-          map.current.dragPan.enable()
 
           // Marker visibility logic
           Object.entries(markers).forEach(([name, marker]) => {
