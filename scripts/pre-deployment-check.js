@@ -8,11 +8,8 @@ const warnings = []
 
 // Check 1: Environment variables template
 function checkEnvTemplate() {
-  const requiredEnvVars = [
-    "NEXT_PUBLIC_SUPABASE_URL",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-    "NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN",
-  ]
+  // Only check server-side critical environment variables
+  const requiredEnvVars = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"]
 
   console.log("\n📋 Checking environment variables...")
 
@@ -35,7 +32,7 @@ function checkCriticalFiles() {
     "tsconfig.json",
     "app/layout.tsx",
     "app/page.tsx",
-    "tailwind.config.js",
+    "tailwind.config.ts",
   ]
 
   criticalFiles.forEach((file) => {

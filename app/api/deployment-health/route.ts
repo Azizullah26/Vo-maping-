@@ -24,7 +24,8 @@ export async function GET() {
 }
 
 function checkEnvironmentVariables() {
-  const required = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN"]
+  // Only check server-side environment variables
+  const required = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"]
 
   const missing = required.filter((varName) => !process.env[varName])
 

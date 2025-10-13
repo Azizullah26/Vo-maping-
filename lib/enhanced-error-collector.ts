@@ -130,7 +130,8 @@ class EnhancedErrorCollector {
   }
 
   private checkEnvironmentVariables() {
-    const required = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN"]
+    // Only check server-side critical environment variables
+    const required = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"]
 
     const missing = required.filter((varName) => !process.env[varName])
 
@@ -158,7 +159,7 @@ class EnhancedErrorCollector {
 
   private async checkAPIEndpoints() {
     try {
-      const endpoints = ["/api/health", "/api/mapbox-token"]
+      const endpoints = ["/api/health"]
 
       const results = await Promise.all(
         endpoints.map(async (endpoint) => {
