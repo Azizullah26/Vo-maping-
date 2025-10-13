@@ -119,11 +119,11 @@ const markerStyles = `
 /* Added sophisticated label system from 16 projects page */
 .marker-label {
   position: absolute;
-  padding: 6px 12px; /* Reduced from 8px 16px to 6px 12px for smaller height */
+  padding: 6px 12px;
   background: rgba(255, 255, 255, 0.95);
   border: 2px solid rgba(0, 0, 0, 0.1);
   border-radius: 25px;
-  font-size: 9px; /* Reduced from 11px to 9px for smaller text */
+  font-size: 11px;
   font-weight: 600;
   color: #000;
   white-space: nowrap;
@@ -306,8 +306,8 @@ const markerStyles = `
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .marker-label {
-    font-size: 8px; /* Reduced from 9px to 8px for smaller text on tablets */
-    padding: 5px 10px; /* Reduced from 6px 12px to 5px 10px for smaller height */
+    font-size: 10px;
+    padding: 5px 10px;
   }
 
   .marker-container.position-1 .marker-line,
@@ -357,8 +357,8 @@ const markerStyles = `
 
 @media (max-width: 640px) {
   .marker-label {
-    font-size: 7px; /* Reduced from 8px to 7px for smaller text on mobile */
-    padding: 4px 8px; /* Kept the same as it's already quite small */
+    font-size: 9px;
+    padding: 4px 8px;
   }
 
   .marker-container.position-1 .marker-line,
@@ -603,9 +603,9 @@ const HOVERABLE_MARKERS = [
   "نادي ضباط الشرطة",
   "مركز شرطةasad",
   "متحف شرطة المربعة",
-  "مركز شرطة المرب��ة",
-  "مد��رية شرطة العين",
-  "فر�� النقل والمشاغ��",
+  "مركز شرطة المربعة",
+  "مديرية شرطة العين",
+  "فرع النقل والمشاغل",
   "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
   "فلل فلج هزاع",
@@ -630,7 +630,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة القوع (فلل صحة)",
   "نقطة ثبات الروضة",
   "فرع الضبط المروري (الخزنة)",
-  "مبنى إدارات (ا��تربية الرياضية - الاعلام الامني - مسرح الج��يمة - فرع البصمة)",
+  "مبنى إدارات (التربية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
   "1 Project",
   "مركز شرطة سويحان",
   "مركز شرطة الهير",
@@ -820,7 +820,6 @@ export default function AlAinMap({
       "مركز شرطة هيلي": "Hili Police Station",
       "1 Project": "Al Ain Development Project",
       "مركز شرطة الوقن": "Al Wagan Police Station",
-      "ساحة حجز المركبات -asad": "Vehicle Impound Facility - Asad",
       "ساحة حجز المركبات -asad": "Vehicle Impound Facility - Asad",
     }
     return nameMap[name] || "Police Facility"
