@@ -10,7 +10,6 @@ export async function GET() {
       checks: {
         server: true,
         staticData: true,
-        mapbox: hasMapboxConfiguration(),
         envVariables: checkEnvironmentVariables(),
         database: await checkDatabaseConnection(),
         fileSystem: checkFileSystem(),
@@ -41,11 +40,6 @@ export async function GET() {
   }
 }
 
-function hasMapboxConfiguration(): boolean {
-  // Check if Mapbox token is configured (server-side only)
-  return !!(process.env.MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN)
-}
-
 function checkEnvironmentVariables() {
   // Only check server-side environment variables
   const required = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"]
@@ -65,9 +59,19 @@ function checkEnvironmentVariables() {
 
 async function checkDatabaseConnection() {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/`, {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseKey) {
+      return {
+        status: "error",
+        message: "Supabase credentials not configured",
+      }
+    }
+
+    const response = await fetch(`${supabaseUrl}/rest/v1/`, {
       headers: {
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+        apikey: supabaseKey,
       },
     }).catch(() => null)
 
