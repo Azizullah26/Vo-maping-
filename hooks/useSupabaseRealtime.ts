@@ -12,7 +12,7 @@ interface RealtimeState<T> {
 }
 
 // Generic realtime hook
-export function useSupabaseRealtime<T = any>(table: string, filter?: { column: string; value: any }) {
+export function useSupabaseRealtime<T = any>(table: string, callback: (payload: any) => void) {
   const [state, setState] = useState<RealtimeState<T>>({
     data: [],
     loading: true,
@@ -26,13 +26,7 @@ export function useSupabaseRealtime<T = any>(table: string, filter?: { column: s
     try {
       setState((prev) => ({ ...prev, loading: true, error: null }))
 
-      let query = supabase.from(table).select("*")
-
-      if (filter) {
-        query = query.eq(filter.column, filter.value)
-      }
-
-      const { data, error } = await query.order("created_at", { ascending: false })
+      const { data, error } = await supabase.from(table).select("*").order("created_at", { ascending: false })
 
       if (error) throw error
 
@@ -48,13 +42,13 @@ export function useSupabaseRealtime<T = any>(table: string, filter?: { column: s
         error: error instanceof Error ? error.message : "Failed to fetch data",
       }))
     }
-  }, [table, filter])
+  }, [table])
 
   useEffect(() => {
     fetchData()
 
     // Set up realtime subscription
-    const channelName = filter ? `${table}-${filter.column}-${filter.value}` : table
+    const channelName = table
 
     const newChannel = supabase
       .channel(channelName)
@@ -64,10 +58,10 @@ export function useSupabaseRealtime<T = any>(table: string, filter?: { column: s
           event: "*",
           schema: "public",
           table: table,
-          ...(filter && { filter: `${filter.column}=eq.${filter.value}` }),
         },
         (payload) => {
           console.log("Realtime update:", payload)
+          callback(payload)
 
           setState((prev) => {
             let newData = [...prev.data]
@@ -105,7 +99,7 @@ export function useSupabaseRealtime<T = any>(table: string, filter?: { column: s
         supabase.removeChannel(newChannel)
       }
     }
-  }, [table, filter, fetchData])
+  }, [table, fetchData, callback])
 
   const refresh = useCallback(() => {
     fetchData()
@@ -119,12 +113,12 @@ export function useSupabaseRealtime<T = any>(table: string, filter?: { column: s
 }
 
 // Projects realtime hook
-export function useProjectsRealtime() {
-  return useSupabaseRealtime("projects")
+export function useProjectsRealtime(callback: (payload: any) => void) {
+  return useSupabaseRealtime("projects", callback)
 }
 
 // Documents realtime hook
-export function useDocumentsRealtime(projectId?: string) {
+export function useDocumentsRealtime(projectId?: string, callback: (payload: any) => void) {
   const filter = projectId ? { column: "project_id", value: projectId } : undefined
-  return useSupabaseRealtime("documents", filter)
+  return useSupabaseRealtime("documents", callback)
 }

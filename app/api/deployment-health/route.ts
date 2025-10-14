@@ -1,26 +1,42 @@
 import { NextResponse } from "next/server"
+import fs from "fs"
 
 export async function GET() {
-  const healthChecks = {
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
-    checks: {
-      envVariables: checkEnvironmentVariables(),
-      database: await checkDatabaseConnection(),
-      fileSystem: checkFileSystem(),
-      dependencies: checkDependencies(),
-    },
+  try {
+    const healthChecks = {
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV,
+      mode: "static-data",
+      checks: {
+        server: true,
+        staticData: true,
+        mapbox: !!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
+        envVariables: checkEnvironmentVariables(),
+        database: await checkDatabaseConnection(),
+        fileSystem: checkFileSystem(),
+        dependencies: checkDependencies(),
+      },
+    }
+
+    const allPassed = Object.values(healthChecks.checks).every((check) => check.status === "ok")
+
+    return NextResponse.json(
+      {
+        status: allPassed ? "healthy" : "unhealthy",
+        ...healthChecks,
+      },
+      { status: allPassed ? 200 : 503 },
+    )
+  } catch (error) {
+    return NextResponse.json(
+      {
+        status: "unhealthy",
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
   }
-
-  const allPassed = Object.values(healthChecks.checks).every((check) => check.status === "ok")
-
-  return NextResponse.json(
-    {
-      status: allPassed ? "healthy" : "unhealthy",
-      ...healthChecks,
-    },
-    { status: allPassed ? 200 : 503 },
-  )
 }
 
 function checkEnvironmentVariables() {
@@ -63,7 +79,6 @@ async function checkDatabaseConnection() {
 function checkFileSystem() {
   try {
     // Check if critical directories exist
-    const fs = require("fs")
     const criticalPaths = ["./public", "./app", "./components", "./lib"]
 
     const missing = criticalPaths.filter((path) => {

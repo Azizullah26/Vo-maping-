@@ -8,13 +8,17 @@ const handleError = (error: any, operation: string) => {
   return { success: false, error: message }
 }
 
+// Document service - ready for future database integration
+// Currently returns static/mock data
+
 // Update Document interface to match project_documents table
 export interface Document {
   id: string
-  project_name: string
-  file_name: string
+  project_id: string
+  title: string
   file_url: string
-  uploaded_at: string
+  file_type: string
+  created_at: string
 }
 
 // Get all documents
@@ -28,7 +32,7 @@ export async function getAllDocuments(): Promise<Document[]> {
   const { data, error } = await supabase
     .from("project_documents") // Use the new table name
     .select("*")
-    .order("uploaded_at", { ascending: false }) // Order by uploaded_at
+    .order("created_at", { ascending: false }) // Order by created_at
 
   if (error) {
     console.error("Error fetching all documents from project_documents:", error)
@@ -38,10 +42,11 @@ export async function getAllDocuments(): Promise<Document[]> {
   // Map to the Document interface
   return data.map((doc) => ({
     id: doc.id,
-    project_name: doc.project_name,
-    file_name: doc.file_name,
+    project_id: doc.project_id,
+    title: doc.project_name, // Assuming project_name is the title
     file_url: doc.file_url,
-    uploaded_at: doc.uploaded_at,
+    file_type: doc.file_type,
+    created_at: doc.uploaded_at,
   }))
 }
 
@@ -59,14 +64,14 @@ export async function getDocumentById(id: string) {
 }
 
 // Get documents by project ID
-export async function getDocumentsByProject(projectId: string) {
+export async function getDocumentsByProject(projectId: string): Promise<Document[]> {
   try {
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from("project_documents")
       .select("*")
       .eq("project_id", projectId)
-      .order("uploaded_at", { ascending: false })
+      .order("created_at", { ascending: false })
 
     if (error) throw error
     return { success: true, data }
@@ -97,14 +102,11 @@ export async function createDocument(document: {
       .insert([
         {
           id: uuidv4(),
-          project_name: document.title, // Assuming title is the project name
-          file_name: document.file_path.split("/").pop() || "", // Extract file name from path
-          file_url: document.file_path, // Assuming file_path is the URL
           project_id: document.project_id || null,
+          title: document.title,
+          file_url: document.file_path, // Assuming file_path is the URL
           file_type: document.file_type || "unknown",
-          file_size: document.file_size || 0,
-          metadata: document.metadata || {},
-          uploaded_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         },
       ])
       .select()
@@ -138,7 +140,7 @@ export async function updateDocument(
       .from("project_documents")
       .update({
         ...updates,
-        uploaded_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
       })
       .eq("id", id)
       .select()
@@ -151,7 +153,7 @@ export async function updateDocument(
 }
 
 // Delete a document
-export async function deleteDocument(id: string) {
+export async function deleteDocument(documentId: string): Promise<boolean> {
   try {
     const supabase = getSupabaseAdminClient()
     if (!supabase) {
@@ -159,12 +161,12 @@ export async function deleteDocument(id: string) {
       return { success: false, error: "Supabase admin client not initialized" }
     }
 
-    const { error } = await supabase.from("project_documents").delete().eq("id", id)
+    const { error } = await supabase.from("project_documents").delete().eq("id", documentId)
 
     if (error) throw error
     return { success: true }
   } catch (error) {
-    return handleError(error, `deleteDocument(${id})`)
+    return handleError(error, `deleteDocument(${documentId})`)
   }
 }
 
@@ -175,8 +177,8 @@ export async function searchDocuments(query: string) {
     const { data, error } = await supabase
       .from("project_documents")
       .select("*")
-      .or(`project_name.ilike.%${query}%,file_name.ilike.%${query}%`)
-      .order("uploaded_at", { ascending: false })
+      .or(`title.ilike.%${query}%,file_name.ilike.%${query}%`)
+      .order("created_at", { ascending: false })
 
     if (error) throw error
     return { success: true, data }

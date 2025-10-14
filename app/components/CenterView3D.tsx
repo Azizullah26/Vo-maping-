@@ -88,7 +88,7 @@ export function CenterView3D({ project, onClose }: CenterView3DProps) {
           title="VR mode (coming soon)"
         >
           <Image
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/vr-VBUVpbkwcNGzqmrtru29W5u9nr1adp.png"
+            src="/images/design-mode/vr.png"
             alt="VR Mode"
             width={24}
             height={24}
