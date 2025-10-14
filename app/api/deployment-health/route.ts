@@ -10,7 +10,7 @@ export async function GET() {
       checks: {
         server: true,
         staticData: true,
-        mapbox: !!process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
+        mapbox: hasMapboxConfiguration(),
         envVariables: checkEnvironmentVariables(),
         database: await checkDatabaseConnection(),
         fileSystem: checkFileSystem(),
@@ -18,7 +18,9 @@ export async function GET() {
       },
     }
 
-    const allPassed = Object.values(healthChecks.checks).every((check) => check.status === "ok")
+    const allPassed = Object.values(healthChecks.checks).every((check) =>
+      typeof check === "boolean" ? check : check.status === "ok",
+    )
 
     return NextResponse.json(
       {
@@ -37,6 +39,11 @@ export async function GET() {
       { status: 500 },
     )
   }
+}
+
+function hasMapboxConfiguration(): boolean {
+  // Check if Mapbox token is configured (server-side only)
+  return !!(process.env.MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN)
 }
 
 function checkEnvironmentVariables() {

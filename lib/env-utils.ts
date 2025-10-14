@@ -168,6 +168,28 @@ export function isStaticMode(): boolean {
   return getEnvVar("NEXT_PUBLIC_STATIC_MODE") === "true"
 }
 
+/**
+ * Server-only function to get Mapbox token
+ * @returns The Mapbox access token (server-side only)
+ */
+export function getMapboxToken(): string | undefined {
+  if (typeof window !== "undefined") {
+    throw new Error("getMapboxToken can only be called on the server")
+  }
+  return process.env.MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
+}
+
+/**
+ * Server-only function to check if Mapbox token exists
+ * @returns boolean indicating if token is configured
+ */
+export function hasMapboxToken(): boolean {
+  if (typeof window !== "undefined") {
+    return false
+  }
+  return !!(process.env.MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN)
+}
+
 type EnvVarStatus = {
   name: string
   exists: boolean
@@ -180,8 +202,8 @@ export function checkRequiredEnvVars(): {
   missing: string[]
   details: EnvVarStatus[]
 } {
-  // Only check essential public variables
-  const requiredVars = ["NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN"]
+  // Only check essential public variables (non-sensitive)
+  const requiredVars = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"]
 
   const details: EnvVarStatus[] = requiredVars.map((name) => {
     const value = process.env[name]
@@ -227,7 +249,6 @@ export const envConfig = {
  */
 export function getPublicEnvVars() {
   return {
-    NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -240,8 +261,9 @@ export function getPublicEnvVars() {
  */
 export function hasRequiredEnvVars(): boolean {
   try {
-    const mapboxAccessToken = getEnvVar("NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN")
-    return !!mapboxAccessToken
+    const supabaseUrl = getEnvVar("NEXT_PUBLIC_SUPABASE_URL")
+    const supabaseKey = getEnvVar("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+    return !!(supabaseUrl && supabaseKey)
   } catch {
     return false
   }

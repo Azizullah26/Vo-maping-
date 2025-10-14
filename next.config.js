@@ -22,14 +22,13 @@ const nextConfig = {
     ],
     unoptimized: process.env.NODE_ENV === "development",
   },
-  // Environment variables for build time - make sure they're prefixed with NEXT_PUBLIC_
+  // Environment variables for build time - only non-sensitive public variables
   env: {
     NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE || process.env.DEMO_MODE || "true",
     NEXT_PUBLIC_STATIC_MODE: process.env.NEXT_PUBLIC_STATIC_MODE || process.env.STATIC_MODE || "true",
     NEXT_PUBLIC_VERCEL: process.env.VERCEL || "0",
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN: process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
     NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || "1.0.0",
   },

@@ -1,20 +1,19 @@
-/**
- * Supabase Connection Test Module
- * Provides connection testing functionality for Supabase
- */
+import { createClient } from "@supabase/supabase-js"
 
 export interface ConnectionTestResult {
   success: boolean
   message: string
-  timestamp: string
   details?: any
+  error?: string
+  timestamp: string
 }
 
 /**
- * Tests the Supabase connection
- * @returns Promise with connection test result
+ * Tests Supabase connection using the JS client
  */
 export async function testSupabaseConnection(): Promise<ConnectionTestResult> {
+  const timestamp = new Date().toISOString()
+
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -23,31 +22,36 @@ export async function testSupabaseConnection(): Promise<ConnectionTestResult> {
       return {
         success: false,
         message: "Supabase credentials not configured",
-        timestamp: new Date().toISOString(),
+        error: "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        timestamp,
       }
     }
 
-    // Check if Supabase is available
-    const { createClient } = await import("@supabase/supabase-js")
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Try a simple query
+    // Simple connection test
     const { error } = await supabase.from("projects").select("count", { count: "exact", head: true })
 
+    if (error) {
+      return {
+        success: false,
+        message: "Connection failed",
+        error: error.message,
+        timestamp,
+      }
+    }
+
     return {
-      success: !error,
-      message: error ? error.message : "Connection successful",
-      timestamp: new Date().toISOString(),
-      details: {
-        url: supabaseUrl.substring(0, 20) + "...",
-        hasKey: !!supabaseKey,
-      },
+      success: true,
+      message: "Connection successful",
+      timestamp,
     }
   } catch (error) {
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Connection test failed",
-      timestamp: new Date().toISOString(),
+      message: "Connection test failed",
+      error: error instanceof Error ? error.message : "Unknown error",
+      timestamp,
     }
   }
 }
@@ -56,6 +60,8 @@ export async function testSupabaseConnection(): Promise<ConnectionTestResult> {
  * Tests Supabase authentication
  */
 export async function testSupabaseAuth(): Promise<ConnectionTestResult> {
+  const timestamp = new Date().toISOString()
+
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -64,28 +70,27 @@ export async function testSupabaseAuth(): Promise<ConnectionTestResult> {
       return {
         success: false,
         message: "Supabase credentials not configured",
-        timestamp: new Date().toISOString(),
+        timestamp,
       }
     }
 
-    const { createClient } = await import("@supabase/supabase-js")
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     const { data, error } = await supabase.auth.getSession()
 
     return {
       success: !error,
-      message: error ? error.message : "Auth check successful",
-      timestamp: new Date().toISOString(),
-      details: {
-        hasSession: !!data.session,
-      },
+      message: error ? "Auth check failed" : "Auth available",
+      details: data ? { hasSession: !!data.session } : undefined,
+      error: error?.message,
+      timestamp,
     }
   } catch (error) {
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Auth test failed",
-      timestamp: new Date().toISOString(),
+      message: "Auth test failed",
+      error: error instanceof Error ? error.message : "Unknown error",
+      timestamp,
     }
   }
 }
@@ -94,6 +99,8 @@ export async function testSupabaseAuth(): Promise<ConnectionTestResult> {
  * Tests Supabase storage
  */
 export async function testSupabaseStorage(): Promise<ConnectionTestResult> {
+  const timestamp = new Date().toISOString()
+
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -102,49 +109,48 @@ export async function testSupabaseStorage(): Promise<ConnectionTestResult> {
       return {
         success: false,
         message: "Supabase credentials not configured",
-        timestamp: new Date().toISOString(),
+        timestamp,
       }
     }
 
-    const { createClient } = await import("@supabase/supabase-js")
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     const { data, error } = await supabase.storage.listBuckets()
 
     return {
       success: !error,
-      message: error ? error.message : "Storage check successful",
-      timestamp: new Date().toISOString(),
-      details: {
-        bucketCount: data?.length || 0,
-      },
+      message: error ? "Storage check failed" : "Storage available",
+      details: data ? { buckets: data.length } : undefined,
+      error: error?.message,
+      timestamp,
     }
   } catch (error) {
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Storage test failed",
-      timestamp: new Date().toISOString(),
+      message: "Storage test failed",
+      error: error instanceof Error ? error.message : "Unknown error",
+      timestamp,
     }
   }
 }
 
 /**
- * Performs a comprehensive Supabase connection test
+ * Comprehensive Supabase test
  */
-export async function comprehensiveSupabaseTest(): Promise<{
-  overall: boolean
-  connection: ConnectionTestResult
-  auth: ConnectionTestResult
-  storage: ConnectionTestResult
-}> {
-  const connection = await testSupabaseConnection()
-  const auth = await testSupabaseAuth()
-  const storage = await testSupabaseStorage()
+export async function comprehensiveSupabaseTest() {
+  const [connection, auth, storage] = await Promise.all([
+    testSupabaseConnection(),
+    testSupabaseAuth(),
+    testSupabaseStorage(),
+  ])
 
   return {
     overall: connection.success && auth.success && storage.success,
-    connection,
-    auth,
-    storage,
+    tests: {
+      connection,
+      auth,
+      storage,
+    },
+    timestamp: new Date().toISOString(),
   }
 }
