@@ -1,229 +1,173 @@
-export interface DirectConnectionResult {
+interface ConnectionTestResult {
   success: boolean
-  method: string
   message: string
+  details?: any
   timestamp: string
-  details?: unknown
-  error?: string
 }
 
-export interface PostgresConnectionResult {
-  success: boolean
-  message: string
-  canConnect: boolean
-  error?: string
-}
+export async function testSupabaseConnection(): Promise<ConnectionTestResult> {
+  const timestamp = new Date().toISOString()
 
-export interface QueryTestResult {
-  success: boolean
-  message: string
-  rowCount?: number
-  error?: string
-}
-
-export interface ComprehensiveConnectionResult {
-  http: DirectConnectionResult
-  postgres: PostgresConnectionResult
-  query: QueryTestResult
-  overall: {
-    success: boolean
-    timestamp: string
-    recommendations: string[]
-  }
-}
-
-/**
- * Test Supabase connection using HTTP REST API
- */
-export async function testSupabaseConnection(): Promise<DirectConnectionResult> {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    if (!supabaseUrl || !supabaseKey) {
+    if (!supabaseUrl) {
       return {
         success: false,
-        method: "HTTP",
-        message: "Supabase credentials not configured",
-        timestamp: new Date().toISOString(),
-        error: "Missing environment variables",
+        message: "Supabase URL not configured",
+        timestamp,
       }
     }
 
     const response = await fetch(`${supabaseUrl}/rest/v1/`, {
+      method: "HEAD",
       headers: {
-        apikey: supabaseKey,
-        "Content-Type": "application/json",
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
       },
     })
 
+    if (!response.ok) {
+      return {
+        success: false,
+        message: `HTTP connection failed: ${response.status}`,
+        timestamp,
+      }
+    }
+
     return {
-      success: response.ok,
-      method: "HTTP",
-      message: response.ok ? "HTTP connection successful" : `HTTP connection failed: ${response.statusText}`,
-      timestamp: new Date().toISOString(),
-      details: {
-        status: response.status,
-        statusText: response.statusText,
-        url: supabaseUrl,
-      },
+      success: true,
+      message: "Supabase HTTP connection successful",
+      timestamp,
     }
   } catch (error) {
     return {
       success: false,
-      method: "HTTP",
-      message: `HTTP connection failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : "Unknown error",
+      message: error instanceof Error ? error.message : "Unknown error",
+      timestamp,
     }
   }
 }
 
-/**
- * Test direct PostgreSQL connection (if available)
- */
-export async function testDirectPostgresConnection(): Promise<PostgresConnectionResult> {
+export async function testDirectPostgresConnection(): Promise<ConnectionTestResult> {
+  const timestamp = new Date().toISOString()
+
   try {
-    // Check if we have direct Postgres credentials
-    const postgresUrl = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL || process.env.SUPABASE_POSTGRES_URL
+    const postgresUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL
 
     if (!postgresUrl) {
       return {
         success: false,
-        message: "Direct PostgreSQL credentials not configured",
-        canConnect: false,
-        error: "No PostgreSQL connection string found",
+        message: "PostgreSQL URL not configured",
+        timestamp,
       }
     }
 
-    // Note: This would require pg library which might not be available
-    // For now, we'll just validate the connection string format
-    const isValidUrl = postgresUrl.startsWith("postgres://") || postgresUrl.startsWith("postgresql://")
-
     return {
-      success: isValidUrl,
-      message: isValidUrl ? "PostgreSQL connection string is valid" : "Invalid PostgreSQL connection string format",
-      canConnect: isValidUrl,
+      success: true,
+      message: "PostgreSQL URL is configured",
+      details: { configured: true },
+      timestamp,
     }
   } catch (error) {
     return {
       success: false,
-      message: `PostgreSQL test failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      canConnect: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      message: error instanceof Error ? error.message : "Unknown error",
+      timestamp,
     }
   }
 }
 
-/**
- * Test Supabase connection with a simple query
- */
-export async function testSupabaseWithQuery(): Promise<QueryTestResult> {
+export async function testSupabaseWithQuery(): Promise<ConnectionTestResult> {
+  const timestamp = new Date().toISOString()
+
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    if (!supabaseUrl || !supabaseKey) {
+    if (!supabaseUrl || !supabaseAnonKey) {
       return {
         success: false,
         message: "Supabase credentials not configured",
-        error: "Missing environment variables",
+        timestamp,
       }
     }
 
-    // Try to query a system table
-    const response = await fetch(`${supabaseUrl}/rest/v1/rpc/version`, {
+    const response = await fetch(`${supabaseUrl}/rest/v1/projects?select=count`, {
+      method: "HEAD",
       headers: {
-        apikey: supabaseKey,
-        "Content-Type": "application/json",
+        apikey: supabaseAnonKey,
+        Prefer: "count=exact",
       },
     })
 
-    if (response.ok) {
-      const data = await response.json()
+    if (!response.ok) {
       return {
-        success: true,
-        message: "Query executed successfully",
-        rowCount: 1,
+        success: false,
+        message: `Query test failed: ${response.status}`,
+        timestamp,
       }
     }
 
-    // If version endpoint doesn't exist, that's okay - connection still works
     return {
       success: true,
-      message: "Connection verified (query endpoint not available)",
+      message: "Supabase query test successful",
+      timestamp,
     }
   } catch (error) {
     return {
       success: false,
-      message: `Query test failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      error: error instanceof Error ? error.message : "Unknown error",
+      message: error instanceof Error ? error.message : "Unknown error",
+      timestamp,
     }
   }
 }
 
-/**
- * Run comprehensive connection tests
- */
-export async function comprehensiveConnectionTest(): Promise<ComprehensiveConnectionResult> {
-  const http = await testSupabaseConnection()
-  const postgres = await testDirectPostgresConnection()
-  const query = await testSupabaseWithQuery()
-
-  const overallSuccess = http.success
-
-  const recommendations: string[] = []
-  if (!http.success) {
-    recommendations.push("Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY")
+export async function comprehensiveConnectionTest(): Promise<{
+  overall: boolean
+  tests: {
+    httpConnection: ConnectionTestResult
+    postgresConnection: ConnectionTestResult
+    queryTest: ConnectionTestResult
   }
-  if (!postgres.success) {
-    recommendations.push("Configure direct PostgreSQL connection for better performance")
-  }
-  if (!query.success && http.success) {
-    recommendations.push("HTTP connection works but query execution failed - check permissions")
-  }
+}> {
+  const httpConnection = await testSupabaseConnection()
+  const postgresConnection = await testDirectPostgresConnection()
+  const queryTest = await testSupabaseWithQuery()
 
   return {
-    http,
-    postgres,
-    query,
-    overall: {
-      success: overallSuccess,
-      timestamp: new Date().toISOString(),
-      recommendations,
+    overall: httpConnection.success && postgresConnection.success && queryTest.success,
+    tests: {
+      httpConnection,
+      postgresConnection,
+      queryTest,
     },
   }
 }
 
-/**
- * Get connection status and recommendations
- */
 export async function getConnectionStatus(): Promise<{
-  status: "healthy" | "degraded" | "unhealthy"
+  healthy: boolean
   message: string
   recommendations: string[]
 }> {
-  const result = await comprehensiveConnectionTest()
+  const tests = await comprehensiveConnectionTest()
 
-  if (result.overall.success && result.query.success) {
-    return {
-      status: "healthy",
-      message: "All connections working properly",
-      recommendations: [],
-    }
+  const recommendations: string[] = []
+
+  if (!tests.tests.httpConnection.success) {
+    recommendations.push("Check Supabase URL and API key configuration")
   }
 
-  if (result.http.success) {
-    return {
-      status: "degraded",
-      message: "Basic connection works but some features unavailable",
-      recommendations: result.overall.recommendations,
-    }
+  if (!tests.tests.postgresConnection.success) {
+    recommendations.push("Configure PostgreSQL connection string")
+  }
+
+  if (!tests.tests.queryTest.success) {
+    recommendations.push("Verify database permissions and table existence")
   }
 
   return {
-    status: "unhealthy",
-    message: "Connection failed",
-    recommendations: result.overall.recommendations,
+    healthy: tests.overall,
+    message: tests.overall ? "All connections healthy" : "Some connections failed",
+    recommendations,
   }
 }

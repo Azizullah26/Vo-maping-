@@ -1,176 +1,170 @@
 import { createClient } from "@supabase/supabase-js"
 
-export interface ConnectionTestResult {
+interface ConnectionTestResult {
   success: boolean
   message: string
-  details?: {
-    url?: string
-    timestamp: string
-    error?: string
-  }
+  details?: any
+  timestamp: string
 }
 
-export interface AuthTestResult {
-  success: boolean
-  message: string
-  canSignUp: boolean
-  canSignIn: boolean
-}
-
-export interface StorageTestResult {
-  success: boolean
-  message: string
-  canList: boolean
-}
-
-export interface ComprehensiveTestResult {
-  connection: ConnectionTestResult
-  auth: AuthTestResult
-  storage: StorageTestResult
-  overall: {
-    success: boolean
-    timestamp: string
-  }
-}
-
-/**
- * Test Supabase connection using the client library
- */
 export async function testSupabaseConnection(): Promise<ConnectionTestResult> {
+  const timestamp = new Date().toISOString()
+
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    if (!supabaseUrl || !supabaseKey) {
+    if (!supabaseUrl || !supabaseAnonKey) {
       return {
         success: false,
         message: "Supabase credentials not configured",
-        details: {
-          timestamp: new Date().toISOString(),
-          error: "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY",
-        },
+        timestamp,
       }
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+      },
+    })
 
-    // Test connection by trying to list tables
-    const { error } = await supabase.from("_test_connection").select("*").limit(1)
+    const { error } = await supabase.from("projects").select("count", { count: "exact", head: true })
 
-    // If error is about table not existing, connection is still good
-    const isConnectionGood = !error || error.message.includes("relation") || error.message.includes("does not exist")
+    if (error) {
+      return {
+        success: false,
+        message: `Supabase connection failed: ${error.message}`,
+        details: error,
+        timestamp,
+      }
+    }
 
     return {
-      success: isConnectionGood,
-      message: isConnectionGood ? "Supabase connection successful" : `Connection failed: ${error?.message}`,
-      details: {
-        url: supabaseUrl,
-        timestamp: new Date().toISOString(),
-        error: error?.message,
-      },
+      success: true,
+      message: "Supabase connection successful",
+      timestamp,
     }
   } catch (error) {
     return {
       success: false,
-      message: `Connection test failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      details: {
-        timestamp: new Date().toISOString(),
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
+      message: error instanceof Error ? error.message : "Unknown error",
+      timestamp,
     }
   }
 }
 
-/**
- * Test Supabase authentication capabilities
- */
-export async function testSupabaseAuth(): Promise<AuthTestResult> {
+export async function testSupabaseAuth(): Promise<ConnectionTestResult> {
+  const timestamp = new Date().toISOString()
+
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-    if (!supabaseUrl || !supabaseKey) {
+    if (!supabaseUrl || !supabaseAnonKey) {
       return {
         success: false,
         message: "Supabase credentials not configured",
-        canSignUp: false,
-        canSignIn: false,
+        timestamp,
       }
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+      },
+    })
 
-    // Test if auth endpoint is accessible
     const { data, error } = await supabase.auth.getSession()
 
-    return {
-      success: !error,
-      message: error ? `Auth test failed: ${error.message}` : "Auth endpoint accessible",
-      canSignUp: !error,
-      canSignIn: !error,
-    }
-  } catch (error) {
-    return {
-      success: false,
-      message: `Auth test failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      canSignUp: false,
-      canSignIn: false,
-    }
-  }
-}
-
-/**
- * Test Supabase storage capabilities
- */
-export async function testSupabaseStorage(): Promise<StorageTestResult> {
-  try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (!supabaseUrl || !supabaseKey) {
+    if (error) {
       return {
         success: false,
-        message: "Supabase credentials not configured",
-        canList: false,
+        message: `Auth test failed: ${error.message}`,
+        details: error,
+        timestamp,
       }
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey)
-
-    // Test storage by listing buckets
-    const { data, error } = await supabase.storage.listBuckets()
-
     return {
-      success: !error,
-      message: error ? `Storage test failed: ${error.message}` : "Storage endpoint accessible",
-      canList: !error,
+      success: true,
+      message: "Supabase auth accessible",
+      details: { hasSession: !!data.session },
+      timestamp,
     }
   } catch (error) {
     return {
       success: false,
-      message: `Storage test failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      canList: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+      timestamp,
     }
   }
 }
 
-/**
- * Run comprehensive Supabase tests
- */
-export async function comprehensiveSupabaseTest(): Promise<ComprehensiveTestResult> {
+export async function testSupabaseStorage(): Promise<ConnectionTestResult> {
+  const timestamp = new Date().toISOString()
+
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return {
+        success: false,
+        message: "Supabase credentials not configured",
+        timestamp,
+      }
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+      },
+    })
+
+    const { data, error } = await supabase.storage.listBuckets()
+
+    if (error) {
+      return {
+        success: false,
+        message: `Storage test failed: ${error.message}`,
+        details: error,
+        timestamp,
+      }
+    }
+
+    return {
+      success: true,
+      message: "Supabase storage accessible",
+      details: { bucketsCount: data?.length || 0 },
+      timestamp,
+    }
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+      timestamp,
+    }
+  }
+}
+
+export async function comprehensiveSupabaseTest(): Promise<{
+  overall: boolean
+  tests: {
+    connection: ConnectionTestResult
+    auth: ConnectionTestResult
+    storage: ConnectionTestResult
+  }
+}> {
   const connection = await testSupabaseConnection()
   const auth = await testSupabaseAuth()
   const storage = await testSupabaseStorage()
 
-  const overallSuccess = connection.success && auth.success && storage.success
-
   return {
-    connection,
-    auth,
-    storage,
-    overall: {
-      success: overallSuccess,
-      timestamp: new Date().toISOString(),
+    overall: connection.success && auth.success && storage.success,
+    tests: {
+      connection,
+      auth,
+      storage,
     },
   }
 }

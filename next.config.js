@@ -13,29 +13,41 @@ const nextConfig = {
   },
 
   images: {
-    domains: [
-      "localhost",
-      "example.com",
-      "pbqfgjzvclwgxgvuzmul.supabase.co",
-      "hebbkx1anhila5yf.public.blob.vercel-storage.com",
-      "api.mapbox.com",
-      "placeholder.com",
-      "via.placeholder.com",
-      "blob.v0.app",
-      "igxzfbxlfptgthfxtbae.supabase.co",
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "**.vercel-storage.com",
+      },
+      {
+        protocol: "https",
+        hostname: "api.mapbox.com",
+      },
+      {
+        protocol: "https",
+        hostname: "blob.v0.app",
+      },
+      {
+        protocol: "https",
+        hostname: "placeholder.com",
+      },
+      {
+        protocol: "https",
+        hostname: "via.placeholder.com",
+      },
     ],
     unoptimized: process.env.NODE_ENV === "development",
   },
 
   env: {
-    NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE || process.env.DEMO_MODE || "true",
-    NEXT_PUBLIC_STATIC_MODE: process.env.NEXT_PUBLIC_STATIC_MODE || process.env.STATIC_MODE || "true",
+    NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE || "true",
+    NEXT_PUBLIC_STATIC_MODE: process.env.NEXT_PUBLIC_STATIC_MODE || "true",
     NEXT_PUBLIC_VERCEL: process.env.VERCEL || "0",
-    NEXT_PUBLIC_BASE_URL:
-      process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000",
-    NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || "1.0.0",
+    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+    NEXT_PUBLIC_APP_VERSION: "1.0.0",
   },
 
   webpack: (config, { isServer }) => {
@@ -58,11 +70,6 @@ const nextConfig = {
         events: false,
       }
     }
-
-    config.module.rules.push({
-      test: /\.css$/,
-      use: ["style-loader", "css-loader"],
-    })
 
     return config
   },

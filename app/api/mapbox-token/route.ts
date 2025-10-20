@@ -1,26 +1,25 @@
 import { NextResponse } from "next/server"
 
 export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
 
 export async function GET() {
   try {
-    // Get token from server-side environment variable only
-    const token = process.env.MAPBOX_ACCESS_TOKEN
+    const mapboxToken = process.env.MAPBOX_ACCESS_TOKEN
 
-    if (!token) {
+    if (!mapboxToken) {
       return NextResponse.json(
         {
           error: "Mapbox token not configured",
-          message: "Please set MAPBOX_ACCESS_TOKEN environment variable",
+          token: null,
         },
-        { status: 500 },
+        { status: 503 },
       )
     }
 
     return NextResponse.json(
       {
-        token,
-        timestamp: new Date().toISOString(),
+        token: mapboxToken,
       },
       {
         status: 200,
@@ -30,10 +29,11 @@ export async function GET() {
       },
     )
   } catch (error) {
+    console.error("Error fetching Mapbox token:", error)
     return NextResponse.json(
       {
-        error: "Failed to retrieve token",
-        message: error instanceof Error ? error.message : "Unknown error",
+        error: "Internal server error",
+        token: null,
       },
       { status: 500 },
     )

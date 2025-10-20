@@ -33,7 +33,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
 
           <details className="text-xs text-gray-600">
             <summary className="cursor-pointer font-medium mb-2">Technical details</summary>
-            <pre className="bg-gray-100 p-2 rounded overflow-auto">{error.stack}</pre>
+            <pre className="bg-gray-100 p-2 rounded overflow-auto max-h-40">{error.stack}</pre>
           </details>
         </CardContent>
       </Card>
