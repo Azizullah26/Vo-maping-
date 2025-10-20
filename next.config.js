@@ -2,12 +2,16 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  poweredByHeader: false,
+
   eslint: {
     ignoreDuringBuilds: false,
   },
+
   typescript: {
     ignoreBuildErrors: false,
   },
+
   images: {
     domains: [
       "localhost",
@@ -22,20 +26,20 @@ const nextConfig = {
     ],
     unoptimized: process.env.NODE_ENV === "development",
   },
-  // Environment variables for build time - only non-sensitive public variables
+
   env: {
     NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE || process.env.DEMO_MODE || "true",
     NEXT_PUBLIC_STATIC_MODE: process.env.NEXT_PUBLIC_STATIC_MODE || process.env.STATIC_MODE || "true",
     NEXT_PUBLIC_VERCEL: process.env.VERCEL || "0",
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+    NEXT_PUBLIC_BASE_URL:
+      process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000",
     NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || "1.0.0",
   },
-  // Simplified webpack configuration that doesn't require additional dependencies
+
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      // Replace Node.js modules with empty objects or false
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
@@ -53,38 +57,27 @@ const nextConfig = {
         zlib: false,
         events: false,
       }
-    } else {
-      config.externals = [...(config.externals || []), "canvas"]
     }
 
-    // Add rule for CSS modules
     config.module.rules.push({
       test: /\.css$/,
       use: ["style-loader", "css-loader"],
     })
 
-    // Add aliases
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      "@": require("path").resolve(__dirname),
-    }
-
     return config
   },
-  // Add output configuration for standalone deployment
+
   output: "standalone",
-  // Ensure trailing slashes are handled correctly
   trailingSlash: false,
-  // Optimize production builds
   productionBrowserSourceMaps: false,
-  // Enable experimental features
+
   experimental: {
     serverActions: {
       bodySizeLimit: "10mb",
       allowedOrigins: ["localhost:3000", "*.vercel.app"],
     },
   },
-  // Headers for security and performance
+
   async headers() {
     return [
       {
@@ -106,11 +99,15 @@ const nextConfig = {
             key: "X-Content-Type-Options",
             value: "nosniff",
           },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
         ],
       },
     ]
   },
-  // Redirects
+
   async redirects() {
     return [
       {

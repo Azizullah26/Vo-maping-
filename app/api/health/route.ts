@@ -1,38 +1,24 @@
 import { NextResponse } from "next/server"
 
+export const dynamic = "force-dynamic"
+
 export async function GET() {
   try {
-    // Check basic environment variables without exposing sensitive data
-    const checks = {
-      supabase: {
-        url: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-        anon_key: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-        service_role: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-      },
-      database: {
-        url: !!process.env.DATABASE_URL,
-        postgres: !!process.env.POSTGRES_URL,
-      },
-      demo_mode: process.env.NEXT_PUBLIC_DEMO_MODE === "true",
-      static_mode: process.env.NEXT_PUBLIC_STATIC_MODE === "true",
-      build_env: process.env.NODE_ENV,
+    const health = {
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV,
+      version: process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0",
     }
 
-    const allConfigured = Object.values(checks.supabase).every(Boolean) && Object.values(checks.database).some(Boolean)
-
-    return NextResponse.json({
-      status: allConfigured ? "healthy" : "warning",
-      timestamp: new Date().toISOString(),
-      checks,
-      message: allConfigured ? "All systems operational" : "Running in demo mode - some features may be limited",
-    })
+    return NextResponse.json(health, { status: 200 })
   } catch (error) {
-    console.error("Health check error:", error)
     return NextResponse.json(
       {
-        status: "error",
+        status: "unhealthy",
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
-        message: "Health check failed",
       },
       { status: 500 },
     )

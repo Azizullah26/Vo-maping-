@@ -10,11 +10,10 @@ export function middleware(request: NextRequest) {
   response.headers.set("X-Content-Type-Options", "nosniff")
   response.headers.set("X-Frame-Options", "DENY")
   response.headers.set("X-XSS-Protection", "1; mode=block")
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
 
-  // For API routes, add cache control headers
-  if (request.nextUrl.pathname.startsWith("/api/")) {
-    response.headers.set("Cache-Control", "no-store, max-age=0")
-  }
+  // Add custom header to identify processed requests
+  response.headers.set("X-Middleware-Applied", "true")
 
   return response
 }
@@ -22,7 +21,7 @@ export function middleware(request: NextRequest) {
 // Configure middleware to run for specific routes, not all routes
 export const config = {
   matcher: [
-    // Apply to all routes except static files
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    // Apply to all routes except static files, API routes, image optimization files, and favicon
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 }

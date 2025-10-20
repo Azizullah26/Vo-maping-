@@ -4,15 +4,38 @@ export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
+    // Get token from server-side environment variable only
     const token = process.env.MAPBOX_ACCESS_TOKEN
 
     if (!token) {
-      return NextResponse.json({ error: "Mapbox access token not configured" }, { status: 500 })
+      return NextResponse.json(
+        {
+          error: "Mapbox token not configured",
+          message: "Please set MAPBOX_ACCESS_TOKEN environment variable",
+        },
+        { status: 500 },
+      )
     }
 
-    return NextResponse.json({ token })
+    return NextResponse.json(
+      {
+        token,
+        timestamp: new Date().toISOString(),
+      },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "public, max-age=3600",
+        },
+      },
+    )
   } catch (error) {
-    console.error("Error fetching Mapbox token:", error)
-    return NextResponse.json({ error: "Failed to fetch Mapbox token" }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: "Failed to retrieve token",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
   }
 }
