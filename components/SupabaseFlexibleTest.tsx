@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CheckCircle2, XCircle, AlertCircle, RefreshCw, Database, Key } from "lucide-react"
+import { CheckCircle2, XCircle, AlertCircle, RefreshCw, Database, Key } from 'lucide-react'
 import { testSupabaseConnection } from "@/lib/supabase-flexible-client"
 import { checkRequiredEnvVars } from "@/lib/env-utils"
 
@@ -169,8 +169,8 @@ export default function SupabaseFlexibleTest() {
               </p>
               <pre className="bg-gray-100 p-3 rounded-md text-xs mt-2">
                 {`# .env.local file
-NEXT_PUBLIC_SUPABASE_URL=https://pbqfgjzvclwgxgvuzmul.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`}
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key`}
               </pre>
             </div>
 
@@ -179,8 +179,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`}
               <p className="text-sm text-gray-600 mt-1">For React applications, use the REACT_APP_ prefix:</p>
               <pre className="bg-gray-100 p-3 rounded-md text-xs mt-2">
                 {`# .env file
-REACT_APP_SUPABASE_URL=https://pbqfgjzvclwgxgvuzmul.supabase.co
-REACT_APP_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`}
+REACT_APP_SUPABASE_URL=your_supabase_project_url
+REACT_APP_SUPABASE_ANON_KEY=your_supabase_anon_key`}
               </pre>
             </div>
 
@@ -189,7 +189,8 @@ REACT_APP_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`}
               <AlertTitle>Important Note</AlertTitle>
               <AlertDescription>
                 This component supports both naming conventions, but for Next.js applications, it's recommended to use
-                the NEXT_PUBLIC_ prefix for better compatibility.
+                the NEXT_PUBLIC_ prefix for better compatibility. Configure your environment variables in the Vars
+                section of the in-chat sidebar.
               </AlertDescription>
             </Alert>
           </div>

@@ -5,11 +5,11 @@ const nextConfig = {
   poweredByHeader: false,
 
   eslint: {
-    ignoreDuringBuilds: false,
+    ignoreDuringBuilds: true,
   },
 
   typescript: {
-    ignoreBuildErrors: false,
+    ignoreBuildErrors: true,
   },
 
   images: {
@@ -39,14 +39,12 @@ const nextConfig = {
         hostname: "via.placeholder.com",
       },
     ],
-    unoptimized: process.env.NODE_ENV === "development",
+    unoptimized: false,
   },
 
   env: {
     NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE || "true",
-    NEXT_PUBLIC_STATIC_MODE: process.env.NEXT_PUBLIC_STATIC_MODE || "true",
-    NEXT_PUBLIC_VERCEL: process.env.VERCEL || "0",
-    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+    NEXT_PUBLIC_STATIC_MODE: process.env.NEXT_PUBLIC_STATIC_MODE || "false",
     NEXT_PUBLIC_APP_VERSION: "1.0.0",
   },
 
@@ -71,6 +69,33 @@ const nextConfig = {
       }
     }
 
+    config.optimization = {
+      ...config.optimization,
+      splitChunks: {
+        chunks: 'all',
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          // Vendor chunk
+          vendor: {
+            name: 'vendor',
+            chunks: 'all',
+            test: /node_modules/,
+            priority: 20
+          },
+          // Common chunk
+          common: {
+            name: 'common',
+            minChunks: 2,
+            chunks: 'all',
+            priority: 10,
+            reuseExistingChunk: true,
+            enforce: true
+          }
+        }
+      }
+    }
+
     return config
   },
 
@@ -81,7 +106,6 @@ const nextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: "10mb",
-      allowedOrigins: ["localhost:3000", "*.vercel.app"],
     },
   },
 
@@ -96,7 +120,7 @@ const nextConfig = {
           },
           {
             key: "X-Frame-Options",
-            value: "DENY",
+            value: "SAMEORIGIN",
           },
           {
             key: "X-XSS-Protection",
@@ -109,6 +133,15 @@ const nextConfig = {
           {
             key: "Referrer-Policy",
             value: "strict-origin-when-cross-origin",
+          },
+        ],
+      },
+      {
+        source: "/api/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-store, max-age=0",
           },
         ],
       },

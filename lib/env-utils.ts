@@ -2,7 +2,9 @@ export function getEnvVariable(name: string, defaultValue?: string): string | un
   const isClient = typeof window !== "undefined"
 
   if (isClient && !name.startsWith("NEXT_PUBLIC_")) {
-    console.warn(`Cannot access server-only environment variable ${name} on client`)
+    if (process.env.NODE_ENV === "development") {
+      console.warn(`Cannot access server-only environment variable ${name} on client`)
+    }
     return defaultValue
   }
 
@@ -23,7 +25,9 @@ export function getEnvVar(key: string, defaultValue?: string): string {
   const value = getEnvVariable(key, defaultValue) || getServerEnvVariable(key)
 
   if (!value && !defaultValue) {
-    console.warn(`Environment variable ${key} is not set`)
+    if (process.env.NODE_ENV === "development") {
+      console.warn(`Environment variable ${key} is not set`)
+    }
     return ""
   }
 
