@@ -1,10 +1,12 @@
 {
+  "version": 2,
   "buildCommand": "npm run build",
-  "installCommand": "npm install --legacy-peer-deps",
+  "installCommand": "npm install",
   "framework": "nextjs",
   "env": {
     "NODE_OPTIONS": "--max-old-space-size=4096",
-    "NODE_PG_FORCE_NATIVE": "0"
+    "NODE_PG_FORCE_NATIVE": "0",
+    "VERCEL_EXPERIMENTAL_BUILD_SYSTEM": "npm"
   },
   "headers": [
     {
