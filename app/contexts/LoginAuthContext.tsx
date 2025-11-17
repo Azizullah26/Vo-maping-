@@ -7,7 +7,7 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 
 interface LoginAuthContextType {
   isAuthenticated: boolean;
@@ -33,10 +33,17 @@ export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Check authentication status on mount
   useEffect(() => {
+    if (!isMounted) return;
+    
     const checkAuth = () => {
       try {
         const token = localStorage.getItem("auth_token");
@@ -62,7 +69,7 @@ export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
     };
 
     checkAuth();
-  }, []);
+  }, [isMounted]);
 
   const login = async (
     username: string,
