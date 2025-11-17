@@ -49,9 +49,17 @@ const nextConfig = {
 
   webpack: (config, { isServer }) => {
     if (isServer) {
+      const webpack = require('webpack')
+      config.plugins.push(
+        new webpack.DefinePlugin({
+          'self': 'undefined',
+          'window': 'undefined',
+          'document': 'undefined',
+        })
+      )
+      
       config.resolve.alias = {
         ...config.resolve.alias,
-        // Polyfill self for server-side
         '@deck.gl/core': false,
         '@deck.gl/layers': false,
         '@deck.gl/geo-layers': false,
@@ -78,36 +86,14 @@ const nextConfig = {
         events: false,
         child_process: false,
       }
-    }
-
-    if (!isServer) {
+      
       config.externals = config.externals || []
       config.externals.push('pg')
     }
 
     config.optimization = {
       ...config.optimization,
-      splitChunks: {
-        chunks: 'all',
-        cacheGroups: {
-          default: false,
-          vendors: false,
-          vendor: {
-            name: 'vendor',
-            chunks: 'all',
-            test: /node_modules/,
-            priority: 20
-          },
-          common: {
-            name: 'common',
-            minChunks: 2,
-            chunks: 'all',
-            priority: 10,
-            reuseExistingChunk: true,
-            enforce: true
-          }
-        }
-      }
+      minimize: true,
     }
 
     return config
