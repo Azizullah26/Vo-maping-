@@ -8,7 +8,7 @@ interface MapboxTokenState {
   error: string | null
 }
 
-export function useMapboxToken(): MapboxTokenState {
+export function useMapboxToken() {
   const [state, setState] = useState<MapboxTokenState>({
     token: null,
     loading: true,
@@ -16,7 +16,9 @@ export function useMapboxToken(): MapboxTokenState {
   })
 
   useEffect(() => {
-    const fetchToken = async () => {
+    let mounted = true
+
+    async function fetchToken() {
       try {
         const response = await fetch("/api/mapbox-token")
 
@@ -26,26 +28,37 @@ export function useMapboxToken(): MapboxTokenState {
 
         const data = await response.json()
 
-        if (data.error) {
-          throw new Error(data.error)
+        if (mounted) {
+          if (data.token) {
+            setState({
+              token: data.token,
+              loading: false,
+              error: null,
+            })
+          } else {
+            setState({
+              token: null,
+              loading: false,
+              error: data.error || "Token not available",
+            })
+          }
         }
-
-        setState({
-          token: data.token,
-          loading: false,
-          error: null,
-        })
       } catch (error) {
-        console.error("Error fetching Mapbox token:", error)
-        setState({
-          token: null,
-          loading: false,
-          error: error instanceof Error ? error.message : "Failed to fetch Mapbox token",
-        })
+        if (mounted) {
+          setState({
+            token: null,
+            loading: false,
+            error: error instanceof Error ? error.message : "Failed to fetch token",
+          })
+        }
       }
     }
 
     fetchToken()
+
+    return () => {
+      mounted = false
+    }
   }, [])
 
   return state

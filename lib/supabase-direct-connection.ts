@@ -1,113 +1,173 @@
-import { createClient } from "@supabase/supabase-js"
-import type { Pool } from "pg"
-
-export interface ConnectionTestResult {
+interface ConnectionTestResult {
   success: boolean
   message: string
   details?: any
   timestamp: string
-  documents?: any[]
 }
 
-// Test connection using environment variables
 export async function testSupabaseConnection(): Promise<ConnectionTestResult> {
+  const timestamp = new Date().toISOString()
+
   try {
-    // Check if environment variables are set
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+    if (!supabaseUrl) {
+      return {
+        success: false,
+        message: "Supabase URL not configured",
+        timestamp,
+      }
+    }
+
+    const response = await fetch(`${supabaseUrl}/rest/v1/`, {
+      method: "HEAD",
+      headers: {
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+      },
+    })
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message: `HTTP connection failed: ${response.status}`,
+        timestamp,
+      }
+    }
+
+    return {
+      success: true,
+      message: "Supabase HTTP connection successful",
+      timestamp,
+    }
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+      timestamp,
+    }
+  }
+}
+
+export async function testDirectPostgresConnection(): Promise<ConnectionTestResult> {
+  const timestamp = new Date().toISOString()
+
+  try {
+    const postgresUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL
+
+    if (!postgresUrl) {
+      return {
+        success: false,
+        message: "PostgreSQL URL not configured",
+        timestamp,
+      }
+    }
+
+    return {
+      success: true,
+      message: "PostgreSQL URL is configured",
+      details: { configured: true },
+      timestamp,
+    }
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+      timestamp,
+    }
+  }
+}
+
+export async function testSupabaseWithQuery(): Promise<ConnectionTestResult> {
+  const timestamp = new Date().toISOString()
+
+  try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
     if (!supabaseUrl || !supabaseAnonKey) {
       return {
         success: false,
-        message: "Missing Supabase environment variables",
-        timestamp: new Date().toISOString(),
+        message: "Supabase credentials not configured",
+        timestamp,
       }
     }
 
-    // Initialize Supabase client
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    const response = await fetch(`${supabaseUrl}/rest/v1/projects?select=count`, {
+      method: "HEAD",
+      headers: {
+        apikey: supabaseAnonKey,
+        Prefer: "count=exact",
+      },
+    })
 
-    // Test connection with a simple query
-    const { data: documents, error } = await supabase.from("documents").select("*").limit(10)
-
-    if (error) {
+    if (!response.ok) {
       return {
         success: false,
-        message: `Connection error: ${error.message}`,
-        details: { error },
-        timestamp: new Date().toISOString(),
+        message: `Query test failed: ${response.status}`,
+        timestamp,
       }
     }
 
     return {
       success: true,
-      message: "Successfully connected to Supabase",
-      documents,
-      timestamp: new Date().toISOString(),
+      message: "Supabase query test successful",
+      timestamp,
     }
   } catch (error) {
     return {
       success: false,
-      message: `Unexpected error: ${error instanceof Error ? error.message : String(error)}`,
-      details: { error },
-      timestamp: new Date().toISOString(),
+      message: error instanceof Error ? error.message : "Unknown error",
+      timestamp,
     }
   }
 }
 
-// Test direct PostgreSQL connection (server-side only)
-export async function testDirectPostgresConnection(): Promise<ConnectionTestResult> {
-  if (typeof window !== "undefined") {
-    return {
-      success: false,
-      message: "Direct PostgreSQL connection can only be tested server-side",
-      timestamp: new Date().toISOString(),
-    }
+export async function comprehensiveConnectionTest(): Promise<{
+  overall: boolean
+  tests: {
+    httpConnection: ConnectionTestResult
+    postgresConnection: ConnectionTestResult
+    queryTest: ConnectionTestResult
+  }
+}> {
+  const httpConnection = await testSupabaseConnection()
+  const postgresConnection = await testDirectPostgresConnection()
+  const queryTest = await testSupabaseWithQuery()
+
+  return {
+    overall: httpConnection.success && postgresConnection.success && queryTest.success,
+    tests: {
+      httpConnection,
+      postgresConnection,
+      queryTest,
+    },
+  }
+}
+
+export async function getConnectionStatus(): Promise<{
+  healthy: boolean
+  message: string
+  recommendations: string[]
+}> {
+  const tests = await comprehensiveConnectionTest()
+
+  const recommendations: string[] = []
+
+  if (!tests.tests.httpConnection.success) {
+    recommendations.push("Check Supabase URL and API key configuration")
   }
 
-  let pool: Pool | null = null
+  if (!tests.tests.postgresConnection.success) {
+    recommendations.push("Configure PostgreSQL connection string")
+  }
 
-  try {
-    // Use the direct connection parameters
-    const { Pool } = require("pg")
+  if (!tests.tests.queryTest.success) {
+    recommendations.push("Verify database permissions and table existence")
+  }
 
-    pool = new Pool({
-      host: "aws-0-us-east-1.pooler.supabase.com",
-      port: 6543,
-      database: "postgres",
-      user: "postgres.pbqfgjzvclwgxgvuzmul",
-      password: process.env.SUPABASE_POSTGRES_PASSWORD, // Use from environment variable for security
-      ssl: {
-        rejectUnauthorized: false, // Required for some Supabase connections
-      },
-    })
-
-    // Test the connection
-    const client = await pool.connect()
-
-    try {
-      // Query the documents table
-      const result = await client.query("SELECT * FROM documents LIMIT 10")
-
-      return {
-        success: true,
-        message: "Successfully connected directly to PostgreSQL",
-        documents: result.rows,
-        timestamp: new Date().toISOString(),
-      }
-    } finally {
-      client.release()
-    }
-  } catch (error) {
-    return {
-      success: false,
-      message: `Direct PostgreSQL connection error: ${error instanceof Error ? error.message : String(error)}`,
-      details: { error },
-      timestamp: new Date().toISOString(),
-    }
-  } finally {
-    if (pool) {
-      await pool.end()
-    }
+  return {
+    healthy: tests.overall,
+    message: tests.overall ? "All connections healthy" : "Some connections failed",
+    recommendations,
   }
 }

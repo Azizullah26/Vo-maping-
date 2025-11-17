@@ -1,89 +1,170 @@
 import { createClient } from "@supabase/supabase-js"
 
-export interface ConnectionTestResult {
+interface ConnectionTestResult {
   success: boolean
   message: string
   details?: any
   timestamp: string
-  environment: {
-    url: boolean
-    anonKey: boolean
-    serviceRole?: boolean
-  }
 }
 
 export async function testSupabaseConnection(): Promise<ConnectionTestResult> {
+  const timestamp = new Date().toISOString()
+
   try {
-    // Check if environment variables are set
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
     if (!supabaseUrl || !supabaseAnonKey) {
       return {
         success: false,
-        message: "Missing Supabase environment variables",
-        timestamp: new Date().toISOString(),
-        environment: {
-          url: !!supabaseUrl,
-          anonKey: !!supabaseAnonKey,
-        },
+        message: "Supabase credentials not configured",
+        timestamp,
       }
     }
 
-    // Initialize Supabase client
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+      },
+    })
 
-    // Test connection with a simple query
-    const { data, error, status } = await supabase.from("projects").select("count", { count: "exact", head: true })
+    const { error } = await supabase.from("projects").select("count", { count: "exact", head: true })
 
     if (error) {
       return {
         success: false,
-        message: `Connection error: ${error.message}`,
-        details: { error, status },
-        timestamp: new Date().toISOString(),
-        environment: {
-          url: true,
-          anonKey: true,
-        },
-      }
-    }
-
-    // Test service role key if available (server-side only)
-    let serviceRoleTest = undefined
-    if (typeof window === "undefined" && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      try {
-        const adminClient = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY)
-
-        const { error: adminError } = await adminClient.from("projects").select("count", { count: "exact", head: true })
-
-        serviceRoleTest = !adminError
-      } catch (e) {
-        serviceRoleTest = false
+        message: `Supabase connection failed: ${error.message}`,
+        details: error,
+        timestamp,
       }
     }
 
     return {
       success: true,
-      message: "Successfully connected to Supabase",
-      details: { status },
-      timestamp: new Date().toISOString(),
-      environment: {
-        url: true,
-        anonKey: true,
-        serviceRole: serviceRoleTest,
-      },
+      message: "Supabase connection successful",
+      timestamp,
     }
   } catch (error) {
     return {
       success: false,
-      message: `Unexpected error: ${error instanceof Error ? error.message : String(error)}`,
-      details: { error },
-      timestamp: new Date().toISOString(),
-      environment: {
-        url: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-        anonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      },
+      message: error instanceof Error ? error.message : "Unknown error",
+      timestamp,
     }
+  }
+}
+
+export async function testSupabaseAuth(): Promise<ConnectionTestResult> {
+  const timestamp = new Date().toISOString()
+
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return {
+        success: false,
+        message: "Supabase credentials not configured",
+        timestamp,
+      }
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+      },
+    })
+
+    const { data, error } = await supabase.auth.getSession()
+
+    if (error) {
+      return {
+        success: false,
+        message: `Auth test failed: ${error.message}`,
+        details: error,
+        timestamp,
+      }
+    }
+
+    return {
+      success: true,
+      message: "Supabase auth accessible",
+      details: { hasSession: !!data.session },
+      timestamp,
+    }
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+      timestamp,
+    }
+  }
+}
+
+export async function testSupabaseStorage(): Promise<ConnectionTestResult> {
+  const timestamp = new Date().toISOString()
+
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return {
+        success: false,
+        message: "Supabase credentials not configured",
+        timestamp,
+      }
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+      },
+    })
+
+    const { data, error } = await supabase.storage.listBuckets()
+
+    if (error) {
+      return {
+        success: false,
+        message: `Storage test failed: ${error.message}`,
+        details: error,
+        timestamp,
+      }
+    }
+
+    return {
+      success: true,
+      message: "Supabase storage accessible",
+      details: { bucketsCount: data?.length || 0 },
+      timestamp,
+    }
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+      timestamp,
+    }
+  }
+}
+
+export async function comprehensiveSupabaseTest(): Promise<{
+  overall: boolean
+  tests: {
+    connection: ConnectionTestResult
+    auth: ConnectionTestResult
+    storage: ConnectionTestResult
+  }
+}> {
+  const connection = await testSupabaseConnection()
+  const auth = await testSupabaseAuth()
+  const storage = await testSupabaseStorage()
+
+  return {
+    overall: connection.success && auth.success && storage.success,
+    tests: {
+      connection,
+      auth,
+      storage,
+    },
   }
 }

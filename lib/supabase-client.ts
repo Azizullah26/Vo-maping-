@@ -127,3 +127,12 @@ export const supabaseAdmin = (() => {
     return null
   }
 })()
+
+// Minimal Supabase client stub for future use
+// Not actively used in the application
+export const createClientStub = () => {
+  console.warn("Supabase is not configured for this project")
+  return null
+}
+
+export const supabaseStub = null

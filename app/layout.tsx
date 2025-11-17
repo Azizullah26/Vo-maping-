@@ -1,6 +1,6 @@
 import "./globals.css"
 import "./responsive.css"
-import { Inter } from "next/font/google"
+import { Inter } from 'next/font/google'
 import type React from "react"
 import { TopNav } from "@/components/TopNav"
 import Script from "next/script"
@@ -39,6 +39,8 @@ export const metadata = {
   },
   generator: "v0.dev",
 }
+
+export const dynamic = 'force-dynamic'
 
 export default function RootLayout({
   children,
