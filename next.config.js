@@ -49,13 +49,6 @@ const nextConfig = {
 
   webpack: (config, { isServer }) => {
     
-    // Ensure single React instance across the application
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      react: require.resolve('react'),
-      'react-dom': require.resolve('react-dom'),
-    }
-
     // Server-side: exclude browser-only libraries completely
     if (isServer) {
       config.externals = config.externals || []
