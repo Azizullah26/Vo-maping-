@@ -1,18 +1,9 @@
 {
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next",
-      "config": {
-        "installCommand": "npm install --no-optional --no-package-lock --ignore-scripts"
-      }
-    }
-  ],
+  "framework": "nextjs",
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "npm run build",
   "env": {
-    "NODE_OPTIONS": "--max-old-space-size=4096",
-    "NODE_PG_FORCE_NATIVE": "0",
-    "npm_config_build_from_source": "false",
-    "npm_config_node_gyp": "false"
+    "NODE_OPTIONS": "--max-old-space-size=4096"
   },
   "headers": [
     {
