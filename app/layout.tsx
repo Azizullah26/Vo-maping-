@@ -4,9 +4,7 @@ import { Inter } from 'next/font/google'
 import type React from "react"
 import { TopNav } from "@/components/TopNav"
 import Script from "next/script"
-import { LoginAuthProvider } from "@/app/contexts/LoginAuthContext"
-import AuthGuard from "@/app/components/AuthGuard"
-import ErrorHandler from "@/app/components/ErrorHandler"
+import { Providers } from "./providers"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -15,7 +13,7 @@ export const metadata = {
   description:
     "ELRACE Projects is a leading provider of innovative construction and infrastructure solutions across the UAE. From design to delivery, we ensure excellence in every project.",
   openGraph: {
-    title: "ELRACE Projects – Building Tomorrow's Infrastructure Today",
+    title: "EL RACE Projects – Building Tomorrow's Infrastructure Today",
     description:
       "ELRACE Projects is a leading provider of innovative construction and infrastructure solutions across the UAE. From design to delivery, we ensure excellence in every project.",
     images: [
@@ -48,7 +46,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <meta name="theme-color" content="#000000" />
@@ -69,16 +67,11 @@ export default function RootLayout({
         <meta property="og:site_name" content="ELRACE Projects" />
         <meta property="og:type" content="website" />
       </head>
-      <body className={`${inter.className} h-full m-0 p-0`}>
-        <ErrorHandler />
-        <LoginAuthProvider>
-          <AuthGuard>
-            <div className="relative">
-              <TopNav />
-              {children}
-            </div>
-          </AuthGuard>
-        </LoginAuthProvider>
+      <body className={inter.className}>
+        <Providers>
+          <TopNav />
+          {children}
+        </Providers>
         <Script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js" strategy="afterInteractive" />
       </body>
     </html>
