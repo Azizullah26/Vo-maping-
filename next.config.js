@@ -48,6 +48,17 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        // Polyfill self for server-side
+        '@deck.gl/core': false,
+        '@deck.gl/layers': false,
+        '@deck.gl/geo-layers': false,
+        'mapbox-gl': false,
+      }
+    }
+
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
