@@ -5,23 +5,6 @@
   "framework": "nextjs",
   "env": {
     "NODE_OPTIONS": "--max-old-space-size=4096",
-    "NODE_PG_FORCE_NATIVE": "0",
-    "VERCEL_EXPERIMENTAL_BUILD_SYSTEM": "npm"
-  },
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store, max-age=0" }
-      ]
-    }
-  ]
+    "NODE_PG_FORCE_NATIVE": "0"
+  }
 }

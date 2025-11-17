@@ -48,26 +48,15 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
-    
-    // Server-side: exclude browser-only libraries completely
+    // Server-side: externalize pg to prevent bundling issues
     if (isServer) {
       config.externals = config.externals || []
-      // Add pg as external to prevent bundling on server
-      if (!config.externals.some(ext => typeof ext === 'string' && ext === 'pg')) {
+      if (Array.isArray(config.externals)) {
         config.externals.push('pg')
-      }
-      
-      // Exclude browser-only mapping libraries from server bundle
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'mapbox-gl': false,
-        '@deck.gl/core': false,
-        '@deck.gl/layers': false,
-        '@deck.gl/geo-layers': false,
       }
     }
 
-    // Client-side: exclude Node.js built-in modules
+    // Client-side: exclude Node.js modules
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -75,16 +64,7 @@ const nextConfig = {
         net: false,
         tls: false,
         crypto: false,
-        stream: false,
-        util: false,
-        buffer: false,
-        assert: false,
-        http: false,
-        https: false,
-        os: false,
         path: false,
-        zlib: false,
-        events: false,
         child_process: false,
         pg: false,
       }

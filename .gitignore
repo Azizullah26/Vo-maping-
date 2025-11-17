@@ -116,3 +116,9 @@ temp/
 *.njsproj
 *.sln
 *.sw?
+
+# lock files to prevent conflicts between package managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
