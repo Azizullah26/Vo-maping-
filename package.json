@@ -74,7 +74,7 @@
     "pg-native": "latest",
     "react": "latest",
     "react-day-picker": "latest",
-    "react-dom": "^18.3.1",
+    "react-dom": "18.3.1",
     "react-hook-form": "latest",
     "react-native": "latest",
     "react-resizable-panels": "latest",
