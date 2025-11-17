@@ -49,15 +49,6 @@ const nextConfig = {
 
   webpack: (config, { isServer }) => {
     if (isServer) {
-      const webpack = require('webpack')
-      config.plugins.push(
-        new webpack.DefinePlugin({
-          'self': 'undefined',
-          'window': 'undefined',
-          'document': 'undefined',
-        })
-      )
-      
       config.resolve.alias = {
         ...config.resolve.alias,
         '@deck.gl/core': false,
