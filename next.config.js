@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   poweredByHeader: false,
 
   eslint: {
@@ -66,7 +65,13 @@ const nextConfig = {
         path: false,
         zlib: false,
         events: false,
+        child_process: false,
       }
+    }
+
+    if (!isServer) {
+      config.externals = config.externals || []
+      config.externals.push('pg')
     }
 
     config.optimization = {
@@ -76,14 +81,12 @@ const nextConfig = {
         cacheGroups: {
           default: false,
           vendors: false,
-          // Vendor chunk
           vendor: {
             name: 'vendor',
             chunks: 'all',
             test: /node_modules/,
             priority: 20
           },
-          // Common chunk
           common: {
             name: 'common',
             minChunks: 2,
@@ -99,7 +102,6 @@ const nextConfig = {
     return config
   },
 
-  output: "standalone",
   trailingSlash: false,
   productionBrowserSourceMaps: false,
 
