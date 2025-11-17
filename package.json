@@ -10,6 +10,10 @@
     "lint": "next lint",
     "start": "next start"
   },
+  "overrides": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
   "dependencies": {
     "@neondatabase/serverless": "latest",
     "@nutrient-sdk/viewer": "latest",

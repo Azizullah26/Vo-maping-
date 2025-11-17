@@ -48,6 +48,12 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      react: require.resolve('react'),
+      'react-dom': require.resolve('react-dom'),
+    }
+
     if (isServer) {
       config.resolve.alias = {
         ...config.resolve.alias,
