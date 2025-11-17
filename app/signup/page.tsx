@@ -49,7 +49,7 @@ export default function SignupPage() {
           <div className="p-6">
             <div className="flex justify-center mb-6">
               <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/abu-dhabi-police-logo-21AF543362-nwLnkElCePIGxnmxG49FlWYFtViagS.png"
+                src="/images/design-mode/abu-dhabi-police-logo-21AF543362.png"
                 alt="Abu Dhabi Police Logo"
                 width={80}
                 height={80}
