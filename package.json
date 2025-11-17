@@ -8,6 +8,11 @@
     "lint": "next lint",
     "start": "next start"
   },
+  "overrides": {
+    "child_process": "npm:empty-module@^0.0.2",
+    "fs": "npm:empty-module@^0.0.2",
+    "path": "npm:empty-module@^0.0.2"
+  },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
     "@neondatabase/serverless": "latest",
