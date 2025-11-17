@@ -7,6 +7,7 @@
     "build": "next build",
     "check-deps": "npm outdated",
     "dev": "next dev",
+    "postinstall": "node scripts/cleanup-deps.js",
     "lint": "next lint",
     "start": "next start"
   },

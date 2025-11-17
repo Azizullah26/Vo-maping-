@@ -48,22 +48,33 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
+    
+    // Ensure single React instance across the application
     config.resolve.alias = {
       ...config.resolve.alias,
       react: require.resolve('react'),
       'react-dom': require.resolve('react-dom'),
     }
 
+    // Server-side: exclude browser-only libraries completely
     if (isServer) {
+      config.externals = config.externals || []
+      // Add pg as external to prevent bundling on server
+      if (!config.externals.some(ext => typeof ext === 'string' && ext === 'pg')) {
+        config.externals.push('pg')
+      }
+      
+      // Exclude browser-only mapping libraries from server bundle
       config.resolve.alias = {
         ...config.resolve.alias,
+        'mapbox-gl': false,
         '@deck.gl/core': false,
         '@deck.gl/layers': false,
         '@deck.gl/geo-layers': false,
-        'mapbox-gl': false,
       }
     }
 
+    // Client-side: exclude Node.js built-in modules
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -82,15 +93,8 @@ const nextConfig = {
         zlib: false,
         events: false,
         child_process: false,
+        pg: false,
       }
-      
-      config.externals = config.externals || []
-      config.externals.push('pg')
-    }
-
-    config.optimization = {
-      ...config.optimization,
-      minimize: true,
     }
 
     return config
