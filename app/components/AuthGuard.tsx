@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useEffect } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import { useRouter, usePathname } from 'next/navigation'
 import { useLoginAuth } from "@/app/contexts/LoginAuthContext"
 
 interface AuthGuardProps {
@@ -15,11 +15,14 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter()
   const pathname = usePathname()
 
+  const publicRoutes = ["/", "/login", "/signup"]
+  const isPublicRoute = publicRoutes.includes(pathname)
+
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && pathname !== "/login") {
+    if (!isLoading && !isAuthenticated && !isPublicRoute) {
       router.push("/login")
     }
-  }, [isAuthenticated, isLoading, pathname, router])
+  }, [isAuthenticated, isLoading, pathname, router, isPublicRoute])
 
   // Show loading state
   if (isLoading) {
@@ -33,8 +36,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     )
   }
 
-  // If not authenticated and not on login page, don't render children
-  if (!isAuthenticated && pathname !== "/login") {
+  if (!isAuthenticated && !isPublicRoute) {
     return null
   }
 
