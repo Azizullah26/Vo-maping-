@@ -11,6 +11,8 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
+  output: 'standalone',
+
   images: {
     remotePatterns: [
       {
