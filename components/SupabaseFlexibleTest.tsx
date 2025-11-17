@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { CheckCircle2, XCircle, AlertCircle, RefreshCw, Database, Key } from "lucide-react"
+import { CheckCircle2, XCircle, AlertCircle, RefreshCw, Database, Key } from 'lucide-react'
 import { testSupabaseConnection } from "@/lib/supabase-flexible-client"
 import { checkRequiredEnvVars } from "@/lib/env-utils"
 
@@ -169,8 +169,8 @@ export default function SupabaseFlexibleTest() {
               </p>
               <pre className="bg-gray-100 p-3 rounded-md text-xs mt-2">
                 {`# .env.local file
-NEXT_PUBLIC_SUPABASE_URL=https://pbqfgjzvclwgxgvuzmul.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`}
+NEXT_PUBLIC_SUPABASE_URL=your-project-url.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key`}
               </pre>
             </div>
 
@@ -179,8 +179,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`}
               <p className="text-sm text-gray-600 mt-1">For React applications, use the REACT_APP_ prefix:</p>
               <pre className="bg-gray-100 p-3 rounded-md text-xs mt-2">
                 {`# .env file
-REACT_APP_SUPABASE_URL=https://pbqfgjzvclwgxgvuzmul.supabase.co
-REACT_APP_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`}
+REACT_APP_SUPABASE_URL=your-project-url.supabase.co
+REACT_APP_SUPABASE_ANON_KEY=your-anon-key`}
               </pre>
             </div>
 
