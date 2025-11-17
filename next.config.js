@@ -11,7 +11,6 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
-
   images: {
     remotePatterns: [
       {
@@ -49,13 +48,15 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
+    // Server-side: externalize pg to prevent bundling issues
     if (isServer) {
       config.externals = config.externals || []
       if (Array.isArray(config.externals)) {
-        config.externals.push('pg', 'mapbox-gl', 'cesium', '@react-three/fiber', '@react-three/drei')
+        config.externals.push('pg')
       }
     }
 
+    // Client-side: exclude Node.js modules
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
