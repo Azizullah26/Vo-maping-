@@ -16,7 +16,6 @@ const nextConfig = {
     ],
     unoptimized: true,
   },
-  // Simplified webpack configuration that doesn't require additional dependencies
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // Replace Node.js modules with empty objects or false
@@ -35,19 +34,16 @@ const nextConfig = {
         os: false,
         path: false,
         zlib: false,
+        child_process: false,
       }
     }
 
     return config
   },
-  // Add output configuration for standalone deployment
-  output: "standalone",
-  // Ensure trailing slashes are handled correctly
   trailingSlash: false,
   experimental: {
-    // Updated experimental features for Next.js 15.2.4
+    // Updated experimental features for Next.js 14
   },
-  // Moved from experimental.serverComponentsExternalPackages
   serverExternalPackages: [],
 }
 
