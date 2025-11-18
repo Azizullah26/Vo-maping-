@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useEffect, useRef, useState, useCallback } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 import { AnimatedControls } from "@/components/AnimatedControls"
 import { useMapboxToken } from "@/hooks/useMapboxToken"
 import { MarkerHoverWidget } from "@/components/MarkerHoverWidget"
@@ -871,8 +871,10 @@ export default function AlAinMap({
     if (map.current) return
     if (loading) return
     if (error || !token) {
-      console.error("Mapbox access token error:", error)
-      setMapError(error || "No access token available")
+      const errorMessage = error || "No access token available"
+      console.error("[v0] Mapbox access token error:", errorMessage)
+      console.error("[v0] Please set MAPBOX_ACCESS_TOKEN in your environment variables")
+      setMapError(errorMessage)
       return
     }
     if (!mapboxLoaded || !window.mapboxgl) {
@@ -893,7 +895,7 @@ export default function AlAinMap({
       const lngOffset = offsetX * 0.0005
       const latOffset = offsetY * 0.0005
 
-      const centerLng = baseCenterLng + lngOffset
+      const centerLng = baseCenterLng +lngOffset
       const centerLat = baseCenterLat - latOffset
 
       // Calculate the center of the bounded area for all devices to show all markers
