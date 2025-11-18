@@ -1,27 +1,32 @@
-"use client" // Mark as client component if it's not already
+"use client"
 
 import { useState, useEffect } from "react"
-import { supabase } from "../lib/supabase" // Corrected import path
+import { getSupabaseClient } from "@/lib/supabase-client"
 
 function Page() {
-  const [todos, setTodos] = useState<any[]>([]) // Use any[] for flexibility, or define a Todo type
+  const [todos, setTodos] = useState<any[]>([])
 
   useEffect(() => {
     async function getTodos() {
-      // Mark function as async
       try {
-        const { data, error } = await supabase.from("todos").select("*") // Select all columns
+        const supabase = getSupabaseClient()
+        
+        if (!supabase) {
+          console.warn("Supabase client not available")
+          return
+        }
+
+        const { data, error } = await supabase.from("todos").select("*")
 
         if (error) {
           console.error("Error fetching todos:", error.message)
-          // Optionally, set an error state to display to the user
           return
         }
 
         if (data && data.length > 0) {
           setTodos(data)
         } else {
-          setTodos([]) // Ensure todos is empty if no data or empty array
+          setTodos([])
         }
       } catch (err) {
         console.error("Unexpected error:", err)
@@ -38,7 +43,7 @@ function Page() {
         <ul className="space-y-2">
           {todos.map((todo) => (
             <li key={todo.id} className="p-3 border rounded-md bg-white shadow-sm">
-              {todo.title || "Untitled Todo"} {/* Assuming a 'title' column */}
+              {todo.title || "Untitled Todo"}
             </li>
           ))}
         </ul>

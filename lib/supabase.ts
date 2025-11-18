@@ -1,12 +1,18 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 
 // Get environment variables with fallbacks for build time
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+function getEnvVars() {
+  return {
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+    supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+    supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
+  }
+}
 
 // Create client function with error handling
 export function createClient() {
+  const { supabaseUrl, supabaseAnonKey } = getEnvVars()
+  
   if (!supabaseUrl || !supabaseAnonKey) {
     console.warn("Supabase environment variables not configured")
     return null
@@ -14,28 +20,48 @@ export function createClient() {
   return createSupabaseClient(supabaseUrl, supabaseAnonKey)
 }
 
-// Main client instance with null fallback
-export const supabase = supabaseUrl && supabaseAnonKey ? createSupabaseClient(supabaseUrl, supabaseAnonKey) : null
+let _supabaseInstance: ReturnType<typeof createSupabaseClient> | null | undefined = undefined
 
-// Admin client for server-side operations with null fallback
-export const supabaseAdmin =
-  supabaseUrl && supabaseServiceRoleKey
-    ? createSupabaseClient(supabaseUrl, supabaseServiceRoleKey, {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      })
-    : null
+export const getSupabase = () => {
+  if (_supabaseInstance === undefined) {
+    const { supabaseUrl, supabaseAnonKey } = getEnvVars()
+    _supabaseInstance = supabaseUrl && supabaseAnonKey ? createSupabaseClient(supabaseUrl, supabaseAnonKey) : null
+  }
+  return _supabaseInstance
+}
+
+// For backward compatibility - export as supabase
+export const supabase = null // Will be lazily initialized via getSupabase()
+
+let _supabaseAdminInstance: ReturnType<typeof createSupabaseClient> | null | undefined = undefined
+
+export const getSupabaseAdmin = () => {
+  if (_supabaseAdminInstance === undefined) {
+    const { supabaseUrl, supabaseServiceRoleKey } = getEnvVars()
+    _supabaseAdminInstance = supabaseUrl && supabaseServiceRoleKey
+      ? createSupabaseClient(supabaseUrl, supabaseServiceRoleKey, {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+          },
+        })
+      : null
+  }
+  return _supabaseAdminInstance
+}
+
+// For backward compatibility
+export const supabaseAdmin = null // Will be lazily initialized via getSupabaseAdmin()
 
 // Test connection function
 export async function testSupabaseConnection() {
   try {
-    if (!supabase) {
+    const supabaseInstance = getSupabase()
+    if (!supabaseInstance) {
       return { success: false, error: "Supabase not configured" }
     }
 
-    const { data, error } = await supabase.from("projects").select("count", { count: "exact", head: true })
+    const { data, error } = await supabaseInstance.from("projects").select("count", { count: "exact", head: true })
     if (error) throw error
     return { success: true, message: "Connection successful" }
   } catch (error) {
@@ -45,8 +71,9 @@ export async function testSupabaseConnection() {
 
 // Check if Supabase is configured
 export function isSupabaseConfigured() {
+  const { supabaseUrl, supabaseAnonKey } = getEnvVars()
   return !!(supabaseUrl && supabaseAnonKey)
 }
 
 // Default export with null fallback
-export default supabase
+export default getSupabase()

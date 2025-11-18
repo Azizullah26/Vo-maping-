@@ -136,3 +136,11 @@ export const createClientStub = () => {
 }
 
 export const supabaseStub = null
+
+export function getSupabaseServerClient() {
+  if (typeof window !== "undefined") {
+    console.warn("getSupabaseServerClient should only be used on the server")
+    return null
+  }
+  return getSupabaseClient()
+}
