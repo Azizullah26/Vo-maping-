@@ -2,11 +2,8 @@ import "./globals.css"
 import "./responsive.css"
 import { Inter } from 'next/font/google'
 import type React from "react"
-import { TopNav } from "@/components/TopNav"
 import Script from "next/script"
-import { LoginAuthProvider } from "@/app/contexts/LoginAuthContext"
-import AuthGuard from "@/app/components/AuthGuard"
-import ErrorHandler from "@/app/components/ErrorHandler"
+import ClientProviders from "./providers/ClientProviders"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -70,15 +67,9 @@ export default function RootLayout({
         <meta property="og:type" content="website" />
       </head>
       <body className={`${inter.className} h-full m-0 p-0`}>
-        <ErrorHandler />
-        <LoginAuthProvider>
-          <AuthGuard>
-            <div className="relative">
-              <TopNav />
-              {children}
-            </div>
-          </AuthGuard>
-        </LoginAuthProvider>
+        <ClientProviders>
+          {children}
+        </ClientProviders>
         <Script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js" strategy="afterInteractive" />
       </body>
     </html>
