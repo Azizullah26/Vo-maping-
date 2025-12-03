@@ -1,14 +1,33 @@
 import { NextResponse } from "next/server"
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
-import type { Database } from "@/types/supabase"
+import { createClient } from "@supabase/supabase-js"
+
+export const dynamic = "force-dynamic"
+
+function getSupabaseAdmin() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return null
+  }
+
+  return createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
+}
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const id = params.id
 
-    // Use Supabase client instead of direct pg connection
-    const supabase = createServerComponentClient<Database>({ cookies })
+    const supabase = getSupabaseAdmin()
+
+    if (!supabase) {
+      return NextResponse.json({ success: false, error: "Supabase not configured" }, { status: 500 })
+    }
 
     // First get the document to find the file path
     const { data: document, error: fetchError } = await supabase.from("documents").select("*").eq("id", id).single()
@@ -45,11 +64,9 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
         if (storageError) {
           console.warn("Could not delete file from storage:", storageError)
-          // Continue anyway as the database record is deleted
         }
       } catch (storageErr) {
         console.warn("Error when trying to delete file from storage:", storageErr)
-        // Continue anyway as the database record is deleted
       }
     }
 

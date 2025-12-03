@@ -1,6 +1,5 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js"
 
-// Get environment variables with fallbacks for build time
 function getEnvVars() {
   return {
     supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
@@ -9,7 +8,7 @@ function getEnvVars() {
   }
 }
 
-// Create client function with error handling
+// Create client function with error handling - only called when needed
 export function createClient() {
   const { supabaseUrl, supabaseAnonKey } = getEnvVars()
 
@@ -20,9 +19,9 @@ export function createClient() {
   return createSupabaseClient(supabaseUrl, supabaseAnonKey)
 }
 
-let _supabaseInstance: ReturnType<typeof createSupabaseClient> | null | undefined = undefined
+let _supabaseInstance: ReturnType<typeof createSupabaseClient> | null | undefined
 
-export const getSupabase = () => {
+export function getSupabase() {
   if (_supabaseInstance === undefined) {
     const { supabaseUrl, supabaseAnonKey } = getEnvVars()
     _supabaseInstance = supabaseUrl && supabaseAnonKey ? createSupabaseClient(supabaseUrl, supabaseAnonKey) : null
@@ -30,11 +29,20 @@ export const getSupabase = () => {
   return _supabaseInstance
 }
 
-export const supabase = null
+export const supabase = new Proxy({} as NonNullable<ReturnType<typeof getSupabase>>, {
+  get(_, prop) {
+    const client = getSupabase()
+    if (!client) {
+      console.warn("Supabase client not available")
+      return undefined
+    }
+    return (client as any)[prop]
+  },
+})
 
-let _supabaseAdminInstance: ReturnType<typeof createSupabaseClient> | null | undefined = undefined
+let _supabaseAdminInstance: ReturnType<typeof createSupabaseClient> | null | undefined
 
-export const getSupabaseAdmin = () => {
+export function getSupabaseAdmin() {
   if (_supabaseAdminInstance === undefined) {
     const { supabaseUrl, supabaseServiceRoleKey } = getEnvVars()
     _supabaseAdminInstance =
@@ -50,7 +58,16 @@ export const getSupabaseAdmin = () => {
   return _supabaseAdminInstance
 }
 
-export const supabaseAdmin = null
+export const supabaseAdmin = new Proxy({} as NonNullable<ReturnType<typeof getSupabaseAdmin>>, {
+  get(_, prop) {
+    const client = getSupabaseAdmin()
+    if (!client) {
+      console.warn("Supabase admin client not available")
+      return undefined
+    }
+    return (client as any)[prop]
+  },
+})
 
 // Test connection function
 export async function testSupabaseConnection() {
@@ -74,4 +91,4 @@ export function isSupabaseConfigured() {
   return !!(supabaseUrl && supabaseAnonKey)
 }
 
-export default null
+export default supabase
