@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { User, Session } from "@supabase/supabase-js"
-import { supabase } from "@/lib/supabase"
+import { getSupabase } from "@/lib/supabase"
 
 interface AuthState {
   user: User | null
@@ -20,6 +20,12 @@ export function useSupabaseAuth() {
   })
 
   useEffect(() => {
+    const supabase = getSupabase()
+    if (!supabase) {
+      setAuthState((prev) => ({ ...prev, loading: false, error: "Supabase not configured" }))
+      return
+    }
+
     // Get initial session
     const getInitialSession = async () => {
       try {
@@ -62,6 +68,9 @@ export function useSupabaseAuth() {
   }, [])
 
   const signIn = async (email: string, password: string) => {
+    const supabase = getSupabase()
+    if (!supabase) return { success: false, error: "Supabase not configured" }
+
     try {
       setAuthState((prev) => ({ ...prev, loading: true, error: null }))
 
@@ -81,6 +90,9 @@ export function useSupabaseAuth() {
   }
 
   const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
+    const supabase = getSupabase()
+    if (!supabase) return { success: false, error: "Supabase not configured" }
+
     try {
       setAuthState((prev) => ({ ...prev, loading: true, error: null }))
 
@@ -103,6 +115,9 @@ export function useSupabaseAuth() {
   }
 
   const signOut = async () => {
+    const supabase = getSupabase()
+    if (!supabase) return { success: false, error: "Supabase not configured" }
+
     try {
       setAuthState((prev) => ({ ...prev, loading: true, error: null }))
 
@@ -118,6 +133,9 @@ export function useSupabaseAuth() {
   }
 
   const resetPassword = async (email: string) => {
+    const supabase = getSupabase()
+    if (!supabase) return { success: false, error: "Supabase not configured" }
+
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email)
       if (error) throw error
@@ -130,6 +148,9 @@ export function useSupabaseAuth() {
   }
 
   const updateProfile = async (updates: Record<string, any>) => {
+    const supabase = getSupabase()
+    if (!supabase) return { success: false, error: "Supabase not configured" }
+
     try {
       const { error } = await supabase.auth.updateUser({
         data: updates,

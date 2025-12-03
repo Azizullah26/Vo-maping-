@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server"
-import { supabase } from "@/lib/supabaseClient"
+import { getSupabaseClient } from "@/lib/supabaseClient"
 
 export async function GET() {
   try {
+    const supabase = getSupabaseClient()
+    if (!supabase) {
+      return NextResponse.json({ success: false, error: "Supabase not configured" }, { status: 500 })
+    }
+
     // Create a simple text file
     const testContent = "This is a test file created at " + new Date().toISOString()
     const testFile = new Blob([testContent], { type: "text/plain" })

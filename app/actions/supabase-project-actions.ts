@@ -1,6 +1,6 @@
 "use server"
 
-import { supabaseAdmin } from "@/lib/supabase"
+import { getSupabaseAdmin } from "@/lib/supabase"
 
 export interface Project {
   id: string
@@ -29,6 +29,12 @@ export interface ProjectStats {
 // Get project statistics
 export async function getProjectStats(): Promise<ProjectStats> {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
+    if (!supabaseAdmin) {
+      console.warn("Supabase admin not configured")
+      return { total: 0, active: 0, completed: 0, planned: 0, on_hold: 0 }
+    }
+
     const { data: projects, error } = await supabaseAdmin.from("projects").select("status")
 
     if (error) throw error
@@ -51,6 +57,9 @@ export async function getProjectStats(): Promise<ProjectStats> {
 // Get all projects
 export async function getProjects(): Promise<Project[]> {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
+    if (!supabaseAdmin) return []
+
     const { data, error } = await supabaseAdmin.from("projects").select("*").order("created_at", { ascending: false })
 
     if (error) throw error
@@ -64,6 +73,9 @@ export async function getProjects(): Promise<Project[]> {
 // Get project by ID
 export async function getProject(id: string): Promise<Project | null> {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
+    if (!supabaseAdmin) return null
+
     const { data, error } = await supabaseAdmin.from("projects").select("*").eq("id", id).single()
 
     if (error) throw error
@@ -79,6 +91,9 @@ export async function createProject(
   project: Omit<Project, "id" | "created_at" | "updated_at">,
 ): Promise<Project | null> {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
+    if (!supabaseAdmin) return null
+
     const { data, error } = await supabaseAdmin
       .from("projects")
       .insert([
@@ -102,6 +117,9 @@ export async function createProject(
 // Update project
 export async function updateProject(id: string, updates: Partial<Project>): Promise<Project | null> {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
+    if (!supabaseAdmin) return null
+
     const { data, error } = await supabaseAdmin
       .from("projects")
       .update({
@@ -123,6 +141,9 @@ export async function updateProject(id: string, updates: Partial<Project>): Prom
 // Delete project
 export async function deleteProject(id: string): Promise<boolean> {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
+    if (!supabaseAdmin) return false
+
     const { error } = await supabaseAdmin.from("projects").delete().eq("id", id)
 
     if (error) throw error
@@ -136,6 +157,9 @@ export async function deleteProject(id: string): Promise<boolean> {
 // Search projects
 export async function searchProjects(query: string): Promise<Project[]> {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
+    if (!supabaseAdmin) return []
+
     const { data, error } = await supabaseAdmin
       .from("projects")
       .select("*")
@@ -153,6 +177,9 @@ export async function searchProjects(query: string): Promise<Project[]> {
 // Get projects by status
 export async function getProjectsByStatus(status: Project["status"]): Promise<Project[]> {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
+    if (!supabaseAdmin) return []
+
     const { data, error } = await supabaseAdmin
       .from("projects")
       .select("*")

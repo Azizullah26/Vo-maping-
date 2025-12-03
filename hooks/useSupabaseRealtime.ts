@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { supabase } from "@/lib/supabase"
+import { getSupabase } from "@/lib/supabase"
 import type { RealtimeChannel } from "@supabase/supabase-js"
 
 interface RealtimeState<T> {
@@ -23,6 +23,12 @@ export function useSupabaseRealtime<T = any>(table: string, callback: (payload: 
   const [channel, setChannel] = useState<RealtimeChannel | null>(null)
 
   const fetchData = useCallback(async () => {
+    const supabase = getSupabase()
+    if (!supabase) {
+      setState((prev) => ({ ...prev, loading: false, error: "Supabase not configured" }))
+      return
+    }
+
     try {
       setState((prev) => ({ ...prev, loading: true, error: null }))
 
@@ -45,6 +51,12 @@ export function useSupabaseRealtime<T = any>(table: string, callback: (payload: 
   }, [table])
 
   useEffect(() => {
+    const supabase = getSupabase()
+    if (!supabase) {
+      setState((prev) => ({ ...prev, loading: false, error: "Supabase not configured" }))
+      return
+    }
+
     fetchData()
 
     // Set up realtime subscription

@@ -29,16 +29,8 @@ export function getSupabase() {
   return _supabaseInstance
 }
 
-export const supabase = new Proxy({} as NonNullable<ReturnType<typeof getSupabase>>, {
-  get(_, prop) {
-    const client = getSupabase()
-    if (!client) {
-      console.warn("Supabase client not available")
-      return undefined
-    }
-    return (client as any)[prop]
-  },
-})
+// Keeping for backwards compatibility but recommend using getSupabase() directly
+export const supabase = null as any
 
 let _supabaseAdminInstance: ReturnType<typeof createSupabaseClient> | null | undefined
 
@@ -58,16 +50,7 @@ export function getSupabaseAdmin() {
   return _supabaseAdminInstance
 }
 
-export const supabaseAdmin = new Proxy({} as NonNullable<ReturnType<typeof getSupabaseAdmin>>, {
-  get(_, prop) {
-    const client = getSupabaseAdmin()
-    if (!client) {
-      console.warn("Supabase admin client not available")
-      return undefined
-    }
-    return (client as any)[prop]
-  },
-})
+export const supabaseAdmin = null as any
 
 // Test connection function
 export async function testSupabaseConnection() {
@@ -91,4 +74,4 @@ export function isSupabaseConfigured() {
   return !!(supabaseUrl && supabaseAnonKey)
 }
 
-export default supabase
+export default null as any
