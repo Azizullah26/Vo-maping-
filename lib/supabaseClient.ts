@@ -52,8 +52,13 @@ function createMockClient() {
   }
 }
 
-// Export a default client for convenience
-export const supabase = getSupabaseClient()
+// This allows `import { supabase }` to work without executing at module load time
+export const supabase = new Proxy({} as ReturnType<typeof getSupabaseClient>, {
+  get(_, prop) {
+    const client = getSupabaseClient()
+    return client[prop as keyof typeof client]
+  },
+})
 
 export { supabaseCreateClient as createClient }
-export default supabase
+export const getSupabase = getSupabaseClient
