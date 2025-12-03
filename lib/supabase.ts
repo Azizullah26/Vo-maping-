@@ -12,7 +12,7 @@ function getEnvVars() {
 // Create client function with error handling
 export function createClient() {
   const { supabaseUrl, supabaseAnonKey } = getEnvVars()
-  
+
   if (!supabaseUrl || !supabaseAnonKey) {
     console.warn("Supabase environment variables not configured")
     return null
@@ -30,28 +30,27 @@ export const getSupabase = () => {
   return _supabaseInstance
 }
 
-// For backward compatibility - export as supabase
-export const supabase = null // Will be lazily initialized via getSupabase()
+export const supabase = null
 
 let _supabaseAdminInstance: ReturnType<typeof createSupabaseClient> | null | undefined = undefined
 
 export const getSupabaseAdmin = () => {
   if (_supabaseAdminInstance === undefined) {
     const { supabaseUrl, supabaseServiceRoleKey } = getEnvVars()
-    _supabaseAdminInstance = supabaseUrl && supabaseServiceRoleKey
-      ? createSupabaseClient(supabaseUrl, supabaseServiceRoleKey, {
-          auth: {
-            autoRefreshToken: false,
-            persistSession: false,
-          },
-        })
-      : null
+    _supabaseAdminInstance =
+      supabaseUrl && supabaseServiceRoleKey
+        ? createSupabaseClient(supabaseUrl, supabaseServiceRoleKey, {
+            auth: {
+              autoRefreshToken: false,
+              persistSession: false,
+            },
+          })
+        : null
   }
   return _supabaseAdminInstance
 }
 
-// For backward compatibility
-export const supabaseAdmin = null // Will be lazily initialized via getSupabaseAdmin()
+export const supabaseAdmin = null
 
 // Test connection function
 export async function testSupabaseConnection() {
@@ -75,5 +74,4 @@ export function isSupabaseConfigured() {
   return !!(supabaseUrl && supabaseAnonKey)
 }
 
-// Default export with null fallback
-export default getSupabase()
+export default null
