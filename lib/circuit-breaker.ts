@@ -86,5 +86,27 @@ export class CircuitBreaker {
   }
 }
 
-// Create a singleton instance for database operations
-export const dbCircuitBreaker = new CircuitBreaker()
+let _dbCircuitBreaker: CircuitBreaker | null = null
+
+export function getDbCircuitBreaker(): CircuitBreaker {
+  if (!_dbCircuitBreaker) {
+    _dbCircuitBreaker = new CircuitBreaker()
+  }
+  return _dbCircuitBreaker
+}
+
+// Keep backwards compatibility with a getter
+export const dbCircuitBreaker = {
+  get instance() {
+    return getDbCircuitBreaker()
+  },
+  execute<T>(fn: () => Promise<T>, fallback?: () => Promise<T>): Promise<T> {
+    return getDbCircuitBreaker().execute(fn, fallback)
+  },
+  getState() {
+    return getDbCircuitBreaker().getState()
+  },
+  reset() {
+    return getDbCircuitBreaker().reset()
+  },
+}

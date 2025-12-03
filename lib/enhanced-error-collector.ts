@@ -108,7 +108,30 @@ class EnhancedErrorCollector {
   }
 }
 
-export const enhancedErrorCollector = new EnhancedErrorCollector()
+let _enhancedErrorCollector: EnhancedErrorCollector | null = null
+
+function getEnhancedErrorCollector(): EnhancedErrorCollector {
+  if (!_enhancedErrorCollector) {
+    _enhancedErrorCollector = new EnhancedErrorCollector()
+  }
+  return _enhancedErrorCollector
+}
+
+// Keep backwards compatibility with a proxy object
+export const enhancedErrorCollector = {
+  collectError: (
+    error: Error,
+    category?: EnhancedError["category"],
+    severity?: EnhancedError["severity"],
+    context?: Record<string, any>,
+  ) => getEnhancedErrorCollector().collectError(error, category, severity, context),
+  getErrors: (filter?: Parameters<EnhancedErrorCollector["getErrors"]>[0]) =>
+    getEnhancedErrorCollector().getErrors(filter),
+  getCategoryCounts: () => getEnhancedErrorCollector().getCategoryCounts(),
+  getSeverityCounts: () => getEnhancedErrorCollector().getSeverityCounts(),
+  clearErrors: () => getEnhancedErrorCollector().clearErrors(),
+  exportErrors: () => getEnhancedErrorCollector().exportErrors(),
+}
 
 export function collectError(
   error: Error,
@@ -116,17 +139,18 @@ export function collectError(
   severity?: EnhancedError["severity"],
   context?: Record<string, any>,
 ) {
-  enhancedErrorCollector.collectError(error, category, severity, context)
+  getEnhancedErrorCollector().collectError(error, category, severity, context)
 }
 
-export function getEnhancedErrors(filter?: Parameters<typeof enhancedErrorCollector.getErrors>[0]) {
-  return enhancedErrorCollector.getErrors(filter)
+export function getEnhancedErrors(filter?: Parameters<EnhancedErrorCollector["getErrors"]>[0]) {
+  return getEnhancedErrorCollector().getErrors(filter)
 }
 
 export function getErrorStats() {
+  const collector = getEnhancedErrorCollector()
   return {
-    byCategory: enhancedErrorCollector.getCategoryCounts(),
-    bySeverity: enhancedErrorCollector.getSeverityCounts(),
-    total: enhancedErrorCollector.getErrors().length,
+    byCategory: collector.getCategoryCounts(),
+    bySeverity: collector.getSeverityCounts(),
+    total: collector.getErrors().length,
   }
 }
