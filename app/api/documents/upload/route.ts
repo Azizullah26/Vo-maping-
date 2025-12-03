@@ -1,43 +1,43 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
-import type { Database } from "@/types/supabase" // Import the updated Database type
+import type { Database } from "@/types/supabase"
 
-// Initialize Supabase client with service role key to bypass RLS
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+function getSupabaseAdmin() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error("Missing Supabase credentials in environment variables for /api/documents/upload")
-  console.error("NEXT_PUBLIC_SUPABASE_URL:", supabaseUrl ? "present" : "missing")
-  console.error("SUPABASE_SERVICE_ROLE_KEY:", supabaseServiceKey ? "present" : "missing")
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error("Missing Supabase credentials in environment variables for /api/documents/upload")
+    console.error("NEXT_PUBLIC_SUPABASE_URL:", supabaseUrl ? "present" : "missing")
+    console.error("SUPABASE_SERVICE_ROLE_KEY:", supabaseServiceKey ? "present" : "missing")
+    return null
+  }
+
+  return createClient<Database>(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      persistSession: false,
+    },
+  })
 }
-
-// Only create client if both environment variables are present
-const supabaseAdmin = supabaseUrl && supabaseServiceKey 
-  ? createClient<Database>(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        persistSession: false,
-      },
-    })
-  : null
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if Supabase client is available
+    const supabaseAdmin = getSupabaseAdmin()
+
     if (!supabaseAdmin) {
       console.error("Supabase client not initialized - missing environment variables")
       return NextResponse.json(
-        { 
-          success: false, 
-          error: "Server configuration error: Missing Supabase credentials. Please check environment variables." 
+        {
+          success: false,
+          error: "Server configuration error: Missing Supabase credentials. Please check environment variables.",
         },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
     const formData = await request.formData()
     const file = formData.get("file") as File
-    const projectName = formData.get("projectName") as string // Use projectName directly
+    const projectName = formData.get("projectName") as string
 
     if (!file || !projectName) {
       return NextResponse.json(
@@ -46,17 +46,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate unique filename and path within the project-documents bucket
     const fileName = `${Date.now()}_${file.name.replace(/\s+/g, "-")}`
-    const filePath = `projects/${projectName}/${fileName}` // Organize by project name
+    const filePath = `projects/${projectName}/${fileName}`
 
-    // Convert File to ArrayBuffer for upload
     const arrayBuffer = await file.arrayBuffer()
     const buffer = new Uint8Array(arrayBuffer)
 
-    // 1. Upload file to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
-      .from("project-documents") // Use the specified bucket name
+      .from("project-documents")
       .upload(filePath, buffer, {
         cacheControl: "3600",
         upsert: false,
@@ -68,7 +65,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: uploadError.message }, { status: 500 })
     }
 
-    // 2. Get the public URL for the uploaded file
     const { data: urlData } = await supabaseAdmin.storage.from("project-documents").getPublicUrl(filePath)
 
     if (!urlData?.publicUrl) {
@@ -80,19 +76,17 @@ export async function POST(request: NextRequest) {
 
     const fileUrl = urlData.publicUrl
 
-    // 3. Save metadata to project_documents table in Supabase
     const { data: insertedData, error: documentError } = await supabaseAdmin
-      .from("project_documents") // Use the new table name
+      .from("project_documents")
       .insert({
         project_name: projectName,
         file_name: file.name,
         file_url: fileUrl,
-        uploaded_at: new Date().toISOString(), // Set uploaded_at
+        uploaded_at: new Date().toISOString(),
       })
       .select()
 
     if (documentError) {
-      // If metadata insertion fails, delete the uploaded file from storage
       await supabaseAdmin.storage.from("project-documents").remove([filePath])
       console.error("Error inserting document metadata:", documentError)
       return NextResponse.json({ success: false, error: documentError.message }, { status: 500 })

@@ -2,26 +2,40 @@ import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import type { Database } from "@/types/supabase"
 
-// Initialize Supabase client with service role key for server-side fetching
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+function getSupabaseAdmin() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error("Missing Supabase credentials for /api/documents")
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error("Missing Supabase credentials for /api/documents")
+    return null
+  }
+
+  return createClient<Database>(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      persistSession: false,
+    },
+  })
 }
-
-const supabaseAdmin = createClient<Database>(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    persistSession: false,
-  },
-})
 
 export async function GET() {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
+
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Missing Supabase credentials",
+        },
+        { status: 500 },
+      )
+    }
+
     const { data, error } = await supabaseAdmin
-      .from("project_documents") // Fetch from the new table
+      .from("project_documents")
       .select("*")
-      .order("uploaded_at", { ascending: false }) // Order by uploaded_at
+      .order("uploaded_at", { ascending: false })
 
     if (error) {
       console.error("Error fetching documents from project_documents:", error)
@@ -34,7 +48,6 @@ export async function GET() {
       )
     }
 
-    // Map the data to a consistent format if needed, or return directly
     const documents = data.map((doc) => ({
       id: doc.id,
       project_name: doc.project_name,
