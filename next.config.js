@@ -70,12 +70,6 @@ const nextConfig = {
       }
     }
 
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      react: require.resolve("react"),
-      "react-dom": require.resolve("react-dom"),
-    }
-
     return config
   },
 
@@ -86,7 +80,6 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "10mb",
     },
-    forceDynamic: true, // Force all pages to be dynamic to prevent build-time data collection issues
   },
 
   async headers() {
