@@ -62,10 +62,6 @@ class UnifiedDBClient implements UnifiedDbClient {
   private supabase: SupabaseClient | null = null
   private initialized = false
 
-  constructor() {
-    this.initialize()
-  }
-
   private initialize() {
     if (this.initialized) return
 
@@ -85,8 +81,15 @@ class UnifiedDBClient implements UnifiedDbClient {
     }
   }
 
+  private ensureInitialized() {
+    if (!this.initialized) {
+      this.initialize()
+    }
+  }
+
   // Document methods
   async getDocuments(projectId?: string): Promise<Document[]> {
+    this.ensureInitialized()
     if (!this.supabase) {
       console.error("Supabase client not initialized")
       return []
@@ -114,6 +117,7 @@ class UnifiedDBClient implements UnifiedDbClient {
   }
 
   async getDocumentById(id: string): Promise<Document | null> {
+    this.ensureInitialized()
     if (!this.supabase) {
       console.error("Supabase client not initialized")
       return null
@@ -135,6 +139,7 @@ class UnifiedDBClient implements UnifiedDbClient {
   }
 
   async createDocument(document: Omit<Document, "id" | "created_at" | "updated_at">): Promise<Document | null> {
+    this.ensureInitialized()
     if (!this.supabase) {
       console.error("Supabase client not initialized")
       return null
@@ -156,6 +161,7 @@ class UnifiedDBClient implements UnifiedDbClient {
   }
 
   async updateDocument(id: string, updates: Partial<Document>): Promise<Document | null> {
+    this.ensureInitialized()
     if (!this.supabase) {
       console.error("Supabase client not initialized")
       return null
@@ -177,6 +183,7 @@ class UnifiedDBClient implements UnifiedDbClient {
   }
 
   async deleteDocument(id: string): Promise<boolean> {
+    this.ensureInitialized()
     if (!this.supabase) {
       console.error("Supabase client not initialized")
       return false
@@ -199,6 +206,7 @@ class UnifiedDBClient implements UnifiedDbClient {
 
   // Project methods
   async getProjects(): Promise<Project[]> {
+    this.ensureInitialized()
     if (!this.supabase) {
       console.error("Supabase client not initialized")
       return []
@@ -220,6 +228,7 @@ class UnifiedDBClient implements UnifiedDbClient {
   }
 
   async getProjectById(id: string): Promise<Project | null> {
+    this.ensureInitialized()
     if (!this.supabase) {
       console.error("Supabase client not initialized")
       return null
@@ -241,6 +250,7 @@ class UnifiedDBClient implements UnifiedDbClient {
   }
 
   async createProject(project: Omit<Project, "id" | "created_at" | "updated_at">): Promise<Project | null> {
+    this.ensureInitialized()
     if (!this.supabase) {
       console.error("Supabase client not initialized")
       return null
@@ -262,6 +272,7 @@ class UnifiedDBClient implements UnifiedDbClient {
   }
 
   async updateProject(id: string, updates: Partial<Project>): Promise<Project | null> {
+    this.ensureInitialized()
     if (!this.supabase) {
       console.error("Supabase client not initialized")
       return null
@@ -283,6 +294,7 @@ class UnifiedDBClient implements UnifiedDbClient {
   }
 
   async deleteProject(id: string): Promise<boolean> {
+    this.ensureInitialized()
     if (!this.supabase) {
       console.error("Supabase client not initialized")
       return false
@@ -305,6 +317,7 @@ class UnifiedDBClient implements UnifiedDbClient {
 
   // Health check
   async healthCheck(): Promise<boolean> {
+    this.ensureInitialized()
     if (!this.supabase) {
       return false
     }
@@ -321,11 +334,13 @@ class UnifiedDBClient implements UnifiedDbClient {
 
   // Get the raw Supabase client if needed
   getClient(): SupabaseClient | null {
+    this.ensureInitialized()
     return this.supabase
   }
 
   // Implementing UnifiedDbClient methods
   async query(sql: string, params?: any[]): Promise<QueryResult> {
+    this.ensureInitialized()
     if (!this.supabase) {
       console.error("Supabase client not initialized")
       return { rows: [], rowCount: 0 }
@@ -351,13 +366,30 @@ class UnifiedDBClient implements UnifiedDbClient {
   }
 
   isReady(): boolean {
+    this.ensureInitialized()
     return this.initialized
   }
 }
 
-// Export singleton instance
-export const dbClient = new UnifiedDBClient()
-export const unifiedDb = new StaticDataClient()
+let _dbClientInstance: UnifiedDBClient | null = null
+let _unifiedDbInstance: StaticDataClient | null = null
+
+export function getDbClient(): UnifiedDBClient {
+  if (!_dbClientInstance) {
+    _dbClientInstance = new UnifiedDBClient()
+  }
+  return _dbClientInstance
+}
+
+export function getUnifiedDb(): StaticDataClient {
+  if (!_unifiedDbInstance) {
+    _unifiedDbInstance = new StaticDataClient()
+  }
+  return _unifiedDbInstance
+}
+
+export const dbClient = { get: getDbClient }
+export const unifiedDb = { get: getUnifiedDb }
 
 export async function initializeDatabase() {
   return {

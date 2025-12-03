@@ -24,6 +24,5 @@ export function getDemoConfig() {
   }
 }
 
-// Export for backward compatibility
-export const DEMO_MODE = getDemoMode()
-export const STATIC_MODE = getStaticMode()
+export const DEMO_MODE = { get: getDemoMode }
+export const STATIC_MODE = { get: getStaticMode }
