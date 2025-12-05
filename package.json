@@ -24,7 +24,7 @@
     "@radix-ui/react-tabs": "latest",
     "@react-three/drei": "latest",
     "@react-three/fiber": "latest",
-    "@supabase/auth-helpers-nextjs": "latest",
+    "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "@types/mapbox-gl": "^3.4.0",
     "@types/three": "^0.169.0",
