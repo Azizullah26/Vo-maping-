@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "latest",
-    "@nutrient-sdk/viewer": "^3.0.0",
+    "@nutrient-sdk/viewer": "^2.0.0-nightly.20250813",
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-dialog": "latest",
@@ -73,6 +73,7 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
   },
+  "packageManager": "npm@10.x",
   "trustedDependencies": [
     "pg-native"
   ]
