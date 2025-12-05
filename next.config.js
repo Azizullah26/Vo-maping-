@@ -48,10 +48,21 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
+    // Server-side: externalize heavy packages to avoid bundling
     if (isServer) {
       config.externals = config.externals || []
       if (Array.isArray(config.externals)) {
-        config.externals.push("pg", "cesium", "mapillary-js", "three", "edgedb")
+        config.externals.push(
+          "pg",
+          "cesium",
+          "mapillary-js",
+          "three",
+          "edgedb",
+          "@react-three/fiber",
+          "@react-three/drei",
+          "ol",
+          "lodash",
+        )
       }
     }
 
@@ -72,39 +83,21 @@ const nextConfig = {
     config.optimization = {
       ...config.optimization,
       moduleIds: "deterministic",
+      minimize: true,
       splitChunks: {
         chunks: "all",
+        maxInitialRequests: 25,
+        minSize: 20000,
         cacheGroups: {
           default: false,
           vendors: false,
-          // Vendor chunk for node_modules
-          vendor: {
-            name: "vendor",
-            chunks: "all",
-            test: /node_modules/,
-            priority: 20,
-          },
-          // Common chunk
-          common: {
-            name: "common",
-            minChunks: 2,
-            chunks: "all",
+          lib: {
+            test: /[\\/]node_modules[\\/]/,
+            name(module) {
+              const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)?.[1]
+              return `npm.${packageName?.replace("@", "")}`
+            },
             priority: 10,
-            reuseExistingChunk: true,
-            enforce: true,
-          },
-          // Large libraries in separate chunks
-          mapbox: {
-            test: /[\\/]node_modules[\\/](mapbox-gl)[\\/]/,
-            name: "mapbox",
-            chunks: "all",
-            priority: 30,
-          },
-          three: {
-            test: /[\\/]node_modules[\\/](three|@react-three)[\\/]/,
-            name: "three",
-            chunks: "all",
-            priority: 30,
           },
         },
       },
@@ -122,7 +115,7 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "10mb",
     },
-    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
+    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons", "lodash"],
   },
 
   async headers() {
