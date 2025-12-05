@@ -26,7 +26,6 @@
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "@types/mapbox-gl": "^3.4.0",
-    "@types/three": "^0.169.0",
     "@vercel/blob": "latest",
     "animejs": "latest",
     "canvg": "latest",

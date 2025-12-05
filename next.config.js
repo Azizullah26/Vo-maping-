@@ -52,16 +52,7 @@ const nextConfig = {
     if (isServer) {
       config.externals = config.externals || []
       if (Array.isArray(config.externals)) {
-        config.externals.push(
-          "pg",
-          "mapillary-js",
-          "three",
-          "edgedb",
-          "@react-three/fiber",
-          "@react-three/drei",
-          "ol",
-          "lodash",
-        )
+        config.externals.push("pg")
       }
     }
 
@@ -114,7 +105,7 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "10mb",
     },
-    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons", "lodash"],
+    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
   },
 
   async headers() {
