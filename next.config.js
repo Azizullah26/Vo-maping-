@@ -48,11 +48,10 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
-    // Server-side: externalize pg to prevent bundling issues
     if (isServer) {
       config.externals = config.externals || []
       if (Array.isArray(config.externals)) {
-        config.externals.push("pg")
+        config.externals.push("pg", "cesium", "mapillary-js", "three", "edgedb")
       }
     }
 
@@ -70,16 +69,60 @@ const nextConfig = {
       }
     }
 
+    config.optimization = {
+      ...config.optimization,
+      moduleIds: "deterministic",
+      splitChunks: {
+        chunks: "all",
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          // Vendor chunk for node_modules
+          vendor: {
+            name: "vendor",
+            chunks: "all",
+            test: /node_modules/,
+            priority: 20,
+          },
+          // Common chunk
+          common: {
+            name: "common",
+            minChunks: 2,
+            chunks: "all",
+            priority: 10,
+            reuseExistingChunk: true,
+            enforce: true,
+          },
+          // Large libraries in separate chunks
+          mapbox: {
+            test: /[\\/]node_modules[\\/](mapbox-gl)[\\/]/,
+            name: "mapbox",
+            chunks: "all",
+            priority: 30,
+          },
+          three: {
+            test: /[\\/]node_modules[\\/](three|@react-three)[\\/]/,
+            name: "three",
+            chunks: "all",
+            priority: 30,
+          },
+        },
+      },
+    }
+
     return config
   },
 
   trailingSlash: false,
   productionBrowserSourceMaps: false,
 
+  output: "standalone",
+
   experimental: {
     serverActions: {
       bodySizeLimit: "10mb",
     },
+    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
   },
 
   async headers() {
