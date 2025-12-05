@@ -1,11 +1,10 @@
 {
   "version": 2,
   "buildCommand": "npm run build",
-  "installCommand": "npm install --legacy-peer-deps --production=false --prefer-offline --no-audit --no-fund",
+  "installCommand": "npm install --legacy-peer-deps --no-audit --no-fund --no-optional",
   "framework": "nextjs",
   "env": {
-    "NODE_OPTIONS": "--max-old-space-size=3072",
-    "NODE_PG_FORCE_NATIVE": "0",
+    "NODE_OPTIONS": "--max-old-space-size=2048",
     "SKIP_ENV_VALIDATION": "1"
   },
   "functions": {
