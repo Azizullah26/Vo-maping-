@@ -54,7 +54,6 @@ const nextConfig = {
       if (Array.isArray(config.externals)) {
         config.externals.push(
           "pg",
-          "cesium",
           "mapillary-js",
           "three",
           "edgedb",
