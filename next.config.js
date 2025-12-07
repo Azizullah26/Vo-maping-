@@ -48,20 +48,6 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
-    const webpack = require("webpack")
-    config.plugins = config.plugins || []
-    config.plugins.push(
-      new webpack.ProvidePlugin({
-        global: ["global", "default"],
-      }),
-    )
-
-    // Add global fallback for client-side
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      global: false,
-    }
-
     if (isServer) {
       config.externals = config.externals || []
       if (Array.isArray(config.externals)) {
@@ -85,23 +71,6 @@ const nextConfig = {
       ...config.optimization,
       moduleIds: "deterministic",
       minimize: true,
-      splitChunks: {
-        chunks: "all",
-        maxInitialRequests: 25,
-        minSize: 20000,
-        cacheGroups: {
-          default: false,
-          vendors: false,
-          lib: {
-            test: /[\\/]node_modules[\\/]/,
-            name(module) {
-              const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)?.[1]
-              return `npm.${packageName?.replace("@", "")}`
-            },
-            priority: 10,
-          },
-        },
-      },
     }
 
     return config
