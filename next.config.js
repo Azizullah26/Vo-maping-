@@ -48,24 +48,27 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
-    if (isServer) {
-      // Provide global polyfill for browser-only globals during server build
-      config.plugins = config.plugins || []
-      const webpack = require("webpack")
-      config.plugins.push(
-        new webpack.ProvidePlugin({
-          self: "global",
-        }),
-      )
+    const webpack = require("webpack")
+    config.plugins = config.plugins || []
+    config.plugins.push(
+      new webpack.ProvidePlugin({
+        global: ["global", "default"],
+      }),
+    )
 
+    // Add global fallback for client-side
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      global: false,
+    }
+
+    if (isServer) {
       config.externals = config.externals || []
       if (Array.isArray(config.externals)) {
         config.externals.push("pg")
       }
-    }
-
-    // Client-side: exclude Node.js modules
-    if (!isServer) {
+    } else {
+      // Client-side: exclude Node.js modules
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
