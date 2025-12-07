@@ -1,12 +1,11 @@
 {
   "version": 2,
-  "buildCommand": "bash scripts/prebuild.sh && npm run build",
-  "installCommand": "npm install --legacy-peer-deps --no-audit --no-fund",
+  "buildCommand": "npm run build",
+  "installCommand": "npm ci --legacy-peer-deps --no-audit --no-fund --prefer-offline",
   "framework": "nextjs",
   "env": {
-    "NODE_OPTIONS": "--max-old-space-size=4096",
-    "SKIP_ENV_VALIDATION": "1",
-    "NPM_CONFIG_PREFER_OFFLINE": "true"
+    "NODE_OPTIONS": "--max-old-space-size=3072",
+    "SKIP_ENV_VALIDATION": "1"
   },
   "functions": {
     "app/**/*.tsx": {

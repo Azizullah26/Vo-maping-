@@ -48,12 +48,7 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.externals = config.externals || []
-      if (Array.isArray(config.externals)) {
-      }
-    } else {
-      // Client-side: exclude Node.js modules
+    if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
@@ -65,12 +60,10 @@ const nextConfig = {
       }
     }
 
+    // Minimize disk usage during build
     config.optimization = {
       ...config.optimization,
-      moduleIds: "deterministic",
       minimize: true,
-      runtimeChunk: false,
-      splitChunks: false,
     }
 
     return config
