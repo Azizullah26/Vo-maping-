@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { lt } from "lodash"
+// import { lt } from "lodash" // Removed lodash import since package was removed to reduce deployment size
 
 import { useState, useEffect } from "react"
 import { Film } from "lucide-react"
@@ -299,7 +299,7 @@ export default function DashboardPage() {
         type: "PDF",
         size: "4.2 MB",
         date: "2023-05-18",
-        url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/floor-plan-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+        url: "/images/floor-plan.pdf",
         project: "مركز شرطةasad",
       },
       {
@@ -308,7 +308,7 @@ export default function DashboardPage() {
         type: "PDF",
         size: "2.4 MB",
         date: "2023-12-15",
-        url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+        url: "/images/sample-pdf-file.pdf",
         project: "مركز شرطةasad",
       },
       {
@@ -317,7 +317,7 @@ export default function DashboardPage() {
         type: "PDF",
         size: "5.7 MB",
         date: "2023-12-10",
-        url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+        url: "/images/sample-pdf-file.pdf",
         project: "مركز شرطةasad",
       },
       {
@@ -326,7 +326,7 @@ export default function DashboardPage() {
         type: "JPG",
         size: "12.8 MB",
         date: "2023-11-28",
-        url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/saad1-2Aw9Hy5Ue5Ue5Ue5Ue5Ue5Ue5Ue5U.jpg",
+        url: "/images/saad1.jpg",
         project: "مركز شرطةasad",
       },
       {
@@ -335,7 +335,7 @@ export default function DashboardPage() {
         type: "XLSX",
         size: "1.2 MB",
         date: "2023-12-05",
-        url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+        url: "/images/sample-pdf-file.pdf",
         project: "مركز شرطة هيلي",
       },
       {
@@ -344,7 +344,7 @@ export default function DashboardPage() {
         type: "DOCX",
         size: "3.1 MB",
         date: "2023-11-20",
-        url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/sample-pdf-file-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+        url: "/images/sample-pdf-file.pdf",
         project: "مركز شرطة هيلي",
       },
     ]
@@ -361,9 +361,9 @@ export default function DashboardPage() {
 
   // Add a helper function to format file sizes
   const formatFileSize = (bytes: number): string => {
-    if (lt(bytes, 1024)) return bytes + " B"
-    else if (lt(bytes, 1024 * 1024)) return (bytes / 1024).toFixed(1) + " KB"
-    else if (lt(bytes, 1024 * 1024 * 1024)) return (bytes / (1024 * 1024)).toFixed(1) + " MB"
+    if (bytes < 1024) return bytes + " B"
+    else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB"
+    else if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + " MB"
     else return (bytes / (1024 * 1024 * 1024)).toFixed(1) + " GB"
   }
 
@@ -579,7 +579,7 @@ export default function DashboardPage() {
           type: "PDF",
           size: "4.2 MB",
           date: "2023-05-18",
-          url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/floor-plan-YJXbxnXXXXXXXXXXXXXXXXXXXXXXXX.pdf",
+          url: "/images/floor-plan.pdf",
           project: "مركز شرطةasad",
         }
 

@@ -1,42 +1,17 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useRef } from "react"
-import * as ol from "ol"
-import Map from "ol/Map"
-import View from "ol/View"
-import TileLayer from "ol/layer/Tile"
-import OSM from "ol/source/OSM"
-import "ol/ol.css"
 
 const UAEMap: React.FC = () => {
-  const mapRef = useRef<HTMLDivElement>(null)
-  const map = useRef<Map | null>(null)
-
-  useEffect(() => {
-    if (mapRef.current) {
-      map.current = new Map({
-        target: mapRef.current,
-        layers: [
-          new TileLayer({
-            source: new OSM(),
-          }),
-        ],
-        view: new View({
-          center: ol.proj.fromLonLat([54.366669, 24.466667]), // Abu Dhabi coordinates
-          zoom: 7,
-        }),
-      })
-    }
-
-    return () => {
-      if (map.current) {
-        map.current.dispose()
-      }
-    }
-  }, [])
-
-  return <div ref={mapRef} style={{ width: "100%", height: "400px" }}></div>
+  return (
+    <div style={{ width: "100%", height: "400px" }} className="flex items-center justify-center bg-gray-100 rounded-lg">
+      <div className="text-center p-8">
+        <p className="text-gray-600 mb-2">UAE Map Feature Unavailable</p>
+        <p className="text-sm text-gray-500">Abu Dhabi coordinates: 24.47°N, 54.37°E</p>
+        <p className="text-xs text-gray-400 mt-2">The map library was removed to reduce deployment size.</p>
+      </div>
+    </div>
+  )
 }
 
 export default UAEMap

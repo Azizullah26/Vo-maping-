@@ -1,13 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useRef, useEffect } from "react"
-import * as ol from "ol"
-import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer"
-import { OSM, Vector as VectorSource } from "ol/source"
-import { Point } from "ol/geom"
-import { fromLonLat } from "ol/proj"
-import "ol/ol.css"
+import { useState } from "react"
 
 interface MapWeatherProps {
   latitude: number
@@ -15,50 +9,23 @@ interface MapWeatherProps {
 }
 
 const MapWeather: React.FC<MapWeatherProps> = ({ latitude, longitude }) => {
-  const mapRef = useRef<HTMLDivElement>(null)
-  const map = useRef<ol.Map | null>(null)
+  const [error] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (mapRef.current) {
-      const initialCoordinates = fromLonLat([longitude, latitude])
-
-      map.current = new ol.Map({
-        target: mapRef.current,
-        layers: [
-          new TileLayer({
-            source: new OSM(),
-          }),
-        ],
-        view: new ol.View({
-          center: initialCoordinates,
-          zoom: 10,
-        }),
-      })
-
-      // Add a marker
-      const marker = new ol.Feature({
-        geometry: new Point(initialCoordinates),
-      })
-
-      const vectorSource = new VectorSource({
-        features: [marker],
-      })
-
-      const markerLayer = new VectorLayer({
-        source: vectorSource,
-      })
-
-      map.current.addLayer(markerLayer)
-    }
-
-    return () => {
-      if (map.current) {
-        map.current.dispose()
-      }
-    }
-  }, [latitude, longitude])
-
-  return <div ref={mapRef} style={{ width: "100%", height: "400px" }}></div>
+  return (
+    <div style={{ width: "100%", height: "400px" }} className="flex items-center justify-center bg-gray-100 rounded-lg">
+      {error ? (
+        <p className="text-red-500">{error}</p>
+      ) : (
+        <div className="text-center p-8">
+          <p className="text-gray-600 mb-2">OpenLayers Map Feature Unavailable</p>
+          <p className="text-sm text-gray-500">
+            Location: {latitude.toFixed(4)}°, {longitude.toFixed(4)}°
+          </p>
+          <p className="text-xs text-gray-400 mt-2">The map library was removed to reduce deployment size.</p>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export { MapWeather }
