@@ -15,5 +15,18 @@ export default function Model({ url }: { url: string }) {
     }
   })
 
-  return <primitive ref={modelRef} object={scene} scale={0.01} />
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="text-center p-4">
+        {scene ? (
+          <primitive ref={modelRef} object={scene} scale={0.01} />
+        ) : (
+          <>
+            <p className="text-gray-600">3D Model Viewer Unavailable</p>
+            <p className="text-xs text-gray-400 mt-2">Model: {url.split("/").pop()}</p>
+          </>
+        )}
+      </div>
+    </div>
+  )
 }

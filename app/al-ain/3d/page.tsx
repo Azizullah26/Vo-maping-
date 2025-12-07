@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Maximize2, RotateCcw, Search, ImageIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
 
 const models = {
   buildings: [
@@ -115,30 +114,23 @@ export default function ThreeDPage() {
   }, [selectedModel])
 
   return (
-    <div className="relative w-full h-screen bg-gray-900">
-      {/* Back Button */}
-      <div className="absolute top-4 left-4 z-50">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.back()}
-          className="text-white hover:bg-black/50 bg-black/30 backdrop-blur-sm"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Al Ain
-        </Button>
-      </div>
+    <div className="relative w-full h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-[#0b1020] text-white">
+      {/* Applied dashboard theme: dark gradient background with cyan accents */}
+      <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-20 pointer-events-none z-0"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(14,165,233,0.08),transparent_60%)] pointer-events-none z-0"></div>
 
       {/* Header */}
-      <div className="bg-slate-800 p-3 sm:p-4 md:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 md:gap-0 border-b border-cyan-500/30 mx-2 sm:mx-4 md:mx-6 lg:mx-8 rounded-lg shadow-lg">
+      <div className="relative z-10 bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-md p-3 sm:p-4 md:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 md:gap-0 border-b border-cyan-500/30 mx-2 sm:mx-4 md:mx-6 lg:mx-8 rounded-lg shadow-lg shadow-cyan-900/20 mt-4 ring-1 ring-white/10">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="p-2 rounded-full bg-slate-700 hover:bg-slate-600 transition-colors"
+            className="p-2 rounded-full bg-cyan-900/50 hover:bg-cyan-800/50 transition-all border border-cyan-500/30 hover:border-cyan-400/40 hover:shadow-lg hover:shadow-cyan-500/20"
           >
             <ArrowLeft className="h-5 w-5 text-cyan-400" />
           </button>
-          <h1 className="text-xl font-bold text-cyan-400">3D Models</h1>
+          <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+            3D Models
+          </h1>
         </div>
         <div className="relative w-full sm:w-auto">
           <div
@@ -147,7 +139,7 @@ export default function ThreeDPage() {
             <input
               type="text"
               placeholder={isSearchExpanded ? "Search models..." : ""}
-              className={`bg-slate-700 border border-slate-600 rounded-full py-2 text-sm focus:outline-none focus:border-cyan-500 transition-all duration-300 ease-in-out ${
+              className={`bg-slate-800/50 border border-cyan-500/30 rounded-full py-2 text-sm text-white placeholder-cyan-300/50 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition-all duration-300 ease-in-out ${
                 isSearchExpanded ? "pl-10 pr-4 w-full opacity-100" : "pl-2 pr-2 w-10 opacity-0 cursor-pointer"
               }`}
               onClick={() => !isSearchExpanded && setIsSearchExpanded(true)}
@@ -158,7 +150,7 @@ export default function ThreeDPage() {
               }}
             />
             <Search
-              className={`absolute top-2.5 h-4 w-4 text-slate-400 transition-all duration-300 cursor-pointer ${
+              className={`absolute top-2.5 h-4 w-4 text-cyan-400 transition-all duration-300 cursor-pointer ${
                 isSearchExpanded ? "left-3" : "left-3"
               }`}
               onClick={() => setIsSearchExpanded(!isSearchExpanded)}
@@ -167,21 +159,20 @@ export default function ThreeDPage() {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 p-4">
+      <div className="flex flex-col md:flex-row gap-4 p-4 relative z-10">
         {/* 3D Viewer */}
         <div
-          className={`${isFullscreen ? "fixed inset-0 z-50 bg-slate-900" : "w-full md:w-2/3"} bg-slate-800 rounded-lg border border-slate-700 overflow-hidden`}
+          className={`${isFullscreen ? "fixed inset-0 z-50 bg-gradient-to-b from-slate-950 via-slate-900 to-[#0b1020]" : "w-full md:w-2/3"} bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-md rounded-lg border border-cyan-500/20 overflow-hidden shadow-lg shadow-cyan-900/20 ring-1 ring-white/10`}
         >
-          <div className="flex justify-between items-center p-3 border-b border-slate-700">
-            <h2 className="text-cyan-400 font-medium flex items-center gap-2">
+          <div className="flex justify-between items-center p-3 border-b border-cyan-500/30 bg-slate-900/50">
+            <h2 className="text-cyan-300 font-medium flex items-center gap-2">
               <ImageIcon className="h-4 w-4" />
               {selectedModelData?.name || "Viewer"}
             </h2>
             <div className="flex gap-2">
               <button
-                className="p-1.5 rounded bg-slate-700 hover:bg-slate-600 transition-colors"
+                className="p-1.5 rounded bg-cyan-900/50 hover:bg-cyan-800/50 transition-all border border-cyan-500/30 hover:border-cyan-400/40"
                 onClick={() => {
-                  // For images, rotate by 90 degrees
                   setImageRotation((prev) => prev + 90)
                 }}
                 title="Rotate Image"
@@ -189,7 +180,7 @@ export default function ThreeDPage() {
                 <RotateCcw className="h-4 w-4 text-cyan-400" />
               </button>
               <button
-                className="p-1.5 rounded bg-slate-700 hover:bg-slate-600 transition-colors"
+                className="p-1.5 rounded bg-cyan-900/50 hover:bg-cyan-800/50 transition-all border border-cyan-500/30 hover:border-cyan-400/40"
                 onClick={toggleFullscreen}
                 title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
               >
@@ -209,35 +200,37 @@ export default function ThreeDPage() {
           </div>
         </div>
         {selectedModelData && (
-          <div className="mt-4 p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+          <div className="mt-4 p-3 bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-md rounded-lg border border-cyan-500/20 shadow-lg shadow-cyan-900/20 ring-1 ring-white/10">
             <h3 className="text-cyan-400 text-sm font-medium mb-1">About this building</h3>
-            <p className="text-slate-200 text-xs">{selectedModelData.description || "No description available."}</p>
-            <div className="mt-2 text-xs text-slate-400">
-              <span className="inline-block px-2 py-0.5 bg-slate-800 rounded mr-2">2D View</span>
+            <p className="text-slate-300 text-xs">{selectedModelData.description || "No description available."}</p>
+            <div className="mt-2 text-xs text-cyan-300">
+              <span className="inline-block px-2 py-0.5 bg-cyan-900/50 border border-cyan-500/30 rounded mr-2">
+                2D View
+              </span>
             </div>
           </div>
         )}
 
         {/* Model Library */}
         <div
-          className={`${isFullscreen ? "hidden" : "w-full md:w-1/3"} bg-slate-800 rounded-lg border border-slate-700 overflow-hidden`}
+          className={`${isFullscreen ? "hidden" : "w-full md:w-1/3"} bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-md rounded-lg border border-cyan-500/20 overflow-hidden shadow-lg shadow-cyan-900/20 ring-1 ring-white/10`}
         >
-          <div className="border-b border-slate-700">
+          <div className="border-b border-cyan-500/30 bg-slate-900/50">
             <div className="flex">
               <button
-                className={`py-3 px-4 text-sm font-medium ${activeTab === "buildings" ? "text-cyan-400 border-b-2 border-cyan-400" : "text-slate-400 hover:text-slate-200"}`}
+                className={`py-3 px-4 text-sm font-medium transition-all ${activeTab === "buildings" ? "text-cyan-400 border-b-2 border-cyan-400 bg-cyan-900/20" : "text-slate-400 hover:text-cyan-300"}`}
                 onClick={() => setActiveTab("buildings")}
               >
                 Buildings
               </button>
               <button
-                className={`py-3 px-4 text-sm font-medium ${activeTab === "2d-view" ? "text-cyan-400 border-b-2 border-cyan-400" : "text-slate-400 hover:text-slate-200"}`}
+                className={`py-3 px-4 text-sm font-medium transition-all ${activeTab === "2d-view" ? "text-cyan-400 border-b-2 border-cyan-400 bg-cyan-900/20" : "text-slate-400 hover:text-cyan-300"}`}
                 onClick={() => setActiveTab("2d-view")}
               >
                 2D View
               </button>
               <button
-                className={`py-3 px-4 text-sm font-medium ${activeTab === "equipment" ? "text-cyan-400 border-b-2 border-cyan-400" : "text-slate-400 hover:text-slate-200"}`}
+                className={`py-3 px-4 text-sm font-medium transition-all ${activeTab === "equipment" ? "text-cyan-400 border-b-2 border-cyan-400 bg-cyan-900/20" : "text-slate-400 hover:text-cyan-300"}`}
                 onClick={() => setActiveTab("equipment")}
               >
                 Equipment
@@ -249,11 +242,11 @@ export default function ThreeDPage() {
               {currentModels.map((model) => (
                 <div
                   key={model.id}
-                  className={`p-2 rounded-lg border ${selectedModel === model.url ? "border-cyan-500 bg-slate-700" : "border-slate-700 hover:border-slate-500"} cursor-pointer transition-all`}
+                  className={`p-2 rounded-lg border transition-all ${selectedModel === model.url ? "border-cyan-400 bg-cyan-900/30 shadow-lg shadow-cyan-500/20" : "border-cyan-500/20 hover:border-cyan-400/40 bg-slate-800/30"} cursor-pointer`}
                   onClick={() => setSelectedModel(model.url)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 bg-slate-700 rounded overflow-hidden">
+                    <div className="w-16 h-16 bg-slate-900/50 rounded overflow-hidden border border-cyan-500/20">
                       <img
                         src={model.thumbnail || "/placeholder.svg"}
                         alt={model.name}
@@ -262,10 +255,10 @@ export default function ThreeDPage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-white">{model.name}</h3>
-                      <p className="text-xs text-slate-400">{model.type === "image" ? "2D Image" : "Information"}</p>
+                      <p className="text-xs text-cyan-300">{model.type === "image" ? "2D Image" : "Information"}</p>
                       <div className="flex items-center gap-1 mt-1">
-                        <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
-                        <span className="text-xs text-green-400">Ready to view</span>
+                        <span className="inline-block w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                        <span className="text-xs text-emerald-300">Ready to view</span>
                       </div>
                     </div>
                   </div>

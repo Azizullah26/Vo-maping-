@@ -216,7 +216,7 @@ const locations: LocationFeature[] = [
     coordinates: [55.722557288830416, 24.19360483409058],
   },
   {
-    place: "إدارة الأسلحة والمت��جرات",
+    place: "إدارة الأسلحة والمتجرات",
     coordinates: [55.72427804325733, 24.19797500690261],
   },
   {
@@ -255,7 +255,7 @@ const manualLabelOffsets: Record<string, { left?: number; top?: number }> = {
   "إدارة المرور والترخيص": { left: 218, top: 171 },
   "قسم هندسة المرور": { left: 335, top: 83 },
   "المتابعة الشرطية والرعاية اللاحقة": { left: -131, top: 169 },
-  "إدار�� الأسلحة والمتفجرات": { left: -130, top: -99 },
+  "إدار الأسلحة والمتفجرات": { left: -130, top: -99 },
   "فلل فلج هزاع": { left: -100, top: 127 },
   "الضبط المروري والمراسم": { left: -321 },
   "إدارة الدوريات الخاصة": { left: -273 },
@@ -567,12 +567,12 @@ export default function SixteenProjectsPage() {
       shadow.className = "marker-shadow"
 
       const circleElement = document.createElement("div")
-  circleElement.className = "marker-circle"
-  const circleManual = manualCircleOffsets[name]
-  if (circleManual) {
-    circleElement.style.left = `${circleManual.left}px`
-    circleElement.style.top = `${circleManual.top}px`
-  }
+      circleElement.className = "marker-circle"
+      const circleManual = manualCircleOffsets[name]
+      if (circleManual) {
+        circleElement.style.left = `${circleManual.left}px`
+        circleElement.style.top = `${circleManual.top}px`
+      }
 
       const label = document.createElement("button")
       label.className = "marker-label"
@@ -602,17 +602,52 @@ export default function SixteenProjectsPage() {
       }
 
       const manual = manualLabelOffsets[name]
+      let finalLabelX: number
+      let finalLabelY: number
+
       if (manual) {
-        if (typeof manual.left === "number") label.style.left = `${manual.left}px`
-        else label.style.left = `calc(50% + ${offsetX}px)`
-        if (typeof manual.top === "number") label.style.top = `${manual.top}px`
-        else label.style.top = `calc(50% + ${offsetY}px)`
+        if (typeof manual.left === "number") {
+          label.style.left = `${manual.left}px`
+          finalLabelX = manual.left
+        } else {
+          label.style.left = `calc(50% + ${offsetX}px)`
+          finalLabelX = offsetX
+        }
+        if (typeof manual.top === "number") {
+          label.style.top = `${manual.top}px`
+          finalLabelY = manual.top
+        } else {
+          label.style.top = `calc(50% + ${offsetY}px)`
+          finalLabelY = offsetY
+        }
       } else {
         label.style.left = `calc(50% + ${offsetX}px)`
         label.style.top = `calc(50% + ${offsetY}px)`
+        finalLabelX = offsetX
+        finalLabelY = offsetY
       }
       label.style.transform = "translate(-50%, -50%)"
 
+      const line = document.createElement("div")
+      line.className = "marker-line"
+
+      // Calculate circle position (accounting for manual offsets)
+      const circleX = circleManual ? circleManual.left : 0
+      const circleY = circleManual ? circleManual.top : 0
+
+      // Calculate line length and angle
+      const dx = finalLabelX - circleX
+      const dy = finalLabelY - circleY
+      const lineLength = Math.sqrt(dx * dx + dy * dy)
+      const lineAngle = Math.atan2(dy, dx) * (180 / Math.PI)
+
+      // Position and style the line
+      line.style.width = `${lineLength}px`
+      line.style.height = "2px"
+      line.style.left = `calc(50% + ${circleX}px)`
+      line.style.top = `calc(50% + ${circleY}px)`
+      line.style.transform = `rotate(${lineAngle}deg)`
+      line.style.transformOrigin = "left center"
 
       label.addEventListener("mouseenter", (e) => {
         e.stopPropagation()
@@ -674,6 +709,7 @@ export default function SixteenProjectsPage() {
 
       markerElement.appendChild(shadow)
       markerElement.appendChild(circleElement)
+      markerElement.appendChild(line)
       markerElement.appendChild(label)
       markerElement.setAttribute("data-marker-name", name)
 

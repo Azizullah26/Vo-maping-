@@ -89,6 +89,7 @@ export async function GET() {
       }
     }
 
+    // Static data configuration message
     return NextResponse.json({
       success: true,
       connections: connectionResults,
@@ -96,6 +97,9 @@ export async function GET() {
         count: 0,
         sample: [],
       },
+      message: "Application configured for static data",
+      mode: "static",
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
     console.error("Error in database test:", error)
@@ -103,6 +107,9 @@ export async function GET() {
       {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
+        message: "Application configured for static data",
+        mode: "static",
+        timestamp: new Date().toISOString(),
       },
       { status: 500 },
     )

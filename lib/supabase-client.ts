@@ -103,27 +103,39 @@ export async function checkSupabaseConnection() {
   }
 }
 
-// Export a default client for convenience
-const supabase = getSupabaseClient()
-export default supabase
+// Export a getter function instead of executing at module load time
+export function getDefaultSupabaseClient() {
+  return getSupabaseClient()
+}
 
-// Create a safer version that checks for server-side execution and valid environment variables
-export const supabaseAdmin = (() => {
+// Use getSupabaseAdminClient() function instead
+export function getSupabaseAdminInstance() {
   if (typeof window !== "undefined") {
     return null // Client-side, return null
   }
+  return getSupabaseAdminClient()
+}
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+// For backward compatibility - these are now null by default
+// Use the getter functions instead
+export const supabase = null
+export const supabaseAdmin = null
 
-  if (!supabaseUrl || !supabaseServiceKey || supabaseUrl.includes("placeholder")) {
-    return null // Missing or placeholder credentials
-  }
+// Minimal Supabase client stub for future use
+// Not actively used in the application
+export const createClientStub = () => {
+  console.warn("Supabase is not configured for this project")
+  return null
+}
 
-  try {
-    return createClient(supabaseUrl, supabaseServiceKey)
-  } catch (error) {
-    console.error("Error creating supabaseAdmin:", error)
+export const supabaseStub = null
+
+export function getSupabaseServerClient() {
+  if (typeof window !== "undefined") {
+    console.warn("getSupabaseServerClient should only be used on the server")
     return null
   }
-})()
+  return getSupabaseClient()
+}
+
+export default null

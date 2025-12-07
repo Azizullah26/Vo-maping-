@@ -26,7 +26,11 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
 .env*.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # vercel
 .vercel
@@ -112,3 +116,9 @@ temp/
 *.njsproj
 *.sln
 *.sw?
+
+# lock files to prevent conflicts between package managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb

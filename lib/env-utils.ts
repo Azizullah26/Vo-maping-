@@ -1,34 +1,18 @@
-/**
- * Gets environment variables supporting both Next.js and React naming conventions
- * @param key The base name of the environment variable (without prefix)
- * @returns The value of the environment variable
- */
-export function getEnvVariable(key: string): string | undefined {
-  // Only allow access to NEXT_PUBLIC_ variables in the browser
-  if (typeof window !== "undefined" && !key.startsWith("NEXT_PUBLIC_")) {
-    console.warn(`Attempted to access non-public env variable "${key}" on the client side`)
-    return undefined
+export function getEnvVariable(name: string, defaultValue?: string): string | undefined {
+  const isClient = typeof window !== "undefined"
+
+  if (isClient && !name.startsWith("NEXT_PUBLIC_")) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(`Cannot access server-only environment variable ${name} on client`)
+    }
+    return defaultValue
   }
 
-  // Try Next.js naming convention first
-  const nextValue = process.env[`NEXT_PUBLIC_${key}`]
-  if (nextValue) return nextValue
-
-  // Fall back to React naming convention
-  const reactValue = process.env[`REACT_APP_${key}`]
-  if (reactValue) return reactValue
-
-  // Return undefined if neither exists
-  return undefined
+  const value = process.env[name]
+  return value !== undefined ? value : defaultValue
 }
 
-/**
- * Gets server-side environment variables (only works on server)
- * @param key The environment variable name
- * @returns The value of the environment variable
- */
 export function getServerEnvVariable(key: string): string | undefined {
-  // Prevent access on client side
   if (typeof window !== "undefined") {
     console.warn(`Attempted to access server env variable "${key}" on the client side`)
     return undefined
@@ -37,63 +21,148 @@ export function getServerEnvVariable(key: string): string | undefined {
   return process.env[key]
 }
 
-/**
- * Safely gets NODE_ENV with fallback
- * @returns The NODE_ENV value or 'development' as fallback
- */
+export function getEnvVar(key: string, defaultValue?: string): string {
+  const value = getEnvVariable(key, defaultValue) || getServerEnvVariable(key)
+
+  if (!value && !defaultValue) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(`Environment variable ${key} is not set`)
+    }
+    return ""
+  }
+
+  return value || defaultValue || ""
+}
+
+export function requireEnvVar(key: string): string {
+  const value = getEnvVar(key)
+
+  if (!value) {
+    throw new Error(`Required environment variable ${key} is not set`)
+  }
+
+  return value
+}
+
 export function getNodeEnv(): string {
-  // On client side, return a safe default
   if (typeof window !== "undefined") {
-    return "production" // Assume production on client side
+    return "production"
   }
 
   return process.env.NODE_ENV || "development"
 }
 
-/**
- * Checks if we're in development mode
- * @returns boolean indicating if in development
- */
 export function isDevelopment(): boolean {
   return getNodeEnv() === "development"
 }
 
-/**
- * Checks if we're in production mode
- * @returns boolean indicating if in production
- */
 export function isProduction(): boolean {
-  return getNodeEnv() === "production"
+  return process.env.NODE_ENV === "production"
 }
 
-/**
- * Checks if required environment variables are set
- * @returns Object with status and missing variables
- */
-export function checkRequiredEnvVars(): {
-  isValid: boolean
-  missing: string[]
-  values: Record<string, string | undefined>
-} {
-  // Only check public variables on the client side
-  const requiredVars =
-    typeof window !== "undefined"
-      ? ["SUPABASE_URL", "SUPABASE_ANON_KEY"]
-      : ["SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY"]
+export function isVercel(): boolean {
+  return process.env.VERCEL === "1" || !!process.env.VERCEL_ENV
+}
 
-  const missing: string[] = []
-  const values: Record<string, string | undefined> = {}
+export function getSupabaseUrl(): string {
+  return getEnvVar("NEXT_PUBLIC_SUPABASE_URL", "")
+}
 
-  for (const key of requiredVars) {
-    const value = getEnvVariable(key)
-    // Don't include sensitive values in client-side code
-    values[key] = typeof window !== "undefined" && !key.startsWith("NEXT_PUBLIC_") ? "REDACTED" : value
-    if (!value) missing.push(key)
+export function getSupabaseAnonKey(): string {
+  return getEnvVar("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")
+}
+
+export function hasSupabaseCredentials(): boolean {
+  return !!(getSupabaseUrl() && getSupabaseAnonKey())
+}
+
+export function getBaseUrl(): string {
+  if (typeof window !== "undefined") {
+    return window.location.origin
   }
 
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`
+  }
+
+  if (process.env.NEXT_PUBLIC_BASE_URL) {
+    return process.env.NEXT_PUBLIC_BASE_URL
+  }
+
+  return "http://localhost:3000"
+}
+
+export function isDemoMode(): boolean {
+  return getEnvVar("NEXT_PUBLIC_DEMO_MODE") === "true"
+}
+
+export function isStaticMode(): boolean {
+  return getEnvVar("NEXT_PUBLIC_STATIC_MODE") === "true"
+}
+
+type EnvVarStatus = {
+  name: string
+  exists: boolean
+  value?: string
+  isPublic: boolean
+}
+
+export function checkRequiredEnvVars(): {
+  allPresent: boolean
+  missing: string[]
+  details: EnvVarStatus[]
+} {
+  const requiredVars = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"]
+
+  const details: EnvVarStatus[] = requiredVars.map((name) => {
+    const value = process.env[name]
+    return {
+      name,
+      exists: !!value,
+      value: value ? "***" : undefined,
+      isPublic: name.startsWith("NEXT_PUBLIC_"),
+    }
+  })
+
+  const missing = details.filter((d) => !d.exists).map((d) => d.name)
+
   return {
-    isValid: missing.length === 0,
+    allPresent: missing.length === 0,
     missing,
-    values,
+    details,
+  }
+}
+
+export const envConfig = {
+  supabase: {
+    url: getSupabaseUrl(),
+    anonKey: getSupabaseAnonKey(),
+    hasCredentials: hasSupabaseCredentials(),
+  },
+  app: {
+    baseUrl: getBaseUrl(),
+    isProduction: isProduction(),
+    isDevelopment: isDevelopment(),
+    isVercel: isVercel(),
+    isDemoMode: isDemoMode(),
+    isStaticMode: isStaticMode(),
+  },
+} as const
+
+export function getPublicEnvVars() {
+  return {
+    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  }
+}
+
+export function hasRequiredEnvVars(): boolean {
+  try {
+    const supabaseUrl = getEnvVar("NEXT_PUBLIC_SUPABASE_URL")
+    const supabaseKey = getEnvVar("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+    return !!(supabaseUrl && supabaseKey)
+  } catch {
+    return false
   }
 }

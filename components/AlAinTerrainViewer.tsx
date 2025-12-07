@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState, useEffect } from "react"
+import * as THREE from "three"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Loader2, RotateCcw, ZoomIn, ZoomOut, Home, Play, Pause } from "lucide-react"
-import * as THREE from "three"
+import { Loader2, RotateCcw } from "lucide-react"
 
 interface AlAinTerrainViewerProps {
   className?: string
@@ -227,19 +227,19 @@ export default function AlAinTerrainViewer({ className = "" }: AlAinTerrainViewe
       {!isLoading && (
         <div className="absolute top-4 right-4 flex flex-col space-y-2 z-10">
           <Button size="sm" variant="secondary" onClick={handleZoomIn} className="bg-white/90 hover:bg-white">
-            <ZoomIn className="w-4 h-4" />
+            Zoom In
           </Button>
           <Button size="sm" variant="secondary" onClick={handleZoomOut} className="bg-white/90 hover:bg-white">
-            <ZoomOut className="w-4 h-4" />
+            Zoom Out
           </Button>
           <Button size="sm" variant="secondary" onClick={handleReset} className="bg-white/90 hover:bg-white">
-            <RotateCcw className="w-4 h-4" />
+            Reset View
           </Button>
           <Button size="sm" variant="secondary" onClick={handleHome} className="bg-white/90 hover:bg-white">
-            <Home className="w-4 h-4" />
+            Home
           </Button>
           <Button size="sm" variant="secondary" onClick={toggleAnimation} className="bg-white/90 hover:bg-white">
-            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            {isPlaying ? "Pause Animation" : "Play Animation"}
           </Button>
         </div>
       )}

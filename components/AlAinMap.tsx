@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useEffect, useRef, useState, useCallback } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 import { AnimatedControls } from "@/components/AnimatedControls"
 import { useMapboxToken } from "@/hooks/useMapboxToken"
 import { MarkerHoverWidget } from "@/components/MarkerHoverWidget"
@@ -119,11 +119,11 @@ const markerStyles = `
 /* Added sophisticated label system from 16 projects page */
 .marker-label {
   position: absolute;
-  padding: 8px 16px;
+  padding: 6px 12px;
   background: rgba(255, 255, 255, 0.95);
   border: 2px solid rgba(0, 0, 0, 0.1);
   border-radius: 25px;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
   color: #000;
   white-space: nowrap;
@@ -306,36 +306,36 @@ const markerStyles = `
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .marker-label {
-    font-size: 11px;
-    padding: 6px 12px;
+    font-size: 10px;
+    padding: 5px 10px;
   }
-  
+
   .marker-container.position-1 .marker-line,
   .marker-container.position-5 .marker-line {
     height: 60px;
   }
-  
+
   .marker-container.position-1 .marker-label {
     bottom: calc(100% + 60px);
   }
-  
+
   .marker-container.position-5 .marker-label {
     top: calc(100% + 60px);
   }
-  
+
   .marker-container.position-3 .marker-line,
   .marker-container.position-7 .marker-line {
     width: 60px;
   }
-  
+
   .marker-container.position-3 .marker-label {
     left: calc(100% + 60px);
   }
-  
+
   .marker-container.position-7 .marker-label {
     right: calc(100% + 60px);
   }
-  
+
   .marker-container.position-2 .marker-line,
   .marker-container.position-4 .marker-line,
   .marker-container.position-6 .marker-line,
@@ -343,22 +343,12 @@ const markerStyles = `
     width: 45px;
     height: 45px;
   }
-  
-  .marker-container.position-2 .marker-label,
-  .marker-container.position-8 .marker-label {
-    bottom: calc(100% + 45px);
-  }
-  
-  .marker-container.position-4 .marker-label,
-  .marker-container.position-6 .marker-label {
-    top: calc(100% + 45px);
-  }
-  
+
   .marker-container.position-2 .marker-label,
   .marker-container.position-4 .marker-label {
     left: calc(100% + 45px);
   }
-  
+
   .marker-container.position-6 .marker-label,
   .marker-container.position-8 .marker-label {
     right: calc(100% + 45px);
@@ -367,36 +357,36 @@ const markerStyles = `
 
 @media (max-width: 640px) {
   .marker-label {
-    font-size: 10px;
+    font-size: 9px;
     padding: 4px 8px;
   }
-  
+
   .marker-container.position-1 .marker-line,
   .marker-container.position-5 .marker-line {
     height: 45px;
   }
-  
+
   .marker-container.position-1 .marker-label {
     bottom: calc(100% + 45px);
   }
-  
+
   .marker-container.position-5 .marker-label {
     top: calc(100% + 45px);
   }
-  
+
   .marker-container.position-3 .marker-line,
   .marker-container.position-7 .marker-line {
     width: 45px;
   }
-  
+
   .marker-container.position-3 .marker-label {
     left: calc(100% + 45px);
   }
-  
+
   .marker-container.position-7 .marker-label {
     right: calc(100% + 45px);
   }
-  
+
   .marker-container.position-2 .marker-line,
   .marker-container.position-4 .marker-line,
   .marker-container.position-6 .marker-line,
@@ -404,12 +394,12 @@ const markerStyles = `
     width: 35px;
     height: 35px;
   }
-  
+
   .marker-container.position-2 .marker-label,
   .marker-container.position-4 .marker-label {
     left: calc(100% + 35px);
   }
-  
+
   .marker-container.position-6 .marker-label,
   .marker-container.position-8 .marker-label {
     right: calc(100% + 35px);
@@ -532,13 +522,13 @@ const ALWAYS_HIDDEN_MARKERS: string[] = [
   "قسم هندسة المرور",
   "مركز شرطة فلج هزاع",
   "إدارة الأسلحة والمتفجرات",
-  "��بنى التحريات والم��درات",
+  "مبنى التحريات والمخدرات",
   "ادارة المهام الخاصة العين",
-  "ال��بط المروري والمراسم",
+  "الضبط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
-  "المعهد المر��ري",
-  "إدارة المرور والترخ��ص",
+  "المعهد المروري",
+  "إدارة المرور والترخيص",
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
   "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
@@ -551,7 +541,7 @@ const EXCLUDED_MARKERS: string[] = [
   "إدارة الأسلحة والمتفجرات",
   "مبنى التحريات والمخدرات",
   "ادارة المهام الخاصة العين",
-  "الضبط المروري والمرا��م",
+  "الضبط المروري والمراسم",
   "المتابعة الشرطية والرعاية اللاحقة",
   "سكن أفراد المرور",
   "المعهد المروري",
@@ -559,9 +549,9 @@ const EXCLUDED_MARKERS: string[] = [
   "ساحة حجز المركبات فلج هزاع",
   "قسم التفتيش الأمني K9",
   "فلل فلج هزاع",
-  "ف��ل للادرات الشرط��ة عشارج",
+  "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
-  "��ركز شرطةasad",
+  "مركز شرطةasad",
   "ساحة حجز المركبات -asad",
   "16 Projects",
   "7 Projects",
@@ -570,12 +560,9 @@ const EXCLUDED_MARKERS: string[] = [
 ]
 
 const HIDDEN_AT_START = [
-  "م��كز شرطةasad",
+  "مركز شرطةasad",
   "متحف شرطة المربعة",
   "مركز شرطة المربعة",
-  "مديرية شرطة ا��عين",
-  "فرع النقل والمشاغل",
-  "نادي ض��اط الشرطة",
   "فلل فلج هزاع",
   "فلل للادرات الشرطية عشارج",
   "مركز شرطة المقام",
@@ -584,15 +571,19 @@ const HIDDEN_AT_START = [
   "2 Projects",
 ]
 
+const HIDDEN_UNTIL_3_PROJECTS_CLICK = ["مديرية شرطة العين", "نادي ضباط الشرطة", "فرع النقل والمشاغل"]
+const HIDDEN_UNTIL_2_PROJECTS_CLICK = ["مركز شرطة المربعة", "متحف شرطة المربعة"]
+
 const PROJECT_NUMBERS: { [key: string]: string } = {
   "16 Projects": "16",
   "7 Projects": "7",
   "2 Projects": "2",
+  "3 projects": "3",
   "1 Project": "1",
   "2Projects": "2",
   "Alamerah 2 Projects": "2 al",
   "نقطة ثبات الروضة": "1",
-  "فرع ال��بط المروري (الخزنة)": "1",
+  "فرع الضبط المروري (الخزنة)": "1",
   "مركز شرطة القوع (فلل صحة)": "1",
   "ساحة حجز المركبات -asad": "1",
   "مركز شرطة سويحان": "1",
@@ -606,15 +597,15 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة هيلي",
   "ميدان الشرطة بدع بنت سعود",
   "متحف شرطة المربعة",
-  "مركز شرطة ا��مربعة",
+  "مركز شرطة المربعة",
   "مديرية شرطة العين",
   "فرع النقل والمشاغل",
   "نادي ضباط الشرطة",
   "مركز شرطةasad",
   "متحف شرطة المربعة",
-  "مركز شرطة المرب��ة",
-  "مد��رية شرطة العين",
-  "فر�� النقل والمشاغ��",
+  "مركز شرطة المربعة",
+  "مديرية شرطة العين",
+  "فرع النقل والمشاغل",
   "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
   "فلل فلج هزاع",
@@ -639,7 +630,7 @@ const HOVERABLE_MARKERS = [
   "مركز شرطة القوع (فلل صحة)",
   "نقطة ثبات الروضة",
   "فرع الضبط المروري (الخزنة)",
-  "مبنى إدارات (ا��تربية الرياضية - الاعلام الامني - مسرح الج��يمة - فرع البصمة)",
+  "مبنى إدارات (التربية الرياضية - الاعلام الامني - مسرح الجريمة - فرع البصمة)",
   "1 Project",
   "مركز شرطة سويحان",
   "مركز شرطة الهير",
@@ -689,6 +680,11 @@ export default function AlAinMap({
   const lastCenterRef = useRef<any>(null)
   const [clickedMarker, setClickedMarker] = useState<string | null>(null)
   const [mapError, setMapError] = useState<string | null>(null)
+  const threeProjectsClickedRef = useRef<boolean>(false)
+  const twoProjectsClickedRef = useRef<boolean>(false)
+
+  const previousZoomRef = useRef<number>(10.0)
+  const isResettingRef = useRef<boolean>(false)
 
   // Load Mapbox GL from CDN with better error handling
   useEffect(() => {
@@ -821,10 +817,9 @@ export default function AlAinMap({
     const nameMap: { [key: string]: string } = {
       "قسم موسيقى شرطة أبوظبي": "Abu Dhabi Police Music Department",
       "إدارة التأهيل الشرطي - الفوعة": "Police Rehabilitation Department - Al Foua",
-      "��ركز شرطة هيلي": "Hili Police Station",
+      "مركز شرطة هيلي": "Hili Police Station",
       "1 Project": "Al Ain Development Project",
       "مركز شرطة الوقن": "Al Wagan Police Station",
-      "ساحة حجز المركبات -asad": "Vehicle Impound Facility - Asad",
       "ساحة حجز المركبات -asad": "Vehicle Impound Facility - Asad",
     }
     return nameMap[name] || "Police Facility"
@@ -876,8 +871,10 @@ export default function AlAinMap({
     if (map.current) return
     if (loading) return
     if (error || !token) {
-      console.error("Mapbox access token error:", error)
-      setMapError(error || "No access token available")
+      const errorMessage = error || "No access token available"
+      console.error("[v0] Mapbox access token error:", errorMessage)
+      console.error("[v0] Please set MAPBOX_ACCESS_TOKEN in your environment variables")
+      setMapError(errorMessage)
       return
     }
     if (!mapboxLoaded || !window.mapboxgl) {
@@ -898,7 +895,7 @@ export default function AlAinMap({
       const lngOffset = offsetX * 0.0005
       const latOffset = offsetY * 0.0005
 
-      const centerLng = baseCenterLng + lngOffset
+      const centerLng = baseCenterLng +lngOffset
       const centerLat = baseCenterLat - latOffset
 
       // Calculate the center of the bounded area for all devices to show all markers
@@ -968,7 +965,7 @@ export default function AlAinMap({
         ],
         minZoom: minimumZoom,
         maxZoom: 16,
-        dragPan: true,
+        dragPan: false,
         scrollZoom: true,
         renderWorldCopies: false,
         preserveDrawingBuffer: true,
@@ -980,18 +977,13 @@ export default function AlAinMap({
         touchZoomRotate: true,
       })
 
-      // Enable all interactions
       map.current.scrollZoom.enable()
       map.current.boxZoom.enable()
       map.current.dragRotate.enable()
-      map.current.dragPan.enable()
+      // dragPan remains disabled - users cannot pan the map
       map.current.keyboard.enable()
       map.current.doubleClickZoom.enable()
       map.current.touchZoomRotate.enable()
-
-      // Set zoom rates for smooth interaction
-      map.current.scrollZoom.setWheelZoomRate(0.01)
-      map.current.scrollZoom.setZoomRate(0.005)
 
       if (mapRef) {
         mapRef.current = map.current
@@ -1029,18 +1021,18 @@ export default function AlAinMap({
         // Add in-container dark mask below markers but above map canvas
         try {
           const container = mapContainer.current
-          if (container && !container.querySelector('#alainmap-dark-mask')) {
-            const mask = document.createElement('div')
-            mask.id = 'alainmap-dark-mask'
-            mask.style.position = 'absolute'
-            mask.style.inset = '0'
-            mask.style.background = 'rgba(0, 0, 0, 0.45)'
-            mask.style.pointerEvents = 'none'
-            mask.style.zIndex = '5'
+          if (container && !container.querySelector("#alainmap-dark-mask")) {
+            const mask = document.createElement("div")
+            mask.id = "alainmap-dark-mask"
+            mask.style.position = "absolute"
+            mask.style.inset = "0"
+            mask.style.background = "rgba(0, 0, 0, 0.45)"
+            mask.style.pointerEvents = "none"
+            mask.style.zIndex = "5"
             container.appendChild(mask)
           }
         } catch (e) {
-          console.warn('Failed to add dark mask overlay:', e)
+          console.warn("Failed to add dark mask overlay:", e)
         }
 
         // Create markers for police locations
@@ -1091,6 +1083,28 @@ export default function AlAinMap({
             })
             markerPositions["16 Projects"] = coords16Projects
           }
+
+          const coords3Projects: [number, number] = [55.74159608425111, 24.234418589632184]
+          if (isValidCoordinate(coords3Projects)) {
+            markers["3 projects"] = createMarker({
+              name: "3 projects",
+              coordinates: coords3Projects,
+              alignment: "left-aligned",
+              map: map.current!,
+            })
+            markerPositions["3 projects"] = coords3Projects
+          }
+
+          const coords2Projects: [number, number] = [55.776750053389094, 24.221008086930823]
+          if (isValidCoordinate(coords2Projects)) {
+            markers["2Projects"] = createMarker({
+              name: "2Projects",
+              coordinates: coords2Projects,
+              alignment: "left-aligned",
+              map: map.current!,
+            })
+            markerPositions["2Projects"] = coords2Projects
+          }
         } catch (error) {
           console.error("Error creating project markers:", error)
         }
@@ -1125,6 +1139,24 @@ export default function AlAinMap({
               }
             }
           })
+
+          HIDDEN_UNTIL_3_PROJECTS_CLICK.forEach((markerName) => {
+            if (markers[markerName]) {
+              const element = markers[markerName].getElement()
+              if (element) {
+                element.style.display = "none"
+              }
+            }
+          })
+
+          HIDDEN_UNTIL_2_PROJECTS_CLICK.forEach((markerName) => {
+            if (markers[markerName]) {
+              const element = markers[markerName].getElement()
+              if (element) {
+                element.style.display = "none"
+              }
+            }
+          })
         } catch (error) {
           console.error("Error setting marker visibility:", error)
         }
@@ -1142,19 +1174,120 @@ export default function AlAinMap({
         setMapError(`Map rendering error occurred: ${message}`)
       })
 
-      // Zoom event handler
       map.current.on("zoom", () => {
         try {
           const currentZoom = map.current!.getZoom()
 
-          // Conditional dragPan based on zoom level - adjusted for much higher initial zoom
-          if (currentZoom > 8.0) {
-            // Higher threshold since we start much more zoomed in
-            map.current.dragPan.enable()
+          // Only reset if user is actively zooming out below initial level and not already resetting
+          if (
+            currentZoom < initialZoomRef.current &&
+            previousZoomRef.current >= initialZoomRef.current &&
+            !isResettingRef.current
+          ) {
+            isResettingRef.current = true
+
+            map.current!.easeTo({
+              center: initialCenterRef.current,
+              zoom: initialZoomRef.current,
+              duration: 800,
+              essential: true,
+              easing: (t: number) => {
+                // Smooth easing function
+                return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+              },
+            })
+
+            // Reset the flag after animation completes
+            setTimeout(() => {
+              isResettingRef.current = false
+              previousZoomRef.current = initialZoomRef.current
+            }, 800)
+
+            return
+          }
+
+          // Update previous zoom for next comparison
+          previousZoomRef.current = currentZoom
+
+          if (currentZoom >= 13) {
+            // Hide "3 projects" marker at zoom 13 or higher
+            if (markersRef.current["3 projects"]) {
+              const element = markersRef.current["3 projects"].getElement()
+              if (element) {
+                element.style.display = "none"
+              }
+            }
+
+            // Hide "2Projects" marker at zoom 13 or higher
+            if (markersRef.current["2Projects"]) {
+              const element = markersRef.current["2Projects"].getElement()
+              if (element) {
+                element.style.display = "none"
+              }
+            }
+
+            // Show the three individual markers if they were clicked
+            if (threeProjectsClickedRef.current) {
+              HIDDEN_UNTIL_3_PROJECTS_CLICK.forEach((markerName) => {
+                if (markersRef.current[markerName]) {
+                  const element = markersRef.current[markerName].getElement()
+                  if (element) {
+                    element.style.display = "block"
+                  }
+                }
+              })
+            }
+
+            // Show the two Al Murabba markers if they were clicked
+            if (twoProjectsClickedRef.current) {
+              HIDDEN_UNTIL_2_PROJECTS_CLICK.forEach((markerName) => {
+                if (markersRef.current[markerName]) {
+                  const element = markersRef.current[markerName].getElement()
+                  if (element) {
+                    element.style.display = "block"
+                  }
+                }
+              })
+            }
           } else {
-            map.current.dragPan.disable()
-            // Snap back to initial center if zoomed out too far
-            map.current.setCenter(initialCenterRef.current)
+            // When zoom < 13, show "3 projects" and "2Projects", hide individual markers
+            if (markersRef.current["3 projects"]) {
+              const element = markersRef.current["3 projects"].getElement()
+              if (element) {
+                element.style.display = "block"
+              }
+            }
+
+            if (markersRef.current["2Projects"]) {
+              const element = markersRef.current["2Projects"].getElement()
+              if (element) {
+                element.style.display = "block"
+              }
+            }
+
+            // Hide the three individual markers
+            HIDDEN_UNTIL_3_PROJECTS_CLICK.forEach((markerName) => {
+              if (markersRef.current[markerName]) {
+                const element = markersRef.current[markerName].getElement()
+                if (element) {
+                  element.style.display = "none"
+                }
+              }
+            })
+
+            // Hide the two Al Murabba markers
+            HIDDEN_UNTIL_2_PROJECTS_CLICK.forEach((markerName) => {
+              if (markersRef.current[markerName]) {
+                const element = markersRef.current[markerName].getElement()
+                if (element) {
+                  element.style.display = "none"
+                }
+              }
+            })
+
+            // Reset the clicked states
+            threeProjectsClickedRef.current = false
+            twoProjectsClickedRef.current = false
           }
 
           // Marker visibility logic
@@ -1164,6 +1297,15 @@ export default function AlAinMap({
 
             if (ALWAYS_HIDDEN_MARKERS.includes(name)) {
               element.style.display = "none"
+              return
+            }
+
+            if (
+              name === "3 projects" ||
+              name === "2Projects" ||
+              HIDDEN_UNTIL_3_PROJECTS_CLICK.includes(name) ||
+              HIDDEN_UNTIL_2_PROJECTS_CLICK.includes(name)
+            ) {
               return
             }
 
@@ -1278,9 +1420,9 @@ export default function AlAinMap({
         "16 Projects",
         "7 Projects",
         "2 Projects",
+        "3 projects",
         "مركز شرطة زاخر",
         "مركز شرطة المربعة",
-        "ساحة حجز ال��ركبات -asad",
         "ساحة حجز المركبات -asad",
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
@@ -1288,6 +1430,15 @@ export default function AlAinMap({
         "ميدان الشرطة بدع بنت سعود",
         "مركز شرطة الساد",
         "ساحة حجز المركبات - الساد",
+        "قسم موسيقى شرطة أبوظبي",
+        "مركز شرطة الهير",
+        "مركز شرطة سويحان",
+        "متحف شرطة المربعة",
+        "مديرية شرطة العين",
+        "نادي ضباط الشرطة",
+        "فرع النقل والمشاغل",
+        "مركز شرطة الوقن",
+        "مركز شرطة الجيمي",
       ]
 
       if (labeledMarkers.includes(name)) {
@@ -1303,6 +1454,12 @@ export default function AlAinMap({
           case "2 Projects":
             positionClass = "position-3" // Right
             break
+          case "3 projects":
+            positionClass = "position-7" // Left
+            break
+          case "2Projects":
+            positionClass = "position-7" // Left
+            break
           case "مركز شرطة زاخر":
             positionClass = "position-7" // Left
             break
@@ -1313,10 +1470,11 @@ export default function AlAinMap({
             positionClass = "position-7" // Left
             break
           case "إدارة التأهيل الشرطي - الفوعة":
-            positionClass = "position-3" // Right
+            positionClass = "position-7" // Left
             break
+
           case "مركز شرطة هيلي":
-            positionClass = "position-3" // Right
+            positionClass = "position-7" // Left (changed from position-3)
             break
           case "مركز شرطةasad":
             positionClass = "position-3" // Right
@@ -1329,6 +1487,33 @@ export default function AlAinMap({
             break
           case "ساحة حجز المركبات - الساد":
             positionClass = "position-5" // Bottom
+            break
+          case "قسم موسيقى شرطة أبوظبي":
+            positionClass = "position-3" // Right
+            break
+          case "مركز شرطة الهير":
+            positionClass = "position-3" // Right
+            break
+          case "مركز شرطة سويحان":
+            positionClass = "position-7" // Left
+            break
+          case "متحف شرطة المربعة":
+            positionClass = "position-1" // Top
+            break
+          case "مديرية شرطة العين":
+            positionClass = "position-7" // Left
+            break
+          case "نادي ضباط الشرطة":
+            positionClass = "position-1" // Top
+            break
+          case "فرع النقل والمشاغل":
+            positionClass = "position-5" // Bottom
+            break
+          case "مركز شرطة الوقن":
+            positionClass = "position-3" // Right
+            break
+          case "مركز شرطة الجيمي":
+            positionClass = "position-7" // Left
             break
           default:
             positionClass = "position-1" // Default to Top
@@ -1435,19 +1620,31 @@ export default function AlAinMap({
         circleElement.appendChild(numberElement)
       }
 
+      // Updated labeledMarkersArray to include new markers
       const labeledMarkersArray = [
         "16 Projects",
         "7 Projects",
         "2 Projects",
+        "3 projects",
         "مركز شرطة زاخر",
-        "مركز شرطة ��لمربعة",
+        "مركز شرطة المربعة",
         "ساحة حجز المركبات -asad",
         "إدارة التأهيل الشرطي - الفوعة",
         "مركز شرطة هيلي",
         "مركز شرطةasad",
         "ميدان الشرطة بدع بنت سعود",
-        "مر��ز شرطة الساد",
+        "مركز شرطة الساد",
         "ساحة حجز المركبات - الساد",
+        "قسم موسيقى شرطة أبوظبي",
+        "مركز شرطة الهير",
+        "مركز شرطة سويحان",
+        "متحف شرطة المربعة",
+        "مديرية شرطة العين",
+        "نادي ضباط الشرطة",
+        "فرع النقل والمشاغل",
+        "مركز شرطة الوقن",
+        "مركز شرطة الجيمي",
+        "2Projects",
       ]
 
       if (labeledMarkersArray.includes(name)) {
@@ -1461,6 +1658,14 @@ export default function AlAinMap({
         label.className = "marker-label"
         label.textContent = name
         label.setAttribute("aria-label", name)
+
+        if (name === "2Projects") {
+          label.style.transform = "translateY(-50%) translateX(50px)"
+        }
+
+        if (name === "2Projects") {
+          line.style.width = "30px" // Reduced from 80px to 30px to match the 50px label offset
+        }
 
         // Hover behavior on label: highlight this marker and dim others
         label.addEventListener("mouseenter", (e) => {
@@ -1504,11 +1709,11 @@ export default function AlAinMap({
         markerElement.appendChild(label)
       }
 
-      const contentWrapper = document.createElement("div")
-      contentWrapper.className = "marker-content-wrapper"
-
       let clickTimer: NodeJS.Timeout | null = null
       let clickCount = 0
+
+      // Define contentWrapper before it's used
+      const contentWrapper = document.createElement("div")
 
       markerElement.onclick = (e) => {
         e.stopPropagation()
@@ -1519,6 +1724,68 @@ export default function AlAinMap({
             if (name === "16 Projects") {
               // Single click on 16 Projects goes directly to the detailed view
               router.push("/al-ain/16-projects")
+            } else if (name === "3 projects") {
+              threeProjectsClickedRef.current = true
+
+              // Hide the "3 projects" marker itself
+              const threeProjectsElement = markersRef.current["3 projects"]?.getElement()
+              if (threeProjectsElement) {
+                threeProjectsElement.style.display = "none"
+              }
+
+              map.flyTo({
+                center: coordinates,
+                zoom: 13.5,
+                duration: 1500,
+                essential: true,
+                easing: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+              })
+
+              // Show the three markers after zoom
+              setTimeout(() => {
+                const threeProjectMarkers = ["مديرية شرطة العين", "نادي ضباط الشرطة", "فرع النقل والمشاغل"]
+                threeProjectMarkers.forEach((markerName) => {
+                  if (markersRef.current[markerName]) {
+                    const element = markersRef.current[markerName].getElement()
+                    if (element) {
+                      element.style.display = "block"
+                    }
+                  }
+                })
+              }, 1500)
+
+              console.log(`Zoomed to ${name} and showing three markers`)
+            } else if (name === "2Projects") {
+              twoProjectsClickedRef.current = true
+
+              // Hide the "2Projects" marker itself
+              const twoProjectsElement = markersRef.current["2Projects"]?.getElement()
+              if (twoProjectsElement) {
+                twoProjectsElement.style.display = "none"
+              }
+
+              map.flyTo({
+                center: coordinates,
+                zoom: 13.5,
+                duration: 1500,
+                essential: true,
+                easing: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+              })
+
+              // Show the two Al Murabba markers after zoom
+              setTimeout(() => {
+                const twoProjectMarkers = ["مركز شرطة المربعة", "متحف شرطة المربعة"]
+                twoProjectMarkers.forEach((markerName) => {
+                  if (markersRef.current[markerName]) {
+                    const element = markersRef.current[markerName].getElement()
+                    if (element) {
+                      element.style.display = "block"
+                    }
+                  }
+                })
+              }, 1500)
+
+              console.log(`Zoomed to ${name} and showing two Al Murabba markers`)
             } else {
               // Regular zoom behavior for other markers
               map.flyTo({
@@ -1539,6 +1806,62 @@ export default function AlAinMap({
           if (name === "16 Projects") {
             // Double click also goes to detailed view
             router.push("/al-ain/16-projects")
+          } else if (name === "3 projects") {
+            threeProjectsClickedRef.current = true
+
+            // Hide the "3 projects" marker itself
+            const threeProjectsElement = markersRef.current["3 projects"]?.getElement()
+            if (threeProjectsElement) {
+              threeProjectsElement.style.display = "none"
+            }
+
+            map.flyTo({
+              center: coordinates,
+              zoom: 13.5,
+              duration: 1500,
+              essential: true,
+              easing: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+            })
+
+            setTimeout(() => {
+              const threeProjectMarkers = ["مديرية شرطة العين", "نادي ضباط الشرطة", "فرع النقل والمشاغل"]
+              threeProjectMarkers.forEach((markerName) => {
+                if (markersRef.current[markerName]) {
+                  const element = markersRef.current[markerName].getElement()
+                  if (element) {
+                    element.style.display = "block"
+                  }
+                }
+              })
+            }, 1500)
+          } else if (name === "2Projects") {
+            twoProjectsClickedRef.current = true
+
+            // Hide the "2Projects" marker itself
+            const twoProjectsElement = markersRef.current["2Projects"]?.getElement()
+            if (twoProjectsElement) {
+              twoProjectsElement.style.display = "none"
+            }
+
+            map.flyTo({
+              center: coordinates,
+              zoom: 13.5,
+              duration: 1500,
+              essential: true,
+              easing: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
+            })
+
+            setTimeout(() => {
+              const twoProjectMarkers = ["مركز شرطة المربعة", "متحف شرطة المربعة"]
+              twoProjectMarkers.forEach((markerName) => {
+                if (markersRef.current[markerName]) {
+                  const element = markersRef.current[markerName].getElement()
+                  if (element) {
+                    element.style.display = "block"
+                  }
+                }
+              })
+            }, 1500)
           } else {
             // Regular project detail navigation for other markers
             const englishName = getEnglishName(name)
@@ -1578,8 +1901,24 @@ export default function AlAinMap({
 
   const getMarkerAlignment = (markerName: string): string => {
     const leftAligned = ["مركز شرطة زاخر", "ساحة حجز المركبات -asad"]
-    const rightAligned = ["16 Projects", "7 Projects", "2 Projects", "مركز شرطة المربعة", "مركز شرطة هيل��"]
-    const topAligned = ["فلل للادرات الشرطية عشارج"]
+    // Updated rightAligned to include new markers and adjusted 'مركز شرطة هيلي'
+    const rightAligned = [
+      "16 Projects",
+      "7 Projects",
+      "2 Projects",
+      "3 projects",
+      "مركز شرطة المربعة",
+      "مركز شرطة هيلي",
+      "مركز شرطةasad",
+      "مركز شرطة الجيمي",
+      "مركز شرطة الوقن",
+      "مديرية شرطة العين",
+      "مركز شرطة الهير",
+      "قسم موسيقى شرطة أبوظبي",
+      "مركز شرطة الساد",
+    ]
+    const topAligned = ["فلل للادرات الشرطية عشارج", "نادي ضباط الشرطة", "متحف شرطة المربعة"]
+    const bottomAligned = ["فرع النقل والمشاغل", "ساحة حجز المركبات - الساد"]
 
     if (leftAligned.includes(markerName)) {
       return "left-aligned"
@@ -1587,6 +1926,8 @@ export default function AlAinMap({
       return "right-aligned"
     } else if (topAligned.includes(markerName)) {
       return "top-aligned"
+    } else if (bottomAligned.includes(markerName)) {
+      return "bottom-aligned"
     }
     return "center-aligned"
   }

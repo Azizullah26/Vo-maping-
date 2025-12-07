@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import supabase from "@/lib/supabase"
+import { getSupabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -14,6 +14,13 @@ export default function SupabaseExample() {
 
   useEffect(() => {
     async function fetchData() {
+      const supabase = getSupabase()
+      if (!supabase) {
+        setError("Supabase not configured")
+        setLoading(false)
+        return
+      }
+
       try {
         setLoading(true)
 

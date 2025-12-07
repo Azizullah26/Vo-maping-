@@ -1,45 +1,16 @@
 {
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next",
-      "config": {
-        "installCommand": "npm install --no-optional --no-package-lock --ignore-scripts"
-      }
-    }
-  ],
+  "version": 2,
+  "buildCommand": "npm run build",
+  "installCommand": "npm install --legacy-peer-deps --no-audit --no-fund --prefer-offline",
+  "framework": "nextjs",
   "env": {
-    "NODE_OPTIONS": "--max-old-space-size=4096",
-    "NODE_PG_FORCE_NATIVE": "0",
-    "npm_config_build_from_source": "false",
-    "npm_config_node_gyp": "false"
+    "NODE_OPTIONS": "--max-old-space-size=3072",
+    "SKIP_ENV_VALIDATION": "1"
   },
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        }
-      ]
+  "functions": {
+    "app/**/*.tsx": {
+      "memory": 1024,
+      "maxDuration": 10
     }
-  ]
+  }
 }

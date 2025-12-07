@@ -1,22 +1,30 @@
 import { createClient } from "@supabase/supabase-js"
 import { NextResponse } from "next/server"
 
-// Initialize Supabase client with service role key
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+function getSupabaseAdmin() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error("Missing Supabase credentials for init-documents-table API")
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error("Missing Supabase credentials for init-documents-table API")
+    return null
+  }
+
+  return createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      persistSession: false,
+    },
+  })
 }
-
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    persistSession: false,
-  },
-})
 
 export async function POST() {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
+
+    if (!supabaseAdmin) {
+      return NextResponse.json({ success: false, message: "Missing Supabase credentials" }, { status: 500 })
+    }
+
     // Check if project_documents table exists
     const { data: projectDocumentsExists, error: projectDocumentsError } = await supabaseAdmin
       .from("project_documents")
@@ -24,7 +32,6 @@ export async function POST() {
       .limit(1)
 
     if (projectDocumentsError) {
-      // If error contains "relation \"project_documents\" does not exist", the table doesn't exist
       if (
         projectDocumentsError.message.includes("relation") &&
         projectDocumentsError.message.includes("does not exist")
@@ -41,7 +48,6 @@ export async function POST() {
       })
     }
 
-    // SQL to create the project_documents table
     const createTableSql = `
       CREATE TABLE IF NOT EXISTS project_documents (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -52,7 +58,6 @@ export async function POST() {
       );
     `
 
-    // Execute the SQL to create the table
     const { error } = await supabaseAdmin.rpc("execute_sql", { sql_query: createTableSql })
 
     if (error) {

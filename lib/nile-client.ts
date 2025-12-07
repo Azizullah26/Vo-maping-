@@ -7,29 +7,33 @@ interface NileConfig {
 }
 
 class NileClient {
-  private config: NileConfig
+  private config: NileConfig | null = null
 
-  constructor() {
-    // Only use server-side environment variables (no NEXT_PUBLIC_ prefix)
-    this.config = {
-      url: process.env.NILEDB_URL,
-      apiToken: process.env.NILEDB_API_TOKEN,
+  private getConfig(): NileConfig {
+    if (!this.config) {
+      this.config = {
+        url: process.env.NILEDB_URL,
+        apiToken: process.env.NILEDB_API_TOKEN,
+      }
     }
+    return this.config
   }
 
   async query(sql: string, params?: any[]) {
-    if (!this.config.url || !this.config.apiToken) {
+    const config = this.getConfig()
+
+    if (!config.url || !config.apiToken) {
       throw new Error(
         "Nile configuration is missing. Please set NILEDB_URL and NILEDB_API_TOKEN environment variables.",
       )
     }
 
     try {
-      const response = await fetch(`${this.config.url}/api/sql`, {
+      const response = await fetch(`${config.url}/api/sql`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${this.config.apiToken}`,
+          Authorization: `Bearer ${config.apiToken}`,
         },
         body: JSON.stringify({ sql, params }),
       })
@@ -58,5 +62,14 @@ class NileClient {
   }
 }
 
-export const nileClient = new NileClient()
-export default nileClient
+let _nileClientInstance: NileClient | null = null
+
+export function getNileClient(): NileClient {
+  if (!_nileClientInstance) {
+    _nileClientInstance = new NileClient()
+  }
+  return _nileClientInstance
+}
+
+export const nileClient = { get: getNileClient }
+export default { get: getNileClient }

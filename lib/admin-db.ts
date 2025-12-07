@@ -4,7 +4,14 @@ import { createClient } from "@supabase/supabase-js"
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+let supabaseInstance: ReturnType<typeof createClient> | null = null
+
+function getSupabase() {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey)
+  }
+  return supabaseInstance
+}
 
 // Project type definition
 export interface Project {
@@ -25,6 +32,7 @@ export interface Project {
 // Fetch all projects from the database
 export async function fetchProjects(): Promise<Project[]> {
   try {
+    const supabase = getSupabase()
     const { data, error } = await supabase.from("projects").select("*").order("created_at", { ascending: false })
 
     if (error) {
@@ -45,6 +53,7 @@ export async function updateProject(
   updates: Partial<Project>,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const supabase = getSupabase()
     const { error } = await supabase
       .from("projects")
       .update({
@@ -73,6 +82,7 @@ export async function createProject(
   project: Omit<Project, "id" | "created_at" | "updated_at">,
 ): Promise<{ success: boolean; data?: Project; error?: string }> {
   try {
+    const supabase = getSupabase()
     const { data, error } = await supabase
       .from("projects")
       .insert([
@@ -102,6 +112,7 @@ export async function createProject(
 // Delete a project from the database
 export async function deleteProject(id: string): Promise<{ success: boolean; error?: string }> {
   try {
+    const supabase = getSupabase()
     const { error } = await supabase.from("projects").delete().eq("id", id)
 
     if (error) {
@@ -121,6 +132,7 @@ export async function deleteProject(id: string): Promise<{ success: boolean; err
 
 // Initialize the database with sample data if it's empty
 export async function initializeDatabase(): Promise<void> {
+  const supabase = getSupabase()
   const { data } = await supabase.from("projects").select("id").limit(1)
 
   // If there's already data, don't initialize

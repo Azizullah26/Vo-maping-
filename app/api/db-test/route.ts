@@ -19,8 +19,10 @@ export async function GET() {
 
     return NextResponse.json({
       success: isConnected,
-      message: isConnected ? "Database connection successful" : "Database connection failed",
+      database: isConnected ? "dynamic" : "static",
+      message: isConnected ? "Database connection successful" : "Using static data from data/ folder",
       connectionString: connectionStringPreview,
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
     console.error("Database connection error:", error)
