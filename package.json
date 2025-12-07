@@ -42,7 +42,7 @@
     "lodash": "latest",
     "lucide-react": "^0.454.0",
     "mapbox-gl": "latest",
-    "mapillary-js": "latest",
+    "mapillary-js": "4.1.2",
     "next": "15.0.5",
     "next-themes": "latest",
     "ol": "latest",
