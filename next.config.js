@@ -51,7 +51,6 @@ const nextConfig = {
     if (isServer) {
       config.externals = config.externals || []
       if (Array.isArray(config.externals)) {
-        config.externals.push("pg")
       }
     } else {
       // Client-side: exclude Node.js modules
@@ -63,7 +62,6 @@ const nextConfig = {
         crypto: false,
         path: false,
         child_process: false,
-        pg: false,
       }
     }
 
@@ -71,6 +69,8 @@ const nextConfig = {
       ...config.optimization,
       moduleIds: "deterministic",
       minimize: true,
+      runtimeChunk: false,
+      splitChunks: false,
     }
 
     return config
@@ -85,7 +85,6 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "10mb",
     },
-    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
   },
 
   async headers() {
