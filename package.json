@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "audit": "npm audit",
+    "prebuild": "bash scripts/prebuild.sh || true",
     "build": "next build",
     "check-deps": "npm outdated",
     "dev": "next dev",
@@ -67,5 +68,8 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
   },
-  "packageManager": "npm@10.x"
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=10.0.0"
+  }
 }

@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "installCommand": "npm install --legacy-peer-deps --no-audit --no-fund --no-optional",
+  "buildCommand": "bash scripts/prebuild.sh && npm run build",
+  "installCommand": "npm install --legacy-peer-deps --no-audit --no-fund",
   "framework": "nextjs",
   "env": {
-    "NODE_OPTIONS": "--max-old-space-size=2048",
-    "SKIP_ENV_VALIDATION": "1"
+    "NODE_OPTIONS": "--max-old-space-size=4096",
+    "SKIP_ENV_VALIDATION": "1",
+    "NPM_CONFIG_PREFER_OFFLINE": "true"
   },
   "functions": {
     "app/**/*.tsx": {
