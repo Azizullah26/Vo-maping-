@@ -48,8 +48,16 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
-    // Server-side: externalize heavy packages to avoid bundling
     if (isServer) {
+      // Provide global polyfill for browser-only globals during server build
+      config.plugins = config.plugins || []
+      const webpack = require("webpack")
+      config.plugins.push(
+        new webpack.ProvidePlugin({
+          self: "global",
+        }),
+      )
+
       config.externals = config.externals || []
       if (Array.isArray(config.externals)) {
         config.externals.push("pg")
