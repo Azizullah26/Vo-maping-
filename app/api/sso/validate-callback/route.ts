@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import crypto from "crypto"
 
 /**
  * Shared in-process SSO token store.
@@ -15,11 +14,37 @@ const ssoTokenStore = new Map<
 >()
 
 /**
- * Called by the login-url route to register a new token.
- * Both routes live in the same serverless bundle so the Map is shared.
+ * Called by /api/sso/login-url to register a new token.
  */
 export function registerSSOToken(token: string, source = "hub") {
   ssoTokenStore.set(token, { createdAt: Date.now(), used: false, source })
+}
+
+/**
+ * Called by /api/sso/verify to consume a token and return session data.
+ * Returns null if the token is invalid, expired, or already used.
+ */
+export function consumeSSOToken(token: string): {
+  sessionToken: string
+  expiresAt: string
+  source: string
+} | { error: string; code: string } {
+  const stored = ssoTokenStore.get(token)
+
+  if (!stored) return { error: "Token not found or already expired", code: "INVALID_TOKEN" }
+  if (stored.used) return { error: "Token has already been used", code: "TOKEN_USED" }
+  if (Date.now() - stored.createdAt > 5 * 60 * 1000) {
+    ssoTokenStore.delete(token)
+    return { error: "Token has expired", code: "TOKEN_EXPIRED" }
+  }
+
+  ssoTokenStore.set(token, { ...stored, used: true })
+
+  const now = Date.now()
+  const sessionToken = btoa(`elrace:${now}:${Math.random().toString(36).slice(2)}`)
+  const expiresAt = new Date(now + 24 * 60 * 60 * 1000).toISOString()
+
+  return { sessionToken, expiresAt, source: stored.source }
 }
 
 /**
@@ -40,52 +65,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const storedToken = ssoTokenStore.get(token)
+    const result = consumeSSOToken(token)
 
-    if (!storedToken) {
+    if ("error" in result) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Token not found or already expired",
-          code: "INVALID_TOKEN",
-        },
+        { success: false, error: result.error, code: result.code },
         { status: 401 },
       )
     }
-
-    if (storedToken.used) {
-      return NextResponse.json(
-        { success: false, error: "Token has already been used", code: "TOKEN_USED" },
-        { status: 401 },
-      )
-    }
-
-    const now = Date.now()
-    if (now - storedToken.createdAt > 5 * 60 * 1000) {
-      ssoTokenStore.delete(token)
-      return NextResponse.json(
-        { success: false, error: "Token has expired", code: "TOKEN_EXPIRED" },
-        { status: 401 },
-      )
-    }
-
-    // Mark as used — one-time only
-    ssoTokenStore.set(token, { ...storedToken, used: true })
-
-    // Issue a session token compatible with LoginAuthContext
-    const sessionToken = btoa(
-      `elrace:${now}:${crypto.randomBytes(16).toString("hex")}`,
-    )
 
     return NextResponse.json({
       success: true,
-      session_token: sessionToken,
-      expires_at: new Date(now + 24 * 60 * 60 * 1000).toISOString(),
+      session_token: result.sessionToken,
+      expires_at: result.expiresAt,
       user: {
         username: "elrace",
         role: "admin",
         platform: "elrace-projects",
-        source: storedToken.source,
+        source: result.source,
       },
     })
   } catch (error) {

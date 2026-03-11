@@ -17,8 +17,6 @@ import { registerSSOToken } from "@/app/api/sso/validate-callback/route"
  */
 export async function POST(request: NextRequest) {
   try {
-    cleanExpiredTokens()
-
     const body = await request.json().catch(() => ({}))
     const { api_key, redirect_url, source = "hub" } = body
 

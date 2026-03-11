@@ -1,21 +1,30 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import crypto from "crypto"
+import { consumeSSOToken } from "@/app/api/sso/validate-callback/route"
 
-// Shared token store (same module-level Map as login-url route)
-// In production, use Redis or a database
-const ssoTokenStore = new Map<string, { createdAt: number; used: boolean; source: string }>()
-
+/**
+ * POST /api/sso/verify
+ *
+ * Hub-to-platform server-side verification (optional step).
+ * Call this from your hub backend after the browser callback to confirm
+ * the token was valid and to receive session details.
+ *
+ * Request body:
+ *   { api_key: string, token: string }
+ *
+ * Response:
+ *   { success: true, session_token: string, expires_at: string, user: object }
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}))
-    const { token, api_key } = body
+    const { api_key, token } = body
 
-    // Validate API key
+    // ── API key validation ────────────────────────────────────────────────
     const validApiKey = process.env.SSO_API_KEY || "elrace-sso-key-2024"
-    if (api_key !== validApiKey) {
+    if (!api_key || api_key !== validApiKey) {
       return NextResponse.json(
-        { success: false, error: "Invalid API key", code: "INVALID_API_KEY" },
+        { success: false, error: "Invalid or missing API key", code: "INVALID_API_KEY" },
         { status: 401 },
       )
     }
@@ -27,46 +36,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const storedToken = ssoTokenStore.get(token)
+    // ── Consume from the shared token store ───────────────────────────────
+    const result = consumeSSOToken(token)
 
-    if (!storedToken) {
+    if ("error" in result) {
       return NextResponse.json(
-        { success: false, error: "Token not found or expired", code: "INVALID_TOKEN" },
+        { success: false, error: result.error, code: result.code },
         { status: 401 },
       )
     }
-
-    if (storedToken.used) {
-      return NextResponse.json(
-        { success: false, error: "Token has already been used", code: "TOKEN_USED" },
-        { status: 401 },
-      )
-    }
-
-    const now = Date.now()
-    if (now - storedToken.createdAt > 5 * 60 * 1000) {
-      ssoTokenStore.delete(token)
-      return NextResponse.json(
-        { success: false, error: "Token has expired", code: "TOKEN_EXPIRED" },
-        { status: 401 },
-      )
-    }
-
-    // Mark token as used (one-time use)
-    ssoTokenStore.set(token, { ...storedToken, used: true })
-
-    // Generate session token
-    const sessionToken = crypto.randomBytes(32).toString("hex")
-    const expiresAt = new Date(now + 24 * 60 * 60 * 1000).toISOString() // 24 hours
 
     return NextResponse.json({
       success: true,
-      session_token: sessionToken,
-      expires_at: expiresAt,
+      session_token: result.sessionToken,
+      expires_at: result.expiresAt,
       user: {
         username: "elrace",
         role: "admin",
         platform: "elrace-projects",
+        source: result.source,
       },
       message: "Authentication successful",
     })
@@ -79,23 +67,25 @@ export async function POST(request: NextRequest) {
   }
 }
 
+/**
+ * GET /api/sso/verify — quick documentation
+ */
 export async function GET() {
   return NextResponse.json({
     endpoint: "POST /api/sso/verify",
-    description: "Verify a one-time SSO token after user authentication",
-    required_body: {
-      token: "string — the one-time token from login_url",
-      api_key: "string — your SSO API key",
+    description:
+      "Optional hub-to-platform server-side verification. Confirms the token was valid and returns session details.",
+    authentication: "API key in request body",
+    request_body: {
+      api_key: "string (required) — your SSO API key",
+      token: "string (required) — the one-time token from the login_url",
     },
     response: {
       success: true,
-      session_token: "<session_token>",
-      expires_at: "ISO 8601 timestamp",
-      user: {
-        username: "string",
-        role: "string",
-        platform: "string",
-      },
+      session_token: "string",
+      expires_at: "ISO 8601",
+      user: { username: "elrace", role: "admin", platform: "elrace-projects", source: "hub" },
+      message: "Authentication successful",
     },
   })
 }
