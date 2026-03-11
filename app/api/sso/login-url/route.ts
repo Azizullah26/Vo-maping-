@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     const callbackBase = redirect_url
       ? redirect_url.replace(/\/$/, "")
-      : `${baseUrl}/sso/callback`
+      : `${process.env.NEXT_PUBLIC_APP_URL || "https://elracemap.vercel.app"}/sso/callback`
 
     const loginUrl = `${callbackBase}?token=${token}`
 
