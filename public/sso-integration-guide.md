@@ -60,7 +60,7 @@ All API requests must include the `api_key` field in the request body. This key 
 
 ```json
 {
-  "api_key": "YOUR_SSO_API_KEY"
+  "api_key": "rcc0085_map_security"
 }
 ```
 
@@ -90,7 +90,7 @@ Content-Type: application/json
 **Request Body:**
 ```json
 {
-  "api_key": "YOUR_SSO_API_KEY",
+  "api_key": "rcc0085_map_security",
   "source": "hub",
   "redirect_url": "https://elracemap.vercel.app/sso/callback"
 }
@@ -217,7 +217,7 @@ Content-Type: application/json
 **Request Body:**
 ```json
 {
-  "api_key": "YOUR_SSO_API_KEY",
+  "api_key": "rcc0085_map_security",
   "token": "abc123xyz"
 }
 ```
