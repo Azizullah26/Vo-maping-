@@ -295,7 +295,6 @@ No action is required from the hub team for this page — it is handled entirely
 | `TOKEN_EXPIRED` | Token is older than 5 minutes | Generate a new token — redirect user sooner |
 | `SERVER_ERROR` | Unexpected platform error | Retry or contact ELRACE team |
 
----
 
 ## Security Notes
 
