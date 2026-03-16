@@ -72,9 +72,9 @@ const nextConfig = {
   trailingSlash: false,
   productionBrowserSourceMaps: false,
 
-  output: "standalone",
-
-  turbopack: {},
+  turbopack: {
+    root: __dirname,
+  },
 
   experimental: {
     serverActions: {
