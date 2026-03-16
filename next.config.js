@@ -15,50 +15,13 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**.supabase.co",
+        hostname: "**",
       },
       {
-        protocol: "https",
-        hostname: "**.vercel-storage.com",
-      },
-      {
-        protocol: "https",
-        hostname: "api.mapbox.com",
-      },
-      {
-        protocol: "https",
-        hostname: "blob.v0.app",
-      },
-      {
-        protocol: "https",
-        hostname: "placeholder.com",
-      },
-      {
-        protocol: "https",
-        hostname: "via.placeholder.com",
-      },
-      {
-        protocol: "https",
-        hostname: "whatson.ae",
-      },
-      {
-        protocol: "https",
-        hostname: "**.ae",
-      },
-      {
-        protocol: "https",
-        hostname: "**.com",
-      },
-      {
-        protocol: "https",
-        hostname: "**.org",
-      },
-      {
-        protocol: "https",
-        hostname: "**.net",
+        protocol: "http",
+        hostname: "**",
       },
     ],
-    domains: [],
     unoptimized: false,
   },
 
