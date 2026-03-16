@@ -57,7 +57,7 @@ export function MarkerHoverWidget({
       "مركز شرطة هيلي": {
         name: "مركز شرطة هيلي",
         englishName: "Hili Police Station",
-        image: "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
+        image: "https://www.pelago.com/img/products/AE-United%20Arab%20Emirates/private-al-ain-city-tour-with-lunch/b6845c9b-65ed-42c8-ab1b-1d18b11dc1a7_private-al-ain-city-tour-with-lunch.jpg",
         plots: "2 Plots",
         type: "Government",
         status: "Active",

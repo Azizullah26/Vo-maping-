@@ -72,7 +72,7 @@ export default function ProjectsDetailsPage() {
     },
     {
       id: 3,
-      imageSrc: "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
+      imageSrc: "https://www.pelago.com/img/products/AE-United%20Arab%20Emirates/private-al-ain-city-tour-with-lunch/b6845c9b-65ed-42c8-ab1b-1d18b11dc1a7_private-al-ain-city-tour-with-lunch.jpg",
       projectNameAr: "مركز شرطة هيلي",
       projectNameEn: "Hili Police Station",
       coordinates: [55.76486147272425, 24.277296159962688],
