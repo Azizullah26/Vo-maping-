@@ -37,7 +37,28 @@ const nextConfig = {
         protocol: "https",
         hostname: "via.placeholder.com",
       },
+      {
+        protocol: "https",
+        hostname: "whatson.ae",
+      },
+      {
+        protocol: "https",
+        hostname: "**.ae",
+      },
+      {
+        protocol: "https",
+        hostname: "**.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.org",
+      },
+      {
+        protocol: "https",
+        hostname: "**.net",
+      },
     ],
+    domains: [],
     unoptimized: false,
   },
 
