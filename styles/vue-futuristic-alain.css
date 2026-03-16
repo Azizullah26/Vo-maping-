@@ -1,4 +1,6 @@
 /* Vue Futuristic CSS for Al Ain */
+@reference "tailwindcss";
+
 .vue-card {
   @apply bg-gradient-to-br from-slate-800/50 to-slate-900/50 p-4 rounded-lg border border-cyan-500/20 hover:border-cyan-400/40 transition-all duration-300 shadow-lg shadow-cyan-900/20;
 }

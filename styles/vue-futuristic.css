@@ -1,4 +1,6 @@
 /* Vue-inspired futuristic styles */
+@reference "tailwindcss";
+
 .vue-card {
   @apply relative bg-gradient-to-b from-cyan-900/30 to-cyan-900/10 p-4 rounded-md border border-cyan-500/30 mb-4 overflow-hidden;
   backdrop-filter: blur(4px);
@@ -123,12 +125,12 @@
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: theme("colors.cyan.500");
+  background: #06b6d4; /* cyan-500 */
   border-radius: 20px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: theme("colors.cyan.400");
+  background: #22d3ee; /* cyan-400 */
 }
 
 /* Transition timing function */
