@@ -605,14 +605,8 @@ export default function ProjectDashboard({ params }: { params: { id: string } })
                       title={`${projectData.name} 3D Model`}
                       frameBorder="0"
                       allowFullScreen
-                      mozallowfullscreen="true"
-                      webkitallowfullscreen="true"
-                      allow="autoplay; fullscreen; xr-spatial-tracking"
-                      xr-spatial-tracking="true"
-                      execution-while-out-of-viewport="true"
-                      execution-while-not-rendered="true"
-                      web-share="true"
-                      src="https://sketchfab.com/models/ed1a9fcda1264310a6d3b60ba6cbda22/embed?autospin=1"
+                      allow="autoplay; fullscreen"
+                      src="https://elracealfoah17week.vercel.app"
                       style={{ width: "100%", height: "100%" }}
                     />
                   </div>
