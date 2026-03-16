@@ -58,7 +58,7 @@ export default function ProjectsDetailsPage() {
   const projects = [
     {
       id: 1,
-      imageSrc: "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
+      imageSrc: "https://platinumlist.net/guide/wp-content/uploads/2025/12/shutterstock_2545496855.jpg",
       projectNameAr: "قسم موسيقى شرطة أبوظبي",
       projectNameEn: "Abu Dhabi Police Music Department",
       coordinates: [55.80752936967028, 24.342548523036186],

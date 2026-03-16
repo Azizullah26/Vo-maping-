@@ -802,7 +802,7 @@ export default function AlAinMap({
 
   function getMarkerImage(name: string): string {
     const imageMap: { [key: string]: string } = {
-      "قسم موسيقى شرطة أبوظبي": "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
+      "قسم موسيقى شرطة أبوظبي": "https://platinumlist.net/guide/wp-content/uploads/2025/12/shutterstock_2545496855.jpg",
       "إدارة التأهيل الشرطي - الفوعة":
         "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
       "مركز شرطة هيلي": "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",

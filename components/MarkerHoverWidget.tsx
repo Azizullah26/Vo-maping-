@@ -41,7 +41,7 @@ export function MarkerHoverWidget({
       "قسم موسيقى شرطة أبوظبي": {
         name: "قسم موسيقى شرطة أبوظبي",
         englishName: "Abu Dhabi Police Music Department",
-        image: "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
+        image: "https://platinumlist.net/guide/wp-content/uploads/2025/12/shutterstock_2545496855.jpg",
         plots: "3 Plots",
         type: "Government",
         status: "Active",
