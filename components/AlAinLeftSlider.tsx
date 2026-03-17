@@ -9,6 +9,9 @@ import { useRouter } from "next/navigation"
 import { getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase-client"
 import { cn } from "@/lib/utils"
 
+// Module-level flag — once a network error is detected, stop all retries
+let supabaseNetworkReachable = true
+
 // Add a new interface for documents
 interface ProjectDocument {
   id: string
@@ -197,9 +200,8 @@ export default function AlAinLeftSlider({
     try {
       setLoadingDocuments(true)
 
-      // Guard: only attempt network calls when Supabase is properly configured
-      if (!isSupabaseConfigured()) {
-        console.warn("Supabase not configured, using demo data")
+      // Guard: skip if Supabase is not configured or previously unreachable
+      if (!isSupabaseConfigured() || !supabaseNetworkReachable) {
         setDemoDocuments()
         return
       }
@@ -217,14 +219,26 @@ export default function AlAinLeftSlider({
           const result = await supabase.from("documents").select("count").limit(1).single()
           connectionError = result.error
         } catch (networkErr) {
-          // TypeError: Failed to fetch — network not reachable in this environment
-          console.warn("Supabase network unreachable, using demo data")
+          // TypeError: Failed to fetch — mark unreachable so polling stops
+          supabaseNetworkReachable = false
           setDemoDocuments()
           return
         }
 
         if (connectionError) {
-          console.warn("Error connecting to Supabase:", (connectionError as { message: string }).message)
+          const errMsg = (connectionError as { message?: string }).message ?? ""
+          const isNetworkErr =
+            errMsg.includes("Failed to fetch") ||
+            errMsg.includes("fetch") ||
+            errMsg.includes("network") ||
+            errMsg.includes("timeout") ||
+            errMsg.includes("AbortError")
+          if (isNetworkErr) {
+            // Mark unreachable — all future fetchDocuments calls will short-circuit
+            supabaseNetworkReachable = false
+          } else {
+            console.warn("Error connecting to Supabase:", errMsg)
+          }
           setDemoDocuments()
           return
         }
@@ -462,20 +476,19 @@ export default function AlAinLeftSlider({
     // Fetch documents initially
     fetchDocuments(filters)
 
-    // Set up polling as a fallback — only if Supabase is reachable
-    // We use a ref-like variable; if the first fetch fell back to demo data,
-    // we skip further polling to avoid console spam.
+    // Set up polling only if Supabase is configured and network was reachable at mount time
     let pollingInterval: ReturnType<typeof setInterval> | null = null
-    if (isSupabaseConfigured()) {
+    if (isSupabaseConfigured() && supabaseNetworkReachable) {
       pollingInterval = setInterval(() => {
-        fetchDocuments(filters)
-      }, 30000) // Poll every 30 seconds as a fallback
+        if (supabaseNetworkReachable) fetchDocuments(filters)
+        else if (pollingInterval) clearInterval(pollingInterval)
+      }, 30000)
     }
 
     // Try to set up Supabase realtime subscription if Supabase is properly configured
     let subscription: { unsubscribe: () => void } | undefined
 
-    if (isSupabaseConfigured()) {
+    if (isSupabaseConfigured() && supabaseNetworkReachable) {
       try {
         const supabase = getSupabaseClient()
         if (!supabase) return

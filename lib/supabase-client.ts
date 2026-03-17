@@ -39,6 +39,13 @@ export function getSupabaseClient() {
     auth: {
       persistSession: false,
     },
+    global: {
+      fetch: (url, options) =>
+        fetch(url, {
+          ...options,
+          signal: AbortSignal.timeout(8000), // 8-second timeout — fail fast on network errors
+        }),
+    },
   })
 
   return g.__supabaseInstance
