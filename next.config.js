@@ -1,13 +1,9 @@
-import { dirname } from "path"
-import { fileURLToPath } from "url"
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+
   reactStrictMode: true,
   poweredByHeader: false,
 
@@ -53,35 +49,17 @@ const nextConfig = {
       {
         source: "/(.*)",
         headers: [
-          {
-            key: "X-DNS-Prefetch-Control",
-            value: "on",
-          },
-          {
-            key: "X-Frame-Options",
-            value: "SAMEORIGIN",
-          },
-          {
-            key: "X-XSS-Protection",
-            value: "1; mode=block",
-          },
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
-          },
+          { key: "X-DNS-Prefetch-Control", value: "on" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-XSS-Protection", value: "1; mode=block" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         ],
       },
       {
         source: "/api/:path*",
         headers: [
-          {
-            key: "Cache-Control",
-            value: "no-store, max-age=0",
-          },
+          { key: "Cache-Control", value: "no-store, max-age=0" },
         ],
       },
     ]
@@ -98,4 +76,4 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+module.exports = nextConfig
