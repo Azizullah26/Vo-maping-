@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import { Film } from "lucide-react"
 import "@/styles/vue-futuristic-alain.css"
 import { useRouter } from "next/navigation"
-import { createClient } from "@supabase/supabase-js"
+import { getSupabaseClient } from "@/lib/supabase-client"
 import { cn } from "@/lib/utils"
 
 // Add a new interface for documents
@@ -208,8 +208,8 @@ export default function AlAinLeftSlider({
       }
 
       try {
-        // Initialize Supabase client
-        const supabase = createClient(supabaseUrl, supabaseAnonKey)
+        // Use singleton Supabase client to avoid multiple GoTrueClient instances
+        const supabase = getSupabaseClient()
 
         // Test connection with a simple query first
         const { error: connectionError } = await supabase.from("documents").select("count").limit(1).single()
@@ -466,7 +466,8 @@ export default function AlAinLeftSlider({
 
     if (supabaseUrl && supabaseAnonKey) {
       try {
-        const supabase = createClient(supabaseUrl, supabaseAnonKey)
+        // Use singleton Supabase client to avoid multiple GoTrueClient instances
+        const supabase = getSupabaseClient()
 
         // First check if the documents table exists
         supabase
