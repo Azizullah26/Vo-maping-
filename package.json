@@ -12,6 +12,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "@expo/dom-webview": "latest",
+    "@expo/metro-runtime": "latest",
     "@neondatabase/serverless": "latest",
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-avatar": "^1.1.1",
@@ -26,6 +28,7 @@
     "@react-three/fiber": "9.4.2",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
+    "@tailwindcss/postcss": "^4.0.0",
     "@types/mapbox-gl": "^3.4.0",
     "@vercel/blob": "latest",
     "animejs": "4.2.2",
@@ -44,6 +47,9 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-native": "latest",
+    "react-native-reanimated": "latest",
+    "react-native-web": "latest",
+    "react-native-webview": "latest",
     "tailwind-merge": "^2.5.5",
     "tailwind-scrollbar-hide": "latest",
     "tailwindcss-animate": "^1.0.7",
@@ -52,7 +58,6 @@
     "uuid": "latest"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",

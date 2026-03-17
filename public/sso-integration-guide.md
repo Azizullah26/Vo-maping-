@@ -15,18 +15,18 @@ This document describes how to integrate Single Sign-On (SSO) with the ELRACE Ma
 
 ## Authentication Flow
 
-```
+\`\`\`
 1. Hub backend calls POST /api/sso/login-url with api_key
 2. ELRACE returns { login_url, token, expires_in }
 3. Hub redirects the user's browser to login_url
 4. User lands on /sso/callback on the ELRACE platform
 5. Platform validates the token, creates a session, redirects to /welcome
 6. (Optional) Hub backend calls POST /api/sso/verify to confirm session details
-```
+\`\`\`
 
 **Sequence Diagram:**
 
-```
+\`\`\`
 Hub Server          User Browser         ELRACE Platform
     |                    |                      |
     |-- POST /api/sso/login-url (api_key) ------>|
@@ -42,15 +42,15 @@ Hub Server          User Browser         ELRACE Platform
     | (optional server check)                   |
     |-- POST /api/sso/verify (token, api_key) -->|
     |<-- { session_token, user } ---------------|
-```
+\`\`\`
 
 ---
 
 ## Base URL
 
-```
+\`\`\`
 https://elracemap.vercel.app
-```
+\`\`\`
 
 ---
 
@@ -58,11 +58,11 @@ https://elracemap.vercel.app
 
 All API requests must include the `api_key` field in the request body. This key is shared securely by the ELRACE team.
 
-```json
+\`\`\`json
 {
   "api_key": "rcc0085_map_security"
 }
-```
+\`\`\`
 
 Store the API key securely as an environment variable on your server. Never expose it in client-side code.
 
@@ -75,26 +75,26 @@ Store the API key securely as an environment variable on your server. Never expo
 ### 1. Generate Login URL
 
 **Endpoint:**
-```
+\`\`\`
 POST https://elracemap.vercel.app/api/sso/login-url
-```
+\`\`\`
 
 **Description:**  
 Call this from your hub backend. Returns a one-time `login_url` that you redirect the user's browser to. The token embedded in the URL expires in **5 minutes** and is **single-use only**.
 
 **Request Headers:**
-```
+\`\`\`
 Content-Type: application/json
-```
+\`\`\`
 
 **Request Body:**
-```json
+\`\`\`json
 {
   "api_key": "rcc0085_map_security",
   "source": "hub",
   "redirect_url": "https://elracemap.vercel.app/sso/callback"
 }
-```
+\`\`\`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -103,7 +103,7 @@ Content-Type: application/json
 | `redirect_url` | string | No | Override the callback URL (default: platform callback) |
 
 **Success Response — 200 OK:**
-```json
+\`\`\`json
 {
   "success": true,
   "login_url": "https://elracemap.vercel.app/sso/callback?token=abc123xyz&source=hub",
@@ -112,7 +112,7 @@ Content-Type: application/json
   "expires_at": "2026-03-11T12:05:00.000Z",
   "instructions": "Redirect the user's browser to login_url within 5 minutes."
 }
-```
+\`\`\`
 
 | Field | Description |
 |---|---|
@@ -123,16 +123,16 @@ Content-Type: application/json
 
 **Error Responses:**
 
-```json
+\`\`\`json
 // 401 — Invalid API key
 { "success": false, "error": "Invalid or missing API key", "code": "INVALID_API_KEY" }
 
 // 500 — Server error
 { "success": false, "error": "Internal server error", "code": "SERVER_ERROR" }
-```
+\`\`\`
 
 **Example — Node.js / JavaScript:**
-```js
+\`\`\`js
 const response = await fetch("https://elracemap.vercel.app/api/sso/login-url", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
@@ -150,10 +150,10 @@ if (data.success) {
 } else {
   console.error("SSO Error:", data.error)
 }
-```
+\`\`\`
 
 **Example — Python:**
-```python
+\`\`\`python
 import requests
 import os
 
@@ -172,10 +172,10 @@ if data["success"]:
     print(data["login_url"])
 else:
     print("Error:", data["error"])
-```
+\`\`\`
 
 **Example — PHP:**
-```php
+\`\`\`php
 $response = file_get_contents("https://elracemap.vercel.app/api/sso/login-url", false,
     stream_context_create([
         "http" => [
@@ -195,32 +195,32 @@ if ($data["success"]) {
     header("Location: " . $data["login_url"]);
     exit;
 }
-```
+\`\`\`
 
 ---
 
 ### 2. Verify Token (Optional)
 
 **Endpoint:**
-```
+\`\`\`
 POST https://elracemap.vercel.app/api/sso/verify
-```
+\`\`\`
 
 **Description:**  
 Optional server-to-server call from your hub backend to verify a token was valid and retrieve session details. Useful for audit logging or confirming authentication before granting access to hub resources. Note: consuming a token via `/verify` also prevents it from being used at `/sso/callback`.
 
 **Request Headers:**
-```
+\`\`\`
 Content-Type: application/json
-```
+\`\`\`
 
 **Request Body:**
-```json
+\`\`\`json
 {
   "api_key": "rcc0085_map_security",
   "token": "abc123xyz"
 }
-```
+\`\`\`
 
 | Field | Type | Required | Description |
 |---|---|---|---|
@@ -228,7 +228,7 @@ Content-Type: application/json
 | `token` | string | Yes | The one-time token from the `login_url` |
 
 **Success Response — 200 OK:**
-```json
+\`\`\`json
 {
   "success": true,
   "session_token": "ZWxyYWNlOjE3NDE2OTkwMDA6YWJjMTIz",
@@ -241,11 +241,11 @@ Content-Type: application/json
   },
   "message": "Authentication successful"
 }
-```
+\`\`\`
 
 **Error Responses:**
 
-```json
+\`\`\`json
 // 401 — Invalid API key
 { "success": false, "error": "Invalid or missing API key", "code": "INVALID_API_KEY" }
 
@@ -263,7 +263,7 @@ Content-Type: application/json
 
 // 500 — Server error
 { "success": false, "error": "Internal server error", "code": "SERVER_ERROR" }
-```
+\`\`\`
 
 ---
 
@@ -271,9 +271,9 @@ Content-Type: application/json
 
 When the user's browser is redirected to the `login_url`, they land on:
 
-```
+\`\`\`
 GET https://elracemap.vercel.app/sso/callback?token=abc123xyz&source=hub
-```
+\`\`\`
 
 The platform will:
 1. Validate the token automatically
@@ -325,9 +325,9 @@ No action is required from the hub team for this page — it is handled entirely
 
 An interactive version of this documentation is available at:
 
-```
+\`\`\`
 https://elracemap.vercel.app/sso/docs
-```
+\`\`\`
 
 ---
 
