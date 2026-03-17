@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import { Film } from "lucide-react"
 import "@/styles/vue-futuristic-alain.css"
 import { useRouter } from "next/navigation"
-import { getSupabaseClient } from "@/lib/supabase-client"
+import { getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase-client"
 import { cn } from "@/lib/utils"
 
 // Add a new interface for documents
@@ -197,19 +197,19 @@ export default function AlAinLeftSlider({
     try {
       setLoadingDocuments(true)
 
-      // Check if Supabase credentials are available
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-      if (!supabaseUrl || !supabaseAnonKey) {
-        console.warn("Supabase credentials not available, using demo data")
+      // Guard: only attempt network calls when Supabase is properly configured
+      if (!isSupabaseConfigured()) {
+        console.warn("Supabase not configured, using demo data")
         setDemoDocuments()
         return
       }
 
       try {
-        // Use singleton Supabase client to avoid multiple GoTrueClient instances
         const supabase = getSupabaseClient()
+        if (!supabase) {
+          setDemoDocuments()
+          return
+        }
 
         // Test connection with a simple query first
         const { error: connectionError } = await supabase.from("documents").select("count").limit(1).single()
@@ -458,16 +458,13 @@ export default function AlAinLeftSlider({
       fetchDocuments(filters)
     }, 30000) // Poll every 30 seconds as a fallback
 
-    // Try to set up Supabase realtime subscription if credentials are available
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
+    // Try to set up Supabase realtime subscription if Supabase is properly configured
     let subscription: { unsubscribe: () => void } | undefined
 
-    if (supabaseUrl && supabaseAnonKey) {
+    if (isSupabaseConfigured()) {
       try {
-        // Use singleton Supabase client to avoid multiple GoTrueClient instances
         const supabase = getSupabaseClient()
+        if (!supabase) return
 
         // First check if the documents table exists
         supabase

@@ -1,10 +1,18 @@
 import { createClient } from "@supabase/supabase-js"
 
-// Singleton pattern for Supabase client
-let supabaseInstance: ReturnType<typeof createClient> | null = null
+// Use globalThis to persist the singleton across HMR reloads in development
+const g = globalThis as typeof globalThis & {
+  __supabaseInstance?: ReturnType<typeof createClient> | null
+}
+
+export function isSupabaseConfigured(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY
+  return !!(url && key && !url.includes("placeholder"))
+}
 
 export function getSupabaseClient() {
-  if (supabaseInstance) return supabaseInstance
+  if (g.__supabaseInstance) return g.__supabaseInstance
 
   // Try Next.js style environment variables first
   let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -15,27 +23,17 @@ export function getSupabaseClient() {
   if (!supabaseAnonKey) supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn("Missing Supabase environment variables, using placeholder client")
-    // Return a placeholder client during build time to prevent build failures
-    supabaseInstance = createClient(
-      supabaseUrl || "https://placeholder.supabase.co",
-      supabaseAnonKey || "placeholder-anon-key",
-      {
-        auth: {
-          persistSession: false,
-        },
-      },
-    )
-    return supabaseInstance
+    console.warn("Missing Supabase environment variables, returning null — demo data will be used")
+    return null
   }
 
-  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+  g.__supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: false,
     },
   })
 
-  return supabaseInstance
+  return g.__supabaseInstance
 }
 
 // Create a server-side client using service role - ONLY USE IN SERVER COMPONENTS OR API ROUTES
