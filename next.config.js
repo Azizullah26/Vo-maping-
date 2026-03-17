@@ -31,33 +31,18 @@ const nextConfig = {
     NEXT_PUBLIC_APP_VERSION: "1.0.0",
   },
 
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-        crypto: false,
-        path: false,
-        child_process: false,
-      }
-    }
-
-    // Minimize disk usage during build
-    config.optimization = {
-      ...config.optimization,
-      minimize: true,
-    }
-
-    return config
-  },
-
   trailingSlash: false,
   productionBrowserSourceMaps: false,
 
   turbopack: {
-    root: __dirname,
+    resolveAlias: {
+      fs: { browser: false },
+      net: { browser: false },
+      tls: { browser: false },
+      crypto: { browser: false },
+      path: { browser: false },
+      child_process: { browser: false },
+    },
   },
 
   experimental: {
