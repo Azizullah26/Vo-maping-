@@ -1,5 +1,3 @@
-const path = require("path");
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -35,18 +33,6 @@ const nextConfig = {
 
   trailingSlash: false,
   productionBrowserSourceMaps: false,
-
-  turbopack: {
-    root: path.resolve(__dirname),
-    resolveAlias: {
-      fs: { browser: false },
-      net: { browser: false },
-      tls: { browser: false },
-      crypto: { browser: false },
-      path: { browser: false },
-      child_process: { browser: false },
-    },
-  },
 
   experimental: {
     serverActions: {
