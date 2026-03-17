@@ -1,9 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  turbopack: {
-    root: "/vercel/share/v0-next-shadcn",
-  },
-
   reactStrictMode: true,
   poweredByHeader: false,
 
