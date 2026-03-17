@@ -1,31 +1,12 @@
-import { createClient } from "@supabase/supabase-js"
-import { getEnvVariable } from "./env-utils"
+import { getSupabaseClient as getSharedSupabaseClient } from "./supabase-client"
 
-// Singleton pattern for Supabase client - lazy initialization
-let supabaseInstance: ReturnType<typeof createClient> | null = null
-
+// Delegate to the shared singleton to avoid multiple GoTrueClient instances
 export function getSupabaseClient() {
-  if (supabaseInstance) return supabaseInstance
-
-  const supabaseUrl = getEnvVariable("SUPABASE_URL")
-  const supabaseAnonKey = getEnvVariable("SUPABASE_ANON_KEY")
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn("Missing Supabase environment variables, returning mock client")
+  const client = getSharedSupabaseClient()
+  if (!client) {
     return createMockClient()
   }
-
-  try {
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: false,
-      },
-    })
-    return supabaseInstance
-  } catch (error) {
-    console.error("Error creating Supabase client:", error)
-    return createMockClient()
-  }
+  return client
 }
 
 // Create a mock client for when Supabase is not configured

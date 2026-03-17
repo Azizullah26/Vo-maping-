@@ -7,17 +7,11 @@ import { useState, useEffect } from "react"
 import { Film } from "lucide-react"
 import "@/styles/vue-futuristic-alain.css"
 import { useRouter } from "next/navigation"
-import { createClient } from "@supabase/supabase-js"
+import { getSupabaseClient } from "@/lib/supabase-client"
 
-// Add a new interface for documents
-interface ProjectDocument {
-  id: string
-  name: string
-  type: string
-  size: string
-  date: string
-  url: string
-  project: string
+// Use the shared singleton to avoid multiple GoTrueClient instances
+function getSupabase() {
+  return getSupabaseClient()
 }
 
 // Add filter options interface
@@ -204,8 +198,8 @@ export default function DashboardPage() {
       }
 
       try {
-        // Initialize Supabase client
-        const supabase = createClient(supabaseUrl, supabaseAnonKey)
+        // Use the shared singleton to avoid multiple GoTrueClient instances
+        const supabase = getSupabaseClient()
 
         // Test connection with a simple query first
         const { error: connectionError } = await supabase.from("documents").select("count").limit(1).single()
@@ -462,7 +456,7 @@ export default function DashboardPage() {
 
     if (supabaseUrl && supabaseAnonKey) {
       try {
-        const supabase = createClient(supabaseUrl, supabaseAnonKey)
+        const supabase = getSupabaseClient()
 
         // First check if the documents table exists
         supabase

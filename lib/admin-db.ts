@@ -1,16 +1,8 @@
-import { createClient } from "@supabase/supabase-js"
+import { getSupabaseClient } from "./supabase-client"
 
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-
-let supabaseInstance: ReturnType<typeof createClient> | null = null
-
+// Use the shared singleton to avoid multiple GoTrueClient instances
 function getSupabase() {
-  if (!supabaseInstance) {
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey)
-  }
-  return supabaseInstance
+  return getSupabaseClient()
 }
 
 // Project type definition

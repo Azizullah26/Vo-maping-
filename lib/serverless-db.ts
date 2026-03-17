@@ -1,31 +1,10 @@
-import { createClient } from "@supabase/supabase-js"
-
-// Create a singleton Supabase client
-let supabaseClient: ReturnType<typeof createClient> | null = null
+import { getSupabaseClient as getSharedSupabaseClient } from "./supabase-client"
 
 /**
- * Get a Supabase client for database operations
+ * Get the shared singleton Supabase client for database operations
  */
 export function getSupabaseClient() {
-  if (!supabaseClient) {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (!supabaseUrl || !supabaseKey) {
-      console.error("No Supabase credentials found in environment variables")
-      return null
-    }
-
-    try {
-      supabaseClient = createClient(supabaseUrl, supabaseKey)
-      console.log("Supabase client created successfully")
-    } catch (error) {
-      console.error("Error creating Supabase client:", error)
-      return null
-    }
-  }
-
-  return supabaseClient
+  return getSharedSupabaseClient()
 }
 
 /**
