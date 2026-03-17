@@ -212,10 +212,19 @@ export default function AlAinLeftSlider({
         }
 
         // Test connection with a simple query first
-        const { error: connectionError } = await supabase.from("documents").select("count").limit(1).single()
+        let connectionError: unknown = null
+        try {
+          const result = await supabase.from("documents").select("count").limit(1).single()
+          connectionError = result.error
+        } catch (networkErr) {
+          // TypeError: Failed to fetch — network not reachable in this environment
+          console.warn("Supabase network unreachable, using demo data")
+          setDemoDocuments()
+          return
+        }
 
         if (connectionError) {
-          console.warn("Error connecting to Supabase:", connectionError.message)
+          console.warn("Error connecting to Supabase:", (connectionError as { message: string }).message)
           setDemoDocuments()
           return
         }
@@ -453,10 +462,15 @@ export default function AlAinLeftSlider({
     // Fetch documents initially
     fetchDocuments(filters)
 
-    // Set up polling as a fallback mechanism
-    const pollingInterval = setInterval(() => {
-      fetchDocuments(filters)
-    }, 30000) // Poll every 30 seconds as a fallback
+    // Set up polling as a fallback — only if Supabase is reachable
+    // We use a ref-like variable; if the first fetch fell back to demo data,
+    // we skip further polling to avoid console spam.
+    let pollingInterval: ReturnType<typeof setInterval> | null = null
+    if (isSupabaseConfigured()) {
+      pollingInterval = setInterval(() => {
+        fetchDocuments(filters)
+      }, 30000) // Poll every 30 seconds as a fallback
+    }
 
     // Try to set up Supabase realtime subscription if Supabase is properly configured
     let subscription: { unsubscribe: () => void } | undefined
@@ -472,8 +486,8 @@ export default function AlAinLeftSlider({
           .select("count", { count: "exact", head: true })
           .then(({ error }) => {
             if (error) {
-              console.warn("Documents table may not exist or is not accessible:", error.message)
-              return // Don't attempt to subscribe if table doesn't exist
+              // Table doesn't exist or isn't accessible — skip realtime subscription silently
+              return
             }
 
             // Table exists, set up subscription
@@ -504,8 +518,8 @@ export default function AlAinLeftSlider({
               console.warn("Error setting up subscription:", subError)
             }
           })
-          .catch((err) => {
-            console.warn("Error checking documents table:", err)
+          .catch(() => {
+            // Network unreachable — silently skip realtime subscription
           })
       } catch (error) {
         console.warn("Error initializing Supabase client:", error)
@@ -546,7 +560,7 @@ export default function AlAinLeftSlider({
 
     return () => {
       // Clean up all subscriptions and listeners
-      clearInterval(pollingInterval)
+      if (pollingInterval) clearInterval(pollingInterval)
 
       if (subscription) {
         try {
