@@ -148,8 +148,8 @@
 
 /* Loading spinner */
 .spinner {
-  border: 3px solid var(--color-muted);
-  border-top: 3px solid var(--color-primary);
+  border: 3px solid hsl(var(--muted));
+  border-top: 3px solid hsl(var(--primary));
   border-radius: 50%;
   width: 40px;
   height: 40px;

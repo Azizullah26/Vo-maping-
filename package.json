@@ -28,7 +28,6 @@
     "@react-three/fiber": "9.4.2",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
-    "@tailwindcss/postcss": "^3.4.1",
     "@types/mapbox-gl": "^3.4.0",
     "@vercel/blob": "latest",
     "animejs": "4.2.2",
