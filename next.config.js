@@ -41,6 +41,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      {
+        protocol: "https",
+        hostname: "www.timeoutabudhabi.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.bayut.com",
+      },
     ],
     unoptimized: false,
   },
