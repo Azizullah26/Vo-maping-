@@ -5,9 +5,11 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
-  // Turbopack configuration for Next.js 15
+  // Explicitly set the Turbopack root to the actual project root directory
+  // This resolves the "workspace root inference" error in v0/Vercel environments
   turbopack: {
-    root: path.resolve(__dirname),
+    // Use the directory where this config file is located (project root)
+    root: __dirname,
   },
 
   // Next.js 15: Use 'lint' instead of top-level 'eslint' and 'typescript'
