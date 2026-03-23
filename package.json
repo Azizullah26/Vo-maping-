@@ -7,7 +7,7 @@
     "prebuild": "bash scripts/prebuild.sh || true",
     "build": "next build",
     "check-deps": "npm outdated",
-    "dev": "next dev",
+    "dev": "next dev --no-turbo",
     "lint": "next lint",
     "start": "next start"
   },
