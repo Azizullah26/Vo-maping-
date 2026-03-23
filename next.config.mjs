@@ -1,18 +1,12 @@
-import path from "path"
-import { fileURLToPath } from "url"
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
+  // process.cwd() resolves to wherever `npm run build` is invoked,
+  // which is the actual project root containing node_modules/next
   turbopack: {
-    // __dirname = /vercel/share/v0-next-shadcn/app in Vercel's environment
-    // so we go one level up to reach the actual workspace root
-    root: path.join(__dirname, ".."),
+    root: process.cwd(),
   },
 
   eslint: {
