@@ -414,25 +414,21 @@ export default function SixteenProjectsPage() {
     try {
       window.mapboxgl.accessToken = token
 
-        mapRef.current = new window.mapboxgl.Map({
-          container: mapContainerRef.current,
-          style: "mapbox://styles/azizullah2611/cm7ehm5if00c001r7fr9pgvvk",
-          center: INITIAL_CENTER,
-          zoom: ZOOM_LEVEL,
-          pitch: 0,
-          bearing: 0,
-          minZoom: MIN_ZOOM,
-          maxZoom: MAX_ZOOM,
-          renderWorldCopies: false,
-          attributionControl: false,
-          trackResize: true,
-          interactive: true,
-          doubleClickZoom: true,
-        })
-      } catch (mapError) {
-        console.error("Failed to create map:", mapError)
-        throw mapError
-      }
+      mapRef.current = new window.mapboxgl.Map({
+        container: mapContainerRef.current,
+        style: "mapbox://styles/azizullah2611/cm7ehm5if00c001r7fr9pgvvk",
+        center: INITIAL_CENTER,
+        zoom: ZOOM_LEVEL,
+        pitch: 0,
+        bearing: 0,
+        minZoom: MIN_ZOOM,
+        maxZoom: MAX_ZOOM,
+        renderWorldCopies: false,
+        attributionControl: false,
+        trackResize: true,
+        interactive: true,
+        doubleClickZoom: true,
+      })
 
       mapRef.current.scrollZoom.enable()
       mapRef.current.dragPan.enable()
