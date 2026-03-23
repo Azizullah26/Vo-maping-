@@ -1,3 +1,6 @@
+// Force lightningcss to skip native binary
+process.env.LIGHTNINGCSS_SKIP_NATIVE = "1";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
