@@ -609,7 +609,7 @@ const HOVERABLE_MARKERS = [
   "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
   "فلل فلج هزاع",
-  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبات - قسم الاستقطاب)",
+  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبا�� - قسم الاستقطاب)",
   "قسم التفتيش الأمني K9",
   "الضبط المروري والمراسم",
   "ساحة حجز المركبات فلج هزاع",
@@ -806,11 +806,11 @@ export default function AlAinMap({
       "إدارة التأهيل الشرطي - الفوعة":
         "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
       "مركز شرطة هيلي": "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
-      "1 Project": "https://images.unsplash.com/photo-1566041510639-8d95a2490bfb?w=800&auto=format&fit=crop",
+      "1 Project": "https://placeholder.com/800x600?text=Al+Ain+Project",
       "مركز شرطة الوقن":
         "https://www.visitabudhabi.ae/content/dam/visitabudhabi/images/plan-your-trip/regions-of-abu-dhabi/al-dhafra-region/liwa-oasis/liwa-oasis-hero-1920x1080.jpg",
     }
-    return imageMap[name] || "https://images.unsplash.com/photo-1566041510639-8d95a2490bfb?w=800&auto=format&fit=crop"
+    return imageMap[name] || "https://placeholder.com/800x600?text=Al+Ain+Project"
   }
 
   function getEnglishName(name: string): string {

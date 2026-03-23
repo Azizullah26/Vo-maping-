@@ -124,7 +124,7 @@ export default function ProjectsDetailsPage() {
     },
     {
       id: 10,
-      imageSrc: "https://images.unsplash.com/photo-1566041510639-8d95a2490bfb?w=800&auto=format&fit=crop",
+      imageSrc: "https://placeholder.com/800x600?text=Al+Ain+Project",
       projectNameAr: "مركز شرطة زاخر",
       projectNameEn: "Active",
       coordinates: [55.70650103250864, 24.13198773085604],
@@ -197,7 +197,7 @@ export default function ProjectsDetailsPage() {
     {
       id: 20,
       imageSrc: "https://abu-dhabi.realestate/wp-content/uploads/2024/05/al-ain-properties-1.jpg",
-      projectNameAr: "سكن أفراد المرور",
+      projectNameAr: "سكن أفرا�� المرور",
       projectNameEn: "Active",
       coordinates: [55.724324255872546, 24.193154596995498],
     },

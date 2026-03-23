@@ -82,7 +82,7 @@ export function MarkerHoverWidget({
       default: {
         name: markerName,
         englishName: getEnglishName(markerName),
-        image: "https://images.unsplash.com/photo-1566041510639-8d95a2490bfb?w=800&auto=format&fit=crop",
+        image: "https://placeholder.com/400x300?text=Al+Ain+Project",
         plots: "2 Plots",
         type: "Mixed Use",
         status: "Active",
