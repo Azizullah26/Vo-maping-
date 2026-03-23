@@ -6,11 +6,5 @@
   "env": {
     "NODE_OPTIONS": "--max-old-space-size=3072",
     "SKIP_ENV_VALIDATION": "1"
-  },
-  "functions": {
-    "app/**/*.tsx": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
   }
 }
