@@ -72,7 +72,7 @@ export default function ProjectsDetailsPage() {
     },
     {
       id: 3,
-      imageSrc: "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
+      imageSrc: "https://placeholder.com/800x600?text=Hili+Police",
       projectNameAr: "مركز شرطة هيلي",
       projectNameEn: "Hili Police Station",
       coordinates: [55.76486147272425, 24.277296159962688],

@@ -57,7 +57,7 @@ export function MarkerHoverWidget({
       "مركز شرطة هيلي": {
         name: "مركز شرطة هيلي",
         englishName: "Hili Police Station",
-        image: "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
+        image: "https://placeholder.com/400x300?text=Hili+Police",
         plots: "2 Plots",
         type: "Government",
         status: "Active",
