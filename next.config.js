@@ -44,6 +44,10 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "10mb",
     },
+    // Turbopack configuration to fix workspace root inference issues in Vercel/CI environments
+    turbo: {
+      root: path.resolve(__dirname),
+    },
   },
 
   async headers() {
