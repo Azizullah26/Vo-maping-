@@ -7,6 +7,10 @@ export async function GET() {
   try {
     const mapboxToken = process.env.MAPBOX_ACCESS_TOKEN
 
+    console.log("[v0] API: Checking MAPBOX_ACCESS_TOKEN environment variable")
+    console.log("[v0] API: Token exists:", !!mapboxToken)
+    console.log("[v0] API: Token length:", mapboxToken?.length || 0)
+
     if (!mapboxToken) {
       console.warn("[v0] MAPBOX_ACCESS_TOKEN environment variable is not configured")
       return NextResponse.json(
@@ -19,6 +23,7 @@ export async function GET() {
       )
     }
 
+    console.log("[v0] API: Token found, returning to client")
     return NextResponse.json(
       {
         token: mapboxToken,

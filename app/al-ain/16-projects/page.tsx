@@ -376,8 +376,13 @@ export default function SixteenProjectsPage() {
 
       const script = document.createElement("script")
       script.src = "https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"
-      script.onload = () => setMapboxLoaded(true)
-      script.onerror = () => console.error("Failed to load Mapbox GL JS")
+      script.onload = () => {
+        console.log("[v0] Mapbox GL JS loaded successfully")
+        setMapboxLoaded(true)
+      }
+      script.onerror = () => {
+        console.error("[v0] Failed to load Mapbox GL JS")
+      }
       document.head.appendChild(script)
 
       return () => {
@@ -401,12 +406,15 @@ export default function SixteenProjectsPage() {
   }, [])
 
   useEffect(() => {
+    console.log("[v0] Map init check:", { mapContainerRef: !!mapContainerRef.current, mapRef: !!mapRef.current, loading, error, token: !!token, mapboxLoaded, mapboxglAvailable: !!window.mapboxgl })
+    
     if (!mapContainerRef.current || mapRef.current || loading || error || !token || !mapboxLoaded || !window.mapboxgl) {
-      if (error) console.error("Mapbox token error:", error)
+      if (error) console.error("[v0] Mapbox token error:", error)
       return
     }
 
     try {
+      console.log("[v0] Setting Mapbox token and creating map")
       window.mapboxgl.accessToken = token
 
       mapRef.current = new window.mapboxgl.Map({
