@@ -1,36 +1,30 @@
-const path = require("path")
+import path from "path"
+import { fileURLToPath } from "url"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
-  // Critical fix for Turbopack workspace root inference in v0/Vercel
-  // This must point to the directory containing next.config.js (project root)
   turbopack: {
-    root: path.resolve(path.join(__dirname)),
+    root: __dirname,
   },
 
-  // Next.js 15: Use 'lint' instead of top-level 'eslint' and 'typescript'
-  lint: {
-    eslint: {
-      ignoreDuringBuilds: true,
-    },
-    typescript: {
-      ignoreBuildErrors: true,
-    },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
+  typescript: {
+    ignoreBuildErrors: true,
   },
 
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "**",
-      },
-      {
-        protocol: "http",
-        hostname: "**",
-      },
+      { protocol: "https", hostname: "**" },
+      { protocol: "http", hostname: "**" },
     ],
     unoptimized: true,
   },
@@ -64,9 +58,7 @@ const nextConfig = {
       },
       {
         source: "/api/:path*",
-        headers: [
-          { key: "Cache-Control", value: "no-store, max-age=0" },
-        ],
+        headers: [{ key: "Cache-Control", value: "no-store, max-age=0" }],
       },
     ]
   },
@@ -82,4 +74,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+export default nextConfig
