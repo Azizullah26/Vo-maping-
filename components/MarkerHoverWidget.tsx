@@ -65,7 +65,7 @@ export function MarkerHoverWidget({
       "ميدان الشرطة بدع بنت سعود": {
         name: "ميدان الشرطة بدع بنت سعود",
         englishName: "Police Square in Bida Bint Saud",
-        image: "https://media-cdn.tripadvisor.com/media/photo-s/06/53/d8/8e/city-seasons-hotel-al.jpg",
+        image: "https://placeholder.com/400x300?text=Police+Square",
         plots: "1 Plot",
         type: "Government",
         status: "Active",

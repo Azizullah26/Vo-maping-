@@ -79,7 +79,7 @@ export default function ProjectsDetailsPage() {
     },
     {
       id: 4,
-      imageSrc: "https://media-cdn.tripadvisor.com/media/photo-s/06/53/d8/8e/city-seasons-hotel-al.jpg",
+      imageSrc: "https://placeholder.com/800x600?text=Police+Square",
       projectNameAr: "ميدان الشرطة بدع بنت سعود",
       projectNameEn: "Under Construction",
       coordinates: [55.73906058820131, 24.307406827212986],
