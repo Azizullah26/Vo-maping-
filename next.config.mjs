@@ -10,7 +10,9 @@ const nextConfig = {
   poweredByHeader: false,
 
   turbopack: {
-    root: __dirname,
+    // __dirname = /vercel/share/v0-next-shadcn/app in Vercel's environment
+    // so we go one level up to reach the actual workspace root
+    root: path.join(__dirname, ".."),
   },
 
   eslint: {
