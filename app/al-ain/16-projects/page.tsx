@@ -406,21 +406,17 @@ export default function SixteenProjectsPage() {
   }, [])
 
   useEffect(() => {
-    console.log("[v0] Map init check:", { mapContainerRef: !!mapContainerRef.current, mapRef: !!mapRef.current, loading, error, token: !!token, mapboxLoaded, mapboxglAvailable: !!window.mapboxgl })
-    
     if (!mapContainerRef.current || mapRef.current || loading || error || !token || !mapboxLoaded || !window.mapboxgl) {
-      if (error) console.error("[v0] Mapbox token error:", error)
+      if (error) console.error("Mapbox token error:", error)
       return
     }
 
     try {
-      console.log("[v0] Setting Mapbox token and creating map")
       window.mapboxgl.accessToken = token
 
-      try {
         mapRef.current = new window.mapboxgl.Map({
           container: mapContainerRef.current,
-          style: "mapbox://styles/mapbox/streets-v12",
+          style: "mapbox://styles/azizullah2611/cm7ehm5if00c001r7fr9pgvvk",
           center: INITIAL_CENTER,
           zoom: ZOOM_LEVEL,
           pitch: 0,
@@ -433,9 +429,8 @@ export default function SixteenProjectsPage() {
           interactive: true,
           doubleClickZoom: true,
         })
-        console.log("[v0] Map created successfully")
       } catch (mapError) {
-        console.error("[v0] Failed to create map:", mapError)
+        console.error("Failed to create map:", mapError)
         throw mapError
       }
 
