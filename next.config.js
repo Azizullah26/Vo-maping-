@@ -5,16 +5,19 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
+  // Turbopack configuration for Next.js 15
   turbopack: {
-    root: path.join(__dirname),
+    root: path.resolve(__dirname),
   },
 
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-
-  typescript: {
-    ignoreBuildErrors: true,
+  // Next.js 15: Use 'lint' instead of top-level 'eslint' and 'typescript'
+  lint: {
+    eslint: {
+      ignoreDuringBuilds: true,
+    },
+    typescript: {
+      ignoreBuildErrors: true,
+    },
   },
 
   images: {
@@ -43,10 +46,6 @@ const nextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: "10mb",
-    },
-    // Turbopack configuration to fix workspace root inference issues in Vercel/CI environments
-    turbo: {
-      root: path.resolve(__dirname),
     },
   },
 
