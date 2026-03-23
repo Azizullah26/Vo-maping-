@@ -1,16 +1,15 @@
-let tailwindPlugin;
-
-try {
-  // Try Tailwind v4 first
-  tailwindPlugin = require("@tailwindcss/postcss");
-} catch (e) {
-  // Fall back to Tailwind v3
-  tailwindPlugin = require("tailwindcss");
+// Detect whether @tailwindcss/postcss (v4) is installed; fall back to tailwindcss (v3).
+function tailwindPluginName() {
+  try {
+    require.resolve("@tailwindcss/postcss");
+    return "@tailwindcss/postcss";
+  } catch (_) {
+    return "tailwindcss";
+  }
 }
 
-module.exports = {
-  plugins: {
-    [tailwindPlugin]: {},
-    autoprefixer: {},
-  },
-};
+const plugins = {};
+plugins[tailwindPluginName()] = {};
+plugins["autoprefixer"] = {};
+
+module.exports = { plugins };
