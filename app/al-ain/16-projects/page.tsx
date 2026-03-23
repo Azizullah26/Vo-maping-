@@ -417,21 +417,27 @@ export default function SixteenProjectsPage() {
       console.log("[v0] Setting Mapbox token and creating map")
       window.mapboxgl.accessToken = token
 
-      mapRef.current = new window.mapboxgl.Map({
-        container: mapContainerRef.current,
-        style: "mapbox://styles/azizullah2611/cm7009fqu01j101pbe23262j4",
-        center: INITIAL_CENTER,
-        zoom: ZOOM_LEVEL,
-        pitch: 0,
-        bearing: 0,
-        minZoom: MIN_ZOOM,
-        maxZoom: MAX_ZOOM,
-        renderWorldCopies: false,
-        attributionControl: false,
-        trackResize: true,
-        interactive: true,
-        doubleClickZoom: true,
-      })
+      try {
+        mapRef.current = new window.mapboxgl.Map({
+          container: mapContainerRef.current,
+          style: "mapbox://styles/mapbox/streets-v12",
+          center: INITIAL_CENTER,
+          zoom: ZOOM_LEVEL,
+          pitch: 0,
+          bearing: 0,
+          minZoom: MIN_ZOOM,
+          maxZoom: MAX_ZOOM,
+          renderWorldCopies: false,
+          attributionControl: false,
+          trackResize: true,
+          interactive: true,
+          doubleClickZoom: true,
+        })
+        console.log("[v0] Map created successfully")
+      } catch (mapError) {
+        console.error("[v0] Failed to create map:", mapError)
+        throw mapError
+      }
 
       mapRef.current.scrollZoom.enable()
       mapRef.current.dragPan.enable()
