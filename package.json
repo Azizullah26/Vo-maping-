@@ -12,6 +12,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@babel/core": "latest",
     "@expo/dom-webview": "latest",
     "@expo/metro-runtime": "latest",
     "@neondatabase/serverless": "latest",
@@ -24,6 +25,7 @@
     "@radix-ui/react-select": "latest",
     "@radix-ui/react-slot": "latest",
     "@radix-ui/react-tabs": "latest",
+    "@react-native/metro-config": "latest",
     "@react-three/drei": "10.7.7",
     "@react-three/fiber": "9.4.2",
     "@supabase/ssr": "latest",
@@ -45,6 +47,7 @@
     "next": "15.0.7",
     "next-themes": "latest",
     "pg": "8.20.0",
+    "pg-native": "latest",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-native": "latest",
@@ -74,5 +77,8 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=10.0.0"
-  }
+  },
+  "trustedDependencies": [
+    "pg-native"
+  ]
 }

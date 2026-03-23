@@ -5,6 +5,10 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
+  turbopack: {
+    root: path.join(__dirname),
+  },
+
   eslint: {
     ignoreDuringBuilds: true,
   },

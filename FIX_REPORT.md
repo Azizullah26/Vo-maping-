@@ -54,13 +54,13 @@ The build failed due to an ESLint error: `Do not assign to the variable 'module'
 ### Solution:
 Renamed the variable from `module` to `importedModule` to avoid naming collisions with the reserved system variable.
 
-```typescript
+\`\`\`typescript
 // Before
 const module = await import(modulePath);
 
 // After
 const importedModule = await import(modulePath);
-```
+\`\`\`
 
 ---
 
