@@ -37,13 +37,13 @@ const config: Config = {
         "chart-5": "hsl(var(--chart-5))",
       },
       borderRadius: {
-        lg: "var(--radius-lg)",
-        md: "var(--radius-md)",
-        sm: "var(--radius-sm)",
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 };
 
 export default config;
