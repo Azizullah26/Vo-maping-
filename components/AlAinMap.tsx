@@ -804,7 +804,7 @@ export default function AlAinMap({
     const imageMap: { [key: string]: string } = {
       "قسم موسيقى شرطة أبوظبي": "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
       "إدارة التأهيل الشرطي - الفوعة":
-        "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
+        "https://placeholder.com/800x600?text=Police+Rehabilitation",
       "مركز شرطة هيلي": "https://placeholder.com/800x600?text=Hili+Police",
       "1 Project": "https://placeholder.com/800x600?text=Al+Ain+Project",
       "مركز شرطة الوقن":

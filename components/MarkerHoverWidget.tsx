@@ -49,7 +49,7 @@ export function MarkerHoverWidget({
       "إدارة التأهيل الشرطي - الفوعة": {
         name: "إدارة التأهيل الشرطي - الفوعة",
         englishName: "Police Rehabilitation Department - Al Foua",
-        image: "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
+        image: "https://placeholder.com/400x300?text=Police+Rehabilitation",
         plots: "5 Plots",
         type: "Government",
         status: "Active",

@@ -65,7 +65,7 @@ export default function ProjectsDetailsPage() {
     },
     {
       id: 2,
-      imageSrc: "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
+      imageSrc: "https://placeholder.com/800x600?text=Police+Rehabilitation",
       projectNameAr: "إدارة التأهيل الشرطي - الفوعة",
       projectNameEn: "Under Construction",
       coordinates: [55.804094143988124, 24.33356950894388],
