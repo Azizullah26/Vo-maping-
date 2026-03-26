@@ -22,11 +22,11 @@ Once your app is deployed:
 
 Make sure these are set in your Vercel project settings:
 
-```
+\`\`\`
 NEXT_PUBLIC_SUPABASE_URL=https://cfeggyysgopkzygaitzw.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=sb_publishable_tfbqgeRZ-TsFNP67InEi9Q_IZu6oVa2
 SUPABASE_SERVICE_ROLE_KEY=(ask your Supabase admin)
-```
+\`\`\`
 
 ## Tables Created
 

@@ -16,7 +16,7 @@ Your app is connected to Supabase, but the database tables need to be created. F
 3. Go to **SQL Editor**
 4. Create the tables by running this SQL:
 
-```sql
+\`\`\`sql
 -- Create projects table
 CREATE TABLE IF NOT EXISTS projects (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS documents (
 
 -- Create storage bucket for documents
 -- (This must be done via Supabase UI or API, not SQL)
-```
+\`\`\`
 
 ## Environment Variables Check
 
