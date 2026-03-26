@@ -1,8 +1,13 @@
 {
   "version": 2,
   "framework": "nextjs",
+  "nodejs": "20.x",
   "env": {
     "NODE_OPTIONS": "--max-old-space-size=3072",
-    "SKIP_ENV_VALIDATION": "1"
-  }
+    "SKIP_ENV_VALIDATION": "1",
+    "NODE_ENV": "production"
+  },
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install --no-optional --no-audit --no-fund"
 }

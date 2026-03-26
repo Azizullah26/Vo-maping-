@@ -28,10 +28,17 @@ const nextConfig = {
   trailingSlash: false,
   productionBrowserSourceMaps: false,
 
+  swcMinify: true,
+
   experimental: {
     serverActions: {
       bodySizeLimit: "10mb",
     },
+    optimizePackageImports: [
+      "lucide-react",
+      "@react-three/fiber",
+      "@react-three/drei",
+    ],
   },
 
   async headers() {
