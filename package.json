@@ -43,6 +43,7 @@
     "@react-three/fiber": "8.17.0",
     "@supabase/ssr": "0.4.0",
     "@supabase/supabase-js": "2.39.7",
+    "@tailwindcss/postcss": "^4.0.0",
     "@types/mapbox-gl": "^3.4.0",
     "@types/pg": "8.11.0",
     "@vercel/blob": "0.20.0",
@@ -76,7 +77,6 @@
     "sonner": "1.2.0",
     "tailwind-merge": "^2.2.0",
     "tailwind-scrollbar-hide": "1.1.7",
-    "tailwindcss": "^3.3.6",
     "tailwindcss-animate": "^1.0.7",
     "three": "0.158.0",
     "uuid": "9.0.1",
@@ -90,6 +90,7 @@
     "eslint": "^8.52.0",
     "eslint-config-next": "^15.0.0",
     "postcss": "^8.5",
+    "tailwindcss": "4.2.2",
     "typescript": "^5.2.2"
   },
   "engines": {

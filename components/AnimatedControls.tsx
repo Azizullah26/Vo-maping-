@@ -14,7 +14,7 @@ export function AnimatedControls({ onResetView, onToggleTerrain }: AnimatedContr
     // Dynamic import of anime.js to avoid MIME type issues
     import("animejs")
       .then((animeModule) => {
-        const anime = animeModule.default
+        const anime = animeModule.default || animeModule
 
         // Initial entrance animation
         if (controlsRef.current) {
