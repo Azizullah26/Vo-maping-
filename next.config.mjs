@@ -39,6 +39,8 @@ const nextConfig = {
       "@react-three/fiber",
       "@react-three/drei",
     ],
+    // Disable CSS optimizations that use Lightning CSS
+    disableCssOptimizations: true,
   },
 
   async headers() {

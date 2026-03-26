@@ -49,7 +49,7 @@
     "recharts": "2.13.3",
     "sonner": "1.7.0",
     "tailwind-merge": "2.5.4",
-    "tailwindcss": "4.2.2",
+    "tailwindcss": "3.4.17",
     "tailwindcss-animate": "1.0.7",
     "three": "0.158.0",
     "uuid": "9.0.1",
