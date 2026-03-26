@@ -1,7 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "installCommand": "npm install --legacy-peer-deps --no-audit --no-fund --prefer-offline",
   "framework": "nextjs",
   "env": {
     "NODE_OPTIONS": "--max-old-space-size=3072",
