@@ -3,12 +3,6 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
-  // process.cwd() resolves to wherever `npm run build` is invoked,
-  // which is the actual project root containing node_modules/next
-  turbopack: {
-    root: process.cwd(),
-  },
-
   eslint: {
     ignoreDuringBuilds: true,
   },
