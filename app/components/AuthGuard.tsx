@@ -15,8 +15,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter()
   const pathname = usePathname()
 
+  // Public paths that don't require authentication
+  const publicPaths = ["/login", "/sso/callback", "/sso/docs"]
+
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && pathname !== "/login") {
+    if (!isLoading && !isAuthenticated && !publicPaths.includes(pathname)) {
       router.push("/login")
     }
   }, [isAuthenticated, isLoading, pathname, router])
@@ -33,8 +36,8 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     )
   }
 
-  // If not authenticated and not on login page, don't render children
-  if (!isAuthenticated && pathname !== "/login") {
+  // If not authenticated and not on a public path, don't render children
+  if (!isAuthenticated && !publicPaths.includes(pathname)) {
     return null
   }
 

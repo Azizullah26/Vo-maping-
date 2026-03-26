@@ -41,7 +41,25 @@ export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
       try {
         const token = localStorage.getItem("auth_token");
         const expiry = localStorage.getItem("auth_expiry");
+        const ssoLogin = localStorage.getItem("sso_login");
 
+        // Check SSO authentication
+        if (ssoLogin === "true" && token && expiry) {
+          const now = new Date().getTime();
+          if (now < Number.parseInt(expiry)) {
+            setIsAuthenticated(true);
+            setIsLoading(false);
+            return;
+          } else {
+            // SSO token expired, clean up
+            localStorage.removeItem("auth_token");
+            localStorage.removeItem("auth_expiry");
+            localStorage.removeItem("sso_login");
+            setIsAuthenticated(false);
+          }
+        }
+
+        // Check regular authentication
         if (token && expiry) {
           const now = new Date().getTime();
           if (now < Number.parseInt(expiry)) {
@@ -52,6 +70,8 @@ export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
             localStorage.removeItem("auth_expiry");
             setIsAuthenticated(false);
           }
+        } else {
+          setIsAuthenticated(false);
         }
       } catch (error) {
         console.error("Error checking auth:", error);
@@ -106,6 +126,7 @@ export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
     try {
       localStorage.removeItem("auth_token");
       localStorage.removeItem("auth_expiry");
+      localStorage.removeItem("sso_login");
       setIsAuthenticated(false);
       router.push("/login");
     } catch (error) {
