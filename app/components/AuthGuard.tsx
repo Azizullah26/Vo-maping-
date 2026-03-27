@@ -19,6 +19,18 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const publicPaths = ["/login", "/sso/callback", "/sso/docs"]
 
   useEffect(() => {
+    // Add listener for SSO auth state changes
+    const handleAuthChange = () => {
+      // The context will handle the update automatically
+    }
+
+    window.addEventListener("storage", handleAuthChange)
+    return () => {
+      window.removeEventListener("storage", handleAuthChange)
+    }
+  }, [])
+
+  useEffect(() => {
     if (!isLoading && !isAuthenticated && !publicPaths.includes(pathname)) {
       router.push("/login")
     }
