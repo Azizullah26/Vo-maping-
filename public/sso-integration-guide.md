@@ -9,11 +9,13 @@
 
 ## Overview
 
-This document describes how to integrate Single Sign-On (SSO) with the ELRACE Map Platform. The hub authenticates the user on its side and then calls the ELRACE API to generate a one-time login URL. The user is redirected to that URL and automatically signed into the platform without needing to enter a password.
+This document describes how to integrate Single Sign-On (SSO) with the ELRACE Map Platform. The hub authenticates the user on its side and then calls the ELRACE API to generate a one-time login URL. The user is redirected to that URL and automatically signed into the platform without needing to enter a password. After successful SSO authentication, users are directly redirected to the welcome page and have immediate access to the platform with no intermediate login page shown.
 
 ---
 
 ## Authentication Flow
+
+**Direct Welcome Page Access:** After successful SSO authentication, users are automatically redirected to the welcome page and have immediate access to the platform. No login page is displayed to users who have already been authenticated via SSO.
 
 \`\`\`
 1. Hub backend calls POST /api/sso/login-url with api_key
@@ -21,7 +23,8 @@ This document describes how to integrate Single Sign-On (SSO) with the ELRACE Ma
 3. Hub redirects the user's browser to login_url
 4. User lands on /sso/callback on the ELRACE platform
 5. Platform validates the token, creates a session, redirects to /welcome
-6. (Optional) Hub backend calls POST /api/sso/verify to confirm session details
+6. User has immediate access to the platform (no login page shown)
+7. (Optional) Hub backend calls POST /api/sso/verify to confirm session details
 \`\`\`
 
 **Sequence Diagram:**
@@ -38,6 +41,8 @@ Hub Server          User Browser         ELRACE Platform
     |                    |                      |-- validate token
     |                    |                      |-- create session
     |                    |<-- redirect to /welcome --------|
+    |                    |-- GET /welcome -->|
+    |                    |<-- welcome page (authenticated) ---|
     |                    |                      |
     | (optional server check)                   |
     |-- POST /api/sso/verify (token, api_key) -->|
@@ -279,8 +284,10 @@ The platform will:
 1. Validate the token automatically
 2. Create a browser session for the user
 3. Redirect to `https://elracemap.vercel.app/welcome`
+4. User is automatically authenticated and has immediate access to the platform
+5. **No login page is displayed** — users proceed directly to the welcome page
 
-No action is required from the hub team for this page — it is handled entirely by the ELRACE platform.
+**Important:** Once a user is authenticated via SSO, they will not see the login page again. They have direct access to the platform resources. No action is required from the hub team for this page — it is handled entirely by the ELRACE platform.
 
 ---
 
@@ -307,6 +314,22 @@ No action is required from the hub team for this page — it is handled entirely
 4. **Store the API key securely.** Use environment variables or a secrets manager. Do not hardcode it.
 
 5. **HTTPS only.** All communication must go over HTTPS. The platform enforces this.
+
+---
+
+## Integration Summary for Hub Team
+
+### Key Points
+- **Direct Welcome Access:** After SSO authentication, users are immediately redirected to the welcome page with no login page shown
+- **One-Time Tokens:** Each token is single-use and expires in 5 minutes for security
+- **Session Management:** ELRACE platform automatically manages user sessions after successful authentication
+- **Seamless Experience:** Users experience a seamless transition from the hub to the ELRACE platform
+
+### Implementation Steps for Hub Team
+1. Integrate the SSO login endpoint to generate a login URL
+2. Redirect authenticated users from the hub to the generated login URL
+3. Users will automatically receive platform access upon callback validation
+4. (Optional) Use the verify endpoint for additional server-side confirmation
 
 ---
 
