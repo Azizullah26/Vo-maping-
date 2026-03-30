@@ -31,17 +31,22 @@ const nextConfig = {
   trailingSlash: false,
   productionBrowserSourceMaps: false,
 
-  // Server Actions configuration (moved out of experimental in Next.js 15)
+  // Server Actions configuration
   serverActions: {
     bodySizeLimit: "10mb",
   },
 
+  // Next.js 16 optimizations
+  bundlePagesRouterDependencies: true,
+  
   experimental: {
     optimizePackageImports: [
       "lucide-react",
       "@react-three/fiber",
       "@react-three/drei",
     ],
+    // Next.js 16 features
+    serverComponentsHmrCache: true,
   },
 
   async headers() {
