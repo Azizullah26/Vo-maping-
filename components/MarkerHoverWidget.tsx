@@ -57,7 +57,7 @@ export function MarkerHoverWidget({
       "مركز شرطة هيلي": {
         name: "مركز شرطة هيلي",
         englishName: "Hili Police Station",
-        image: "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
+        image: "https://picsum.photos/600/400?random=1",
         plots: "2 Plots",
         type: "Government",
         status: "Active",
@@ -82,7 +82,7 @@ export function MarkerHoverWidget({
       default: {
         name: markerName,
         englishName: getEnglishName(markerName),
-        image: "https://images.adsttc.com/media/images/6989/f915/66e7/0600/01bd/10f0/newsletter/Al_Ain_Museum_Photo_by_Intelier10_1__hero_image_.jpg?1770649913",
+        image: "https://picsum.photos/600/400?random=2",
         plots: "2 Plots",
         type: "Mixed Use",
         status: "Active",

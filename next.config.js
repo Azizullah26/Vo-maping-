@@ -39,7 +39,11 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "images.adsttc.com",
+        hostname: "picsum.photos",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
       },
     ],
     unoptimized: false,

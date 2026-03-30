@@ -72,7 +72,7 @@ export default function ProjectsDetailsPage() {
     },
     {
       id: 3,
-      imageSrc: "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
+      imageSrc: "https://picsum.photos/600/400?random=1",
       projectNameAr: "مركز شرطة هيلي",
       projectNameEn: "Hili Police Station",
       coordinates: [55.76486147272425, 24.277296159962688],
@@ -124,7 +124,7 @@ export default function ProjectsDetailsPage() {
     },
     {
       id: 10,
-      imageSrc: "https://images.adsttc.com/media/images/6989/f915/66e7/0600/01bd/10f0/newsletter/Al_Ain_Museum_Photo_by_Intelier10_1__hero_image_.jpg?1770649913",
+      imageSrc: "https://picsum.photos/600/400?random=2",
       projectNameAr: "مركز شرطة زاخر",
       projectNameEn: "Active",
       coordinates: [55.70650103250864, 24.13198773085604],

@@ -609,7 +609,7 @@ const HOVERABLE_MARKERS = [
   "نادي ضباط الشرطة",
   "مركز شرطة زاخر",
   "فلل فلج هزاع",
-  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبا�� - قسم الاستقطاب)",
+  "فلل فلج هزاع (قسم الأدلة الجنائية - قسم الشرطة المجتمعية - قسم تأجير المركبا���� - قسم الاستقطاب)",
   "قسم التفتيش الأمني K9",
   "الضبط المروري والمراسم",
   "ساحة حجز المركبات فلج هزاع",
@@ -805,12 +805,12 @@ export default function AlAinMap({
       "قسم موسيقى شرطة أبوظبي": "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
       "إدارة التأهيل الشرطي - الفوعة":
         "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
-      "مركز شرطة هيلي": "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
-      "1 Project": "https://images.adsttc.com/media/images/6989/f915/66e7/0600/01bd/10f0/newsletter/Al_Ain_Museum_Photo_by_Intelier10_1__hero_image_.jpg?1770649913",
+      "مركز شرطة هيلي": "https://picsum.photos/600/400?random=1",
+      "1 Project": "https://picsum.photos/600/400?random=2",
       "مركز شرطة الوقن":
         "https://www.visitabudhabi.ae/content/dam/visitabudhabi/images/plan-your-trip/regions-of-abu-dhabi/al-dhafra-region/liwa-oasis/liwa-oasis-hero-1920x1080.jpg",
     }
-    return imageMap[name] || "https://images.adsttc.com/media/images/6989/f915/66e7/0600/01bd/10f0/newsletter/Al_Ain_Museum_Photo_by_Intelier10_1__hero_image_.jpg?1770649913"
+    return imageMap[name] || "https://picsum.photos/600/400?random=3"
   }
 
   function getEnglishName(name: string): string {
