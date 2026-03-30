@@ -3,6 +3,9 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
+  // Required for Docker / AWS deployment — produces a self-contained server
+  output: "standalone",
+
   eslint: {
     ignoreDuringBuilds: true,
   },
