@@ -82,7 +82,7 @@ export function MarkerHoverWidget({
       default: {
         name: markerName,
         englishName: getEnglishName(markerName),
-        image: "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg",
+        image: "https://images.adsttc.com/media/images/6989/f915/66e7/0600/01bd/10f0/newsletter/Al_Ain_Museum_Photo_by_Intelier10_1__hero_image_.jpg?1770649913",
         plots: "2 Plots",
         type: "Mixed Use",
         status: "Active",

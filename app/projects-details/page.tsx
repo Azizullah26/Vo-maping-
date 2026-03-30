@@ -124,7 +124,7 @@ export default function ProjectsDetailsPage() {
     },
     {
       id: 10,
-      imageSrc: "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg",
+      imageSrc: "https://images.adsttc.com/media/images/6989/f915/66e7/0600/01bd/10f0/newsletter/Al_Ain_Museum_Photo_by_Intelier10_1__hero_image_.jpg?1770649913",
       projectNameAr: "مركز شرطة زاخر",
       projectNameEn: "Active",
       coordinates: [55.70650103250864, 24.13198773085604],
