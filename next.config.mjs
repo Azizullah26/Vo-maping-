@@ -31,19 +31,17 @@ const nextConfig = {
   trailingSlash: false,
   productionBrowserSourceMaps: false,
 
-  swcMinify: true,
+  // Server Actions configuration (moved out of experimental in Next.js 15)
+  serverActions: {
+    bodySizeLimit: "10mb",
+  },
 
   experimental: {
-    serverActions: {
-      bodySizeLimit: "10mb",
-    },
     optimizePackageImports: [
       "lucide-react",
       "@react-three/fiber",
       "@react-three/drei",
     ],
-    // Disable CSS optimizations that use Lightning CSS
-    disableCssOptimizations: true,
   },
 
   async headers() {
