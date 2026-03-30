@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server"
+import { createClient } from "@supabase/supabase-js"
 import { safeJsonResponse, withErrorHandling } from "@/lib/api-utils"
 
 /**
@@ -45,27 +46,26 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
       apiError = error instanceof Error ? error.message : "Failed to parse API response"
     }
 
-    // Test the database connection
+    // Test the database connection via Supabase
     let dbSuccess = false
     let dbError = null
 
     try {
-      const { Pool } = require("pg")
-      const pool = new Pool({
-        connectionString: process.env.NILEDB_URL || settings.dbHost,
-        ssl: {
-          rejectUnauthorized: false,
-        },
-      })
+      const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
 
-      const client = await pool.connect()
-      try {
-        await client.query("SELECT NOW()")
-        dbSuccess = true
-      } finally {
-        client.release()
-        await pool.end()
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error("Supabase environment variables are not configured")
       }
+
+      const supabase = createClient(supabaseUrl, supabaseKey)
+      const { error } = await supabase.from("users").select("count").limit(1)
+
+      if (error && error.code !== "PGRST116") {
+        // PGRST116 = table not found, still means DB is reachable
+        throw new Error(error.message)
+      }
+      dbSuccess = true
     } catch (error) {
       dbError = error instanceof Error ? error.message : "Unknown database connection error"
     }

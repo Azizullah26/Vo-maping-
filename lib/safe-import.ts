@@ -14,8 +14,8 @@ export async function safeImport<T>(importFn: () => Promise<T>, fallback: T, err
 
 export async function safeDynamicImport<T>(modulePath: string, fallback: T): Promise<T> {
   try {
-    const module = await import(modulePath)
-    return module.default || module
+    const importedModule = await import(modulePath)
+    return importedModule.default || importedModule
   } catch (error) {
     console.error(`Failed to import ${modulePath}:`, error)
     return fallback
@@ -29,8 +29,8 @@ export function createLazyComponent<T extends React.ComponentType<any>>(
   return {
     Component: async () => {
       try {
-        const module = await importFn()
-        return module.default
+        const importedModule = await importFn()
+        return importedModule.default
       } catch (error) {
         console.error("Lazy component import failed:", error)
         return () => fallback

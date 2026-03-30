@@ -1,11 +1,8 @@
-import { createClient } from "@supabase/supabase-js"
+import { getSupabaseClient as getSharedSupabaseClient } from "./supabase-client"
 
 // Configuration
 const MAX_RETRIES = 3
 const RETRY_DELAY_MS = 1000
-
-// Supabase client
-let supabaseClient: ReturnType<typeof createClient> | null = null
 
 // Circuit breaker state
 let circuitOpen = false
@@ -14,21 +11,12 @@ const CIRCUIT_RESET_TIMEOUT_MS = 30000 // 30 seconds
 
 export class RobustDbClient {
   /**
-   * Get or create the Supabase client
+   * Get the shared singleton Supabase client
    */
   private static getSupabaseClient() {
-    if (!supabaseClient) {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-      if (!supabaseUrl || !supabaseKey) {
-        throw new Error("Missing Supabase environment variables")
-      }
-
-      supabaseClient = createClient(supabaseUrl, supabaseKey)
-    }
-
-    return supabaseClient
+    const client = getSharedSupabaseClient()
+    if (!client) throw new Error("Supabase client not available")
+    return client
   }
 
   /**

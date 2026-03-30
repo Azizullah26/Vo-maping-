@@ -58,7 +58,7 @@ export default function ProjectsDetailsPage() {
   const projects = [
     {
       id: 1,
-      imageSrc: "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
+      imageSrc: "https://platinumlist.net/guide/wp-content/uploads/2025/12/shutterstock_2545496855.jpg",
       projectNameAr: "قسم موسيقى شرطة أبوظبي",
       projectNameEn: "Abu Dhabi Police Music Department",
       coordinates: [55.80752936967028, 24.342548523036186],
@@ -72,7 +72,7 @@ export default function ProjectsDetailsPage() {
     },
     {
       id: 3,
-      imageSrc: "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
+      imageSrc: "https://www.pelago.com/img/products/AE-United%20Arab%20Emirates/private-al-ain-city-tour-with-lunch/b6845c9b-65ed-42c8-ab1b-1d18b11dc1a7_private-al-ain-city-tour-with-lunch.jpg",
       projectNameAr: "مركز شرطة هيلي",
       projectNameEn: "Hili Police Station",
       coordinates: [55.76486147272425, 24.277296159962688],
@@ -124,7 +124,7 @@ export default function ProjectsDetailsPage() {
     },
     {
       id: 10,
-      imageSrc: "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg",
+      imageSrc: "https://platinumlist.net/guide/wp-content/uploads/2025/12/shutterstock_2545496855.jpg",
       projectNameAr: "مركز شرطة زاخر",
       projectNameEn: "Active",
       coordinates: [55.70650103250864, 24.13198773085604],

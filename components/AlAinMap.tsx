@@ -802,15 +802,15 @@ export default function AlAinMap({
 
   function getMarkerImage(name: string): string {
     const imageMap: { [key: string]: string } = {
-      "قسم موسيقى شرطة أبوظبي": "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
+      "قسم موسيقى شرطة أبوظبي": "https://platinumlist.net/guide/wp-content/uploads/2025/12/shutterstock_2545496855.jpg",
       "إدارة التأهيل الشرطي - الفوعة":
         "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
-      "مركز شرطة هيلي": "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
-      "1 Project": "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg",
+      "مركز شرطة هيلي": "https://www.pelago.com/img/products/AE-United%20Arab%20Emirates/private-al-ain-city-tour-with-lunch/b6845c9b-65ed-42c8-ab1b-1d18b11dc1a7_private-al-ain-city-tour-with-lunch.jpg",
+      "1 Project": "https://platinumlist.net/guide/wp-content/uploads/2025/12/shutterstock_2545496855.jpg",
       "مركز شرطة الوقن":
         "https://www.visitabudhabi.ae/content/dam/visitabudhabi/images/plan-your-trip/regions-of-abu-dhabi/al-dhafra-region/liwa-oasis/liwa-oasis-hero-1920x1080.jpg",
     }
-    return imageMap[name] || "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg"
+    return imageMap[name] || "https://platinumlist.net/guide/wp-content/uploads/2025/12/shutterstock_2545496855.jpg"
   }
 
   function getEnglishName(name: string): string {

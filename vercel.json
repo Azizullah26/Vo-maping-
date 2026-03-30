@@ -1,16 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "installCommand": "npm install --legacy-peer-deps --no-audit --no-fund --prefer-offline",
   "framework": "nextjs",
   "env": {
     "NODE_OPTIONS": "--max-old-space-size=3072",
-    "SKIP_ENV_VALIDATION": "1"
+    "SKIP_ENV_VALIDATION": "1",
+    "NODE_ENV": "production"
   },
-  "functions": {
-    "app/**/*.tsx": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  }
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install --no-optional --no-audit --no-fund"
 }

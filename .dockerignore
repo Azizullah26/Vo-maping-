@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.gitignore
+*.md
+*.log
+.env
+.env.*
+!.env.example
+Dockerfile*
+docker-compose*
+.dockerignore
+.vercel
+.netlify
+coverage
+.nyc_output

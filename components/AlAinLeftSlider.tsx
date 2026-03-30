@@ -6,8 +6,11 @@ import { useState, useEffect } from "react"
 import { Film } from "lucide-react"
 import "@/styles/vue-futuristic-alain.css"
 import { useRouter } from "next/navigation"
-import { createClient } from "@supabase/supabase-js"
+import { getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase-client"
 import { cn } from "@/lib/utils"
+
+// Module-level flag — once a network error is detected, stop all retries
+let supabaseNetworkReachable = true
 
 // Add a new interface for documents
 interface ProjectDocument {
@@ -197,25 +200,45 @@ export default function AlAinLeftSlider({
     try {
       setLoadingDocuments(true)
 
-      // Check if Supabase credentials are available
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-      if (!supabaseUrl || !supabaseAnonKey) {
-        console.warn("Supabase credentials not available, using demo data")
+      // Guard: skip if Supabase is not configured or previously unreachable
+      if (!isSupabaseConfigured() || !supabaseNetworkReachable) {
         setDemoDocuments()
         return
       }
 
       try {
-        // Initialize Supabase client
-        const supabase = createClient(supabaseUrl, supabaseAnonKey)
+        const supabase = getSupabaseClient()
+        if (!supabase) {
+          setDemoDocuments()
+          return
+        }
 
         // Test connection with a simple query first
-        const { error: connectionError } = await supabase.from("documents").select("count").limit(1).single()
+        let connectionError: unknown = null
+        try {
+          const result = await supabase.from("documents").select("count").limit(1).single()
+          connectionError = result.error
+        } catch (networkErr) {
+          // TypeError: Failed to fetch — mark unreachable so polling stops
+          supabaseNetworkReachable = false
+          setDemoDocuments()
+          return
+        }
 
         if (connectionError) {
-          console.warn("Error connecting to Supabase:", connectionError.message)
+          const errMsg = (connectionError as { message?: string }).message ?? ""
+          const isNetworkErr =
+            errMsg.includes("Failed to fetch") ||
+            errMsg.includes("fetch") ||
+            errMsg.includes("network") ||
+            errMsg.includes("timeout") ||
+            errMsg.includes("AbortError")
+          if (isNetworkErr) {
+            // Mark unreachable — all future fetchDocuments calls will short-circuit
+            supabaseNetworkReachable = false
+          } else {
+            console.warn("Error connecting to Supabase:", errMsg)
+          }
           setDemoDocuments()
           return
         }
@@ -453,20 +476,22 @@ export default function AlAinLeftSlider({
     // Fetch documents initially
     fetchDocuments(filters)
 
-    // Set up polling as a fallback mechanism
-    const pollingInterval = setInterval(() => {
-      fetchDocuments(filters)
-    }, 30000) // Poll every 30 seconds as a fallback
+    // Set up polling only if Supabase is configured and network was reachable at mount time
+    let pollingInterval: ReturnType<typeof setInterval> | null = null
+    if (isSupabaseConfigured() && supabaseNetworkReachable) {
+      pollingInterval = setInterval(() => {
+        if (supabaseNetworkReachable) fetchDocuments(filters)
+        else if (pollingInterval) clearInterval(pollingInterval)
+      }, 30000)
+    }
 
-    // Try to set up Supabase realtime subscription if credentials are available
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
+    // Try to set up Supabase realtime subscription if Supabase is properly configured
     let subscription: { unsubscribe: () => void } | undefined
 
-    if (supabaseUrl && supabaseAnonKey) {
+    if (isSupabaseConfigured() && supabaseNetworkReachable) {
       try {
-        const supabase = createClient(supabaseUrl, supabaseAnonKey)
+        const supabase = getSupabaseClient()
+        if (!supabase) return
 
         // First check if the documents table exists
         supabase
@@ -474,8 +499,8 @@ export default function AlAinLeftSlider({
           .select("count", { count: "exact", head: true })
           .then(({ error }) => {
             if (error) {
-              console.warn("Documents table may not exist or is not accessible:", error.message)
-              return // Don't attempt to subscribe if table doesn't exist
+              // Table doesn't exist or isn't accessible — skip realtime subscription silently
+              return
             }
 
             // Table exists, set up subscription
@@ -506,8 +531,8 @@ export default function AlAinLeftSlider({
               console.warn("Error setting up subscription:", subError)
             }
           })
-          .catch((err) => {
-            console.warn("Error checking documents table:", err)
+          .catch(() => {
+            // Network unreachable — silently skip realtime subscription
           })
       } catch (error) {
         console.warn("Error initializing Supabase client:", error)
@@ -548,7 +573,7 @@ export default function AlAinLeftSlider({
 
     return () => {
       // Clean up all subscriptions and listeners
-      clearInterval(pollingInterval)
+      if (pollingInterval) clearInterval(pollingInterval)
 
       if (subscription) {
         try {

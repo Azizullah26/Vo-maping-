@@ -1,41 +1,54 @@
 import { createClient } from "@supabase/supabase-js"
 
-// Singleton pattern for Supabase client
-let supabaseInstance: ReturnType<typeof createClient> | null = null
+// Use globalThis to persist the singleton across HMR reloads in development
+const g = globalThis as typeof globalThis & {
+  __supabaseInstance?: ReturnType<typeof createClient> | null
+}
+
+// Reset cached instance so new env vars are picked up immediately
+g.__supabaseInstance = undefined
+
+/** Resolve the best available Supabase key from env vars */
+function resolveKey(): string | undefined {
+  return (
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.REACT_APP_SUPABASE_ANON_KEY
+  )
+}
+
+export function isSupabaseConfigured(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL
+  const key = resolveKey()
+  return !!(url && key && !url.includes("placeholder"))
+}
 
 export function getSupabaseClient() {
-  if (supabaseInstance) return supabaseInstance
+  if (g.__supabaseInstance) return g.__supabaseInstance
 
-  // Try Next.js style environment variables first
-  let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  let supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const supabaseUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL
+  const supabaseKey = resolveKey()
 
-  // Fall back to React App style environment variables if needed
-  if (!supabaseUrl) supabaseUrl = process.env.REACT_APP_SUPABASE_URL
-  if (!supabaseAnonKey) supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn("Missing Supabase environment variables, using placeholder client")
-    // Return a placeholder client during build time to prevent build failures
-    supabaseInstance = createClient(
-      supabaseUrl || "https://placeholder.supabase.co",
-      supabaseAnonKey || "placeholder-anon-key",
-      {
-        auth: {
-          persistSession: false,
-        },
-      },
-    )
-    return supabaseInstance
+  if (!supabaseUrl || !supabaseKey) {
+    console.warn("Missing Supabase environment variables, returning null — demo data will be used")
+    return null
   }
 
-  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+  g.__supabaseInstance = createClient(supabaseUrl, supabaseKey, {
     auth: {
       persistSession: false,
     },
+    global: {
+      fetch: (url, options) =>
+        fetch(url, {
+          ...options,
+          signal: AbortSignal.timeout(8000), // 8-second timeout — fail fast on network errors
+        }),
+    },
   })
 
-  return supabaseInstance
+  return g.__supabaseInstance
 }
 
 // Create a server-side client using service role - ONLY USE IN SERVER COMPONENTS OR API ROUTES
@@ -79,7 +92,7 @@ export async function checkSupabaseConnection() {
 
     // Check if we have valid credentials
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY
+    const supabaseAnonKey = resolveKey()
 
     if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes("placeholder")) {
       return {

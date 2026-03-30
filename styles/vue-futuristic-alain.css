@@ -1,32 +1,73 @@
-/* Vue Futuristic CSS for Al Ain */
+/* Vue Futuristic CSS for Al Ain — all @apply replaced with plain CSS */
+
 .vue-card {
-  @apply bg-gradient-to-br from-slate-800/50 to-slate-900/50 p-4 rounded-lg border border-cyan-500/20 hover:border-cyan-400/40 transition-all duration-300 shadow-lg shadow-cyan-900/20;
+  background: linear-gradient(to bottom right, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.5));
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  box-shadow: 0 10px 15px -3px rgba(8, 47, 73, 0.2);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.vue-card:hover {
+  border-color: rgba(34, 211, 238, 0.4);
 }
 
 .vue-card::before {
   content: "";
-  @apply absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(6, 182, 212, 0.3), transparent);
 }
 
 .vue-card::after {
   content: "";
-  @apply absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(6, 182, 212, 0.1), transparent);
 }
 
 .vue-env-card {
-  @apply p-3 bg-gradient-to-br from-slate-800/40 to-slate-900/40 rounded-lg border border-cyan-500/10 hover:border-cyan-400/30 transition-all duration-300;
+  padding: 0.75rem;
+  background: linear-gradient(to bottom right, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.4));
+  border-radius: 0.5rem;
+  border: 1px solid rgba(6, 182, 212, 0.1);
+  transition: border-color 0.3s;
+}
+
+.vue-env-card:hover {
+  border-color: rgba(34, 211, 238, 0.3);
 }
 
 .vue-env-icon-wrapper {
-  @apply mb-1 p-1 rounded-full bg-gradient-to-br from-cyan-900/30 to-cyan-800/30 border border-cyan-500/20;
+  margin-bottom: 0.25rem;
+  padding: 0.25rem;
+  border-radius: 9999px;
+  background: linear-gradient(to bottom right, rgba(8, 47, 73, 0.3), rgba(14, 78, 99, 0.3));
+  border: 1px solid rgba(6, 182, 212, 0.2);
 }
 
 .vue-env-icon-inner {
-  @apply flex flex-col items-center justify-center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .vue-icon-container {
-  @apply p-2 rounded-full bg-cyan-900/30 border border-cyan-500/20 flex items-center justify-center;
+  padding: 0.5rem;
+  border-radius: 9999px;
+  background: rgba(8, 47, 73, 0.3);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .vue-bar-animate {
@@ -56,7 +97,11 @@
 }
 
 .vue-video-container {
-  @apply relative rounded-lg overflow-hidden border border-cyan-500/20 bg-gradient-to-br from-slate-900 to-slate-800;
+  position: relative;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  background: linear-gradient(to bottom right, #0f172a, #1e293b);
 }
 
 .vue-video-noise {
@@ -72,7 +117,16 @@
 }
 
 .vue-camera-thumbnail {
-  @apply h-20 rounded-md overflow-hidden border border-cyan-500/20 hover:border-cyan-400/40 transition-all duration-300 shadow-md;
+  height: 5rem;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s;
+}
+
+.vue-camera-thumbnail:hover {
+  border-color: rgba(34, 211, 238, 0.4);
 }
 
 .vue-animate-pulse {
@@ -131,11 +185,11 @@
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .vue-card {
-    @apply p-3;
+    padding: 0.75rem;
   }
 
   .vue-env-card {
-    @apply p-2;
+    padding: 0.5rem;
   }
 
   .vue-video-container {

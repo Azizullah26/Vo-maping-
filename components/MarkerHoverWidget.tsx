@@ -41,7 +41,7 @@ export function MarkerHoverWidget({
       "قسم موسيقى شرطة أبوظبي": {
         name: "قسم موسيقى شرطة أبوظبي",
         englishName: "Abu Dhabi Police Music Department",
-        image: "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
+        image: "https://platinumlist.net/guide/wp-content/uploads/2025/12/shutterstock_2545496855.jpg",
         plots: "3 Plots",
         type: "Government",
         status: "Active",
@@ -57,7 +57,7 @@ export function MarkerHoverWidget({
       "مركز شرطة هيلي": {
         name: "مركز شرطة هيلي",
         englishName: "Hili Police Station",
-        image: "https://www.propertyfinder.ae/blog/wp-content/uploads/2023/07/3-14.jpg",
+        image: "https://www.pelago.com/img/products/AE-United%20Arab%20Emirates/private-al-ain-city-tour-with-lunch/b6845c9b-65ed-42c8-ab1b-1d18b11dc1a7_private-al-ain-city-tour-with-lunch.jpg",
         plots: "2 Plots",
         type: "Government",
         status: "Active",
@@ -82,7 +82,7 @@ export function MarkerHoverWidget({
       default: {
         name: markerName,
         englishName: getEnglishName(markerName),
-        image: "https://whatson.ae/wp-content/uploads/2021/03/Al-Ain-Oasis.jpeg",
+        image: "https://platinumlist.net/guide/wp-content/uploads/2025/12/shutterstock_2545496855.jpg",
         plots: "2 Plots",
         type: "Mixed Use",
         status: "Active",

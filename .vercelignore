@@ -6,3 +6,12 @@ node_modules
 .git
 .env.local
 .env*.local
+.next
+out
+dist
+build
+*.log
+.cache
+.DS_Store
+.vercel
+coverage

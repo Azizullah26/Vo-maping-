@@ -13,9 +13,6 @@ import { useAuth } from "@/app/contexts/AuthContext"
 import { PageSwipingPanel } from "@/components/PageSwipingPanel"
 import { useLoginAuth } from "@/app/contexts/LoginAuthContext"
 
-// Add this import for the scrollbar-hide utility
-import "tailwind-scrollbar-hide"
-
 // Add these styles for better mobile touch targets
 const mobileStyles = `
   @media (max-width: 640px) {
