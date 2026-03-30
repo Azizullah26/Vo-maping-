@@ -14,8 +14,6 @@ interface ConfigState {
   supabaseAnonKey: string
   supabaseServiceKey: string
   mapboxToken: string
-  nileUrl: string
-  nileApiToken: string
 }
 
 interface TestResult {
@@ -30,8 +28,6 @@ export default function SetupPage() {
     supabaseAnonKey: "",
     supabaseServiceKey: "",
     mapboxToken: "",
-    nileUrl: "",
-    nileApiToken: "",
   })
 
   const [testResults, setTestResults] = useState<Record<string, TestResult>>({})
@@ -60,33 +56,6 @@ export default function SetupPage() {
       setTestResults((prev) => ({
         ...prev,
         supabase: {
-          success: false,
-          message: "Connection test failed",
-          details: error,
-        },
-      }))
-    }
-    setIsLoading(false)
-  }
-
-  const testNileConnection = async () => {
-    setIsLoading(true)
-    try {
-      const response = await fetch("/api/nile/test-connection", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url: config.nileUrl,
-          apiToken: config.nileApiToken,
-        }),
-      })
-
-      const result = await response.json()
-      setTestResults((prev) => ({ ...prev, nile: result }))
-    } catch (error) {
-      setTestResults((prev) => ({
-        ...prev,
-        nile: {
           success: false,
           message: "Connection test failed",
           details: error,
@@ -127,17 +96,9 @@ export default function SetupPage() {
   const saveConfiguration = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch("/api/nile/save-config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config),
-      })
-
-      if (response.ok) {
-        alert("Configuration saved successfully!")
-      } else {
-        alert("Failed to save configuration")
-      }
+      // Configuration is managed via environment variables
+      // This is a placeholder for future configuration saving functionality
+      alert("Configuration is managed via environment variables (.env.local)")
     } catch (error) {
       alert("Error saving configuration")
     }
@@ -171,15 +132,12 @@ export default function SetupPage() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="supabase" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-gray-700">
+              <TabsList className="grid w-full grid-cols-2 bg-gray-700">
                 <TabsTrigger value="supabase" className="text-white">
                   Supabase
                 </TabsTrigger>
                 <TabsTrigger value="mapbox" className="text-white">
                   Mapbox
-                </TabsTrigger>
-                <TabsTrigger value="nile" className="text-white">
-                  Nile
                 </TabsTrigger>
               </TabsList>
 
@@ -263,44 +221,7 @@ export default function SetupPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="nile" className="space-y-4">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="nileUrl" className="text-white">
-                      Nile Database URL
-                    </Label>
-                    <Input
-                      id="nileUrl"
-                      type="url"
-                      placeholder="Enter your Nile database URL"
-                      value={config.nileUrl}
-                      onChange={(e) => handleInputChange("nileUrl", e.target.value)}
-                      className="bg-gray-700 border-gray-600 text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="nileApiToken" className="text-white">
-                      Nile API Token
-                    </Label>
-                    <Input
-                      id="nileApiToken"
-                      type="password"
-                      placeholder="Enter your Nile API token"
-                      value={config.nileApiToken}
-                      onChange={(e) => handleInputChange("nileApiToken", e.target.value)}
-                      className="bg-gray-700 border-gray-600 text-white"
-                    />
-                  </div>
-
-                  <Button onClick={testNileConnection} disabled={isLoading} className="bg-blue-600 hover:bg-blue-700">
-                    Test Nile Connection
-                  </Button>
-
-                  {renderTestResult("nile")}
-                </div>
-              </TabsContent>
-            </Tabs>
+              </Tabs>
 
             <div className="mt-6 pt-6 border-t border-gray-600">
               <Button

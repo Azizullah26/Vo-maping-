@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 // Simple dummy function to simulate database connection
 async function simpleDatabaseCheck() {
   // Just check if the environment variables exist
-  const dbUrl = process.env.POSTGRES_URL || process.env.NILEDB_POSTGRES_URL
+  const dbUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL
   return !!dbUrl
 }
 
