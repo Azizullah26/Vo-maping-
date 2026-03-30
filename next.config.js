@@ -45,6 +45,66 @@ const nextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      {
+        protocol: "https",
+        hostname: "citytouruae.com",
+      },
+      {
+        protocol: "https",
+        hostname: "c8.alamy.com",
+      },
+      {
+        protocol: "https",
+        hostname: "media-cdn.tripadvisor.com",
+      },
+      {
+        protocol: "https",
+        hostname: "imgcy.trivago.com",
+      },
+      {
+        protocol: "https",
+        hostname: "photos.hotelbeds.com",
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.prod.website-files.com",
+      },
+      {
+        protocol: "https",
+        hostname: "conferences.uaeu.ac.ae",
+      },
+      {
+        protocol: "https",
+        hostname: "media.tacdn.com",
+      },
+      {
+        protocol: "https",
+        hostname: "media1.thrillophilia.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.seha.ae",
+      },
+      {
+        protocol: "https",
+        hostname: "www.timeoutabudhabi.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.bayut.com",
+      },
+      {
+        protocol: "https",
+        hostname: "www.visitabudhabi.ae",
+      },
+      {
+        protocol: "https",
+        hostname: "images.pexels.com",
+      },
     ],
     unoptimized: false,
   },
