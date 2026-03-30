@@ -72,7 +72,7 @@ export default function ProjectsDetailsPage() {
     },
     {
       id: 3,
-      imageSrc: "https://picsum.photos/600/400?random=1",
+      imageSrc: "https://images.unsplash.com/photo-1449844908441-8829872d2607?w=600&h=400&fit=crop",
       projectNameAr: "مركز شرطة هيلي",
       projectNameEn: "Hili Police Station",
       coordinates: [55.76486147272425, 24.277296159962688],
@@ -124,7 +124,7 @@ export default function ProjectsDetailsPage() {
     },
     {
       id: 10,
-      imageSrc: "https://picsum.photos/600/400?random=2",
+      imageSrc: "https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=600&h=400&fit=crop",
       projectNameAr: "مركز شرطة زاخر",
       projectNameEn: "Active",
       coordinates: [55.70650103250864, 24.13198773085604],

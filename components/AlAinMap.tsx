@@ -617,7 +617,7 @@ const HOVERABLE_MARKERS = [
   "المعهد المروري",
   "سكن أفراد المرور",
   "المتابعة الشرطية والرعاية اللاحقة",
-  "ادارة المهام الخاصة العين",
+  "اد��رة المهام الخاصة العين",
   "مبنى التحريات والمخدرات",
   "إدارة الأسلحة والمتفجرات",
   "مركز شرطة فلج هزاع",
@@ -805,12 +805,12 @@ export default function AlAinMap({
       "قسم موسيقى شرطة أبوظبي": "https://citytouruae.com/wp-content/uploads/2021/09/Al-Ain-city-1-600x590.jpg",
       "إدارة التأهيل الشرطي - الفوعة":
         "https://c8.alamy.com/comp/K3KAFH/uae-al-ain-skyline-from-zayed-bin-sultan-street-K3KAFH.jpg",
-      "مركز شرطة هيلي": "https://picsum.photos/600/400?random=1",
-      "1 Project": "https://picsum.photos/600/400?random=2",
+      "مركز شرطة هيلي": "https://images.unsplash.com/photo-1444080748397-f442aa95c3e5?w=600&h=400&fit=crop",
+      "1 Project": "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=600&h=400&fit=crop",
       "مركز شرطة الوقن":
         "https://www.visitabudhabi.ae/content/dam/visitabudhabi/images/plan-your-trip/regions-of-abu-dhabi/al-dhafra-region/liwa-oasis/liwa-oasis-hero-1920x1080.jpg",
     }
-    return imageMap[name] || "https://picsum.photos/600/400?random=3"
+    return imageMap[name] || "https://images.unsplash.com/photo-1449844908441-8829872d2607?w=600&h=400&fit=crop"
   }
 
   function getEnglishName(name: string): string {

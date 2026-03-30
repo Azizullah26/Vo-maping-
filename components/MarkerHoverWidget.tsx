@@ -57,7 +57,7 @@ export function MarkerHoverWidget({
       "مركز شرطة هيلي": {
         name: "مركز شرطة هيلي",
         englishName: "Hili Police Station",
-        image: "https://picsum.photos/600/400?random=1",
+        image: "https://images.unsplash.com/photo-1444080748397-f442aa95c3e5?w=600&h=400&fit=crop",
         plots: "2 Plots",
         type: "Government",
         status: "Active",
@@ -82,7 +82,7 @@ export function MarkerHoverWidget({
       default: {
         name: markerName,
         englishName: getEnglishName(markerName),
-        image: "https://picsum.photos/600/400?random=2",
+        image: "https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=600&h=400&fit=crop",
         plots: "2 Plots",
         type: "Mixed Use",
         status: "Active",
