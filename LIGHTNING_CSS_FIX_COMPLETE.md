@@ -16,10 +16,10 @@
 ### Solution Applied
 
 #### 1. **Downgraded Tailwind CSS** (package.json)
-```
+\`\`\`
 BEFORE: tailwindcss@4.2.2 + @tailwindcss/postcss
 AFTER:  tailwindcss@3.4.17 (pure JavaScript, no native bindings)
-```
+\`\`\`
 
 **Dependencies Removed:**
 - `@neondatabase/serverless` (1.0.2) - Unnecessary
@@ -35,7 +35,7 @@ AFTER:  tailwindcss@3.4.17 (pure JavaScript, no native bindings)
 - All UI/Map/3D libraries intact ✓
 
 #### 2. **Updated PostCSS Configuration** (postcss.config.mjs)
-```javascript
+\`\`\`javascript
 // Changed FROM:
 plugins: { "@tailwindcss/postcss": {} }
 
@@ -44,23 +44,23 @@ plugins: {
   tailwindcss: {},
   autoprefixer: {}
 }
-```
+\`\`\`
 This removes the v4-specific Lightning CSS dependency while maintaining full PostCSS support.
 
 #### 3. **Removed Tailwind v4 Imports** (app/globals.css)
-```css
+\`\`\`css
 /* Removed: @import "tailwindcss"; (v4 only) */
 /* Kept: @tailwind base/components/utilities (v3 compatible) */
-```
+\`\`\`
 
 #### 4. **Updated Next.js Configuration** (next.config.mjs)
 Added flag to prevent Lightning CSS optimizations:
-```javascript
+\`\`\`javascript
 experimental: {
   // Disable CSS optimizations that use Lightning CSS
   disableCssOptimizations: true
 }
-```
+\`\`\`
 
 #### 5. **Created Tailwind v3 Configuration** (tailwind.config.ts)
 - Full v3 configuration with proper theme extension
@@ -68,10 +68,10 @@ experimental: {
 - No Lightning CSS dependencies
 
 #### 6. **Updated npm Cache Settings** (.npmrc)
-```
+\`\`\`
 prefer-offline=false  (was: true)
 force=true           (new)
-```
+\`\`\`
 Forces clean dependency installation without cached problematic packages.
 
 ---
