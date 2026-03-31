@@ -25,12 +25,18 @@ export function useMapboxToken() {
 
         const data = await response.json()
 
-        if (!response.ok) {
+        console.log("[v0] API Response:", data)
+        console.log("[v0] Response status:", response.status)
+        console.log("[v0] Response ok:", response.ok)
+        console.log("[v0] Data token:", data.token ? `${data.token.substring(0, 20)}...` : "NO TOKEN")
+        console.log("[v0] Data configured:", data.configured)
+
+        if (!response.ok && response.status !== 200) {
           throw new Error(data.error || `Failed to fetch token: ${response.status}`)
         }
 
         if (mounted) {
-          if (data.token && data.configured) {
+          if (data.token) {
             console.log("[v0] Mapbox token loaded successfully")
             setState({
               token: data.token,
@@ -38,7 +44,7 @@ export function useMapboxToken() {
               error: null,
             })
           } else {
-            console.warn("[v0] Mapbox token not configured:", data.error)
+            console.warn("[v0] Mapbox token not in response:", data.error)
             setState({
               token: null,
               loading: false,
