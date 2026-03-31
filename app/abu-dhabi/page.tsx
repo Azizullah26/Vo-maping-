@@ -13,6 +13,7 @@ export const Map = (): JSX.Element => {
   const [hoveredLabel, setHoveredLabel] = useState<string | null>(null)
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const [showSliders, setShowSliders] = useState(true)
+  const [showControlWidget, setShowControlWidget] = useState(true)
   const router = useRouter()
   const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null)
 
@@ -33,6 +34,16 @@ export const Map = (): JSX.Element => {
       setPanY(0)
     }
   }, [])
+
+  useEffect(() => {
+    // Auto-hide control widget after 3 seconds
+    if (showControlWidget) {
+      const timer = setTimeout(() => {
+        setShowControlWidget(false)
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [showControlWidget])
 
   useEffect(() => {
     // Add wave animation styles to the document
@@ -1550,25 +1561,40 @@ animation-delay: -8s;
       )}
 
       {/* Centered Control Sliders */}
-      {showSliders && (
-        <div className="fixed inset-0 pointer-events-none z-40">
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-            <div className="bg-card/80 backdrop-blur-sm rounded-lg p-4 shadow-2xl border border-border">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setShowSliders(false)}
-                  className="px-4 py-2 bg-destructive hover:bg-destructive/90 text-black rounded-md transition-colors"
-                >
-                  Hide Control
-                </button>
-                <div className="text-foreground text-sm">
-                  Abu Dhabi Interactive Map - Cloud View | Advanced Zoom & Pan Controls
+        {showSliders && (
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto z-50">
+            {showControlWidget && (
+              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                {/* Liquid Glass Design Widget */}
+                <div className="relative w-max">
+                  {/* Liquid Glass Background */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-xl border border-white/30 shadow-2xl"></div>
+                  
+                  {/* Animated Gradient Border */}
+                  <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-cyan-500/30 via-purple-500/20 to-cyan-500/30 blur opacity-75 animate-pulse pointer-events-none"></div>
+                  
+                  {/* Content */}
+                  <div className="relative p-3 rounded-2xl bg-gradient-to-br from-slate-900/60 to-slate-800/40 backdrop-blur-xl border border-white/20 shadow-2xl">
+                    <div className="flex items-center gap-2">
+                      {/* Minimize Button */}
+                      <button
+                        onClick={() => setShowControlWidget(false)}
+                        className="px-3 py-1.5 bg-gradient-to-r from-cyan-500/80 to-blue-500/80 hover:from-cyan-400 hover:to-blue-400 text-white rounded-lg transition-all duration-300 text-sm font-semibold shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 backdrop-blur-sm border border-white/20"
+                      >
+                        ✕
+                      </button>
+                      
+                      {/* Widget Title */}
+                      <div className="text-white/90 text-xs font-medium whitespace-nowrap bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
+                        Al Ain Interactive Map
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
-        </div>
-      )}
+        )}
     </div>
   )
 }
