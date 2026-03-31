@@ -12,7 +12,6 @@ import { useState, useEffect } from "react"
 import { useAuth } from "@/app/contexts/AuthContext"
 import { PageSwipingPanel } from "@/components/PageSwipingPanel"
 import { useLoginAuth } from "@/app/contexts/LoginAuthContext"
-import { GlassEffect, GlassFilter } from "@/components/ui/liquid-glass"
 
 // Add this import for the scrollbar-hide utility
 import "tailwind-scrollbar-hide"
@@ -189,13 +188,9 @@ function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin }: Top
         pathname !== "/work-order" &&
         pathname !== "/login" &&
         pathname !== "/al-ain/16-projects" && (
-          <>
-            <GlassFilter />
-            <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-[20px] xxs:rounded-t-[25px] sm:rounded-t-[30px] backdrop-blur-xl">
-              {/* Liquid Glass Background */}
-              <GlassEffect className="w-full rounded-t-[20px] xxs:rounded-t-[25px] sm:rounded-t-[30px]">
-                <div className="w-full max-w-[1800px] mx-auto px-1 xxs:px-2">
-                  <div className="flex items-center justify-between py-2 xxs:py-2.5 xs:py-3 sm:py-2">
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900 border-t border-white/10 rounded-t-[20px] xxs:rounded-t-[25px] sm:rounded-t-[30px]">
+            <div className="w-full max-w-[1800px] mx-auto px-1 xxs:px-2">
+              <div className="flex items-center justify-between py-2 xxs:py-2.5 xs:py-3 sm:py-2">
                 {/* Dashboard button */}
                 <Link
                   href={
@@ -275,10 +270,8 @@ function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin }: Top
                   </button>
                 )}
               </div>
-                </div>
-              </GlassEffect>
             </div>
-          </>
+          </div>
         )}
 
       {/* Page Swiping Panel */}
