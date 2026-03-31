@@ -3,11 +3,12 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Film } from "lucide-react"
+import { Film, MapPin } from "lucide-react"
 import "@/styles/vue-futuristic-alain.css"
 import { useRouter } from "next/navigation"
 import { createClient } from "@supabase/supabase-js"
 import { cn } from "@/lib/utils"
+import { LocationMap } from "@/components/ui/location-map"
 
 // Add a new interface for documents
 interface ProjectDocument {
@@ -865,6 +866,34 @@ export default function AlAinLeftSlider({
                             ? `AED ${(selectedProject.id * 1.5 + 8).toFixed(1)},000,000`
                             : "AED 12,800,000"}
                         </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Project Location */}
+                <div>
+                  <h3 className="text-sm uppercase bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent font-bold mb-3 sticky top-0 bg-slate-900/80 py-2 backdrop-blur-sm z-10 flex items-center gap-2">
+                    <MapPin size={16} />
+                    Project Location
+                  </h3>
+                  <div className="vue-card overflow-hidden bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-cyan-500/20 hover:border-cyan-400/40 transition-all duration-300 shadow-lg shadow-cyan-900/20 p-4">
+                    <LocationMap
+                      location={selectedProject ? selectedProject.projectNameEn : "Al Ain Police Station"}
+                      coordinates={selectedProject 
+                        ? `${selectedProject.coordinates[1]}° N, ${selectedProject.coordinates[0]}° E`
+                        : "24.2008° N, 55.7658° E"
+                      }
+                      className="w-full"
+                    />
+                    <div className="mt-3 space-y-2 text-xs text-slate-400">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                        <span>Location: Al Ain, UAE</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                        <span>Status: Active</span>
                       </div>
                     </div>
                   </div>
