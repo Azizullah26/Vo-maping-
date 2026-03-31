@@ -4,10 +4,6 @@ import { Inter } from 'next/font/google'
 import type React from "react"
 import Script from "next/script"
 import ClientProviders from "./providers/ClientProviders"
-import { loadEnvFile } from "@/lib/load-env"
-
-// Load environment variables from .env.local at startup
-loadEnvFile()
 
 const inter = Inter({ subsets: ["latin"] })
 
