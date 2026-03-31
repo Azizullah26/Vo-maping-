@@ -1,33 +1,75 @@
 import { NextResponse } from "next/server"
+import fs from "fs"
+import path from "path"
+
+// Load env variables on every request as a fallback
+function ensureEnvLoaded() {
+  if (process.env.MAPBOX_ACCESS_TOKEN) {
+    return // Already loaded
+  }
+
+  try {
+    const possiblePaths = [
+      path.join(process.cwd(), ".env.local"),
+      path.join(process.cwd(), "..", ".env.local"),
+      "/vercel/share/v0-project/.env.local",
+      "/vercel/share/v0-next-shadcn/.env.local",
+    ]
+
+    let found = false
+    for (const filePath of possiblePaths) {
+      if (fs.existsSync(filePath)) {
+        console.log(`[v0] Loading .env.local from: ${filePath}`)
+        const content = fs.readFileSync(filePath, "utf-8")
+        const lines = content.split("\n")
+
+        for (const line of lines) {
+          if (!line || line.startsWith("#")) continue
+          const [key, ...valueParts] = line.split("=")
+          const cleanKey = key.trim()
+          const value = valueParts.join("=").trim()
+
+          if (cleanKey && value && !process.env[cleanKey]) {
+            process.env[cleanKey] = value
+          }
+        }
+        found = true
+        break
+      }
+    }
+
+    if (!found) {
+      console.warn("[v0] .env.local not found in any location")
+    }
+  } catch (error) {
+    console.error("[v0] Error loading .env.local:", error)
+  }
+}
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
 export async function GET() {
   try {
+    // Ensure env is loaded
+    ensureEnvLoaded()
+
     const mapboxToken = process.env.MAPBOX_ACCESS_TOKEN
 
     console.log("[v0] Mapbox token check:")
     console.log("[v0] - Token exists:", !!mapboxToken)
     console.log("[v0] - Token value (first 20 chars):", mapboxToken?.substring(0, 20))
-    console.log("[v0] - All env keys:", Object.keys(process.env).filter(k => k.includes('MAPBOX') || k.includes('mapbox')))
 
     if (!mapboxToken) {
       console.warn("[v0] MAPBOX_ACCESS_TOKEN environment variable is not configured")
-      console.warn("[v0] Available environment variables with 'MAP' or 'BOX':", 
-        Object.keys(process.env).filter(k => k.toUpperCase().includes('MAP') || k.toUpperCase().includes('BOX')))
-      
+
       return NextResponse.json(
         {
           error: "Mapbox token not configured. Please add MAPBOX_ACCESS_TOKEN to your environment variables or .env.local file.",
           token: null,
           configured: false,
-          debug: {
-            tokenExists: false,
-            envVarsWithMapbox: Object.keys(process.env).filter(k => k.toUpperCase().includes('MAPBOX')).length
-          }
         },
-        { status: 200 }, // Changed from 503 to 200 to prevent deployment errors
+        { status: 200 },
       )
     }
 
