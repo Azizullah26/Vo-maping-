@@ -39,6 +39,7 @@
     "html2canvas": "latest",
     "lucide-react": "^0.454.0",
     "mapbox-gl": "latest",
+    "motion": "latest",
     "next": "15.0.5",
     "next-themes": "latest",
     "react": "^18.3.1",
