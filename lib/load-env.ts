@@ -7,17 +7,34 @@ import path from 'path'
  */
 export function loadEnvFile() {
   try {
-    const envLocalPath = path.join(process.cwd(), '.env.local')
-    
-    // Check if .env.local exists
-    if (!fs.existsSync(envLocalPath)) {
-      console.log('[v0] .env.local file not found at:', envLocalPath)
+    // Try multiple possible locations
+    const possiblePaths = [
+      path.join(process.cwd(), '.env.local'),
+      path.join(process.cwd(), '..', '.env.local'),
+      '/vercel/share/v0-project/.env.local',
+      '/vercel/share/v0-next-shadcn/.env.local',
+      path.resolve(__dirname, '../../.env.local'),
+    ]
+
+    let envLocalPath = null
+    let envContent = null
+
+    // Find the first existing .env.local file
+    for (const possiblePath of possiblePaths) {
+      if (fs.existsSync(possiblePath)) {
+        console.log('[v0] Found .env.local at:', possiblePath)
+        envLocalPath = possiblePath
+        envContent = fs.readFileSync(possiblePath, 'utf-8')
+        break
+      }
+    }
+
+    if (!envContent) {
+      console.log('[v0] .env.local file not found in any of these locations:')
+      possiblePaths.forEach(p => console.log('[v0]   -', p))
       return
     }
 
-    // Read the file
-    const envContent = fs.readFileSync(envLocalPath, 'utf-8')
-    
     // Parse and load each line
     const lines = envContent.split('\n')
     let loadedCount = 0
@@ -37,11 +54,14 @@ export function loadEnvFile() {
           process.env[cleanKey] = value
           loadedCount++
           console.log(`[v0] Loaded env var: ${cleanKey}`)
+        } else {
+          console.log(`[v0] Env var already set (skipped): ${cleanKey}`)
         }
       }
     }
 
     console.log(`[v0] Successfully loaded ${loadedCount} environment variables from .env.local`)
+    console.log(`[v0] MAPBOX_ACCESS_TOKEN is now: ${process.env.MAPBOX_ACCESS_TOKEN ? 'SET' : 'NOT SET'}`)
   } catch (error) {
     console.error('[v0] Error loading .env.local file:', error)
   }
