@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Maximize2, RotateCcw, Search, ImageIcon } from "lucide-react"
-import { LocationMap } from "@/components/ui/location-map"
 
 const models = {
   buildings: [
@@ -82,13 +81,6 @@ export default function ThreeDPage() {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [imageRotation, setImageRotation] = useState(0)
-  
-  // Project location data
-  const [projectLocation, setProjectLocation] = useState({
-    name: "Al Ain Police Headquarters",
-    coordinates: "24.2008° N, 55.7658° E",
-    display: "Al Ain, UAE"
-  })
 
   // Toggle fullscreen mode
   const toggleFullscreen = () => {
@@ -168,34 +160,9 @@ export default function ThreeDPage() {
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 p-4 relative z-10">
-        {/* Location Map Section */}
-        <div className="w-full md:w-1/4 bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-md rounded-lg border border-cyan-500/20 overflow-hidden shadow-lg shadow-cyan-900/20 ring-1 ring-white/10 p-6 flex flex-col items-center justify-center">
-          <div className="mb-4 text-center">
-            <h2 className="text-cyan-300 font-medium mb-2 flex items-center gap-2 justify-center">
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
-                <line x1="9" x2="9" y1="3" y2="18" />
-                <line x1="15" x2="15" y1="6" y2="21" />
-              </svg>
-              Project Location
-            </h2>
-            <p className="text-slate-400 text-sm">{projectLocation.name}</p>
-          </div>
-          <LocationMap
-            location={projectLocation.display}
-            coordinates={projectLocation.coordinates}
-            className="w-full max-w-xs"
-          />
-        </div>
-
         {/* 3D Viewer */}
         <div
-          className={`${isFullscreen ? "fixed inset-0 z-50 bg-gradient-to-b from-slate-950 via-slate-900 to-[#0b1020]" : "w-full md:w-2/3"} bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-md rounded-lg border border-cyan-500/20 overflow-hidden shadow-lg shadow-cyan-900/20 ring-1 ring-white/10`}
+          className={`${isFullscreen ? "fixed inset-0 z-50 bg-gradient-to-b from-slate-950 via-slate-900 to-[#0b1020]" : "w-full"} bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-md rounded-lg border border-cyan-500/20 overflow-hidden shadow-lg shadow-cyan-900/20 ring-1 ring-white/10`}
         >
           <div className="flex justify-between items-center p-3 border-b border-cyan-500/30 bg-slate-900/50">
             <h2 className="text-cyan-300 font-medium flex items-center gap-2">
