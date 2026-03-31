@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowLeft, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Search, ImageIcon, Video, FileText, Eye } from "lucide-react"
+import { InteractiveMediaGallery } from "@/components/ui/interactive-media-gallery"
 
 interface MediaItem {
   id: string
@@ -28,9 +27,8 @@ const mockMediaItems: MediaItem[] = [
     name: "Al Ain Cultural Center - Exterior View",
     type: "image",
     url: "https://images.pexels.com/photos/32826199/pexels-photo-32826199.jpeg",
-    thumbnail:
-      "https://images.pexels.com/photos/32826199/pexels-photo-32826199.jpeg?auto=compress&cs=tinysrgb&w=300&h=200",
-    size: 2048576, // 2MB
+    thumbnail: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=500&h=400&fit=crop",
+    size: 2048576,
     uploadDate: "2024-01-15",
     project: "16-projects",
     tags: ["architecture", "exterior", "cultural-center"],
@@ -41,52 +39,48 @@ const mockMediaItems: MediaItem[] = [
     name: "Construction Progress Video - Week 12",
     type: "video",
     url: "/placeholder-video.mp4",
-    thumbnail:
-      "https://images.pexels.com/photos/6473973/pexels-photo-6473973.jpeg?auto=compress&cs=tinysrgb&w=300&h=200",
-    size: 15728640, // 15MB
+    thumbnail: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=500&h=400&fit=crop",
+    size: 15728640,
     uploadDate: "2024-01-12",
     project: "7-projects",
     tags: ["construction", "progress", "timelapse"],
-    description: "Weekly construction progress documentation",
+    description: "Weekly construction progress documentation showing ongoing development",
   },
   {
     id: "3",
     name: "Project Specifications Document",
     type: "document",
     url: "/placeholder-document.pdf",
-    thumbnail:
-      "https://images.pexels.com/photos/32886453/pexels-photo-32886453.jpeg?auto=compress&cs=tinysrgb&w=300&h=200",
-    size: 1048576, // 1MB
+    thumbnail: "https://images.unsplash.com/photo-1554224311-beee415c15cb?w=500&h=400&fit=crop",
+    size: 1048576,
     uploadDate: "2024-01-10",
     project: "2-projects",
     tags: ["specifications", "technical", "planning"],
-    description: "Detailed project specifications and requirements",
+    description: "Detailed project specifications and technical requirements documentation",
   },
   {
     id: "4",
     name: "Al Ain Oasis Aerial Photography",
     type: "image",
     url: "https://images.pexels.com/photos/27251844/pexels-photo-27251844.png",
-    thumbnail:
-      "https://images.pexels.com/photos/27251844/pexels-photo-27251844.png?auto=compress&cs=tinysrgb&w=300&h=200",
-    size: 3145728, // 3MB
+    thumbnail: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=400&fit=crop",
+    size: 3145728,
     uploadDate: "2024-01-08",
     project: "1-project",
     tags: ["aerial", "oasis", "landscape"],
-    description: "Drone photography of Al Ain Oasis showing the natural landscape",
+    description: "Drone photography of Al Ain Oasis showing the natural landscape and environmental features",
   },
   {
     id: "5",
     name: "Police Station Interior Design",
     type: "image",
     url: "https://images.pexels.com/photos/32898130/pexels-photo-32898130.jpeg",
-    thumbnail:
-      "https://images.pexels.com/photos/32898130/pexels-photo-32898130.jpeg?auto=compress&cs=tinysrgb&w=300&h=200",
-    size: 1572864, // 1.5MB
+    thumbnail: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&h=400&fit=crop",
+    size: 1572864,
     uploadDate: "2024-01-05",
     project: "al-saad-police",
     tags: ["interior", "police", "design"],
-    description: "Interior design concept for Al Saad Police Center",
+    description: "Interior design concept for Al Saad Police Center with modern security features",
   },
 ]
 
@@ -97,7 +91,6 @@ export default function MediaPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [projectFilter, setProjectFilter] = useState<string>("all")
-  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null)
 
   useEffect(() => {
     let filtered = mediaItems
@@ -125,181 +118,107 @@ export default function MediaPage() {
     setFilteredItems(filtered)
   }, [searchTerm, typeFilter, projectFilter, mediaItems])
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes"
-    const k = 1024
-    const sizes = ["Bytes", "KB", "MB", "GB"]
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
-  }
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "image":
-        return <ImageIcon className="w-4 h-4" />
-      case "video":
-        return <Video className="w-4 h-4" />
-      case "document":
-        return <FileText className="w-4 h-4" />
-      default:
-        return <FileText className="w-4 h-4" />
-    }
-  }
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "image":
-        return "bg-accent text-accent-foreground"
-      case "video":
-        return "bg-primary/20 text-primary-foreground"
-      case "document":
-        return "bg-secondary text-secondary-foreground"
-      default:
-        return "bg-muted text-muted-foreground"
-    }
-  }
-
   return (
-    <div className="min-h-screen relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white pb-20 md:pb-6">
-      <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-20 pointer-events-none z-0"></div>
+    <div className="min-h-screen relative bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] bg-[length:20px_20px] opacity-10 pointer-events-none z-0"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.1),transparent_60%)] pointer-events-none z-0"></div>
 
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 z-10"></div>
 
       {/* Header */}
-      <div className="relative z-10">
+      <div className="relative z-20 sticky top-0 bg-slate-950/80 backdrop-blur-md border-b border-cyan-500/20">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => router.back()}
-              className="bg-cyan-900/50 text-cyan-400 hover:bg-cyan-800/50 border border-cyan-500/30 hover:border-cyan-400/40 hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 w-full sm:w-auto justify-center sm:justify-start"
+              className="bg-cyan-900/50 text-cyan-400 hover:bg-cyan-800/50 border border-cyan-500/30 hover:border-cyan-400/40 hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Al Ain
+              Back
             </Button>
-            <div className="w-full sm:w-auto">
-              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent text-center sm:text-left">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
                 Media Gallery
               </h1>
-              <p className="text-cyan-300 text-sm sm:text-base text-center sm:text-left">
-                Browse project media and documents
-              </p>
+              <p className="text-cyan-300 text-sm sm:text-base">Browse project media and documents</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 relative z-10">
-        {/* Filters */}
-        <Card className="mb-4 sm:mb-6 bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-md ring-1 ring-white/10 border border-cyan-500/20 shadow-lg shadow-cyan-900/20">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex flex-col gap-3 sm:gap-4">
-              {/* Search */}
-              <div className="w-full">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-cyan-400" />
-                  <Input
-                    placeholder="Search media..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 h-10 sm:h-9 bg-slate-800/50 border-cyan-500/30 text-white placeholder-cyan-300/50 focus:border-cyan-400 focus:ring-cyan-400/50 transition-all duration-300 text-base sm:text-sm"
-                  />
-                </div>
-              </div>
-
-              {/* Type Filter */}
-              <div className="w-full sm:w-48">
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="h-10 sm:h-9 bg-slate-800/50 border-cyan-500/30 text-white hover:border-cyan-400/40 transition-all duration-300 text-base sm:text-sm">
-                    <SelectValue placeholder="Filter by type" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-900/90 backdrop-blur-md border-cyan-500/30">
-                    <SelectItem value="all" className="text-white hover:bg-cyan-900/30 text-base sm:text-sm">
-                      All Types
-                    </SelectItem>
-                    <SelectItem value="image" className="text-white hover:bg-cyan-900/30 text-base sm:text-sm">
-                      Images
-                    </SelectItem>
-                    <SelectItem value="video" className="text-white hover:bg-cyan-900/30 text-base sm:text-sm">
-                      Videos
-                    </SelectItem>
-                    <SelectItem value="document" className="text-white hover:bg-cyan-900/30 text-base sm:text-sm">
-                      Documents
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Project Filter */}
-              <div className="w-full md:w-48">{/* Project filter implementation goes here */}</div>
+      {/* Filters */}
+      <div className="relative z-20 container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <div className="flex flex-col gap-3 sm:gap-4 bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-md ring-1 ring-white/10 border border-cyan-500/20 shadow-lg shadow-cyan-900/20 p-4 rounded-lg">
+          {/* Search */}
+          <div className="w-full">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-cyan-400" />
+              <Input
+                placeholder="Search media..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-10 sm:h-9 bg-slate-800/50 border-cyan-500/30 text-white placeholder-cyan-300/50 focus:border-cyan-400 focus:ring-cyan-400/50"
+              />
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Media Items */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-          {filteredItems.map((item) => (
-            <Card
-              key={item.id}
-              className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-md ring-1 ring-white/10 border border-cyan-500/20 hover:border-cyan-400/40 shadow-lg shadow-cyan-900/20 hover:shadow-cyan-500/30 transition-all duration-300"
-            >
-              <CardHeader className="pb-2 sm:pb-4">
-                <CardTitle className="flex items-start sm:items-center gap-2 bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent font-bold text-sm sm:text-base leading-tight">
-                  <span className="flex-shrink-0 mt-1 sm:mt-0 text-cyan-400">{getTypeIcon(item.type)}</span>
-                  <span className="break-words">{item.name}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 sm:p-4 pt-0">
-                {/* Thumbnail */}
-                {item.thumbnail && (
-                  <div className="mb-3 sm:mb-4">
-                    <div className="relative w-full h-32 sm:h-40 rounded-lg overflow-hidden border border-cyan-500/30">
-                      <img
-                        src={item.thumbnail || "/placeholder.svg"}
-                        alt={item.name}
-                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement
-                          target.src = "/placeholder.svg?height=200&width=300&text=Image+Not+Found"
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent"></div>
-                    </div>
-                  </div>
-                )}
+          {/* Filters Row */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="w-full sm:w-48">
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="h-10 sm:h-9 bg-slate-800/50 border-cyan-500/30 text-white">
+                  <SelectValue placeholder="Filter by type" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900/90 backdrop-blur-md border-cyan-500/30">
+                  <SelectItem value="all" className="text-white">
+                    All Types
+                  </SelectItem>
+                  <SelectItem value="image" className="text-white">
+                    Images
+                  </SelectItem>
+                  <SelectItem value="video" className="text-white">
+                    Videos
+                  </SelectItem>
+                  <SelectItem value="document" className="text-white">
+                    Documents
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-                <div className="flex flex-col gap-3 sm:gap-4">
-                  <div className="space-y-1">
-                    <p className="text-xs sm:text-sm text-cyan-300">Uploaded on {item.uploadDate}</p>
-                    <p className="text-xs sm:text-sm text-cyan-300">Size: {formatFileSize(item.size)}</p>
-                    {item.project && <p className="text-xs sm:text-sm text-purple-300">Project: {item.project}</p>}
-                  </div>
-                  <div className="flex flex-wrap gap-1 sm:gap-2 p-3 rounded-xl bg-gradient-to-br from-cyan-900/20 via-blue-900/10 to-purple-900/20 backdrop-blur-md border border-cyan-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_4px_12px_rgba(14,165,233,0.15)]">
-                    {item.tags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white border border-cyan-400/30 shadow-md shadow-cyan-500/20 hover:from-cyan-400 hover:to-blue-400 transition-all duration-300 text-xs px-2 py-1"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-                <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1 h-9 sm:h-8 bg-gradient-to-r from-cyan-500 to-blue-500 border-cyan-400/30 text-white hover:from-cyan-400 hover:to-blue-400 hover:shadow-lg hover:shadow-cyan-500/30 transition-all duration-300 text-sm"
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    View
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+            <div className="w-full sm:w-48">
+              <Select value={projectFilter} onValueChange={setProjectFilter}>
+                <SelectTrigger className="h-10 sm:h-9 bg-slate-800/50 border-cyan-500/30 text-white">
+                  <SelectValue placeholder="Filter by project" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900/90 backdrop-blur-md border-cyan-500/30">
+                  <SelectItem value="all" className="text-white">
+                    All Projects
+                  </SelectItem>
+                  <SelectItem value="1-project" className="text-white">
+                    1 Project
+                  </SelectItem>
+                  <SelectItem value="2-projects" className="text-white">
+                    2 Projects
+                  </SelectItem>
+                  <SelectItem value="7-projects" className="text-white">
+                    7 Projects
+                  </SelectItem>
+                  <SelectItem value="16-projects" className="text-white">
+                    16 Projects
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* Gallery */}
+      <div className="relative z-10">
+        <InteractiveMediaGallery items={filteredItems} onItemSelect={() => {}} />
       </div>
     </div>
   )
