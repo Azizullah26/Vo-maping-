@@ -50,34 +50,12 @@ npm run dev
 pnpm dev
 \`\`\`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
 ### Building for Production
 
 \`\`\`bash
 npm run build
 npm start
 \`\`\`
-
-## Environment Variables
-
-The application requires several environment variables for full functionality:
-
-### Required for Database Features
-- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
-- `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key
-
-### Optional for Enhanced Features
-- `MAPBOX_ACCESS_TOKEN` - For map functionality (server-side only)
-- `BLOB_READ_WRITE_TOKEN` - For file storage
-
-### Demo Mode
-The application can run in demo mode without database configuration:
-- `NEXT_PUBLIC_DEMO_MODE=true`
-- `NEXT_PUBLIC_STATIC_MODE=true`
-
-## Deployment
 
 ### Netlify
 
@@ -92,20 +70,6 @@ The application can run in demo mode without database configuration:
 1. Connect your GitHub repository to Vercel
 2. Add environment variables in Vercel dashboard
 3. Deploy
-
-## Project Structure
-
-\`\`\`
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   ├── components/        # App-specific components
-│   └── [pages]/          # Page components
-├── components/            # Reusable UI components
-├── lib/                  # Utility libraries
-├── data/                 # Static data files
-├── public/               # Static assets
-└── styles/               # CSS modules and styles
-\`\`\`
 
 ## Technologies Used
 
