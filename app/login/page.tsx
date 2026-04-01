@@ -3,7 +3,7 @@
 import type React from "react"
 import Image from "next/image"
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useLoginAuth } from "@/app/contexts/LoginAuthContext"
 import { Eye, EyeOff, AlertCircle } from "lucide-react"
 
@@ -14,13 +14,31 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [formError, setFormError] = useState("")
   const [animateIn, setAnimateIn] = useState(false)
-  const { login, isLoading, error } = useLoginAuth()
+  const { login, loginWithSSO, isLoading, error } = useLoginAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
+    // Check for SSO source parameter
+    const source = searchParams.get("source")
+    const timestamp = searchParams.get("timestamp")
+
+    console.log("[v0] Login page loaded with params:", { source, timestamp })
+
+    if (source === "hub" && timestamp) {
+      // Auto-login via SSO - no password needed
+      console.log("[v0] SSO detected from Race-Hub, auto-logging in...")
+      loginWithSSO(source)
+      // Redirect to Al Ain page after a short delay
+      setTimeout(() => {
+        router.push("/al-ain")
+      }, 500)
+      return
+    }
+
     // Trigger animations after component mounts
     setAnimateIn(true)
-  }, [])
+  }, [searchParams, loginWithSSO, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

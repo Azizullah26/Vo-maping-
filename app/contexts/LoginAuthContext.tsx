@@ -16,6 +16,7 @@ interface LoginAuthContextType {
     password: string,
     rememberMe?: boolean,
   ) => Promise<boolean>;
+  loginWithSSO: (source: string) => void;
   logout: () => void;
   isLoading: boolean;
   error: string | null;
@@ -131,9 +132,28 @@ export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
     }
   };
 
+  const loginWithSSO = (source: string) => {
+    try {
+      console.log("[v0] SSO login initiated from source:", source);
+      // Generate SSO token
+      const ssoToken = btoa(`sso:${Date.now()}:${source}`);
+      const expiryTime = new Date().getTime() + 24 * 60 * 60 * 1000; // 24 hours
+
+      localStorage.setItem("auth_token", ssoToken);
+      localStorage.setItem("auth_expiry", expiryTime.toString());
+      localStorage.setItem("sso_source", source);
+
+      setIsAuthenticated(true);
+      console.log("[v0] SSO authentication successful");
+    } catch (error) {
+      console.error("[v0] SSO login error:", error);
+      setError("SSO authentication failed");
+    }
+  };
+
   return (
     <LoginAuthContext.Provider
-      value={{ isAuthenticated, login, logout, isLoading, error }}
+      value={{ isAuthenticated, login, loginWithSSO, logout, isLoading, error }}
     >
       {children}
     </LoginAuthContext.Provider>
