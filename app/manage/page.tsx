@@ -25,7 +25,7 @@ export default function ManagePage() {
   const managementCards = [
     {
       id: "work-order",
-      title: "Work Order",
+      title: "Project Management",
       description: "Manage work orders, assignments, and task tracking",
       icon: ClipboardList,
       link: "/work-order",
@@ -34,17 +34,6 @@ export default function ManagePage() {
       hoverColor: "group-hover:text-orange-400",
       fileCount: 12,
       lastUpdate: "2024-01-15",
-    },
-    {
-      id: "projects",
-      title: "Project Management",
-      description: "Add, edit, and delete projects across all regions",
-      icon: Building,
-      link: "/projects",
-      color: "from-blue-600/20 to-cyan-600/20",
-      borderColor: "border-cyan-500/30",
-      hoverColor: "group-hover:text-cyan-400",
-      lastUpdate: "2024-01-12",
     },
     {
       id: "documents",
