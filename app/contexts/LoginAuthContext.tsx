@@ -9,8 +9,17 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 
+interface User {
+  id?: string;
+  name?: string;
+  email?: string;
+  username?: string;
+  [key: string]: any;
+}
+
 interface LoginAuthContextType {
   isAuthenticated: boolean;
+  user: User | null;
   login: (
     username: string,
     password: string,
@@ -31,6 +40,7 @@ interface LoginAuthProviderProps {
 
 export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -41,21 +51,28 @@ export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
       try {
         const token = localStorage.getItem("auth_token");
         const expiry = localStorage.getItem("auth_expiry");
+        const storedUser = localStorage.getItem("user");
 
         if (token && expiry) {
           const now = new Date().getTime();
           if (now < Number.parseInt(expiry)) {
             setIsAuthenticated(true);
+            if (storedUser) {
+              setUser(JSON.parse(storedUser));
+            }
           } else {
             // Token expired, clean up
             localStorage.removeItem("auth_token");
             localStorage.removeItem("auth_expiry");
+            localStorage.removeItem("user");
             setIsAuthenticated(false);
+            setUser(null);
           }
         }
       } catch (error) {
         console.error("Error checking auth:", error);
         setIsAuthenticated(false);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -73,29 +90,68 @@ export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
       setIsLoading(true);
       setError(null);
 
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Call external SSO endpoint
+      const ssoResponse = await fetch(
+        "https://elarcehub.site/api/elrace-map/sso/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: username.trim(),
+            password,
+            rememberMe,
+            redirectUrl: `${typeof window !== "undefined" ? window.location.origin : ""}/welcome`,
+          }),
+          credentials: "include", // Include cookies for CORS
+        }
+      );
 
-      // Check credentials
-      if (username.trim() === "elrace" && password === "Elrace1122") {
-        // Generate a simple token
-        const token = btoa(`${username}:${Date.now()}`);
+      if (!ssoResponse.ok) {
+        const errorData = await ssoResponse.json().catch(() => ({ message: "Login failed" }));
+        setError(errorData.message || `Login failed with status ${ssoResponse.status}`);
+        console.error("ELRACE Map upstream SSO endpoint returned", ssoResponse.status);
+        return false;
+      }
+
+      const data = await ssoResponse.json();
+
+      if (data.success || data.token) {
+        // Store the token and user info from SSO response
+        const token = data.token || btoa(`${username}:${Date.now()}`);
         const expiryTime = rememberMe
           ? new Date().getTime() + 30 * 24 * 60 * 60 * 1000 // 30 days
           : new Date().getTime() + 24 * 60 * 60 * 1000; // 24 hours
 
         localStorage.setItem("auth_token", token);
         localStorage.setItem("auth_expiry", expiryTime.toString());
+        if (data.user) {
+          localStorage.setItem("user", JSON.stringify(data.user));
+          setUser(data.user);
+        } else {
+          // Fallback user object if SSO doesn't return user data
+          const fallbackUser: User = {
+            username: username.trim(),
+            name: username.trim(),
+          };
+          localStorage.setItem("user", JSON.stringify(fallbackUser));
+          setUser(fallbackUser);
+        }
 
         setIsAuthenticated(true);
         return true;
       }
 
-      setError("Invalid username or password");
+      setError(data.message || "Invalid username or password");
       return false;
     } catch (error) {
       console.error("Login error:", error);
-      setError("An error occurred during login. Please try again.");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An error occurred during login. Please try again.";
+      setError(errorMessage);
       return false;
     } finally {
       setIsLoading(false);
@@ -106,7 +162,9 @@ export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
     try {
       localStorage.removeItem("auth_token");
       localStorage.removeItem("auth_expiry");
+      localStorage.removeItem("user");
       setIsAuthenticated(false);
+      setUser(null);
       router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
@@ -115,7 +173,7 @@ export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
 
   return (
     <LoginAuthContext.Provider
-      value={{ isAuthenticated, login, logout, isLoading, error }}
+      value={{ isAuthenticated, user, login, logout, isLoading, error }}
     >
       {children}
     </LoginAuthContext.Provider>
