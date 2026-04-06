@@ -34,7 +34,7 @@ export default function LoginPage() {
 
     const success = await login(username, password, rememberMe)
     if (success) {
-      router.push("/")
+      router.push("/welcome")
     }
   }
 

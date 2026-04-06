@@ -17,15 +17,6 @@ export function middleware(request: NextRequest) {
     response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization")
   }
 
-  // Fix SSO redirect issue: if someone tries to access /al-ain without proper context
-  // and they're coming from OAuth/SSO callback, redirect to home
-  if (
-    request.nextUrl.pathname === "/al-ain" &&
-    (request.nextUrl.searchParams.has("code") || request.nextUrl.searchParams.has("state"))
-  ) {
-    return NextResponse.redirect(new URL("/", request.url))
-  }
-
   return response
 }
 
