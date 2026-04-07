@@ -42,7 +42,13 @@ export default function SSOCallbackPage() {
           setStatus("success")
           
           // Dispatch storage event to notify LoginAuthContext of the change
-          window.dispatchEvent(new Event("storage"))
+          // This is important for immediate auth state updates
+          window.dispatchEvent(new StorageEvent("storage", {
+            key: "auth_token",
+            newValue: data.session_token,
+            oldValue: null,
+            storageArea: localStorage,
+          }))
           
           setTimeout(() => {
             router.push("/welcome")

@@ -188,20 +188,6 @@ function TopNav({ onToggleProjects, showProjects, onAdminClick, showAdmin }: Top
           <div className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900 border-t border-white/10 rounded-t-[20px] xxs:rounded-t-[25px] sm:rounded-t-[30px]">
             <div className="w-full max-w-[1800px] mx-auto px-1 xxs:px-2">
               <div className="flex items-center justify-between py-2 xxs:py-2.5 xs:py-3 sm:py-2">
-                {/* Dashboard button */}
-                <Link
-                  href={
-                    pathname.startsWith("/abu-dhabi") || pathname.includes("abu-dhabi")
-                      ? "/dashboard/abu-dhabi"
-                      : "/dashboard"
-                  }
-                  className={`flex flex-col items-center justify-center px-1 xxs:px-1.5 xs:px-2 py-0.5 xxs:py-1 text-white relative group touch-target ${pathname === "/dashboard" || pathname === "/dashboard/abu-dhabi" ? "active-nav-item" : ""}`}
-                >
-                  <LayoutDashboard className="h-4 w-4 xxs:h-4.5 xxs:w-4.5 xs:h-5 xs:w-5 mb-0.5" />
-                  <span className="text-[9px] xxs:text-[10px] xs:text-[11px]">Dashboard</span>
-                  <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-cyan-400 group-hover:w-full transition-all duration-300"></span>
-                </Link>
-
                 {/* Projects Details button */}
                 <Link
                   href={pathname.startsWith("/abu-dhabi") ? "/abu-dhabi/projects" : "/projects-details"}

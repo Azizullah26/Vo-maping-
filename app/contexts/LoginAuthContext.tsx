@@ -82,6 +82,16 @@ export function LoginAuthProvider({ children }: LoginAuthProviderProps) {
     };
 
     checkAuth();
+
+    // Listen for storage changes from SSO callback
+    const handleStorageChange = () => {
+      checkAuth();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   const login = async (
